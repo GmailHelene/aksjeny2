@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Legg til aksje i porteføljen{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2>Legg til aksje</h2>
+  <form method="post">
+    <div class="mb-3">
+      <label for="ticker" class="form-label">Ticker</label>
+  <input type="text" class="form-control" id="ticker" name="ticker" value="{{ prefill_ticker or '' }}" required>
+    </div>
+    <div class="mb-3">
+      <label for="quantity" class="form-label">Antall</label>
+      <input type="number" class="form-control" id="quantity" name="quantity" min="1" step="1" required>
+    </div>
+    <div class="mb-3">
+      <label for="purchase_price" class="form-label">Kjøpspris</label>
+      <input type="number" class="form-control" id="purchase_price" name="purchase_price" min="0" step="0.01" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Legg til</button>
+  </form>
+  {% if error %}
+    <div class="alert alert-danger mt-3">{{ error }}</div>
+  {% endif %}
+</div>
+{% endblock %}
