@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Aksjer - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Aksjeoversikt</h1>
+    
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form action="{{ url_for('stocks.search') }}" method="GET" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Søk etter aksjer..." required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Søk
+                </button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('stocks.compare') }}" class="btn btn-outline-primary w-100">
+                <i class="bi bi-arrows-angle-expand"></i> Sammenlign aksjer
+            </a>
+        </div>
+    </div>
+    
+    <!-- Market Categories -->
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-flag-fill text-danger display-4"></i>
+                    <h5 class="mt-2">Oslo Børs</h5>
+                    <p class="text-muted">Norske aksjer</p>
+                    <a href="{{ url_for('stocks.list_stocks', category='oslo') }}" class="btn btn-sm btn-outline-primary">
+                        Se alle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-globe text-primary display-4"></i>
+                    <h5 class="mt-2">Globale aksjer</h5>
+                    <p class="text-muted">Internasjonale markeder</p>
+                    <a href="{{ url_for('stocks.list_stocks', category='global') }}" class="btn btn-sm btn-outline-primary">
+                        Se alle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-bitcoin text-warning display-4"></i>
+                    <h5 class="mt-2">Kryptovaluta</h5>
+                    <p class="text-muted">Digitale valutaer</p>
+                    <a href="{{ url_for('stocks.list_crypto') }}" class="btn btn-sm btn-outline-primary">
+                        Se alle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="bi bi-currency-exchange text-success display-4"></i>
+                    <h5 class="mt-2">Valuta</h5>
+                    <p class="text-muted">Valutakurser</p>
+                    <a href="{{ url_for('stocks.list_currency') }}" class="btn btn-sm btn-outline-primary">
+                        Se alle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Stocks -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Populære aksjer</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Navn</th>
+                            <th>Pris</th>
+                            <th>Endring</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>EQNR.OL</td>
+                            <td>Equinor ASA</td>
+                            <td>342.55 NOK</td>
+                            <td class="text-success">+2.1%</td>
+                            <td>
+                                <a href="{{ url_for('stocks.details', symbol='EQNR.OL') }}" class="btn btn-sm btn-primary">
+                                    Detaljer
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>DNB.OL</td>
+                            <td>DNB Bank ASA</td>
+                            <td>234.10 NOK</td>
+                            <td class="text-success">+1.8%</td>
+                            <td>
+                                <a href="{{ url_for('stocks.details', symbol='DNB.OL') }}" class="btn btn-sm btn-primary">
+                                    Detaljer
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>AAPL</td>
+                            <td>Apple Inc.</td>
+                            <td>185.70 USD</td>
+                            <td class="text-danger">-0.5%</td>
+                            <td>
+                                <a href="{{ url_for('stocks.details', symbol='AAPL') }}" class="btn btn-sm btn-primary">
+                                    Detaljer
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

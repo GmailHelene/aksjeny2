@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %} - Aksjer{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i>Hjem
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="bi bi-graph-up me-1"></i>{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}
+            </li>
+        </ol>
+    </nav>
+    
+    <h1 class="mb-4">{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}</h1>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Navn</th>
+                                    <th class="text-end">Pris</th>
+                                    <th class="text-end">Endring</th>
+                                    <th class="text-end">Volum</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if stocks %}
+                                    {% for ticker, stock in stocks.items() %}
+                                    <tr>
+                                        <td><strong>{{ ticker }}</strong></td>
+                                        <td>{{ stock['name']|default(ticker) }}</td>
+                                        <td class="text-end">
+                                            {% if stock['last_price'] %}
+                                                {% if ticker.endswith('.OL') %}
+                                                    kr {{ "{:,.2f}".format(stock['last_price']).replace(',', ' ').replace('.', ',') }}
+                                                {% else %}
+                                                    $ {{ "{:,.2f}".format(stock['last_price']) }}
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end {{ 'text-success' if stock['change_percent'] > 0 else 'text-danger' if stock['change_percent'] < 0 else '' }}">
+                                            {% if stock['change_percent'] %}
+                                                {{ "{:+.2f}".format(stock['change_percent']).replace('.', ',') }}%
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if stock['volume'] %}
+                                                {{ "{:,.0f}".format(stock['volume']).replace(',', ' ') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-info-circle"></i> Detaljer
+                                                </a>
+                                                <a href="{{ url_for('analysis.stock_analysis', symbol=ticker) }}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-graph-up"></i> Analyse
+                                                </a>
+                                                <button class="btn btn-sm btn-success add-to-portfolio" data-ticker="{{ ticker }}">
+                                                    <i class="bi bi-plus-circle"></i> Kjøp
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning add-to-watchlist" data-ticker="{{ ticker }}">
+                                                    <i class="bi bi-star"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <p class="text-muted">Ingen aksjer tilgjengelig</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to watchlist functionality
+    document.querySelectorAll('.add-to-watchlist').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const ticker = this.dataset.ticker;
+            try {
+                const response = await window.csrfHelper.fetch('/api/watchlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ticker: ticker })
+                });
+                
+                if (response.ok) {
+                    this.innerHTML = '<i class="bi bi-star-fill"></i>';
+                    this.classList.remove('btn-outline-warning');
+                    this.classList.add('btn-warning');
+                    showToast('Lagt til i favoritter!', 'success');
+                } else {
+                    throw new Error('Failed to add to watchlist');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Kunne ikke legge til i favoritter', 'error');
+            }
+        });
+    });
+    
+    // Add to portfolio functionality
+    document.querySelectorAll('.add-to-portfolio').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const ticker = this.dataset.ticker;
+            try {
+                const response = await window.csrfHelper.fetch('/api/portfolio/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        ticker: ticker,
+                        quantity: 1,
+                        action: 'buy'
+                    })
+                });
+                
+                if (response.ok) {
+                    this.innerHTML = '<i class="bi bi-check-circle"></i> Lagt til';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-success');
+                    this.disabled = true;
+                    showToast(`${ticker} lagt til i portefølje!`, 'success');
+                } else {
+                    throw new Error('Failed to add to portfolio');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Kunne ikke legge til i portefølje', 'error');
+            }
+        });
+    });
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+</script>
+{% endblock %}

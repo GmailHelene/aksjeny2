@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title mb-1">
+                        Velkommen, {{ user.username if user.username else user.email.split('@')[0] }}!
+                    </h5>
+                    <p class="card-text mb-0">
+                        <i class="bi bi-clock me-1"></i>
+                        Markedsstatus: <strong>{{ market_status }}</strong> | 
+                        Oslo Børs: <strong>{{ oslo_status }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-graph-up-arrow text-success" style="font-size: 2rem;"></i>
+                    <h5 class="card-title mt-2">Portfolio</h5>
+                    <p class="card-text">
+                        <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-primary btn-sm">
+                            Vis portfolio
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+                    <h5 class="card-title mt-2">Favoritter</h5>
+                    <p class="card-text">
+                        <a href="{{ url_for('stocks.index') }}" class="btn btn-outline-primary btn-sm">
+                            Se favoritter
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-list-check text-info" style="font-size: 2rem;"></i>
+                    <h5 class="card-title mt-2">Watchlist</h5>
+                    <p class="card-text">
+                        <a href="{{ url_for('watchlist_bp.index') }}" class="btn btn-outline-primary btn-sm">
+                            Vis watchlist
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-graph-up text-primary" style="font-size: 2rem;"></i>
+                    <h5 class="card-title mt-2">Analyser</h5>
+                    <p class="card-text">
+                        <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-primary btn-sm">
+                            Se analyser
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Summary Section -->
+    {% if market_summary %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Markedsoversikt
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for key, value in market_summary.items() %}
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <strong>{{ key }}:</strong> {{ value }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top Movers Section -->
+    {% if top_movers %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-up-circle me-2"></i>Største bevegelser
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in top_movers[:5] %}
+                                <tr>
+                                    <td>{{ stock.symbol }}</td>
+                                    <td>{{ stock.price }}</td>
+                                    <td class="{{ 'text-success' if stock.change > 0 else 'text-danger' }}">
+                                        {{ stock.change }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Favorites Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star me-2"></i>Mine favoritter
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user_favorites %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for favorite in user_favorites[:5] %}
+                                <tr>
+                                    <td>{{ favorite.symbol }}</td>
+                                    <td>{{ favorite.price }}</td>
+                                    <td class="{{ 'text-success' if favorite.change > 0 else 'text-danger' }}">
+                                        {{ favorite.change }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Du har ikke lagt til noen favoritter ennå.</p>
+                    <a href="{{ url_for('stocks.index') }}" class="btn btn-primary btn-sm">
+                        Legg til favoritter
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent News Section -->
+    {% if recent_news %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-newspaper me-2"></i>Siste nyheter
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for news in recent_news[:3] %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <h6><a href="{{ news.url }}" class="text-decoration-none">{{ news.title }}</a></h6>
+                        <p class="text-muted small mb-0">{{ news.published_at }} - {{ news.source }}</p>
+                    </div>
+                    {% endfor %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-primary">
+                            Se alle nyheter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Hurtighandlinger
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('stocks.search') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search me-1"></i>Søk aksjer
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('analysis.screener') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-funnel me-1"></i>Screener
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-emoji-smile me-1"></i>Sentiment
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('pro_tools.advanced_screener') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-tools me-1"></i>Pro-tools
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Status -->
+    {% if not has_subscription %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5 class="alert-heading">
+                    <i class="bi bi-info-circle me-2"></i>Oppgrader til Premium
+                </h5>
+                <p>Få tilgang til alle funksjoner med et Premium-abonnement.</p>
+                <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-info">
+                    Se priser
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Dashboard specific scripts can go here -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Any dashboard specific JavaScript
+    console.log('Dashboard loaded');
+});
+</script>
+{% endblock %}

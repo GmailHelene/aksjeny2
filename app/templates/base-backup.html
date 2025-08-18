@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'no' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
+    <meta name="cache-bust" content="20250804_023121">
+    <!-- Force production cache refresh -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}</title>
+    <meta name="description" content="{% block description %}Aksjeradar er Norges mest avanserte aksjeplattform med AI-drevne analyser, sanntidsdata og profesjonelle verktøy for aksjehandel. Få tilgang til teknisk analyse, fundamental analyse og markedsinnsikt.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}aksjer Norge, aksjeanalyse, teknisk analyse, fundamental analyse, Oslo Børs, aksjekurser, investering, trading, AI analyse, markedsdata, aksjetips{% endblock %}">
+    <meta name="author" content="Aksjeradar Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}AI-drevne aksjeanalyser og sanntidsdata for Oslo Børs og internasjonale markeder. Profesjonelle verktøy for moderne investorer.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/aksjeradar-og.jpg', _external=True) }}{% endblock %}">
+    <meta property="og:site_name" content="Aksjeradar">
+    <meta property="og:locale" content="nb_NO">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}AI-drevne aksjeanalyser og sanntidsdata for Oslo Børs og internasjonale markeder.{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/aksjeradar-twitter.jpg', _external=True) }}{% endblock %}">
+    
+    <!-- Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Aksjeradar",
+        "description": "Norges smarteste aksjeplattform med AI-drevne analyser og sanntidsdata",
+        "url": "https://aksjeradar.trade",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "399",
+            "priceCurrency": "NOK",
+            "priceValidUntil": "2025-12-31"
+        },
+        "provider": {
+            "@type": "Organization",
+            "name": "Aksjeradar",
+            "url": "https://aksjeradar.trade",
+            "email": "kontakt@aksjeradar.trade"
+        }
+    }
+    </script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20250804_023121">
+    {% block extra_css %}{% endblock %}
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <style>
+    /* Enhanced Navigation Styling */
+    .navbar-nav .dropdown-menu {
+        border: none;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-radius: 10px;
+        padding: 0.5rem 0;
+        min-width: 280px;
+    }
+    
+    .navbar-nav .dropdown-header {
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.5rem 1rem 0.25rem;
+    }
+    
+    .navbar-nav .dropdown-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    
+    .navbar-nav .dropdown-item:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        transform: translateX(5px);
+        color: #0d6efd;
+    }
+    
+    .navbar-nav .dropdown-item i {
+        width: 16px;
+        text-align: center;
+        opacity: 0.7;
+    }
+    
+    .navbar-nav .dropdown-divider {
+        margin: 0.5rem 0;
+        opacity: 0.1;
+    }
+
+    /* Enhanced Dropdown Toggle Styling for PC */
+    @media (min-width: 769px) {
+        .navbar-nav .dropdown-toggle {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .navbar-nav .dropdown-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-nav .dropdown-toggle[aria-expanded="true"] {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            margin-top: 0;
+            border-top: 3px solid #007bff;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Hover indicator */
+        .navbar-nav .dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+        
+        .navbar-nav .dropdown-toggle:hover::before,
+        .navbar-nav .dropdown-toggle[aria-expanded="true"]::before {
+            width: 80%;
+        }
+    }
+
+    /* Enhanced Mobile Navigation - SECTION-ORGANIZED MOBILE MENU */
+    @media (max-width: 768px) {
+        .navbar-toggler {
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 0.5rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.6);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        /* ORGANIZED: Full-screen mobile menu with sections */
+        .navbar-collapse {
+            position: fixed;
+            top: 76px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            backdrop-filter: blur(20px);
+            z-index: 1050;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .navbar-collapse.show {
+            transform: translateX(0);
+        }
+        
+        /* ORGANIZED: Section-based navigation container */
+        .navbar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 0.5rem;
+            margin: 0;
+            max-width: none;
+        }
+        
+        /* SECTION HEADERS: Visual organization by category */
+        .mobile-nav-section {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1rem 0.25rem;
+            margin: 0.5rem 0 0.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* COLOR-CODED SECTIONS: Visual distinction */
+        .market-section {
+            background: rgba(40, 167, 69, 0.12) !important;
+            border-left: 4px solid #28a745 !important;
+            border-radius: 8px;
+            margin: 0.2rem 0;
+        }
+        
+        .analysis-section {
+            background: rgba(0, 123, 255, 0.12) !important;
+            border-left: 4px solid #007bff !important;
+            border-radius: 8px;
+            margin: 0.2rem 0;
+        }
+        
+        .tools-section {
+            background: rgba(255, 193, 7, 0.12) !important;
+            border-left: 4px solid #ffc107 !important;
+            border-radius: 8px;
+            margin: 0.2rem 0;
+        }
+        
+        /* ENHANCED NAV LINKS: Better touch targets */
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.95) !important;
+            padding: 0.75rem 1rem !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 48px;
+            transition: all 0.2s ease;
+            margin: 0;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            transform: translateX(4px);
+        }
+        
+        .navbar-nav .nav-link i {
+            opacity: 0.9;
+            margin-right: 0.6rem;
+            font-size: 1rem;
+            width: 18px;
+            text-align: center;
+        }
+        
+        /* DROPDOWN MENUS: Clean internal styling */
+        .navbar-nav .dropdown-menu {
+            background: rgba(248, 249, 250, 0.96) !important;
+            border: none;
+            border-radius: 6px;
+            margin: 0.25rem 0 !important;
+            padding: 0.4rem !important;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            position: static !important;
+            transform: none !important;
+            width: 100%;
+        }
+        
+        .navbar-nav .dropdown-item {
+            color: #2c3e50 !important;
+            padding: 0.6rem 0.8rem !important;
+            border-radius: 4px;
+            margin: 0.15rem 0 !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-nav .dropdown-item:hover {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+            color: white !important;
+            transform: translateX(6px);
+        }
+        
+        .navbar-nav .dropdown-item i {
+            margin-right: 0.6rem;
+            font-size: 0.9rem;
+            width: 16px;
+            text-align: center;
+        }
+        
+        /* USER SECTION: Special styling at bottom */
+        .navbar-nav > .nav-item:last-child {
+            margin-top: 1rem !important;
+            background: rgba(108, 117, 125, 0.15) !important;
+            border-left: 4px solid #6c757d !important;
+            border-radius: 8px;
+        }
+        
+        /* Hide dropdown arrows */
+        .navbar-nav .dropdown-toggle::after {
+            display: none !important;
+        }
+        
+        /* Close button */
+        .navbar-collapse::before {
+            content: '✕';
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 1.3rem;
+            color: white;
+            background: rgba(220, 53, 69, 0.8);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1051;
+            transition: all 0.2s ease;
+        }
+        
+        .navbar-collapse::before:hover {
+            background: #dc3545;
+            transform: scale(1.05);
+        }
+        
+        /* Backdrop */
+        .navbar-collapse.show::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+    }
+    
+    /* DESKTOP: Hide mobile-specific elements */
+    @media (min-width: 769px) {
+        .mobile-nav-section {
+            display: none !important;
+        }
+        
+        .market-section,
+        .analysis-section, 
+        .tools-section {
+            background: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
+    }
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-nav .dropdown-item i {
+            margin-right: 0.75rem;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* NEW: Special styling for user section */
+        .mobile-user-section {
+            margin-top: 2rem !important;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .mobile-user-section .nav-item {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.8) 0%, rgba(73, 80, 87, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .mobile-user-section .nav-link {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+        
+        .mobile-user-section .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .mobile-user-section .dropdown-menu {
+            background: rgba(255, 255, 255, 0.98) !important;
+        }
+        
+        /* Hide dropdown arrows completely */
+        .navbar-nav .dropdown-toggle::after {
+            display: none !important;
+        }
+        
+        /* NEW: Close button for mobile menu */
+        .navbar-collapse::before {
+            content: '✕';
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            color: white;
+            background: rgba(220, 53, 69, 0.9);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1051;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .navbar-collapse::before:hover {
+            background: #dc3545;
+            transform: scale(1.1);
+        }
+        
+        /* NEW: Better organization with visual separators */
+        .nav-item.market-section {
+            border-left: 4px solid #28a745;
+        }
+        
+        .nav-item.analysis-section {
+            border-left: 4px solid #007bff;
+        }
+        
+        .nav-item.tools-section {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .nav-item.user-section {
+            border-left: 4px solid #6c757d;
+        }
+    }
+
+    /* Fix overlay issues on analysis pages */
+    .analysis-page .navbar-overlay,
+    .market-overview-page .navbar-overlay,
+    .duplicate-nav-overlay {
+        display: none !important;
+    }
+
+    /* Fix pricing banner margin */
+    .pricing-card .badge {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    /* Fix "Mest populær" banner cropping */
+    .pricing-monthly .badge {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    /* Navigation - CLEAN: No dropdown arrows for better mobile UX */
+    .navbar-nav .dropdown-toggle::after {
+        display: none !important;
+    }
+    
+    .navbar-nav .dropdown-toggle::before {
+        display: none !important;
+    }
+    
+    /* No hint arrows on PC either for clean design */
+    @media (min-width: 769px) {
+        .navbar-nav .dropdown-toggle {
+            position: relative;
+        }
+        
+        .navbar-nav .dropdown-toggle::after {
+            display: none !important;
+        }
+        
+        .navbar-nav .dropdown-toggle[aria-expanded="true"]::after {
+            display: none !important;
+        }
+    }
+
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 576px) {
+        /* Container padding fixes for small screens */
+        .container {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        
+        /* Card and content spacing */
+        .card {
+            margin-bottom: 1rem;
+        }
+        
+        .card-body {
+            padding: 1rem 0.75rem;
+        }
+        
+        /* Analysis menu mobile fixes */
+        .analysis-menu .d-flex {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        
+        .analysis-menu .dropdown-menu {
+            position: static !important;
+            display: block !important;
+            float: none !important;
+            width: 100% !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.375rem !important;
+            box-shadow: none !important;
+            margin-top: 0.25rem !important;
+        }
+        
+        .analysis-menu .dropdown-item {
+            padding: 0.5rem 1rem !important;
+            color: #212529 !important;
+        }
+        
+        .analysis-menu .dropdown-item:hover {
+            background-color: #e9ecef !important;
+        }
+    }
+        
+        /* Button improvements for touch */
+        .btn {
+            min-height: 44px;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-lg {
+            min-height: 48px;
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        /* Form improvements */
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            font-size: 1rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        /* Table responsiveness */
+        .table-responsive {
+            font-size: 0.85rem;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.5rem 0.25rem;
+            vertical-align: middle;
+        }
+        
+        /* Hero section mobile optimization */
+        .hero-section {
+            padding: 2rem 0 !important;
+        }
+        
+        .hero-section h1 {
+            font-size: 1.75rem !important;
+            line-height: 1.3;
+        }
+        
+        .hero-section .lead {
+            font-size: 1rem !important;
+        }
+        
+        /* Demo page mobile fixes */
+        .demo-features .col-md-4 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .pricing-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Analysis page mobile fixes */
+        .analysis-grid .col-lg-6,
+        .analysis-grid .col-md-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Chart container mobile optimization */
+        .chart-container {
+            height: 300px !important;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modal mobile optimization */
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .modal-content {
+            border-radius: 0.5rem;
+        }
+        
+        /* Breadcrumb mobile fix */
+        .breadcrumb {
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        /* Footer mobile optimization */
+        .footer {
+            text-align: center;
+        }
+        
+        .footer .col-md-3,
+        .footer .col-md-4 {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    /* Tablet optimization */
+    @media (min-width: 577px) and (max-width: 991px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Navigation improvements for tablet */
+        .navbar-nav .nav-link {
+            padding: 0.5rem 0.75rem !important;
+        }
+        
+        /* Card grid for tablets */
+        .row .col-md-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Hero section tablet optimization */
+        .hero-section h1 {
+            font-size: 2.25rem;
+        }
+        
+        .hero-section .lead {
+            font-size: 1.1rem;
+        }
+    }
+
+    /* Fix viewport zoom issues on iOS */
+    @media screen and (max-width: 768px) {
+        select,
+        textarea,
+        input[type="text"],
+        input[type="password"],
+        input[type="datetime"],
+        input[type="datetime-local"],
+        input[type="date"],
+        input[type="month"],
+        input[type="time"],
+        input[type="week"],
+        input[type="number"],
+        input[type="email"],
+        input[type="url"],
+        input[type="search"],
+        input[type="tel"],
+        input[type="color"] {
+            font-size: 16px !important;
+        }
+    }
+
+    /* Loading states for better UX */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* CRITICAL: News & content image size control - TARGETED APPROACH */
+    .news-content img,
+    .article-content img,
+    .prose img,
+    article img,
+    .content img,
+    .news-image,
+    .news-card img,
+    .news-image-container img,
+    .card-body img:not(.logo):not(.icon):not(.avatar) {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: 300px !important;
+        object-fit: cover !important;
+        border-radius: 8px !important;
+        margin: 0.5rem 0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* EMERGENCY: Override any problematic inline styles - SUPER TARGETED */
+    .news-content img[style*="height"],
+    .news-content img[style*="width"],
+    .article-content img[style*="height"],
+    .article-content img[style*="width"],
+    .content img[style*="height"],
+    .content img[style*="width"],
+    img[class*="news"][style],
+    img[class*="article"][style] {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 300px !important;
+        height: auto !important;
+    }
+    
+    /* Preserve small icons and logos */
+    .navbar img,
+    .nav img,
+    .btn img,
+    .icon,
+    .logo,
+    .avatar,
+    img[width="16"],
+    img[width="20"],
+    img[width="24"],
+    img[width="32"],
+    img[height="16"],
+    img[height="20"],
+    img[height="24"],
+    img[height="32"] {
+        max-width: none !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        object-fit: initial !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    /* Mobile news image restrictions - ULTRA STRICT */
+    @media (max-width: 768px) {
+        .news-content img,
+        .article-content img,
+        .prose img,
+        article img,
+        .content img,
+        .news-image,
+        .news-card img,
+        .news-image-container img,
+        .card-body img:not(.logo):not(.icon):not(.avatar),
+        .news-content img[style*="height"],
+        .news-content img[style*="width"],
+        .article-content img[style*="height"],
+        .article-content img[style*="width"],
+        .content img[style*="height"],
+        .content img[style*="width"],
+        img[class*="news"][style],
+        img[class*="article"][style] {
+            max-height: 200px !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+    }
+    
+    /* Very small mobile devices - EMERGENCY OVERRIDE */
+    @media (max-width: 480px) {
+        .news-content img,
+        .article-content img,
+        .prose img,
+        article img,
+        .content img,
+        .news-image,
+        .news-card img,
+        .news-image-container img,
+        .card-body img:not(.logo):not(.icon):not(.avatar),
+        .news-content img[style*="height"],
+        .news-content img[style*="width"],
+        .article-content img[style*="height"],
+        .article-content img[style*="width"],
+        .content img[style*="height"],
+        .content img[style*="width"],
+        img[class*="news"][style],
+        img[class*="article"][style] {
+            max-height: 160px !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <!-- Include mobile navigation styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-nav.css') }}">
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <i class="bi bi-graph-up me-2"></i> Aksjeradar
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <!-- Mobile Navigation Sections -->
+                    <div class="mobile-nav-section d-lg-none">📈 Markeder</div>
+                    
+                    <!-- Aksjer -->
+                    <li class="nav-item dropdown market-section">
+                        <a class="nav-link dropdown-toggle" href="#" id="stocksDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span><i class="bi bi-graph-up me-2"></i>Aksjer</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}">
+                                <i class="bi bi-house me-2"></i>Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}">
+                                <i class="bi bi-flag me-2"></i>Oslo Børs
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}">
+                                <i class="bi bi-globe me-2"></i>Globale aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}">
+                                <i class="bi bi-search me-2"></i>Søk aksjer
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Crypto -->
+                    <li class="nav-item market-section">
+                        <a class="nav-link" href="{{ url_for('stocks.list_crypto') }}">
+                            <i class="bi bi-currency-bitcoin me-2"></i>Crypto
+                        </a>
+                    </li>
+
+                    <!-- Valuta -->
+                    <li class="nav-item market-section">
+                        <a class="nav-link" href="{{ url_for('stocks.list_currency') }}">
+                            <i class="bi bi-currency-exchange me-2"></i>Valuta
+                        </a>
+                    </li>
+
+                    <!-- Mobile Analysis Section Header -->
+                    <div class="mobile-nav-section d-lg-none">🔍 Analyse & Verktøy</div>
+
+                    <!-- Analyse -->
+                    <li class="nav-item dropdown analysis-section">
+                        <a class="nav-link dropdown-toggle" href="#" id="analysisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span><i class="bi bi-bar-chart me-2"></i>Analyse</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
+                                <i class="bi bi-house me-2"></i>Alle analyser
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-graph-up me-2"></i>Teknisk analyse  
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener_view') }}">
+                                <i class="bi bi-funnel me-2"></i>Screener
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
+                                <i class="bi bi-lightbulb me-2"></i>Anbefalinger
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/investment-analyzer">
+                                <i class="bi bi-brain me-2"></i>AI Investeringsanalyse
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Portefølje (for innloggede) -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown analysis-section">
+                        <a class="nav-link dropdown-toggle" href="#" id="portfolioDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span><i class="bi bi-briefcase me-2"></i>Portefølje</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
+                                <i class="bi bi-briefcase me-2"></i>Min portefølje
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
+                                <i class="bi bi-star me-2"></i>Watchlist
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}">
+                                <i class="bi bi-graph-down me-2"></i>Avansert analyse
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <!-- Mobile Tools Section Header -->
+                    <div class="mobile-nav-section d-lg-none">🛠️ Nyheter & Verktøy</div>
+
+                    <!-- Nyheter -->
+                    <li class="nav-item tools-section">
+                        <a class="nav-link" href="/news">
+                            <i class="bi bi-newspaper me-2"></i>Nyheter
+                        </a>
+                    </li>
+
+                    <!-- Financial Dashboard -->
+                    <li class="nav-item tools-section">
+                        <a class="nav-link" href="/financial-dashboard">
+                            <i class="bi bi-graph-up-arrow me-2"></i>Dashboard
+                        </a>
+                    </li>
+
+                    <!-- Demo (for ikke-innloggede) -->
+                    {% if not current_user.is_authenticated %}
+                    <li class="nav-item tools-section">
+                        <a class="nav-link" href="{{ url_for('main.demo') }}">
+                            <i class="bi bi-play-circle me-2"></i>Demo
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Høyre side navigasjon -->
+                <ul class="navbar-nav ms-auto mobile-user-section">
+                    <!-- Mobile User Section Header -->
+                    <div class="mobile-nav-section d-lg-none">👤 Bruker</div>
+                    
+                    {% if current_user.is_authenticated %}
+                        <!-- Bruker dropdown -->
+                        <li class="nav-item dropdown user-section">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span><i class="bi bi-person-circle me-2"></i>{{ current_user.username if current_user.username else current_user.email.split('@')[0] }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                                    <i class="bi bi-person me-2"></i>Profil
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('notifications.settings') }}">
+                                    <i class="bi bi-bell me-2"></i>Varsler
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}">
+                                    <i class="bi bi-star me-2"></i>Oppgrader
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logg ut
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Login/Register for ikke-autentiserte -->
+                        <li class="nav-item user-section">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Logg inn
+                            </a>
+                        </li>
+                        <li class="nav-item user-section">
+                            <a class="nav-link btn btn-primary text-white ms-2" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus me-2"></i>Registrer deg
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+        <main class="main-content">
+        <div class="container-fluid px-2 px-md-3">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Språk / Language</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="footerLanguageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i>
+                            <span id="footer-current-language">NO</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('no')">
+                                <i class="bi bi-flag"></i> Norsk
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('en')">
+                                <i class="bi bi-flag-fill"></i> English
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h6>Læring & Guider</h6>
+                    <div class="mb-2">
+                        <a href="/investment-guides" class="text-light text-decoration-none">
+                            <i class="bi bi-book-half me-1"></i>Investeringsguider
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/resources" class="text-light text-decoration-none">
+                            <i class="bi bi-folder me-1"></i>Ressurser
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h6>Om Aksjeradar</h6>
+                    <div class="mb-2">
+                        <a href="{{ url_for('main.about') }}" class="text-light text-decoration-none">
+                            <i class="bi bi-info-circle me-1"></i>Om oss
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="{{ url_for('main.help') }}" class="text-light text-decoration-none">
+                            <i class="bi bi-question-circle me-1"></i>Hjelp & FAQ
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/pricing" class="text-light text-decoration-none">
+                            <i class="bi bi-tags me-1"></i>Se priser & abonnementer
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <p>&copy; 2025 Aksjeradar. Alle rettigheter reservert.</p>
+                    <!-- Cache FORCE refresh: August 4, 2025 -->
+                    <div class="mt-3">
+                        <a href="{{ url_for('main.privacy') }}" class="text-white me-3">Personvern</a>
+                        <a href="{{ url_for('main.terms') }}" class="text-white me-3">Vilkår</a>
+                        <a href="{{ url_for('main.contact') }}" class="text-white">Kontakt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Internationalization -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}?v=20250804_023121"></script>
+    <script src="{{ url_for('static', filename='js/language-switcher.js') }}?v=20250804_023121"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20250804_023121"></script>
+    <script src="{{ url_for('static', filename='js/dropdown-navigation.js') }}?v=20250804_023121"></script>
+    
+    <script>
+    // Mobile menu close functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbarCollapse = document.getElementById('navbarNav');
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        
+        // Close menu when clicking the X button
+        navbarCollapse.addEventListener('click', function(e) {
+            if (e.target === navbarCollapse && navbarCollapse.classList.contains('show')) {
+                navbarToggler.click();
+            }
+        });
+        
+        // Close menu when clicking nav links (but not dropdowns)
+        const navLinks = document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (navbarCollapse.classList.contains('show')) {
+                    navbarToggler.click();
+                }
+            });
+        });
+        
+        // Handle mobile menu sections (only show on mobile)
+        function handleMobileSections() {
+            const mobileSections = document.querySelectorAll('.mobile-nav-section');
+            if (window.innerWidth > 768) {
+                mobileSections.forEach(section => section.style.display = 'none');
+            } else {
+                mobileSections.forEach(section => section.style.display = 'block');
+            }
+        }
+        
+        // Initial check and resize listener
+        handleMobileSections();
+        window.addEventListener('resize', handleMobileSections);
+    });
+    
+    // Global switchLanguage function for footer dropdown
+    function switchLanguage(language) {
+        if (window.languageSwitcher) {
+            window.languageSwitcher.setLanguage(language);
+        } else if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+            window.i18n.setLanguage(language);
+            localStorage.setItem('aksjeradar_language', language);
+            document.getElementById('footer-current-language').textContent = language.toUpperCase();
+        }
+    }
+    
+    // Initialize language switcher when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof LanguageSwitcher !== 'undefined') {
+            window.languageSwitcher = new LanguageSwitcher();
+        }
+        
+        // Enhanced mobile navigation controls
+        const navbarCollapse = document.querySelector('.navbar-collapse');
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        
+        if (navbarCollapse && navbarToggler) {
+            // Close menu when clicking close button area (top-right corner)
+            navbarCollapse.addEventListener('click', function(e) {
+                const rect = navbarCollapse.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                // Close button area (top-right)
+                if (clickX > rect.width - 60 && clickY < 60) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navbarToggler.click();
+                }
+                
+                // Close when clicking backdrop
+                if (e.target === navbarCollapse) {
+                    navbarToggler.click();
+                }
+            });
+            
+            // Close menu when clicking nav links (but not dropdowns)
+            const navLinks = navbarCollapse.querySelectorAll('.nav-link:not(.dropdown-toggle)');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // Close mobile menu after brief delay for better UX
+                    setTimeout(() => {
+                        if (window.innerWidth <= 768 && navbarCollapse.classList.contains('show')) {
+                            navbarToggler.click();
+                        }
+                    }, 250);
+                });
+            });
+            
+            // Enhanced dropdown handling for mobile
+            const dropdownToggles = navbarCollapse.querySelectorAll('.dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const dropdownMenu = this.nextElementSibling;
+                        const isCurrentlyOpen = dropdownMenu.style.display === 'block';
+                        
+                        // Close all other dropdowns first
+                        navbarCollapse.querySelectorAll('.dropdown-menu').forEach(menu => {
+                            if (menu !== dropdownMenu) {
+                                menu.style.display = 'none';
+                            }
+                        });
+                        
+                        // Toggle current dropdown
+                        dropdownMenu.style.display = isCurrentlyOpen ? 'none' : 'block';
+                    }
+                });
+            });
+        }
+            
+            // Close menu when clicking any nav link on mobile
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                            navbarToggler.click();
+                        }, 150);
+                    }
+                });
+            });
+            
+            // Handle dropdown toggles on mobile
+            const dropdownToggles = document.querySelectorAll('.navbar-nav .dropdown-toggle');
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const dropdown = this.nextElementSibling;
+                        if (dropdown && dropdown.classList.contains('dropdown-menu')) {
+                            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                        }
+                    }
+                });
+            });
+        }
+    });
+    </script>
+    
+    <!-- Cache Busting Utility -->
+    <script>
+    // Aksjeradar Cache Busting - Quick Access
+    window.refreshCache = function() {
+        // Clear browser storage
+        if (typeof Storage !== "undefined") {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+        
+        // Add cache-busting parameters and reload
+        const url = new URL(window.location);
+        url.searchParams.set('v', Date.now());
+        url.searchParams.set('cache_refresh', 'true');
+        window.location.href = url.toString();
+    };
+    
+    // Keyboard shortcut: Ctrl+Shift+F5 for super cache refresh
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'F5') {
+            e.preventDefault();
+            window.refreshCache();
+        }
+    });
+    
+    // Auto-detect cache issues and offer refresh
+    window.addEventListener('error', function(e) {
+        if (e.filename && (e.filename.includes('.css') || e.filename.includes('.js'))) {
+            console.warn('🔄 Static file load failed - cache issue detected');
+            const shouldRefresh = confirm('Det ser ut som det kan være cache-problemer. Vil du refreshe cache?');
+            if (shouldRefresh) {
+                window.refreshCache();
+            }
+        }
+    });
+    </script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- TradingView Charts -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookieConsentBanner" class="cookie-consent-banner" style="display: none;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Vi bruker cookies for å forbedre din opplevelse. Ved å fortsette å bruke siden samtykker du til vår bruk av cookies.
+                        <a href="{{ url_for('main.privacy') }}" class="text-light">Les mer om personvern</a>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-light me-2" onclick="manageCookies()">
+                        Administrer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light" onclick="acceptCookies()">
+                        Godta alle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .cookie-consent-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 123, 255, 0.95);
+        color: white;
+        padding: 15px 0;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .cookie-consent-banner p {
+        font-size: 0.9rem;
+    }
+    
+    .cookie-consent-banner a {
+        text-decoration: underline;
+    }
+    </style>
+
+    <script>
+    // Cookie Consent Management
+    function checkCookieConsent() {
+        const consent = localStorage.getItem('cookieConsent');
+        if (!consent) {
+            document.getElementById('cookieConsentBanner').style.display = 'block';
+        }
+    }
+
+    function acceptCookies() {
+        localStorage.setItem('cookieConsent', 'accepted');
+        localStorage.setItem('cookieConsentDate', new Date().toISOString());
+        document.getElementById('cookieConsentBanner').style.display = 'none';
+        
+        // Initialize analytics or other cookies here
+        console.log('✅ Cookie consent accepted');
+    }
+
+    function manageCookies() {
+        // For now, redirect to GDPR page - can be enhanced with modal
+        window.location.href = "{{ url_for('main.privacy') }}";
+    }
+
+    // Check consent on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkCookieConsent();
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% set page_title = "Mine Favoritter" %}
+
+{% block title %}{{ page_title }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-title">
+                    <i class="fas fa-star text-warning me-2"></i>
+                    Mine Favoritter
+                </h1>
+                <div class="header-actions">
+                    <span class="badge bg-primary">{{ favorites_count }} favoritter</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if favorites and favorites|length > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Dine Favoritts-aksjer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Pris</th>
+                                    <th>Endring</th>
+                                    <th>Endring %</th>
+                                    <th>Marked</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for favorite in favorites %}
+                                <tr data-symbol="{{ favorite.symbol }}">
+                                    <td>
+                                        <strong>{{ favorite.symbol }}</strong>
+                                    </td>
+                                    <td>{{ favorite.get('name', 'N/A') }}</td>
+                                    <td class="price-cell">
+                                        <span class="current-price">{{ favorite.get('price', 'N/A') }}</span>
+                                        {% if favorite.get('currency') %}
+                                        <small class="text-muted">{{ favorite.currency }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="change-cell">
+                                        {% set change = favorite.get('change', 0) %}
+                                        <span class="change-value {% if change > 0 %}text-success{% elif change < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if change > 0 %}+{% endif %}{{ change }}
+                                        </span>
+                                    </td>
+                                    <td class="change-percent-cell">
+                                        {% set change_percent = favorite.get('change_percent', 0) %}
+                                        <span class="change-percent {% if change_percent > 0 %}text-success{% elif change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if change_percent > 0 %}+{% endif %}{{ "%.2f"|format(change_percent) }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if favorite.symbol.endswith('.OL') %}
+                                        <span class="badge bg-info">Oslo Børs</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Global</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=favorite.symbol) }}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Se detaljer">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                            <a href="{{ url_for('analysis.stock_analysis', symbol=favorite.symbol) }}" 
+                                               class="btn btn-outline-info btn-sm" 
+                                               title="Analyser">
+                                                <i class="fas fa-analytics"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger btn-sm remove-favorite" 
+                                                    data-symbol="{{ favorite.symbol }}"
+                                                    title="Fjern fra favoritter">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                    <h3 class="text-muted">Ingen favoritter enda</h3>
+                    <p class="text-muted mb-4">Du har ikke lagt til noen aksjer i favorittene dine enda.</p>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-primary btn-lg me-2">
+                                <i class="fas fa-list me-2"></i>Utforsk Aksjer
+                            </a>
+                            <a href="{{ url_for('main.search') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>Søk Aksjer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.page-header {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.price-cell, .change-cell, .change-percent-cell {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+}
+
+.btn-group .btn {
+    border-radius: 0.25rem;
+    margin-right: 2px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .btn-group .btn i {
+        font-size: 0.75rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle remove favorite buttons
+    document.querySelectorAll('.remove-favorite').forEach(button => {
+        button.addEventListener('click', function() {
+            const symbol = this.dataset.symbol;
+            
+            if (confirm(`Er du sikker på at du vil fjerne ${symbol} fra favorittene?`)) {
+                window.csrfHelper.fetch('/stocks/api/favorites/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ symbol: symbol })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the row from the table
+                        document.querySelector(`tr[data-symbol="${symbol}"]`).remove();
+                        
+                        // Update favorites count
+                        const countBadge = document.querySelector('.badge.bg-primary');
+                        if (countBadge) {
+                            const currentCount = parseInt(countBadge.textContent);
+                            countBadge.textContent = `${currentCount - 1} favoritter`;
+                        }
+                        
+                        // Show empty state if no favorites left
+                        if (document.querySelectorAll('tbody tr').length === 0) {
+                            location.reload();
+                        }
+                        
+                        // Show success message
+                        showNotification(`${symbol} er fjernet fra favorittene`, 'success');
+                    } else {
+                        showNotification('Kunne ikke fjerne fra favoritter', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('En feil oppstod', 'error');
+                });
+            }
+        });
+    });
+});
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

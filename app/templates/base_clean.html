@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'no' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
+    <meta name="cache-bust" content="20250806_clean">
+    
+    <!-- Simple navbar styling -->
+    <style>
+    .navbar {
+        background-color: #1a1a1a !important;
+        border-bottom: 1px solid #333;
+    }
+    
+    .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #ffffff !important;
+    }
+    
+    .navbar-brand:hover {
+        color: #007bff !important;
+    }
+    
+    .navbar-nav .nav-link {
+        color: #ffffff !important;
+        padding: 0.75rem 1rem !important;
+        font-weight: 500;
+    }
+    
+    .navbar-nav .nav-link:hover {
+        color: #007bff !important;
+    }
+    
+    .navbar-nav .nav-link i {
+        margin-right: 0.5rem;
+    }
+    
+    .dropdown-menu {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .dropdown-item {
+        color: #212529;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #007bff;
+    }
+    
+    .dropdown-item i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+    </style>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    {% block head %}{% endblock %}
+    
+    <title>{% block title %}Aksjeradar - Følg og analyser norske aksjer{% endblock %}</title>
+</head>
+<body>
+    <!-- Simple Bootstrap Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-graph-up"></i> Aksjeradar
+            </a>
+            
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navigation -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Portfolio -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.index') }}">
+                            <i class="bi bi-briefcase"></i> Portfolio
+                        </a>
+                    </li>
+                    
+                    <!-- Analysis Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-graph-up"></i> Analyse
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
+                                <i class="bi bi-graph-up"></i> Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}">
+                                <i class="bi bi-cpu"></i> AI Prediksjoner
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
+                                <i class="bi bi-currency-exchange"></i> Valuta
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-bar-chart-line"></i> Teknisk analyse
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Market Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="/stocks/" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-building"></i> Marked
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/stocks/">
+                                <i class="bi bi-graph-up"></i> Alle aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="/stocks/list/oslo">
+                                <i class="bi bi-geo-alt"></i> Oslo Børs
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}">
+                                <i class="bi bi-pie-chart"></i> Markedsoversikt
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- News -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('news_bp.index') }}">
+                            <i class="bi bi-newspaper"></i> Nyheter
+                        </a>
+                    </li>
+                    
+                    <!-- Tools Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-tools"></i> Verktøy
+                        </a>
+                        <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('price_alerts.index') }}">
+                                    <i class="bi bi-bell"></i> Prisalarmer
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                                    <i class="bi bi-person-check"></i> Buffett Analyse
+                                </a></li>
+                                <!-- Pro verktøy removed -->
+                        </ul>
+                    </li>
+                    
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> Konto
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% if current_user.is_authenticated %}
+                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                                    <i class="bi bi-person"></i> Profil
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}#mine-favoritter">
+                                    <i class="bi bi-star-fill"></i> Mine favoritter
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.settings') }}">
+                                    <i class="bi bi-gear"></i> Innstillinger
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.logout') }}">
+                                    <i class="bi bi-box-arrow-right"></i> Logg ut
+                                </a></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="{{ url_for('main.login') }}">
+                                    <i class="bi bi-box-arrow-in-right"></i> Logg inn
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.register') }}">
+                                    <i class="bi bi-person-plus"></i> Registrer
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.demo') }}">
+                                    <i class="bi bi-play-circle"></i> Demo
+                                </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Aksjeradar</h5>
+                    <p>Din partner for norske aksjeinvesteringer</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2024 Aksjeradar. Alle rettigheter forbeholdt.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
