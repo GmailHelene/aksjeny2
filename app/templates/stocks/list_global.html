@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h2>Globale aksjer</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>Navn</th>
+        <th>Kurs</th>
+        <th>Endring</th>
+        <th>Marked</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in stocks %}
+      <tr>
+        <td>
+          {% if stock.ticker %}{{ stock.ticker }}
+          {% elif stock.symbol %}{{ stock.symbol }}
+          {% else %}Ikke tilgjengelig{% endif %}
+        </td>
+        <td>
+          {% if stock.name %}{{ stock.name }}
+          {% else %}Ikke tilgjengelig{% endif %}
+        </td>
+        <td>
+          {% if stock.price is not none and stock.price != '-' and stock.price|float > 0 %}
+            {{ stock.price }}
+          {% else %}
+            Ikke tilgjengelig
+          {% endif %}
+        </td>
+        <td>
+          {% if stock.change is not none and stock.change != '-' %}{{ stock.change }}
+          {% else %}Ikke tilgjengelig{% endif %}
+        </td>
+        <td>
+          {% if stock.market %}{{ stock.market }}
+          {% else %}Ikke tilgjengelig{% endif %}
+        </td>
+        <td>
+          {% if stock.ticker or stock.symbol %}
+            <a href="{{ url_for('analysis.ai', ticker=stock.ticker or stock.symbol) }}" class="btn btn-info btn-sm">AI Analyse</a>
+            <a href="{{ url_for('analysis.technical_analysis', symbol=stock.ticker or stock.symbol) }}" class="btn btn-outline-secondary btn-sm">Teknisk Analyse</a>
+          {% else %}
+            <button class="btn btn-secondary btn-sm" disabled>AI Analyse</button>
+            <button class="btn btn-secondary btn-sm" disabled>Teknisk Analyse</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5">Ingen globale aksjer funnet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

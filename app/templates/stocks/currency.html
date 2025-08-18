@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-currency-exchange me-2"></i>
+                    {{ title }}
+                </h1>
+                <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Tilbake til oversikt
+                </a>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            {% if stocks %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0 text-dark fw-bold">
+                                <i class="bi bi-currency-dollar me-2"></i>
+                                Valutakurser ({{ base_currency }})
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Valuta</th>
+                                            <th>Kurs</th>
+                                            <th>Endring</th>
+                                            <th>Endring %</th>
+                                            <th>Volum</th>
+                                            <th>Høy/Lav</th>
+                                            <th>Trend</th>
+                                            <th>Handling</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-mobile-stack">
+                                        {% for symbol, data in stocks.items() %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ data.get('name', symbol) }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ symbol }}</small>
+                                            </td>
+                                            <td>
+                                                                                                <span class="fw-bold">
+                                                                                                    {% set price = data.get('price', 0) %}
+                                                                                                    {% if price is not none and price != '-' and price|float > 0 %}
+                                                                                                        {{ price|round(4) }}
+                                                                                                    {% else %}
+                                                                                                        Ikke tilgjengelig
+                                                                                                    {% endif %}
+                                                                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="{% if data.get('change', 0) > 0 %}text-success{% elif data.get('change', 0) < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                    {% set change_val = (data.get('change', 0) if data.get('change') is not none else 0) %}
+                                                    {% if change_val > 0 %}+{{ change_val|round(4) }}{% else %}{{ change_val|round(4) }}{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="{% if data.get('change_percent', 0)|float > 0 %}text-success{% elif data.get('change_percent', 0)|float < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                    {% set change_pct = (data.get('change_percent', 0)|float if data.get('change_percent') is not none else 0) %}
+                                                    {% if change_pct > 0 %}+{{ change_pct|round(2) }}%{% else %}{{ change_pct|round(2) }}%{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">{{ data.get('volume', 'N/A') }}</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {% if data.get('high') %}{{ data.get('high')|round(4) }}{% else %}N/A{% endif %} / 
+                                                    {% if data.get('low') %}{{ data.get('low')|round(4) }}{% else %}N/A{% endif %}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if data.get('change_percent', 0) > 0.1 %}
+                                                <span class="badge bg-success">STYRKET</span>
+                                                {% elif data.get('change_percent', 0) < -0.1 %}
+                                                <span class="badge bg-danger">SVEKKET</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">STABIL</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ url_for('stocks.details', symbol=symbol) }}" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-info-circle"></i> Detaljer
+                                                    </a>
+                                                    <a href="{{ url_for('analysis.technical', symbol=symbol) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-graph-up"></i> Analyse
+                                                    </a>
+                                                        <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ symbol }}">
+                                                            <i class="bi bi-plus-circle"></i> Kjøp
+                                                        </button>
+                                                        <button class="btn btn-sm btn-star-favorite" title="Legg til favoritt" data-ticker="{{ symbol }}">
+                                                            <i class="bi bi-star"></i>
+                                                        </button>
+                                                    <!-- Patch: ensure color contrast and favorite button logic -->
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-currency-exchange display-1 text-muted"></i>
+                <h4 class="mt-3 text-muted">Ingen valutakurser tilgjengelig</h4>
+                <p class="text-muted">Valutaer er ikke tilgjengelige for øyeblikket.</p>
+                <!-- DEBUG INFO -->
+                <div class="small text-muted mt-2">
+                    <p>Debug: stocks = {{ stocks|length if stocks else 'None/Empty' }}</p>
+                    <p>Category: {{ category }}</p>
+                    <p>Base Currency: {{ base_currency }}</p>
+                </div>
+                <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Gå tilbake
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Currency Detail Modals -->
+{% if stocks %}
+    {% for symbol, data in stocks.items() %}
+    <div class="modal fade" id="currencyModal{{ loop.index }}" tabindex="-1" aria-labelledby="currencyModalLabel{{ loop.index }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="currencyModalLabel{{ loop.index }}">
+                        <i class="bi bi-currency-exchange me-2"></i>
+                        {{ symbol }} Detaljer
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Grunnleggende informasjon</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Valutapar:</strong></td>
+                                    <td>{{ symbol }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Aktuell kurs:</strong></td>
+                                    <td>{{ (data.get('price', data.get('last_price', 0))|float)|round(4) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Endring:</strong></td>
+                                    <td class="{{ 'text-success' if (data.get('change', 0)|float) >= 0 else 'text-danger' }}">
+                                        {% set change_val = (data.get('change', 0)|float) %}
+                                        {% if change_val >= 0 %}+{{ change_val|round(4) }}{% else %}{{ change_val|round(4) }}{% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Endring %:</strong></td>
+                                    <td class="{{ 'text-success' if (data.get('change_percent', 0)|float) >= 0 else 'text-danger' }}">
+                                        {% set change_pct = (data.get('change_percent', 0)|float if data.get('change_percent') is not none else 0) %}
+                                        {% if change_pct >= 0 %}+{{ change_pct|round(2) }}%{% else %}{{ change_pct|round(2) }}%{% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Handelsinformasjon</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Volum:</strong></td>
+                                    <td>{{ (data.get('volume', 0)|float)|round(0)|int }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Høyeste:</strong></td>
+                                    <td>{{ (data.get('high', 0)|float)|round(4) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Laveste:</strong></td>
+                                    <td>{{ (data.get('low', 0)|float)|round(4) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trend:</strong></td>
+                                    <td>
+                                        {% if data.get('change_percent', 0)|float > 0.1 %}
+                                        <span class="badge bg-success">STYRKET</span>
+                                        {% elif data.get('change_percent', 0)|float < -0.1 %}
+                                        <span class="badge bg-danger">SVEKKET</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">STABIL</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Lukk</button>
+                    <a href="{{ url_for('portfolio.watchlist') }}?add={{ symbol }}" class="btn btn-primary">
+                        <i class="bi bi-star me-1"></i>Legg til favoritter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+
+<!-- Unified Favorites System -->
+<script src="{{ url_for('static', filename='js/favorites-unified.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // External buy button functionality - redirect to external broker
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.dataset.ticker;
+            if (!ticker) return;
+            
+            // Update button to show loading state
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
+            this.disabled = true;
+            
+            // Construct external URL - for currency pairs, use forex broker
+            let externalUrl;
+            if (ticker.includes('NOK')) {
+                // Norwegian currency pair - use Norwegian forex broker
+                externalUrl = `https://www.google.com/search?q=${ticker}+forex+handel+Norge`;
+            } else {
+                // International currency pair - use general forex search
+                externalUrl = `https://www.google.com/search?q=${ticker}+forex+trading+broker`;
+            }
+            
+            // Open external URL in new tab
+            try {
+                window.open(externalUrl, '_blank', 'noopener,noreferrer');
+                
+                // Reset button after short delay
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }, 2000);
+                
+                if (window.favoritesManager) {
+                    window.favoritesManager.showToast(`Åpner handelsside for ${ticker}`, 'success');
+                }
+            } catch (error) {
+                console.error('Error opening external URL:', error);
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+                if (window.favoritesManager) {
+                    window.favoritesManager.showToast('Kunne ikke åpne handelsside', 'error');
+                }
+            }
+        });
+    });
+});
+</script>
+
+<style>
+/* Mobile responsive styles for currency table */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.875rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.15rem 0.1rem;
+        font-size: 0.95em;
+        white-space: nowrap;
+        white-space: nowrap;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        font-size: 0.75rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.375rem 0.125rem;
+    }
+    
+    .h3 {
+        font-size: 1.25rem;
+    }
+    
+    .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}

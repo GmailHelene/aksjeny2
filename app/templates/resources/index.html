@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Ressurser - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-folder me-3 text-primary"></i>Ressurser
+            </h1>
+            <p class="lead text-muted">
+                Utforsk vårt omfattende bibliotek av verktøy, guider og ressurser for å forbedre dine investeringsferdigheter og ta bedre investeringsbeslutninger.
+            </p>
+        </div>
+    </div>
+
+    <!-- Resource Categories Grid -->
+    <div class="row g-4">
+        {% for category in categories %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm hover-card">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <i class="{{ category.icon }} display-4 text-primary"></i>
+                    </div>
+                    <h5 class="card-title fw-bold mb-3">{{ category.title }}</h5>
+                    <p class="card-text text-muted mb-4">{{ category.description }}</p>
+                    <div class="mb-4">
+                        <span class="badge bg-primary-soft px-3 py-2">{{ category.count }}</span>
+                    </div>
+                    <a href="{{ category.link }}" class="btn btn-primary btn-sm w-100">
+                        Utforsk <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Featured Resources Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <hr class="my-5">
+            <h2 class="text-center mb-5">
+                <i class="bi bi-star-fill text-warning me-2"></i>Utvalgte Ressurser
+            </h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-graph-up-arrow text-success fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">TradingView Integrasjon</h6>
+                            <small class="text-muted">Avanserte charts</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Få tilgang til profesjonelle charts og teknisk analyse direkte i Aksjeradar.</p>
+                    <a href="/analysis/tradingview" class="btn btn-outline-success btn-sm">Se Charts</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-mortarboard text-info fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Investeringskurs</h6>
+                            <small class="text-muted">Gratis utdanning</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Lær grunnleggende og avanserte investeringsstrategier gjennom våre strukturerte kurs.</p>
+                    <a href="/investment-guides" class="btn btn-outline-info btn-sm">Start Læring</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-database text-warning fs-3 me-3"></i>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Santtidsdata</h6>
+                            <small class="text-muted">Live markedsdata</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small">Tilgang til santtids aksjekurser, valutakurser og kryptovaluta-data.</p>
+                    <a href="/financial-dashboard" class="btn btn-outline-warning btn-sm">Se Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-4">
+                        <i class="bi bi-lightning-charge text-primary me-2"></i>Hurtiglenker
+                    </h5>
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <a href="/stocks" class="text-decoration-none">
+                                <i class="bi bi-graph-up text-primary fs-4 d-block mb-2"></i>
+                                <small class="fw-bold">Oslo Børs</small>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <a href="/stocks/crypto" class="text-decoration-none">
+                                <i class="bi bi-currency-bitcoin text-warning fs-4 d-block mb-2"></i>
+                                <small class="fw-bold">Kryptovaluta</small>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <a href="/analysis" class="text-decoration-none">
+                                <i class="bi bi-bar-chart text-info fs-4 d-block mb-2"></i>
+                                <small class="fw-bold">AI Analyse</small>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <a href="/news" class="text-decoration-none">
+                                <i class="bi bi-newspaper text-success fs-4 d-block mb-2"></i>
+                                <small class="fw-bold">Finansnyheter</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    color: #0d6efd !important;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}
+{% if category == 'oslo' %}
+Oslo Børs - Aksjer
+{% else %}
+    {% if category == 'global' %}
+    Globale aksjer - Aksjer
+    {% else %}
+    {{ title if title else category }} - Aksjer
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block description %}
+{% if category == 'oslo' %}
+Komplett oversikt over alle selskaper på Oslo Børs. Sanntids aksjekurser, teknisk analyse og fundamental analyse for norske aksjer. EQNR, DNB, TEL og mer.
+{% else %}
+    {% if category == 'global' %}
+    Globale aksjer og internasjonale markeder. Følg AAPL, MSFT, TSLA og andre amerikanske og europeiske aksjer med AI-drevne analyser.
+    {% else %}
+    {{ title if title else category }} - Aksjeoversikt med teknisk og fundamental analyse
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block keywords %}
+{% if category == 'oslo' %}
+Oslo Børs, norske aksjer, EQNR, DNB, TEL, MOWI, NEL, aksjekurser Norge, børs Oslo
+{% else %}
+    {% if category == 'global' %}
+    globale aksjer, AAPL, MSFT, TSLA, NVDA, amerikanske aksjer, internasjonale markeder
+    {% else %}
+    {{ category }}, aksjer, aksjekurser, teknisk analyse
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                    <i class="bi bi-house-door me-1"></i>Hjem
+                </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <i class="bi bi-graph-up me-1"></i>{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}
+            </li>
+        </ol>
+    </nav>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}</h1>
+                
+                <!-- Tilbake til oversikt knapp -->
+                <a href="{{ url_for('stocks.list_stocks') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-1"></i>Tilbake til oversikt
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-mobile-stack" style="font-size:0.95em; width:100%;">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Pris</th>
+                                    <th>Endring %</th>
+                                    <th>Volum</th>
+                                    <th>Signal</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if stocks %}
+                                    {% for ticker, stock in stocks.items() %}
+                                        <tr>
+                                            <td><strong>{{ ticker }}</strong></td>
+                                            <td>{{ stock['name']|default(ticker) }}</td>
+                                            <td class="text-end">
+                                                {% if stock['last_price'] %}
+                                                    {% set price = stock['last_price']|float if stock['last_price'] is string else stock['last_price'] %}
+                                                    {% if ticker.endswith('.OL') %}
+                                                        kr {{ "{:,.2f}".format(price).replace(',', ' ').replace('.', ',') }}
+                                                    {% else %}
+                                                        $ {{ "{:,.2f}".format(price) }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end {{ 'text-success' if stock.get('change_percent') and stock.get('change_percent')|float > 0 else 'text-danger' if stock.get('change_percent') and stock.get('change_percent')|float < 0 else '' }}">
+                                                {% if stock.get('change_percent') is not none %}
+                                                    {% set change = stock.get('change_percent')|float if stock.get('change_percent') is string else stock.get('change_percent', 0) %}
+                                                    {{ "{:+.2f}".format(change).replace('.', ',') }}%
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                {% if stock.get('volume') %}
+                                                    {% set volume = stock['volume']|float if stock['volume'] is string else stock['volume'] %}
+                                                    {{ '{:,.0f}'.format(volume) if volume is not none and volume != '' and volume != 0 else '0' }}
+                                                {% else %}
+                                                    0
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% set signal = stock.get('signal', 'HOLD') %}
+                                                {% if signal == 'BUY' %}
+                                                    <span class="badge bg-success">KJØP</span>
+                                                {% elif signal == 'SELL' %}
+                                                    <span class="badge bg-danger">SELG</span>
+                                                {% elif signal == 'STRONG_BUY' %}
+                                                    <span class="badge bg-success fw-bold">STERK KJØP</span>
+                                                {% elif signal == 'STRONG_SELL' %}
+                                                    <span class="badge bg-danger fw-bold">STERK SELG</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">HOLD</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ ticker }}">
+                                                        <i class="bi bi-plus-circle"></i> Kjøp
+                                                    </button>
+                                                    <button class="btn btn-sm btn-star-favorite" title="Legg til favoritt" data-ticker="{{ ticker }}">
+                                                        <i class="bi bi-star"></i>
+                                                    </button>
+                                                    <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="bi bi-graph-up"></i> Analyse
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <p class="text-muted">Ingen aksjer tilgjengelig</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Unified Favorites System -->
+<script src="{{ url_for('static', filename='js/favorites-unified.js') }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // External buy button functionality - redirect to external broker
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const ticker = this.dataset.ticker;
+            if (!ticker) return;
+            
+            // Update button to show loading state
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
+            this.disabled = true;
+            
+            let externalUrl;
+            if (ticker.endsWith('.OL')) {
+                const norwegianTicker = ticker.replace('.OL', '');
+                externalUrl = `https://www.nordnet.no/market/stocks/${norwegianTicker}`;
+            } else {
+                externalUrl = `https://www.nordnet.no/market/stocks?query=${ticker}`;
+            }
+            
+            window.open(externalUrl, '_blank', 'noopener,noreferrer');
+            
+            // Restore button after delay
+            setTimeout(() => {
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+            }, 2000);
+            
+            // Show success message
+            if (window.favoritesManager) {
+                window.favoritesManager.showToast(`Åpner kjøpsside for ${ticker}`, 'success');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
