@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% set title = "Test Homepage Layout" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-5">
+                    <h1 class="display-4">Test Homepage Layout</h1>
+                    <p class="lead">Advanced financial analysis platform with real-time data</p>
+                    <a href="{{ url_for('main.demo') }}" class="btn btn-warning btn-lg text-dark">Start Demo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">🚀 Hurtigtilgang</h2>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                            <h5>Aksjeanalyse</h5>
+                            <p class="text-muted">Avansert teknisk og fundamental analyse</p>
+                            <a href="{{ url_for('analysis.index') }}" class="btn btn-primary">Analyser</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-briefcase fa-3x text-success mb-3"></i>
+                            <h5>Portfolio</h5>
+                            <p class="text-muted">Spor og optimer investeringene dine</p>
+                            <a href="{{ url_for('portfolio.index') }}" class="btn btn-success">Portfolio</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-search fa-3x text-info mb-3"></i>
+                            <h5>Aksjesøk</h5>
+                            <p class="text-muted">Finn og sammenlign aksjer</p>
+                            <a href="{{ url_for('stocks.index') }}" class="btn btn-info">Søk</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-bell fa-3x text-warning mb-3"></i>
+                            <h5>Prisvarsler</h5>
+                            <p class="text-muted">Få varsler når priser endres</p>
+                            <a href="{{ url_for('price_alerts.index') }}" class="btn btn-warning text-dark">Varsler</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">📈 Premium Markedsoversikt</h2>
+            <div class="row">
+                <!-- Oslo Børs -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-flag-checkered"></i> Oslo Børs - Topp Aksjer</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if oslo_stocks %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Ticker</th>
+                                                <th>Pris</th>
+                                                <th>Endring</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for stock in oslo_stocks %}
+                                            <tr>
+                                                <td><strong>{{ stock.ticker or stock.symbol }}</strong></td>
+                                                <td>{{ "%.2f"|format(stock.last_price) if stock.last_price else "N/A" }}</td>
+                                                <td class="{% if stock.change_percent > 0 %}text-success{% elif stock.change_percent < 0 %}text-danger{% endif %}">
+                                                    {{ "+%.1f%"|format(stock.change_percent) if stock.change_percent > 0 else "%.1f%"|format(stock.change_percent) if stock.change_percent else "N/A" }}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Loading Oslo Børs data...</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Stocks -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-globe"></i> Globale Aksjer</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if global_stocks %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Ticker</th>
+                                                <th>Pris</th>
+                                                <th>Endring</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for stock in global_stocks %}
+                                            <tr>
+                                                <td><strong>{{ stock.ticker or stock.symbol }}</strong></td>
+                                                <td>${{ "%.2f"|format(stock.last_price) if stock.last_price else "N/A" }}</td>
+                                                <td class="{% if stock.change_percent > 0 %}text-success{% elif stock.change_percent < 0 %}text-danger{% endif %}">
+                                                    {{ "+%.1f%"|format(stock.change_percent) if stock.change_percent > 0 else "%.1f%"|format(stock.change_percent) if stock.change_percent else "N/A" }}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Loading global stocks data...</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crypto -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fab fa-bitcoin"></i> Kryptovaluta</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if crypto_data %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Coin</th>
+                                                <th>Pris</th>
+                                                <th>24h</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for crypto in crypto_data %}
+                                            <tr>
+                                                <td><strong>{{ crypto.symbol }}</strong></td>
+                                                <td>${{ "%.2f"|format(crypto.price|float) if crypto.price else "N/A" }}</td>
+                                                <td class="{% if crypto.change_percent and crypto.change_percent > 0 %}text-success{% elif crypto.change_percent and crypto.change_percent < 0 %}text-danger{% endif %}">
+                                                    {% if crypto.change_percent is not none and crypto.change_percent != 0 %}
+                                                        {% if crypto.change_percent > 0 %}+{{ "%.1f"|format(crypto.change_percent) }}%{% else %}{{ "%.1f"|format(crypto.change_percent) }}%{% endif %}
+                                                    {% else %}
+                                                        N/A
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Loading crypto data...</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Tools -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">🛠️ Avanserte Verktøy</h2>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">AI Prediksjon</h5>
+                            <p class="card-text">Maskinlæring-baserte kursprediksjoner</p>
+                            <a href="{{ url_for('analysis.ai') }}" class="btn btn-primary">Prediksjon</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Teknisk Analyse</h5>
+                            <p class="card-text">Avanserte tekniske indikatorer</p>
+                            <a href="{{ url_for('analysis.technical') }}" class="btn btn-success">Analyser</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Sentiment Analyse</h5>
+                            <p class="card-text">Markedsstemning og nyhetsanalyse</p>
+                            <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-info">Sentiment</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
