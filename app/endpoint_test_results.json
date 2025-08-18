@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-08-18T23:40:39.086040",
+  "base_url": "http://localhost:5000",
+  "results": {
+    "success": [],
+    "redirect": [],
+    "client_error": [],
+    "server_error": [],
+    "other": []
+  }
+}
