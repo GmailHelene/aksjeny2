@@ -1,0 +1,173 @@
+/* Fix text contrast on colored backgrounds, but exclude menus and dropdowns */
+.bg-primary:not(.dropdown-menu):not(.nav-item),
+.bg-secondary:not(.dropdown-menu):not(.nav-item),
+.bg-success:not(.dropdown-menu):not(.nav-item),
+.bg-danger:not(.dropdown-menu):not(.nav-item),
+.bg-info:not(.dropdown-menu):not(.nav-item),
+.bg-dark:not(.dropdown-menu):not(.nav-item) {
+    color: #ffffff;
+}
+
+/* Only apply to direct content within colored backgrounds */
+.bg-primary > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-secondary > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-success > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-danger > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-info > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link),
+.bg-dark > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-link) {
+    color: #ffffff;
+}
+
+/* Links within colored backgrounds (excluding navigation) */
+.bg-primary a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-secondary a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-success a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-danger a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-info a:not(.btn):not(.nav-link):not(.dropdown-item),
+.bg-dark a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+/* Muted text within colored backgrounds */
+.bg-primary .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-secondary .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-success .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-danger .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-info .text-muted:not(.nav-link):not(.dropdown-item),
+.bg-dark .text-muted:not(.nav-link):not(.dropdown-item) {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Navigation and dropdown styles */
+.dropdown-menu {
+    background-color: #ffffff !important;
+}
+
+.dropdown-item {
+    color: #212529 !important;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa !important;
+    color: #16181b !important;
+}
+
+.nav-link {
+    color: #212529 !important;
+}
+
+.nav-link:hover {
+    color: #0d6efd !important;
+}
+
+/* Small text and headings */
+.bg-primary small:not(.dropdown-item):not(.nav-link),
+.bg-secondary small:not(.dropdown-item):not(.nav-link),
+.bg-success small:not(.dropdown-item):not(.nav-link),
+.bg-danger small:not(.dropdown-item):not(.nav-link),
+.bg-info small:not(.dropdown-item):not(.nav-link),
+.bg-dark small:not(.dropdown-item):not(.nav-link),
+.bg-primary .h5:not(.dropdown-item):not(.nav-link),
+.bg-secondary .h5:not(.dropdown-item):not(.nav-link),
+.bg-success .h5:not(.dropdown-item):not(.nav-link),
+.bg-danger .h5:not(.dropdown-item):not(.nav-link),
+.bg-info .h5:not(.dropdown-item):not(.nav-link),
+.bg-dark .h5,
+.bg-primary .h6,
+.bg-secondary .h6,
+.bg-success .h6,
+.bg-danger .h6,
+.bg-info .h6,
+.bg-dark .h6 {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Fix card headers */
+.card-header.bg-primary,
+.card-header.bg-secondary,
+.card-header.bg-success,
+.card-header.bg-danger,
+.card-header.bg-info,
+.card-header.bg-dark {
+    color: #ffffff !important;
+}
+
+/* Fix input text in dark backgrounds */
+.bg-primary input,
+.bg-secondary input,
+.bg-success input,
+.bg-danger input,
+.bg-info input,
+.bg-dark input {
+    color: #212529 !important;
+}
+
+/* Fix select text in dark backgrounds */
+.bg-primary select,
+.bg-secondary select,
+.bg-success select,
+.bg-danger select,
+.bg-info select,
+.bg-dark select {
+    color: #212529 !important;
+}
+
+/* Stats boxes */
+.stats-box.bg-primary,
+.stats-box.bg-secondary,
+.stats-box.bg-success,
+.stats-box.bg-danger,
+.stats-box.bg-info,
+.stats-box.bg-dark {
+    color: #ffffff !important;
+}
+
+.stats-box.bg-primary .stats-number,
+.stats-box.bg-secondary .stats-number,
+.stats-box.bg-success .stats-number,
+.stats-box.bg-danger .stats-number,
+.stats-box.bg-info .stats-number,
+.stats-box.bg-dark .stats-number {
+    color: #ffffff !important;
+}
+
+/* Fix blue buttons with blue text - ensure white text on blue background */
+.btn-primary,
+.btn-primary:not(:disabled):not(.disabled),
+.btn-info,
+.btn-info:not(:disabled):not(.disabled) {
+    color: #ffffff !important;
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active {
+    color: #ffffff !important;
+    background-color: #0056b3 !important;
+    border-color: #0056b3 !important;
+}
+
+/* Fix for any blue-background elements with poor contrast */
+.bg-blue,
+.bg-primary,
+[style*="background-color: blue"],
+[style*="background-color: #007bff"],
+[class*="btn-primary"],
+[class*="btn-info"] {
+    color: #ffffff !important;
+}
+
+/* Ensure links and text within blue buttons are white */
+.btn-primary *,
+.btn-info *,
+.bg-primary *:not(.btn):not(.badge):not(.dropdown-menu) {
+    color: #ffffff !important;
+}

@@ -1,0 +1,506 @@
+/**
+ * Mobile-First Responsive Enhancements
+ * ====================================
+ * 
+ * Comprehensive mobile optimizations for aksjeradar.trade
+ * - Touch-friendly interactions
+ * - Responsive navigation
+ * - Mobile-first layout adjustments
+ * - Performance optimizations
+ */
+
+/* =================================
+   MOBILE-FIRST BASE STYLES
+   ================================= */
+
+/* Touch-friendly button sizes */
+.btn, .nav-link, .dropdown-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+}
+
+/* Responsive typography */
+html {
+    font-size: 16px; /* Base size for mobile */
+}
+
+@media (min-width: 576px) {
+    html { font-size: 16px; }
+}
+
+@media (min-width: 768px) {
+    html { font-size: 17px; }
+}
+
+@media (min-width: 992px) {
+    html { font-size: 18px; }
+}
+
+/* =================================
+   ENHANCED MOBILE NAVIGATION
+   ================================= */
+
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+    outline: 2px solid #007bff;
+}
+
+/* Mobile menu improvements */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #1a1a1a;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #333;
+    }
+    
+    .navbar-nav {
+        gap: 0.5rem;
+    }
+    
+    .nav-item {
+        width: 100%;
+    }
+    
+    .nav-link {
+        padding: 1rem !important;
+        border-radius: 0.375rem;
+        transition: background-color 0.2s ease;
+    }
+    
+    .nav-link:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    .dropdown-menu {
+        position: static !important;
+        transform: none !important;
+        width: 100% !important;
+        border: none;
+        background-color: rgba(255, 255, 255, 0.05);
+        margin-top: 0.5rem;
+    }
+    
+    .dropdown-item {
+        color: #ffffff !important;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .dropdown-item:hover {
+        background-color: rgba(0, 123, 255, 0.2);
+        color: #ffffff !important;
+    }
+}
+
+/* =================================
+   RESPONSIVE TABLES
+   ================================= */
+
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive table {
+        font-size: 0.875rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.3rem !important;
+        white-space: nowrap;
+        font-size: 1em;
+        border-radius: 0.25rem;
+    }
+    
+    /* Stack table cells on very small screens */
+    .table-mobile-stack tbody tr {
+        display: block;
+        border: 1px solid #dee2e6;
+        margin-bottom: 1rem;
+        border-radius: 0.375rem;
+    }
+    
+    .table-mobile-stack tbody td {
+        display: block;
+        text-align: right;
+        border: none;
+        padding: 0.25rem 0.5rem !important;
+        position: relative;
+        font-size: 0.95em;
+    }
+/* Star button contrast fix */
+.btn-star-favorite {
+    background: #FFD600 !important;
+    border: 2px solid #222 !important;
+    color: #222 !important;
+    box-shadow: 0 0 4px #fff, 0 0 2px #FFD600;
+    border-radius: 50%;
+    transition: box-shadow 0.2s, border 0.2s;
+}
+.btn-star-favorite:focus, .btn-star-favorite:hover {
+    outline: 2px solid #222 !important;
+    box-shadow: 0 0 8px #FFD600, 0 0 4px #fff;
+    border: 2px solid #FFD600 !important;
+}
+.btn-star-favorite i.bi-star {
+    color: #222 !important;
+    filter: drop-shadow(0 0 2px #fff);
+}
+    
+    .table-mobile-stack tbody td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 1rem;
+        font-weight: bold;
+        color: #6c757d;
+    }
+}
+
+/* =================================
+   MOBILE CARD LAYOUTS
+   ================================= */
+
+@media (max-width: 767.98px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Stock card optimizations */
+    .stock-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stock-card:active {
+        transform: scale(0.98);
+    }
+    
+    .stock-card .stock-price {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+    
+    .stock-card .stock-change {
+        font-size: 0.9rem;
+    }
+}
+
+/* =================================
+   MOBILE FORM ENHANCEMENTS
+   ================================= */
+
+.form-control, .form-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+}
+
+@media (max-width: 767.98px) {
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+    }
+}
+
+/* =================================
+   MOBILE CHARTS AND VISUALIZATIONS
+   ================================= */
+
+@media (max-width: 767.98px) {
+    .chart-container {
+        position: relative;
+        height: 250px;
+        margin-bottom: 1rem;
+    }
+    
+    .chart-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .chart-controls .btn {
+        flex: 1;
+        min-width: calc(50% - 0.25rem);
+    }
+}
+
+/* =================================
+   MOBILE SEARCH ENHANCEMENTS
+   ================================= */
+
+@media (max-width: 767.98px) {
+    .search-container {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding-right: 3rem;
+    }
+    
+    .search-button {
+        position: absolute;
+        right: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: none;
+        color: #6c757d;
+        font-size: 1.25rem;
+    }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .search-result-item {
+        padding: 1rem;
+        border-bottom: 1px solid #f8f9fa;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    
+    .search-result-item:hover,
+    .search-result-item:active {
+        background-color: #f8f9fa;
+    }
+}
+
+/* =================================
+   MOBILE PORTFOLIO OPTIMIZATIONS
+   ================================= */
+
+@media (max-width: 767.98px) {
+    .portfolio-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .portfolio-stat {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+    
+    .portfolio-stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .portfolio-stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .portfolio-holdings {
+        margin-bottom: 1.5rem;
+    }
+    
+    .holding-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        background: white;
+    }
+    
+    .holding-name {
+        font-weight: 600;
+        flex: 1;
+    }
+    
+    .holding-value {
+        text-align: right;
+        font-weight: bold;
+    }
+    
+    .holding-change {
+        text-align: right;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+}
+
+/* =================================
+   MOBILE UTILITIES
+   ================================= */
+
+/* Hide on mobile */
+@media (max-width: 767.98px) {
+    .d-mobile-none {
+        display: none !important;
+    }
+}
+
+/* Show only on mobile */
+.d-mobile-block {
+    display: none !important;
+}
+
+@media (max-width: 767.98px) {
+    .d-mobile-block {
+        display: block !important;
+    }
+}
+
+.d-mobile-flex {
+    display: none !important;
+}
+
+@media (max-width: 767.98px) {
+    .d-mobile-flex {
+        display: flex !important;
+    }
+}
+
+/* Mobile spacing utilities */
+@media (max-width: 767.98px) {
+    .mobile-mt-0 { margin-top: 0 !important; }
+    .mobile-mt-1 { margin-top: 0.25rem !important; }
+    .mobile-mt-2 { margin-top: 0.5rem !important; }
+    .mobile-mt-3 { margin-top: 1rem !important; }
+    .mobile-mt-4 { margin-top: 1.5rem !important; }
+    .mobile-mt-5 { margin-top: 3rem !important; }
+    
+    .mobile-mb-0 { margin-bottom: 0 !important; }
+    .mobile-mb-1 { margin-bottom: 0.25rem !important; }
+    .mobile-mb-2 { margin-bottom: 0.5rem !important; }
+    .mobile-mb-3 { margin-bottom: 1rem !important; }
+    .mobile-mb-4 { margin-bottom: 1.5rem !important; }
+    .mobile-mb-5 { margin-bottom: 3rem !important; }
+    
+    .mobile-p-0 { padding: 0 !important; }
+    .mobile-p-1 { padding: 0.25rem !important; }
+    .mobile-p-2 { padding: 0.5rem !important; }
+    .mobile-p-3 { padding: 1rem !important; }
+    .mobile-p-4 { padding: 1.5rem !important; }
+    .mobile-p-5 { padding: 3rem !important; }
+}
+
+/* =================================
+   TOUCH GESTURES AND INTERACTIONS
+   ================================= */
+
+/* Improve touch targets */
+@media (pointer: coarse) {
+    .btn, .nav-link, .dropdown-item, .form-control, .form-select {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Add touch feedback */
+    .btn:active,
+    .nav-link:active,
+    .dropdown-item:active,
+    .card:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+}
+
+/* Swipe indicators for carousels */
+.swipe-indicator {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .swipe-indicator {
+        display: block;
+    }
+}
+
+/* =================================
+   PERFORMANCE OPTIMIZATIONS
+   ================================= */
+
+/* Optimize animations for mobile */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* GPU acceleration for smooth scrolling */
+.smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    transform: translateZ(0);
+}
+
+/* Optimize images for mobile */
+@media (max-width: 767.98px) {
+    img {
+        height: auto;
+        max-width: 100%;
+    }
+    
+    .img-responsive {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+}

@@ -1,0 +1,77 @@
+/* 
+FIX FOR LIGHT GREEN BANNERS WITH WHITE TEXT
+Changes light green backgrounds to dark green for better contrast
+*/
+
+/* Override Bootstrap's light green success color with dark green */
+.bg-success, 
+.badge.bg-success,
+.btn.bg-success,
+.card-header.bg-success,
+.alert-success,
+.table-success,
+.text-bg-success {
+    background-color: #155724 !important; /* Dark green instead of light green */
+    border-color: #0a3622 !important; /* Even darker green for borders */
+}
+
+/* Ensure white text on dark green backgrounds */
+.bg-success,
+.bg-success *:not(.btn):not(.badge):not(.dropdown-menu),
+.card-header.bg-success,
+.card-header.bg-success *:not(.btn):not(.badge),
+.alert-success,
+.alert-success *:not(.btn):not(.badge),
+.badge.bg-success {
+    color: #ffffff !important;
+}
+
+/* Fix any success colored buttons to use dark green */
+.btn-success {
+    background-color: #155724 !important;
+    border-color: #0a3622 !important;
+    color: #ffffff !important;
+}
+
+.btn-success:hover, 
+.btn-success:focus, 
+.btn-success:active {
+    background-color: #0a3622 !important;
+    border-color: #051e11 !important;
+    color: #ffffff !important;
+}
+
+/* Fix outline success buttons */
+.btn-outline-success {
+    color: #155724 !important;
+    border-color: #155724 !important;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active {
+    background-color: #155724 !important;
+    border-color: #155724 !important;
+    color: #ffffff !important;
+}
+
+/* Fix any progress bars with success color */
+.progress-bar.bg-success {
+    background-color: #155724 !important;
+}
+
+/* Fix any list group items with success color */
+.list-group-item-success {
+    background-color: #d1e7dd !important;
+    border-color: #155724 !important;
+    color: #155724 !important;
+}
+
+/* Fix any table rows with success color */
+.table-success, 
+.table-success > th, 
+.table-success > td {
+    background-color: #d1e7dd !important;
+    border-color: #155724 !important;
+    color: #155724 !important;
+}

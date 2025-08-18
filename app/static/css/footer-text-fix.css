@@ -1,0 +1,43 @@
+/* Footer Text Color Fix - Ensure all footer text is white */
+footer, footer *, 
+.bg-dark footer, .bg-dark footer *,
+footer.bg-dark, footer.bg-dark *,
+footer .text-muted, footer .text-light, footer .text-white,
+footer a, footer .btn, footer .dropdown-item {
+    color: #ffffff !important;
+}
+
+/* Footer links hover effect */
+footer a:hover, footer .footer-link:hover {
+    color: #ffd700 !important;
+    text-decoration: underline;
+}
+
+/* Footer headings specifically white */
+footer h1, footer h2, footer h3, footer h4, footer h5, footer h6,
+footer .h1, footer .h2, footer .h3, footer .h4, footer .h5, footer .h6,
+footer .footer-heading {
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+/* Footer dropdowns */
+footer .dropdown-menu {
+    background-color: #333 !important;
+}
+
+footer .dropdown-item {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+footer .dropdown-item:hover {
+    color: #ffd700 !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Override any contrast fixes that might affect footer */
+footer:not(.navbar):not(.dropdown-menu):not(.nav-item) *,
+footer.bg-dark:not(.navbar):not(.dropdown-menu):not(.nav-item) * {
+    color: #ffffff !important;
+}
