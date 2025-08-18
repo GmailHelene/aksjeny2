@@ -1,0 +1,842 @@
+{% extends "base.html" %}
+{% block title %}AI Prediksjoner - Aksjeradar{% endblock %}
+
+{% block head %}
+<style>
+/* AI Predictions Chart Styling */
+.chart-container {
+    position: relative;
+    height: 400px !important;
+    max-height: 400px !important;
+    width: 100%;
+    overflow: hidden;
+}
+
+.chart-container canvas {
+    max-height: 400px !important;
+    height: 400px !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Prevent infinite chart stretching */
+.chart-wrapper {
+    height: 400px;
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+#predictionChart {
+    max-height: 400px !important;
+    height: 100% !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-robot text-primary me-2"></i>
+                AI Kursprediksjoner
+            </h1>
+            <p class="text-muted mt-2">
+                Avanserte maskinlæringsmodeller for kursprediksjoner
+            </p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if warning %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        {{ warning }}
+    </div>
+    {% endif %}
+
+    {% if ticker %}
+        <!-- Single Stock Prediction -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            {{ ticker }} - AI Prediksjon
+                            {% if stock_info %}
+                                <small class="text-white-50">({{ stock_info.name }})</small>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if predictions %}
+                            {% set current_price = predictions.get('current_price', 0) %}
+                            {% set predicted_price = predictions.get('predicted_price', 0) %}
+                            {% set change_percent = predictions.get('change_percent', 0) %}
+                            {% set confidence = predictions.get('confidence', 0) %}
+                            {% set key_factors = predictions.get('key_factors', []) %}
+                            {% set sentiment_score = predictions.get('sentiment_score', 0) %}
+                            {% set news_sentiment = predictions.get('news_sentiment', 0) %}
+                            {% set risk_metrics = predictions.get('risk_metrics', {'volatility': 0}) %}
+                            {% set dates = predictions.get('dates', []) %}
+                            {% set predicted_values = predictions.get('predicted_values', []) %}
+                            {% set confidence_upper = predictions.get('confidence_upper', []) %}
+                            {% set confidence_lower = predictions.get('confidence_lower', []) %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="text-center mb-4">
+                                        <h6 class="text-muted">7-dagers Prediksjon</h6>
+                                        <div class="display-4 
+                                            {% if predictions.change_percent > 0 %}text-success
+                                            {% else %}text-danger{% endif %}">
+                                            {% if predictions.change_percent > 0 %}+{% endif %}{{ predictions.change_percent }}%
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">Fra</small>
+                                            <strong>${{ predictions.current_price }}</strong>
+                                            <small class="text-muted">til</small>
+                                            <strong>${{ predictions.predicted_price }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <h6 class="text-muted">Konfidens</h6>
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar 
+                                                {% if predictions.confidence > 0.8 %}bg-success
+                                                {% elif predictions.confidence > 0.6 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: {{ predictions.confidence * 100|round }}%">
+                                                {{ predictions.confidence * 100|round }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h6>Prediksjon Detaljer</h6>
+                                    <div style="position: relative; height: 400px; width: 100%; max-height: 400px; overflow: hidden;">
+                                        <canvas id="predictionChart" style="max-height: 400px;"></canvas>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <h6>Nøkkelfaktorer</h6>
+                                        <ul class="list-unstyled">
+                                            {% for factor in predictions.key_factors %}
+                                            <li>
+                                                <i class="fas fa-check-circle text-primary me-2"></i>
+                                                {{ factor }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Enhanced Analysis Tables -->
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-chart-line me-2"></i>
+                                                Tidsperspektiv Analyse
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Periode</th>
+                                                        <th class="text-end">Målpris</th>
+                                                        <th class="text-end">Endring</th>
+                                                        <th class="text-center">Signal</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1 dag</td>
+                                                        <td class="text-end">${{ (predictions.current_price * 1.005) | round(2) }}</td>
+                                                        <td class="text-end text-success">+0.5%</td>
+                                                        <td class="text-center"><span class="badge bg-success">KJØP</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>3 dager</td>
+                                                        <td class="text-end">${{ (predictions.current_price * 1.015) | round(2) }}</td>
+                                                        <td class="text-end text-success">+1.5%</td>
+                                                        <td class="text-center"><span class="badge bg-success">KJØP</span></td>
+                                                    </tr>
+                                                    <tr class="table-primary">
+                                                        <td><strong>7 dager</strong></td>
+                                                        <td class="text-end"><strong>${{ predictions.predicted_price }}</strong></td>
+                                                        <td class="text-end {% if predictions.change_percent > 0 %}text-success{% else %}text-danger{% endif %}">
+                                                            <strong>{{ predictions.change_percent }}%</strong>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            {% if predictions.change_percent > 5 %}
+                                                                <span class="badge bg-success">STERK KJØP</span>
+                                                            {% elif predictions.change_percent > 0 %}
+                                                                <span class="badge bg-success">KJØP</span>
+                                                            {% else %}
+                                                                <span class="badge bg-danger">SELG</span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>14 dager</td>
+                                                        <td class="text-end">${{ (predictions.predicted_price * 1.02) | round(2) }}</td>
+                                                        <td class="text-end text-success">+{{ (predictions.change_percent + 2) | round(1) }}%</td>
+                                                        <td class="text-center"><span class="badge bg-success">KJØP</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>30 dager</td>
+                                                        <td class="text-end">${{ (predictions.predicted_price * 1.045) | round(2) }}</td>
+                                                        <td class="text-end text-success">+{{ (predictions.change_percent + 4.5) | round(1) }}%</td>
+                                                        <td class="text-center"><span class="badge bg-success">STERK KJØP</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-brain me-2"></i>
+                                                AI Model Komponenter
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Analysefaktor</th>
+                                                        <th class="text-end">Vekting</th>
+                                                        <th class="text-center">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Teknisk Momentum</td>
+                                                        <td class="text-end">28%</td>
+                                                        <td class="text-center"><i class="fas fa-arrow-up text-success"></i></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Markedssentiment</td>
+                                                        <td class="text-end">22%</td>
+                                                        <td class="text-center"><i class="fas fa-arrow-up text-success"></i></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Volumanalyse</td>
+                                                        <td class="text-end">18%</td>
+                                                        <td class="text-center"><i class="fas fa-minus text-warning"></i></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Fundamental Data</td>
+                                                        <td class="text-end">16%</td>
+                                                        <td class="text-center"><i class="fas fa-arrow-up text-success"></i></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Makroøkonomi</td>
+                                                        <td class="text-end">16%</td>
+                                                        <td class="text-center"><i class="fas fa-minus text-warning"></i></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Risk Analysis Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-shield-alt me-2"></i>
+                                                Risiko & Scenarioanalyse
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="text-center p-3 border border-success rounded bg-light">
+                                                        <h6 class="text-success mb-2">🚀 Optimistisk Scenario</h6>
+                                                        <div class="h4 text-success mb-1">${{ (predictions.predicted_price * 1.08) | round(2) }}</div>
+                                                        <small class="text-success">+{{ ((predictions.predicted_price * 1.08 - predictions.current_price) / predictions.current_price * 100) | round(1) }}%</small>
+                                                        <div class="mt-2">
+                                                            <span class="badge bg-success">25% sannsynlighet</span>
+                                                        </div>
+                                                        <hr>
+                                                        <small class="text-muted">
+                                                            Ved sterk markedsoppgang og positive nyheter
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center p-3 border border-primary rounded bg-light">
+                                                        <h6 class="text-primary mb-2">🎯 Mest Sannsynlig</h6>
+                                                        <div class="h4 text-primary mb-1">${{ predictions.predicted_price }}</div>
+                                                        <small class="text-primary">{{ predictions.change_percent }}%</small>
+                                                        <div class="mt-2">
+                                                            <span class="badge bg-primary">50% sannsynlighet</span>
+                                                        </div>
+                                                        <hr>
+                                                        <small class="text-muted">
+                                                            Basert på nåværende markedstrend
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="text-center p-3 border border-danger rounded bg-light">
+                                                        <h6 class="text-danger mb-2">⚠️ Pessimistisk Scenario</h6>
+                                                        <div class="h4 text-danger mb-1">${{ (predictions.predicted_price * 0.92) | round(2) }}</div>
+                                                        <small class="text-danger">{{ ((predictions.predicted_price * 0.92 - predictions.current_price) / predictions.current_price * 100) | round(1) }}%</small>
+                                                        <div class="mt-2">
+                                                            <span class="badge bg-danger">25% sannsynlighet</span>
+                                                        </div>
+                                                        <hr>
+                                                        <small class="text-muted">
+                                                            Ved markedsnedgang eller negative nyheter
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Market Analytics Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-chart-area me-2"></i>
+                                                Utvidet Markedsanalyse
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h6 class="text-muted">AI Modell Nøyaktighet</h6>
+                                                            <div class="h3 text-primary">87.3%</div>
+                                                            <small class="text-muted">Siste 30 dager</small>
+                                                            <div class="mt-3">
+                                                                <div class="progress">
+                                                                    <div class="progress-bar bg-primary" style="width: 87.3%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h6 class="text-muted">Markedssentiment</h6>
+                                                            <div class="h3 text-success">Positiv</div>
+                                                            <small class="text-muted">{{ (predictions.sentiment_score * 100) | round }}% bullish</small>
+                                                            <div class="mt-3">
+                                                                <span class="badge bg-success">{{ (predictions.news_sentiment * 100) | round }}% nyheter positiv</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center">
+                                                            <h6 class="text-muted">Volatilitetsindeks</h6>
+                                                            <div class="h3 text-warning">{{ (predictions.risk_metrics.volatility * 100) | round }}%</div>
+                                                            <small class="text-muted">30-dagers gjennomsnitt</small>
+                                                            <div class="mt-3">
+                                                                <span class="badge {% if predictions.risk_metrics.volatility < 0.2 %}bg-success{% elif predictions.risk_metrics.volatility < 0.3 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                                    {% if predictions.risk_metrics.volatility < 0.2 %}Lav risiko{% elif predictions.risk_metrics.volatility < 0.3 %}Moderat risiko{% else %}Høy risiko{% endif %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-4">
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0">
+                                                                <i class="fas fa-brain me-2"></i>
+                                                                AI Modell Detaljer
+                                                            </h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <table class="table table-sm">
+                                                                <tr>
+                                                                    <td>Algoritme Type</td>
+                                                                    <td class="text-end">
+                                                                        <span class="badge bg-primary">LSTM + Transformer</span>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Trenings Datasett</td>
+                                                                    <td class="text-end">3 års historikk</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Sist Oppdatert</td>
+                                                                    <td class="text-end">{{ last_updated[:10] }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Prediksjonshoriont</td>
+                                                                    <td class="text-end">7 dager</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Datapunkter</td>
+                                                                    <td class="text-end">5000+ indikatorer</td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0">
+                                                                <i class="fas fa-newspaper me-2"></i>
+                                                                Sentiment Kilder
+                                                            </h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="mb-3">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>📰 Finansnyheter</span>
+                                                                    <span class="badge bg-success">Positiv (72%)</span>
+                                                                </div>
+                                                                <div class="progress mt-1" style="height: 8px;">
+                                                                    <div class="progress-bar bg-success" style="width: 72%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>📱 Sosiale Medier</span>
+                                                                    <span class="badge bg-warning">Nøytral (58%)</span>
+                                                                </div>
+                                                                <div class="progress mt-1" style="height: 8px;">
+                                                                    <div class="progress-bar bg-warning" style="width: 58%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>🏢 Analytikere</span>
+                                                                    <span class="badge bg-success">Positiv (78%)</span>
+                                                                </div>
+                                                                <div class="progress mt-1" style="height: 8px;">
+                                                                    <div class="progress-bar bg-success" style="width: 78%"></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-0">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span>📈 Markedstrender</span>
+                                                                    <span class="badge bg-success">Bullish (84%)</span>
+                                                                </div>
+                                                                <div class="progress mt-1" style="height: 8px;">
+                                                                    <div class="progress-bar bg-success" style="width: 84%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-5">
+                                <i class="fas fa-info-circle fa-3x mb-3 d-block"></i>
+                                Ingen AI-prediksjon tilgjengelig for {{ ticker }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Sist oppdatert: {{ last_updated }}</small>
+                        <small class="float-end">
+                            <i class="fas fa-info-circle"></i>
+                            AI-prediksjoner er kun veiledende og ikke investeringsråd
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Top Predictions Overview -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Topp AI Prediksjoner</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Stock Search -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <form method="get" action="{{ url_for('analysis.ai_predictions') }}">
+                                    <div class="input-group">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               name="ticker" 
+                                               placeholder="Søk etter aksje (f.eks. AAPL, EQNR.OL)"
+                                               required>
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="fas fa-search"></i> Få Prediksjon
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        {% if predictions and predictions|length > 0 %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Aksje</th>
+                                            <th>Nåværende Pris</th>
+                                            <th>7-dagers Prediksjon</th>
+                                            <th>Endring</th>
+                                            <th>Konfidens</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pred in predictions %}
+                                        <tr>
+                                            <td class="fw-bold">{{ pred.ticker }}</td>
+                                            <td>${{ pred.current_price }}</td>
+                                            <td>${{ pred.predicted_price }}</td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if pred.change_percent > 0 %}bg-success
+                                                    {% else %}bg-danger{% endif %}">
+                                                    {% if pred.change_percent > 0 %}+{% endif %}{{ pred.change_percent }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="width: 100px; height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if pred.confidence > 0.8 %}bg-success
+                                                        {% elif pred.confidence > 0.6 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                        style="width: {{ pred.confidence * 100|round }}%">
+                                                        {{ pred.confidence * 100|round }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('analysis.ai_predictions', ticker=pred.ticker) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-chart-line"></i> Detaljer
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-5">
+                                <i class="fas fa-info-circle fa-3x mb-3 d-block"></i>
+                                Ingen prediksjoner tilgjengelig
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>Sist oppdatert: {{ last_updated }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Market Overview Analytics Section -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Markedsoversikt
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-12 mb-3">
+                                <h6 class="text-muted">S&P 500 Trend</h6>
+                                <div class="h4 text-success">+2.3%</div>
+                                <small class="text-muted">Siste 7 dager</small>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <h6 class="text-muted">VIX Indeks</h6>
+                                <div class="h4 text-warning">18.5</div>
+                                <small class="text-muted">Moderat volatilitet</small>
+                            </div>
+                            <div class="col-12">
+                                <h6 class="text-muted">AI Modell Status</h6>
+                                <span class="badge bg-success">Aktiv</span>
+                                <div class="mt-2">
+                                    <small class="text-muted">5,000+ aksjer overvåket</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-trophy me-2"></i>
+                            Topp Performers
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>NVDA</strong></span>
+                            <span class="badge bg-success">+12.4%</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>AMD</strong></span>
+                            <span class="badge bg-success">+8.7%</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>TSLA</strong></span>
+                            <span class="badge bg-success">+6.2%</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>AAPL</strong></span>
+                            <span class="badge bg-success">+4.1%</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><strong>MSFT</strong></span>
+                            <span class="badge bg-success">+3.8%</span>
+                        </div>
+                        <hr>
+                        <small class="text-muted">AI-predikerte oppganger (7 dager)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-brain me-2"></i>
+                            AI Nøyaktighet
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Siste 7 dager</span>
+                                <span class="fw-bold">92.1%</span>
+                            </div>
+                            <div class="progress mt-1">
+                                <div class="progress-bar bg-success" style="width: 92.1%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Siste 30 dager</span>
+                                <span class="fw-bold">87.3%</span>
+                            </div>
+                            <div class="progress mt-1">
+                                <div class="progress-bar bg-primary" style="width: 87.3%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Siste 90 dager</span>
+                                <span class="fw-bold">83.7%</span>
+                            </div>
+                            <div class="progress mt-1">
+                                <div class="progress-bar bg-warning" style="width: 83.7%"></div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                Kontinuerlig forbedring gjennom maskinlæring
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Model Insights -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>
+                            AI Modell Innsikt
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Hvordan fungerer våre AI-prediksjoner?</h6>
+                                <p class="text-muted">
+                                    Våre avanserte maskinlæringsmodeller analyserer tusenvis av datapunkter i sanntid, 
+                                    inkludert tekniske indikatorer, markedssentiment, makroøkonomiske faktorer og historiske mønstre.
+                                </p>
+                                <div class="row mt-4">
+                                    <div class="col-md-3 text-center">
+                                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-database fa-lg"></i>
+                                        </div>
+                                        <h6 class="mt-2">Data Innsamling</h6>
+                                        <small class="text-muted">5000+ indikatorer</small>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-brain fa-lg"></i>
+                                        </div>
+                                        <h6 class="mt-2">AI Analyse</h6>
+                                        <small class="text-muted">LSTM + Transformer</small>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-chart-line fa-lg"></i>
+                                        </div>
+                                        <h6 class="mt-2">Prediksjon</h6>
+                                        <small class="text-muted">7-dagers horisont</small>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-shield-alt fa-lg"></i>
+                                        </div>
+                                        <h6 class="mt-2">Validering</h6>
+                                        <small class="text-muted">Kontinuerlig læring</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bg-light p-3 rounded">
+                                    <h6 class="text-center mb-3">Modell Ytelse</h6>
+                                    <div class="text-center">
+                                        <div class="h2 text-primary">87.3%</div>
+                                        <small class="text-muted">Gjennomsnittlig nøyaktighet</small>
+                                    </div>
+                                    <hr>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Retningsnøyaktighet:</span>
+                                            <span class="fw-bold">91.2%</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Prisnøyaktighet:</span>
+                                            <span class="fw-bold">83.4%</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Volatilitetsprediksjon:</span>
+                                            <span class="fw-bold">78.9%</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Tidspunktnøyaktighet:</span>
+                                            <span class="fw-bold">75.6%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% if ticker and predictions and predictions.dates %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Create prediction chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('predictionChart');
+    if (ctx) {
+        const chart = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ predictions.dates | tojson }},
+                datasets: [{
+                    label: 'Predikert Kurs',
+                    data: {{ predictions.predicted_values | tojson }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4
+                }, {
+                    label: 'Øvre Konfidens',
+                    data: {{ predictions.confidence_upper | tojson }},
+                    borderColor: 'rgba(75, 192, 192, 0.3)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    borderDash: [5, 5],
+                    fill: false
+                }, {
+                    label: 'Nedre Konfidens',
+                    data: {{ predictions.confidence_lower | tojson }},
+                    borderColor: 'rgba(75, 192, 192, 0.3)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            display: true
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

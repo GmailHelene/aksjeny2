@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Markedssektorer - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-chart-pie me-2"></i>
+                Markedssektorer
+            </h1>
+            
+            {% if error %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error }}
+                </div>
+            {% endif %}
+            
+            <!-- Sector Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="h4 mb-0">{{ sector_stats.total_sectors }}</div>
+                                    <div class="small">Totale sektorer</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-layer-group fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="h4 mb-0">{{ sector_stats.positive_sectors }}</div>
+                                    <div class="small">Positive sektorer</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-arrow-up fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="h4 mb-0">{{ sector_stats.negative_sectors }}</div>
+                                    <div class="small">Negative sektorer</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-arrow-down fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="h4 mb-0">{{ ((sector_stats.positive_sectors / sector_stats.total_sectors) * 100)|round(1) if sector_stats.total_sectors > 0 else 0 }}%</div>
+                                    <div class="small">Positive rate</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-percentage fa-2x opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sectors Overview -->
+            <div class="row">
+                {% for sector_name, sector_data in sectors.items() %}
+                <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                {% if sector_name == 'Energi' %}
+                                    <i class="fas fa-bolt text-warning me-2"></i>
+                                {% elif sector_name == 'Teknologi' %}
+                                    <i class="fas fa-microchip text-primary me-2"></i>
+                                {% elif sector_name == 'Finans' %}
+                                    <i class="fas fa-university text-success me-2"></i>
+                                {% elif sector_name == 'Sjømat' %}
+                                    <i class="fas fa-fish text-info me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-chart-bar text-secondary me-2"></i>
+                                {% endif %}
+                                {{ sector_name }}
+                            </h5>
+                            <span class="badge {{ 'bg-success' if sector_data.change_percent > 0 else 'bg-danger' if sector_data.change_percent < 0 else 'bg-secondary' }}">
+                                {% if sector_data.change_percent > 0 %}+{% endif %}{{ sector_data.change_percent }}%
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="text-muted small">Markedsverdi</div>
+                                    <div class="fw-bold">{{ (sector_data.market_cap / 1000000000)|round(1) }}B NOK</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">Selskaper</div>
+                                    <div class="fw-bold">{{ sector_data.companies|length }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="text-muted small mb-2">Hovedaksjer:</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for company in sector_data.companies[:3] %}
+                                        <span class="badge bg-light text-dark">{{ company }}</span>
+                                    {% endfor %}
+                                    {% if sector_data.companies|length > 3 %}
+                                        <span class="badge bg-secondary">+{{ sector_data.companies|length - 3 }} flere</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if sector_data.top_performers %}
+                            <div class="mb-3">
+                                <div class="text-muted small mb-2">Topp performer:</div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">{{ sector_data.top_performers[0] }}</span>
+                                    <small class="text-success">Best i sektoren</small>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="progress mb-2" style="height: 8px;">
+                                {% set progress_value = (sector_data.change_percent + 5) * 10 %}
+                                {% set progress_clamped = [0, progress_value, 100]|max|min %}
+                                <div class="progress-bar {{ 'bg-success' if sector_data.change_percent > 0 else 'bg-danger' }}" 
+                                     role="progressbar" 
+                                     style="width: {{ progress_clamped }}%"
+                                     aria-valuenow="{{ progress_clamped }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Svak</span>
+                                <span>Sterk</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/stocks/list/oslo?sector={{ sector_name }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-search me-1"></i>Se alle aksjer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if not sectors %}
+            <div class="text-center py-5">
+                <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Ingen sektordata tilgjengelig</h4>
+                <p class="text-muted">Prøv å laste siden på nytt om litt.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+</style>
+{% endblock %}

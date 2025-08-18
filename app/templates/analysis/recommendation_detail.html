@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Anbefaling for {{ symbol }} - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">Detaljert Anbefaling</h1>
+                    <h4 class="text-muted">{{ recommendation.name }} ({{ symbol }})</h4>
+                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.recommendation') }}">Anbefalinger</a></li>
+                        <li class="breadcrumb-item active">{{ symbol }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Recommendation Card -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">AI Anbefaling</h5>
+                    <span class="badge {{ 'bg-success' if recommendation.rating in ['STRONG_BUY', 'BUY'] else 'bg-warning' if recommendation.rating == 'HOLD' else 'bg-danger' }} fs-6">
+                        {{ recommendation.rating.replace('_', ' ') }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Nåværende Pris</h6>
+                            <h4>${{ "{:,.2f}".format(recommendation.current_price) }}</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Kursmål</h6>
+                            <h4 class="text-success">${{ "{:,.2f}".format(recommendation.target_price) }}</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Oppsidepotensial</h6>
+                            <h4 class="text-success">+{{ "{:.1f}".format(recommendation.upside) }}%</h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h6 class="text-muted">Konfidensnivå</h6>
+                            <h4>{{ recommendation.confidence }}%</h4>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {{ 'bg-success' if recommendation.confidence > 80 else 'bg-warning' if recommendation.confidence > 60 else 'bg-danger' }}" 
+                                     style="width: {{ recommendation.confidence }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Risiko</h6>
+                            <span class="badge {{ 'bg-success' if recommendation.risk_level == 'Low' else 'bg-warning' if recommendation.risk_level == 'Medium' else 'bg-danger' }}">
+                                {{ recommendation.risk_level }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Tidshorisont</h6>
+                            <p>{{ recommendation.timeframe }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Sektor</h6>
+                            <p>{{ recommendation.sector }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Targets -->
+            {% if recommendation.price_targets %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Analytikernes Kursmål</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Høyeste</h6>
+                            <h5 class="text-success">${{ "{:,.2f}".format(recommendation.price_targets.high) }}</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Gjennomsnitt</h6>
+                            <h5>${{ "{:,.2f}".format(recommendation.price_targets.average) }}</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Laveste</h6>
+                            <h5 class="text-danger">${{ "{:,.2f}".format(recommendation.price_targets.low) }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analyst Ratings Distribution -->
+            {% if recommendation.analyst_ratings %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Analytiker Vurderinger</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="d-flex justify-content-between">
+                                <span>Strong Buy</span>
+                                <span class="fw-bold">{{ recommendation.analyst_ratings.strong_buy }}</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ (recommendation.analyst_ratings.strong_buy / recommendation.analyst_count * 100) if recommendation.analyst_count > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="d-flex justify-content-between">
+                                <span>Buy</span>
+                                <span class="fw-bold">{{ recommendation.analyst_ratings.buy }}</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: {{ (recommendation.analyst_ratings.buy / recommendation.analyst_count * 100) if recommendation.analyst_count > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="d-flex justify-content-between">
+                                <span>Hold</span>
+                                <span class="fw-bold">{{ recommendation.analyst_ratings.hold }}</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: {{ (recommendation.analyst_ratings.hold / recommendation.analyst_count * 100) if recommendation.analyst_count > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Key Reasons -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Hovedargumenter</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-success">Positive faktorer:</h6>
+                    <ul>
+                        {% for reason in recommendation.reasons %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    {% if recommendation.risks %}
+                    <h6 class="text-danger mt-3">Risikoer:</h6>
+                    <ul>
+                        {% for risk in recommendation.risks %}
+                        <li>{{ risk }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Key Metrics -->
+            {% if recommendation.key_metrics %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Nøkkeltall</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>P/E Ratio</span>
+                        <span class="fw-bold">{{ "{:.1f}".format(recommendation.key_metrics.pe_ratio) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>P/B Ratio</span>
+                        <span class="fw-bold">{{ "{:.1f}".format(recommendation.key_metrics.pb_ratio) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Dividend Yield</span>
+                        <span class="fw-bold">{{ "{:.1f}".format(recommendation.key_metrics.dividend_yield) }}%</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>ROE</span>
+                        <span class="fw-bold">{{ "{:.1f}".format(recommendation.key_metrics.roe) }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Analysis Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Analyse Informasjon</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Antall Analytikere</span>
+                        <span class="fw-bold">{{ recommendation.analyst_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sist Oppdatert</span>
+                        <span class="fw-bold">{{ recommendation.last_updated }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <button class="btn btn-outline-primary w-100 mb-2 add-to-watchlist" data-ticker="{{ symbol }}">
+                        <i class="bi bi-star"></i> Legg til watchlist
+                    </button>
+                    <a href="{{ url_for('analysis.technical', symbol=symbol) }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-graph-up"></i> Teknisk Analyse
+                    </a>
+                    <a href="{{ url_for('analysis.fundamental', ticker=symbol) }}" class="btn btn-outline-info w-100">
+                        <i class="bi bi-calculator"></i> Fundamental Analyse
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Recommendations -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('analysis.recommendations') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Tilbake til Anbefalinger
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add to watchlist functionality
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.add-to-watchlist').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const ticker = this.dataset.ticker;
+            
+            window.csrfHelper.fetch('/stocks/api/favorites/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    symbol: ticker,
+                    name: ticker
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.innerHTML = '<i class="bi bi-star-fill"></i> I watchlist';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-warning');
+                    
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                    alert.style.top = '20px';
+                    alert.style.right = '20px';
+                    alert.style.zIndex = '9999';
+                    alert.innerHTML = `
+                        <i class="bi bi-check-circle me-2"></i>${ticker} lagt til i watchlist!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alert);
+                    
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.parentNode.removeChild(alert);
+                        }
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error adding to watchlist:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block title %}Innsidehandel Intelligens - Aksjeradar{% endblock %}
+
+{% block content %}
+{% include 'analysis/_menu.html' %}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-eye"></i> Innsidehandel Intelligens
+                </h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="refreshInsiderData()">
+                        <i class="bi bi-arrow-clockwise"></i> Oppdater
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="exportInsiderData()">
+                        <i class="bi bi-download"></i> Eksporter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insider Trading Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="insider-search-form" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="ticker" class="form-label">Ticker Symbol</label>
+                            <input type="text" class="form-control" id="ticker" placeholder="f.eks. AAPL, TSLA">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="timeframe" class="form-label">Tidsperiode</label>
+                            <select class="form-select" id="timeframe">
+                                <option value="7">Siste 7 dager</option>
+                                <option value="30" selected>Siste 30 dager</option>
+                                <option value="90">Siste 90 dager</option>
+                                <option value="365">Siste år</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="transaction-type" class="form-label">Transaksjonstype</label>
+                            <select class="form-select" id="transaction-type">
+                                <option value="all">Alle</option>
+                                <option value="buy">Kjøp</option>
+                                <option value="sell">Salg</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary d-block w-100">
+                                <i class="bi bi-search"></i> Søk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="bi bi-graph-up"></i> Total Aktivitet
+                    </h5>
+                    <h2 class="text-primary" id="total-transactions">-</h2>
+                    <p class="text-muted mb-0">Transaksjoner siste 30 dager</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-arrow-up-circle"></i> Kjøp Signal
+                    </h5>
+                    <h2 class="text-success" id="buy-percentage">-</h2>
+                    <p class="text-muted mb-0">% av transaksjoner</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">
+                        <i class="bi bi-arrow-down-circle"></i> Salg Signal
+                    </h5>
+                    <h2 class="text-danger" id="sell-percentage">-</h2>
+                    <p class="text-muted mb-0">% av transaksjoner</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">
+                        <i class="bi bi-star"></i> Sentiment Score
+                    </h5>
+                    <h2 class="text-warning" id="sentiment-score">-</h2>
+                    <p class="text-muted mb-0">Markedssentiment</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insider Transactions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table"></i> Innsidehandel Transaksjoner
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="insider-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Dato</th>
+                                    <th>Ticker</th>
+                                    <th>Selskap</th>
+                                    <th>Insider</th>
+                                    <th>Posisjon</th>
+                                    <th>Type</th>
+                                    <th>Antall</th>
+                                    <th>Pris</th>
+                                    <th>Verdi</th>
+                                    <th>Signal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="insider-tbody">
+                                <tr>
+                                    <td colspan="10" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Laster...</span>
+                                        </div>
+                                        <p class="mt-2">Henter innsidehandel data...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Summary -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart"></i> Transaksjonsfordeling
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="transaction-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Sentiment Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sentiment-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the insider trading dashboard
+    loadInsiderData();
+    
+    // Setup form submission
+    document.getElementById('insider-search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadInsiderData();
+    });
+});
+
+async function loadInsiderData() {
+    try {
+        const ticker = document.getElementById('ticker').value;
+        const timeframe = document.getElementById('timeframe').value;
+        const transactionType = document.getElementById('transaction-type').value;
+        
+        // Show loading state
+        document.getElementById('insider-tbody').innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster...</span>
+                    </div>
+                    <p class="mt-2">Henter innsidehandel data...</p>
+                </td>
+            </tr>
+        `;
+        
+        // Build API URL with parameters
+        let apiUrl = '/analysis/api/insider/analysis';
+        const params = new URLSearchParams();
+        if (ticker) params.append('ticker', ticker);
+        params.append('timeframe', timeframe);
+        if (transactionType !== 'all') params.append('transaction_type', transactionType);
+        
+        if (params.toString()) {
+            apiUrl += '?' + params.toString();
+        }
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (response.ok) {
+            updateInsiderData(data);
+        } else {
+            throw new Error(data.error || 'Feil ved henting av data');
+        }
+    } catch (error) {
+        console.error('Error loading insider data:', error);
+        document.getElementById('insider-tbody').innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center py-4 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p class="mt-2">Feil ved lasting av data: ${error.message}</p>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadInsiderData()">
+                        Prøv igjen
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function updateInsiderData(data) {
+    // Extract the actual data array
+    const transactions = data.data || [];
+    
+    // Calculate metrics
+    const totalTransactions = transactions.length;
+    const buyTransactions = transactions.filter(t => t.transaction_type === 'Kjøp').length;
+    const sellTransactions = transactions.filter(t => t.transaction_type === 'Salg').length;
+    const buyPercentage = totalTransactions > 0 ? Math.round((buyTransactions / totalTransactions) * 100) : 0;
+    const sellPercentage = totalTransactions > 0 ? Math.round((sellTransactions / totalTransactions) * 100) : 0;
+    
+    // Update metrics
+    document.getElementById('total-transactions').textContent = totalTransactions;
+    document.getElementById('buy-percentage').textContent = buyPercentage + '%';
+    document.getElementById('sell-percentage').textContent = sellPercentage + '%';
+    document.getElementById('sentiment-score').textContent = buyPercentage > 60 ? 'Bullish' : sellPercentage > 60 ? 'Bearish' : 'Nøytral';
+    
+    // Update table
+    const tbody = document.getElementById('insider-tbody');
+    if (transactions && transactions.length > 0) {
+        tbody.innerHTML = transactions.map(transaction => `
+            <tr>
+                <td>${new Date(transaction.date).toLocaleDateString('no-NO')}</td>
+                <td><strong>${transaction.ticker}</strong></td>
+                <td>${transaction.company || 'N/A'}</td>
+                <td>${transaction.insider_name}</td>
+                <td class="small">${transaction.position || 'N/A'}</td>
+                <td>
+                    <span class="badge ${transaction.transaction_type === 'Kjøp' ? 'bg-success' : 'bg-danger'}">
+                        ${transaction.transaction_type}
+                    </span>
+                </td>
+                <td>${transaction.shares ? transaction.shares.toLocaleString('no-NO') : 'N/A'}</td>
+                <td>kr ${transaction.price ? transaction.price.toFixed(2) : 'N/A'}</td>
+                <td>kr ${transaction.value ? transaction.value.toLocaleString('no-NO') : 'N/A'}</td>
+                <td>
+                    <span class="badge ${getSignalClass(transaction.ownership_change)}">
+                        ${transaction.ownership_change > 0 ? 'Positiv' : transaction.ownership_change < 0 ? 'Negativ' : 'Nøytral'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center py-4 text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    <p class="mt-2">Ingen innsidehandel data funnet for de valgte kriteriene.</p>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function getSignalClass(ownershipChange) {
+    if (ownershipChange > 2) return 'bg-success';
+    if (ownershipChange < -2) return 'bg-danger';
+    return 'bg-secondary';
+}
+
+function refreshInsiderData() {
+    loadInsiderData();
+}
+
+function exportInsiderData() {
+    try {
+        const ticker = document.getElementById('ticker').value;
+        const timeframe = document.getElementById('timeframe').value;
+        const transactionType = document.getElementById('transaction-type').value;
+        
+        // Get current data from table
+        const rows = document.querySelectorAll('#insider-tbody tr');
+        if (rows.length === 0 || rows[0].cells.length === 1) {
+            alert('Laster data for eksport - vennligst prøv igjen om litt');
+            return;
+        }
+        
+        // Prepare CSV data
+        const headers = ['Dato', 'Ticker', 'Selskap', 'Insider', 'Posisjon', 'Type', 'Antall', 'Pris', 'Verdi', 'Signal'];
+        let csvContent = headers.join(',') + '\n';
+        
+        rows.forEach(row => {
+            if (row.cells.length > 1) {
+                const rowData = [];
+                for (let i = 0; i < row.cells.length; i++) {
+                    let cellText = row.cells[i].textContent.trim();
+                    // Clean badges and formatting
+                    cellText = cellText.replace(/\s+/g, ' ');
+                    // Escape commas and quotes
+                    if (cellText.includes(',') || cellText.includes('"')) {
+                        cellText = '"' + cellText.replace(/"/g, '""') + '"';
+                    }
+                    rowData.push(cellText);
+                }
+                csvContent += rowData.join(',') + '\n';
+            }
+        });
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        
+        // Generate filename with parameters
+        let filename = 'insider_trading_data';
+        if (ticker) filename += '_' + ticker;
+        filename += '_' + timeframe + 'days';
+        if (transactionType !== 'all') filename += '_' + transactionType;
+        filename += '_' + new Date().toISOString().split('T')[0] + '.csv';
+        
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        const exportBtn = document.querySelector('button[onclick="exportInsiderData()"]');
+        const originalText = exportBtn.innerHTML;
+        exportBtn.innerHTML = '<i class="bi bi-check-circle"></i> Eksportert!';
+        exportBtn.classList.remove('btn-outline-success');
+        exportBtn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            exportBtn.innerHTML = originalText;
+            exportBtn.classList.remove('btn-success');
+            exportBtn.classList.add('btn-outline-success');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Feil ved eksport: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}AI Anbefalinger - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 fw-bold mb-2">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        AI Anbefalinger
+                    </h1>
+                    <p class="text-muted mb-0">Databaserte investeringsanbefalinger powered by AI</p>
+                </div>
+                <div class="badge bg-success fs-6 px-3 py-2">
+                    <i class="bi bi-robot me-1"></i>
+                    AI-Powered
+                </div>
+            </div>
+
+            <!-- Detailed Recommendation for Specific Symbol -->
+            {% if detailed_recommendation %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Detaljert anbefaling for {{ detailed_recommendation.symbol }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold">{{ detailed_recommendation.name }}</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-3">
+                                    <small class="text-muted d-block">Nåværende kurs</small>
+                                    <span class="fw-bold fs-5">kr {{ "%.2f"|format(detailed_recommendation.current_price) }}</span>
+                                </div>
+                                <div class="col-sm-3">
+                                    <small class="text-muted d-block">Kursmål</small>
+                                    <span class="fw-bold fs-5 text-success">kr {{ "%.2f"|format(detailed_recommendation.target_price) }}</span>
+                                </div>
+                                <div class="col-sm-3">
+                                    <small class="text-muted d-block">Oppsidepotensial</small>
+                                    <span class="fw-bold fs-5 text-success">+{{ "%.1f"|format(detailed_recommendation.upside) }}%</span>
+                                </div>
+                                <div class="col-sm-3">
+                                    <small class="text-muted d-block">Tidshorisont</small>
+                                    <span class="fw-bold">{{ detailed_recommendation.timeframe }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6 class="fw-bold mb-2">Investeringsargumenter:</h6>
+                                <ul class="list-unstyled">
+                                    {% for reason in detailed_recommendation.reasons %}
+                                    <li class="mb-1">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        {{ reason }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                {% set rating_color = 'success' if detailed_recommendation.rating == 'BUY' or detailed_recommendation.rating == 'STRONG_BUY' else 'warning' if detailed_recommendation.rating == 'HOLD' else 'danger' %}
+                                <div class="badge bg-{{ rating_color }} fs-4 px-4 py-3 mb-3">
+                                    {{ detailed_recommendation.rating.replace('_', ' ') }}
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">AI Sikkerhet</small>
+                                    <div class="progress mb-1" style="height: 8px;">
+                                        <div class="progress-bar bg-{{ rating_color }}" style="width: {{ detailed_recommendation.confidence }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ detailed_recommendation.confidence }}%</small>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted d-block">Risikonivå</small>
+                                    <span class="badge bg-outline-secondary">{{ detailed_recommendation.risk_level }}</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Sektor</small>
+                                    <span class="fw-bold">{{ detailed_recommendation.sector }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Featured Recommendations -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Topp AI-anbefalinger
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Aksje</th>
+                                    <th>Kurs</th>
+                                    <th>Kursmål</th>
+                                    <th>Oppside</th>
+                                    <th>Anbefaling</th>
+                                    <th>AI Sikkerhet</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in recommendations.featured_picks %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ rec.symbol }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ rec.name }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">kr {{ "%.2f"|format(rec.current_price) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">kr {{ "%.2f"|format(rec.target_price) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">+{{ "%.1f"|format(rec.upside) }}%</span>
+                                    </td>
+                                    <td>
+                                        {% set rating_color = 'success' if rec.rating == 'BUY' or rec.rating == 'STRONG_BUY' else 'warning' if rec.rating == 'HOLD' else 'danger' %}
+                                        <span class="badge bg-{{ rating_color }}">{{ rec.rating.replace('_', ' ') }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress me-2" style="width: 60px; height: 6px;">
+                                                <div class="progress-bar bg-success" style="width: {{ rec.confidence }}%"></div>
+                                            </div>
+                                            <small>{{ rec.confidence }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('stocks.details', symbol=rec.symbol) }}" 
+                                               class="btn btn-outline-primary" title="Se detaljer">
+                                                <i class="bi bi-info-circle"></i> Detaljer
+                                            </a>
+                                            <a href="{{ url_for('analysis.technical') }}?ticker={{ rec.symbol }}" 
+                                               class="btn btn-outline-success" title="Teknisk analyse">
+                                                <i class="bi bi-graph-up"></i> Analyse
+                                            </a>
+                                            <a href="https://www.nordnet.no/market/stocks?query={{ rec.symbol }}" 
+                                               target="_blank" class="btn btn-outline-warning" title="Kjøp via Nordnet">
+                                                <i class="bi bi-cart-plus"></i> Kjøp
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sector Recommendations -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-diagram-3 me-2"></i>
+                                Sektoranbefalinger
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                {% for sector, data in recommendations.sector_recommendations.items() %}
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">{{ sector }}</h6>
+                                            {% set sector_color = 'success' if data.rating == 'OVERWEIGHT' else 'warning' if data.rating == 'NEUTRAL' else 'danger' %}
+                                            <span class="badge bg-{{ sector_color }}">{{ data.rating }}</span>
+                                        </div>
+                                        <p class="text-muted small mb-2">{{ data.outlook }}</p>
+                                        <div class="small">
+                                            <strong>Drivere:</strong>
+                                            {% for driver in data.drivers %}
+                                                <span class="badge bg-light text-dark me-1">{{ driver }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Outlook -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-globe me-2"></i>
+                                Markedsutsikter
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="badge bg-info fs-6 px-3 py-2">
+                                    {{ recommendations.market_outlook.overall_sentiment }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6 class="fw-bold small">Nøkkeltemaer:</h6>
+                                <ul class="list-unstyled small">
+                                    {% for theme in recommendations.market_outlook.key_themes %}
+                                    <li class="mb-1">
+                                        <i class="bi bi-dot"></i> {{ theme }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h6 class="fw-bold small text-warning">Risikofaktorer:</h6>
+                                <ul class="list-unstyled small">
+                                    {% for risk in recommendations.market_outlook.risk_factors %}
+                                    <li class="mb-1">
+                                        <i class="bi bi-exclamation-triangle text-warning me-1"></i> {{ risk }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="alert alert-warning" role="alert">
+                <div class="d-flex">
+                    <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                    <div>
+                        <strong>Viktig informasjon:</strong> Disse anbefalingene er basert på AI-analyse og historiske data. 
+                        De utgjør ikke investeringsrådgivning og bør ikke være det eneste grunnlaget for investeringsbeslutninger. 
+                        Alltid gjør din egen research og vurder din risikotoleranse før du investerer.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactive features -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add tooltips to confidence indicators
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const confidence = bar.style.width;
+        bar.setAttribute('title', `AI Sikkerhet: ${confidence}`);
+    });
+    
+    // Enable Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}
