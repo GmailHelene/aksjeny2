@@ -55,37 +55,41 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if prediction %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ url_for('stocks.details', symbol=prediction.ticker) }}" class="text-decoration-none fw-bold">
-                                            {{ prediction.ticker }}
-                                        </a>
-                                    </td>
-                                    <td>{{ prediction.current_price }}</td>
-                                    <td>{{ prediction.predicted_price }}</td>
-                                    <td>
-                                        <span class="{% if prediction.change_percent > 0 %}text-success{% elif prediction.change_percent < 0 %}text-danger{% endif %}">
-                                            {{ prediction.change_percent }}%
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">{{ prediction.confidence }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ prediction.ticker }}" class="btn btn-outline-primary">
-                                                <i class="bi bi-graph-up"></i> Analyse
+                                {% if predictions_oslo %}
+                                    {% for ticker, prediction in predictions_oslo.items() %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="text-decoration-none fw-bold">
+                                                {{ ticker }}
                                             </a>
-                                            <a href="{{ url_for('stocks.details', symbol=prediction.ticker) }}" class="btn btn-outline-secondary">
-                                                <i class="bi bi-info-circle"></i> Detaljer
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td>{{ "%.2f"|format(prediction.last_price) }} NOK</td>
+                                        <td>{{ "%.2f"|format(prediction.next_price) }} NOK</td>
+                                        <td>
+                                            <span class="{% if prediction.change_percent > 0 %}text-success{% elif prediction.change_percent < 0 %}text-danger{% endif %}">
+                                                {% if prediction.change_percent > 0 %}+{% endif %}{{ "%.2f"|format(prediction.change_percent) }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if prediction.confidence == 'HIGH' %}bg-success{% elif prediction.confidence == 'MEDIUM' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                {{ prediction.confidence }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('analysis.ai') }}?ticker={{ ticker }}" class="btn btn-outline-primary">
+                                                    <i class="bi bi-graph-up"></i> Analyse
+                                                </a>
+                                                <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-secondary">
+                                                    <i class="bi bi-info-circle"></i> Detaljer
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
                                 {% else %}
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">Ingen prediksjon tilgjengelig for valgt ticker.</td>
+                                    <td colspan="6" class="text-center text-muted">Ingen prediksjoner tilgjengelig for Oslo Børs.</td>
                                 </tr>
                                 {% endif %}
                             </tbody>
@@ -147,7 +151,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('analysis.warren_buffett') }}?ticker={{ ticker }}" class="btn btn-outline-primary">
+                                            <a href="{{ url_for('analysis.ai') }}?ticker={{ ticker }}" class="btn btn-outline-primary">
                                                 <i class="bi bi-graph-up"></i> Analyse
                                             </a>
                                             <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-outline-secondary">

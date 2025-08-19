@@ -877,42 +877,151 @@ def screener():
         
         # Track selected filters for template
         selected_filters = request.form.getlist('filters') if request.method == 'POST' else []
+        preset = request.form.get('preset', '') if request.method == 'POST' else ''
+        
         if request.method == 'POST':
-            # Mock screener results
-            results = [
-                {
-                    'ticker': 'EQNR.OL',
-                    'name': 'Equinor ASA',
-                    'company': 'Equinor ASA',  # Add company field
-                    'price': 320.50,
-                    'change_percent': 2.5,
-                    'volume': '1.2M',
-                    'market_cap': '1020B',
-                    'pe_ratio': 12.4,
-                    'pb_ratio': 1.8,
-                    'rsi': 45.2,
-                    'recommendation': 'BUY',
-                    'dividend_yield': 5.2,
-                    'sector': 'Energy',
-                    'industry': 'Oil & Gas'
-                },
-                {
-                    'ticker': 'DNB.OL',
-                    'name': 'DNB Bank ASA',
-                    'company': 'DNB Bank ASA',  # Add company field
-                    'price': 185.20,
-                    'change_percent': 1.8,
-                    'volume': '890K',
-                    'market_cap': '280B',
-                    'pe_ratio': 11.2,
-                    'pb_ratio': 1.2,
-                    'rsi': 52.1,
-                    'recommendation': 'HOLD',
-                    'dividend_yield': 6.2,
-                    'sector': 'Financial',
-                    'industry': 'Banking'
-                }
-            ]
+            # Generate different results based on preset selection
+            if preset == 'value_stocks':
+                results = [
+                    {
+                        'ticker': 'EQNR.OL',
+                        'name': 'Equinor ASA',
+                        'company': 'Equinor ASA',
+                        'price': 320.50,
+                        'change_percent': 2.5,
+                        'volume': '1.2M',
+                        'market_cap': '1020B',
+                        'pe_ratio': 12.4,
+                        'pb_ratio': 1.8,
+                        'rsi': 45.2,
+                        'recommendation': 'BUY',
+                        'dividend_yield': 5.2,
+                        'sector': 'Energy',
+                        'industry': 'Oil & Gas'
+                    },
+                    {
+                        'ticker': 'TEL.OL',
+                        'name': 'Telenor ASA',
+                        'company': 'Telenor ASA',
+                        'price': 145.80,
+                        'change_percent': 1.2,
+                        'volume': '650K',
+                        'market_cap': '195B',
+                        'pe_ratio': 14.8,
+                        'pb_ratio': 1.5,
+                        'rsi': 48.7,
+                        'recommendation': 'BUY',
+                        'dividend_yield': 6.8,
+                        'sector': 'Telecommunications',
+                        'industry': 'Wireless'
+                    }
+                ]
+            elif preset == 'growth_stocks':
+                results = [
+                    {
+                        'ticker': 'AAPL',
+                        'name': 'Apple Inc.',
+                        'company': 'Apple Inc.',
+                        'price': 182.34,
+                        'change_percent': 3.8,
+                        'volume': '45.2M',
+                        'market_cap': '2850B',
+                        'pe_ratio': 28.5,
+                        'pb_ratio': 8.2,
+                        'rsi': 62.1,
+                        'recommendation': 'BUY',
+                        'dividend_yield': 0.5,
+                        'sector': 'Technology',
+                        'industry': 'Consumer Electronics'
+                    },
+                    {
+                        'ticker': 'NVDA',
+                        'name': 'NVIDIA Corporation',
+                        'company': 'NVIDIA Corporation',
+                        'price': 485.76,
+                        'change_percent': 5.2,
+                        'volume': '25.8M',
+                        'market_cap': '1200B',
+                        'pe_ratio': 29.8,
+                        'pb_ratio': 12.4,
+                        'rsi': 68.4,
+                        'recommendation': 'STRONG_BUY',
+                        'dividend_yield': 0.3,
+                        'sector': 'Technology',
+                        'industry': 'Semiconductors'
+                    }
+                ]
+            elif preset == 'dividend_stocks':
+                results = [
+                    {
+                        'ticker': 'DNB.OL',
+                        'name': 'DNB Bank ASA',
+                        'company': 'DNB Bank ASA',
+                        'price': 185.20,
+                        'change_percent': 1.8,
+                        'volume': '890K',
+                        'market_cap': '280B',
+                        'pe_ratio': 11.2,
+                        'pb_ratio': 1.2,
+                        'rsi': 52.1,
+                        'recommendation': 'HOLD',
+                        'dividend_yield': 6.2,
+                        'sector': 'Financial',
+                        'industry': 'Banking'
+                    },
+                    {
+                        'ticker': 'NHY.OL',
+                        'name': 'Norsk Hydro ASA',
+                        'company': 'Norsk Hydro ASA',
+                        'price': 68.45,
+                        'change_percent': 0.8,
+                        'volume': '1.8M',
+                        'market_cap': '140B',
+                        'pe_ratio': 9.8,
+                        'pb_ratio': 1.1,
+                        'rsi': 44.6,
+                        'recommendation': 'BUY',
+                        'dividend_yield': 7.5,
+                        'sector': 'Materials',
+                        'industry': 'Aluminum'
+                    }
+                ]
+            else:
+                # Default mixed results for custom filters
+                results = [
+                    {
+                        'ticker': 'TSLA',
+                        'name': 'Tesla Inc.',
+                        'company': 'Tesla Inc.',
+                        'price': 245.67,
+                        'change_percent': -1.2,
+                        'volume': '85.4M',
+                        'market_cap': '780B',
+                        'pe_ratio': 65.2,
+                        'pb_ratio': 9.8,
+                        'rsi': 38.9,
+                        'recommendation': 'HOLD',
+                        'dividend_yield': 0.0,
+                        'sector': 'Automotive',
+                        'industry': 'Electric Vehicles'
+                    },
+                    {
+                        'ticker': 'MOWI.OL',
+                        'name': 'Mowi ASA',
+                        'company': 'Mowi ASA',
+                        'price': 215.30,
+                        'change_percent': 2.1,
+                        'volume': '420K',
+                        'market_cap': '112B',
+                        'pe_ratio': 18.6,
+                        'pb_ratio': 2.8,
+                        'rsi': 55.7,
+                        'recommendation': 'BUY',
+                        'dividend_yield': 4.2,
+                        'sector': 'Consumer Staples',
+                        'industry': 'Aquaculture'
+                    }
+                ]
         
         # Process filter names before template rendering
         filter_display_names = {}

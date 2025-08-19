@@ -186,14 +186,20 @@ def settings():
                 settings_data = {
                     'email_enabled': 'email_enabled' in request.form,
                     'push_enabled': 'push_enabled' in request.form,
-                    'price_alerts': 'price_alerts' in request.form,
-                    'insider_alerts': 'insider_alerts' in request.form,
-                    'earnings_alerts': 'earnings_alerts' in request.form,
-                    'analyst_alerts': 'analyst_alerts' in request.form,
-                    'volume_alerts': 'volume_alerts' in request.form,
-                    'daily_summary': 'daily_summary' in request.form,
-                    'market_news': 'market_news' in request.form,
-                    'system_updates': 'system_updates' in request.form
+                    'email_price_alerts': 'email_price_alerts' in request.form,
+                    'email_ai_predictions': 'email_ai_predictions' in request.form,
+                    'email_portfolio_updates': 'email_portfolio_updates' in request.form,
+                    'email_news_alerts': 'email_news_alerts' in request.form,
+                    'email_market_alerts': 'email_market_alerts' in request.form,
+                    'push_price_alerts': 'push_price_alerts' in request.form,
+                    'push_ai_predictions': 'push_ai_predictions' in request.form,
+                    'push_portfolio_updates': 'push_portfolio_updates' in request.form,
+                    'push_news_alerts': 'push_news_alerts' in request.form,
+                    'push_market_alerts': 'push_market_alerts' in request.form,
+                    'quiet_hours_enabled': 'quiet_hours_enabled' in request.form,
+                    'quiet_hours_start': request.form.get('quiet_hours_start', '22:00'),
+                    'quiet_hours_end': request.form.get('quiet_hours_end', '08:00'),
+                    'timezone': request.form.get('timezone', 'Europe/Oslo')
                 }
             
             try:
@@ -237,14 +243,20 @@ def settings():
         preferences = {
             'email_enabled': user_settings.get('email_enabled', True),
             'push_enabled': user_settings.get('push_enabled', False),
-            'price_alerts': user_settings.get('price_alerts', True),
-            'insider_alerts': user_settings.get('insider_alerts', True),
-            'earnings_alerts': user_settings.get('earnings_alerts', True),
-            'analyst_alerts': user_settings.get('analyst_alerts', True),
-            'volume_alerts': user_settings.get('volume_alerts', False),
-            'daily_summary': user_settings.get('daily_summary', False),
-            'market_news': user_settings.get('market_news', False),
-            'system_updates': user_settings.get('system_updates', True)
+            'email_price_alerts': user_settings.get('email_price_alerts', True),
+            'email_ai_predictions': user_settings.get('email_ai_predictions', True),
+            'email_portfolio_updates': user_settings.get('email_portfolio_updates', True),
+            'email_news_alerts': user_settings.get('email_news_alerts', True),
+            'email_market_alerts': user_settings.get('email_market_alerts', True),
+            'push_price_alerts': user_settings.get('push_price_alerts', False),
+            'push_ai_predictions': user_settings.get('push_ai_predictions', False),
+            'push_portfolio_updates': user_settings.get('push_portfolio_updates', False),
+            'push_news_alerts': user_settings.get('push_news_alerts', False),
+            'push_market_alerts': user_settings.get('push_market_alerts', False),
+            'quiet_hours_enabled': user_settings.get('quiet_hours_enabled', False),
+            'quiet_hours_start': user_settings.get('quiet_hours_start', '22:00'),
+            'quiet_hours_end': user_settings.get('quiet_hours_end', '08:00'),
+            'timezone': user_settings.get('timezone', 'Europe/Oslo')
         }
         
         return render_template('notifications/settings.html', preferences=preferences)
@@ -282,8 +294,9 @@ def api_update_settings():
             
             # Make sure all checkbox values are boolean
             for key, value in settings_data.items():
-                if key.endswith('_enabled') or key in ['email_price_alerts', 'email_news_alerts', 
-                                                     'push_price_alerts', 'push_news_alerts']:
+                if (key.endswith('_enabled') or key.endswith('_alerts') or 
+                    key.startswith('email_') or key.startswith('push_') or
+                    key == 'quiet_hours_enabled'):
                     settings_data[key] = bool(value)
             
             # Update user settings

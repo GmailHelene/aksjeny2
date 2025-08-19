@@ -767,6 +767,33 @@ def send_weekly_email(user, report_data):
     except Exception as e:
         current_app.logger.error(f"Feil ved sending av e-post til {user.email}: {e}")
 
+@watchlist_bp.route('/delete/<int:id>', methods=['POST'])
+@login_required
+def delete_watchlist(id):
+    """Slett en watchlist"""
+    try:
+        watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+        
+        # Slett alle items først
+        WatchlistItem.query.filter_by(watchlist_id=id).delete()
+        
+        # Så slett watchlist
+        db.session.delete(watchlist)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Watchlist "{watchlist.name}" ble slettet'
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error deleting watchlist {id}: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': 'Kunne ikke slette watchlist'
+        }), 500
+
 @watchlist_bp.route('/settings')
 @login_required
 def notification_settings():
