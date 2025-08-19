@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Aksjeanalyse | Kunstig intelligens for Oslo Børs - Aksjeradar{% endblock %}
+{% block description %}Revolusjonerende AI-drevne aksjeanalyser som gir deg competitive fordeler. Maskinlæring analyserer markedstrender, sentiments og predikerer aksjeutvikling.{% endblock %}
+{% block keywords %}AI aksjeanalyse, kunstig intelligens aksjer, maskinlæring trading, AI Oslo Børs, automatisk aksjeanalyse, smart investering{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="my-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+            <li class="breadcrumb-item active">KI-analyse</li>
+        </ol>
+    </nav>
+
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="card border-0 shadow mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">KI-analyse</h2>
+        </div>
+        <div class="card-body">
+            <p class="lead">Vår KI-analyse kombinerer tekniske indikatorer, markedssentiment og fundamentale faktorer for å gi deg dypere innsikt i aksjer.</p>
+            
+            <form method="GET" action="{{ url_for('analysis.ai') }}" class="mb-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" class="form-control" id="ticker" name="ticker" 
+                           placeholder="Skriv inn ticker (f.eks. EQNR.OL for Equinor)" required>
+                    <button type="submit" class="btn btn-primary px-4">
+                        Analyser
+                    </button>
+                </div>
+                <div class="form-text">Skriv inn en aksjeticker for å få en KI-drevet analyse. For norske aksjer, legg til .OL (f.eks. EQNR.OL)</div>
+            </form>
+            
+            {% if not ticker %}
+                <!-- Popular stocks for AI analysis -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Populære aksjer for analyse</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Oslo Børs</h6>
+                            {% for stock in popular_stocks.oslo %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-primary btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Globale aksjer</h6>
+                            {% for stock in popular_stocks.global %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-success btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted">Krypto</h6>
+                            {% for stock in popular_stocks.crypto %}
+                            <a href="{{ url_for('analysis.ai', ticker=stock) }}" class="btn btn-outline-warning btn-sm me-1 mb-1">{{ stock }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if ticker %}
+                <h3>{{ ticker }}</h3>
+                
+                {% if error %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i> {{ error }}
+                    </div>
+                {% elif analysis %}
+                    <div class="analysis-results">
+                        <!-- Overall Assessment -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h4><i class="bi bi-brain me-2"></i>KI-vurdering</h4>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 bg-light rounded">
+                                            <h5 class="mb-1">{{ analysis.sentiment|title }}</h5>
+                                            <small class="text-muted">Sentiment</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 bg-light rounded">
+                                            <h5 class="mb-1">{{ (analysis.prediction.confidence * 100)|round|int }}%</h5>
+                                            <small class="text-muted">Konfidens</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 bg-light rounded">
+                                            <h5 class="mb-1">{{ analysis.prediction.target_price }}</h5>
+                                            <small class="text-muted">Målpris</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="lead">{{ analysis.summary }}</p>
+                                
+                                <div class="alert alert-{{ 'success' if analysis.prediction.direction == 'opp' else 'warning' if analysis.prediction.direction == 'sideveis' else 'danger' }}">
+                                    <strong>Prediksjon:</strong> {{ analysis.prediction.direction|upper }} over {{ analysis.prediction.time_frame }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Analysis -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h4><i class="bi bi-graph-up me-2"></i>Teknisk Analyse</h4>
+                                {% if analysis.technical_factors %}
+                                <ul class="list-group list-group-flush">
+                                    {% for factor in analysis.technical_factors %}
+                                    <li class="list-group-item border-0 px-0">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>{{ factor }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Fundamental Analysis -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h4><i class="bi bi-calculator me-2"></i>Fundamental Analyse</h4>
+                                {% if analysis.fundamental_factors %}
+                                <ul class="list-group list-group-flush">
+                                    {% for factor in analysis.fundamental_factors %}
+                                    <li class="list-group-item border-0 px-0">
+                                        <i class="bi bi-bar-chart-fill text-primary me-2"></i>{{ factor }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Economic Indicators -->
+                        {% if analysis.economic_indicators %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h4><i class="bi bi-globe me-2"></i>Økonomiske Indikatorer</h4>
+                                <div class="row">
+                                    {% for key, value in analysis.economic_indicators.items() %}
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="fw-bold">{{ key.replace('_', ' ')|title }}</h6>
+                                        <p class="mb-0">{{ value }}</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Navigation Buttons for Further Analysis -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body">
+                                <h4><i class="bi bi-arrow-right-circle me-2"></i>Mer Analyse</h4>
+                                <p class="text-muted mb-3">Utforsk flere analysetyper for {{ ticker }}</p>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('stocks.details', symbol=ticker) }}" class="btn btn-primary w-100">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            Detaljer
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('analysis.recommendation', ticker=ticker) }}" class="btn btn-success w-100">
+                                            <i class="bi bi-star me-2"></i>
+                                            Anbefaling
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-info w-100">
+                                            <i class="bi bi-graph-up me-2"></i>
+                                            Teknisk Analyse
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('analysis.warren_buffett', ticker=ticker) }}" class="btn btn-warning w-100">
+                                            <i class="bi bi-trophy me-2"></i>
+                                            Warren Buffett
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('analysis.fundamental', ticker=ticker) }}" class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-bar-chart me-2"></i>
+                                            Fundamental
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('analysis.sentiment', ticker=ticker) }}" class="btn btn-outline-info w-100">
+                                            <i class="bi bi-heart me-2"></i>
+                                            Sentiment
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('stocks.compare', symbols=ticker) }}" class="btn btn-outline-secondary w-100">
+                                            <i class="bi bi-arrows-angle-expand me-2"></i>
+                                            Jämför
+                                        </a>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <a href="{{ url_for('portfolio.add_stock', symbol=ticker) }}" class="btn btn-outline-success w-100">
+                                            <i class="bi bi-plus-circle me-2"></i>
+                                            Lägg till Portfolio
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                        <div>
+                            <h4 class="alert-heading mb-1">Hvordan bruke KI-analysen</h4>
+                            <p class="mb-0">Skriv inn en aksjeticker ovenfor for å få en omfattende analyse basert på våre KI-modeller. Analysen inkluderer tekniske indikatorer, sentiment-analyse og fundamentale faktorer.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h4 class="mb-3">Populære aksjer for analyse</h4>
+                <div class="row g-3">
+                    {% for stock in popular_stocks %}
+                    <div class="col-md-4">
+                        <a href="{{ url_for('analysis.ai', ticker=stock.symbol) }}" 
+                           class="card h-100 border-0 shadow-sm text-decoration-none hover-lift">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary mb-1">{{ stock.symbol }}</h5>
+                                <p class="card-text text-muted mb-0">{{ stock.name }}</p>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enable tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Autofokus på søkefeltet
+        document.getElementById('ticker')?.focus();
+    });
+</script>
+{% endblock %}

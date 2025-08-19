@@ -1,0 +1,193 @@
+<div class="analysis-menu mb-4">
+    <div class="card">
+        <div class="card-body py-2">
+            <!-- Desktop Navigation -->
+            <div class="d-none d-lg-flex flex-wrap align-items-center gap-2">
+                <a href="{{ url_for('analysis.index') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
+                    <i class="bi bi-house me-1"></i>Oversikt
+                </a>
+                <a href="/financial-dashboard" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'dashboard.financial_dashboard' else 'btn-outline-primary' }}">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+                <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-up me-1"></i>Teknisk
+                </a>
+                <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
+                    <i class="bi bi-cpu me-1"></i>AI-Analyse
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-sm {{ 'btn-primary' if 'buffett' in request.endpoint or 'benjamin_graham' in request.endpoint else 'btn-outline-primary' }} dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-badge me-1"></i>Fundamental
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                            <i class="bi bi-person-check me-2"></i>Warren Buffett
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
+                            <i class="bi bi-graph-up me-2"></i>Benjamin Graham
+                        </a></li>
+                    </ul>
+                </div>
+                <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
+                    <i class="bi bi-graph-down me-1"></i>Short
+                </a>
+                <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
+                    <i class="bi bi-emoji-smile me-1"></i>Sentiment
+                </a>
+                <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
+                    <i class="bi bi-funnel me-1"></i>Screener
+                </a>
+                
+                <!-- Desktop Ticker Input -->
+                <div class="d-flex align-items-center ms-auto">
+                    <label for="ticker-input" class="form-label me-2 mb-0 small text-muted">Ticker:</label>
+                    <input type="text" id="ticker-input" class="form-control form-control-sm" placeholder="f.eks. AAPL" style="width: 120px;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="analyzeCustomTicker()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div class="d-lg-none">
+                <!-- Primary Actions Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <a href="{{ url_for('analysis.index') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
+                            <i class="bi bi-house"></i><br><small>Oversikt</small>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="/financial-dashboard" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'dashboard.financial_dashboard' else 'btn-outline-primary' }}">
+                            <i class="bi bi-speedometer2"></i><br><small>Dashboard</small>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Analysis Tools Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
+                            <i class="bi bi-graph-up"></i><br><small>Teknisk</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
+                            <i class="bi bi-cpu"></i><br><small>AI-Analyse</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <div class="dropdown w-100">
+                            <button class="btn btn-sm w-100 {{ 'btn-primary' if 'buffett' in request.endpoint or 'benjamin_graham' in request.endpoint else 'btn-outline-primary' }} dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-badge"></i><br><small>Fundamental</small>
+                            </button>
+                            <ul class="dropdown-menu w-100">
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                                    <i class="bi bi-person-check me-2"></i>Warren Buffett
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
+                                    <i class="bi bi-graph-up me-2"></i>Benjamin Graham
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- More Tools Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
+                            <i class="bi bi-graph-down"></i><br><small>Short</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
+                            <i class="bi bi-emoji-smile"></i><br><small>Sentiment</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
+                            <i class="bi bi-funnel"></i><br><small>Screener</small>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Ticker Input -->
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="ticker-input-mobile" class="form-control" placeholder="Søk ticker (f.eks. AAPL)">
+                    <button type="button" class="btn btn-outline-secondary" onclick="analyzeCustomTickerMobile()">
+                        Analyser
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeCustomTicker() {
+    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+    if (ticker) {
+        redirectToAnalysis(ticker);
+    } else {
+        alert('Vennligst skriv inn en ticker (f.eks. AAPL)');
+    }
+}
+
+function analyzeCustomTickerMobile() {
+    const ticker = document.getElementById('ticker-input-mobile').value.trim().toUpperCase();
+    if (ticker) {
+        redirectToAnalysis(ticker);
+    } else {
+        alert('Vennligst skriv inn en ticker (f.eks. AAPL)');
+    }
+}
+
+function redirectToAnalysis(ticker) {
+    // Get current path to determine which analysis to use
+    const currentPath = window.location.pathname;
+    let targetRoute = '';
+    
+    if (currentPath.includes('/technical')) {
+        targetRoute = `/analysis/technical?ticker=${ticker}`;
+    } else if (currentPath.includes('/warren-buffett')) {
+        targetRoute = `/analysis/warren-buffett?ticker=${ticker}`;
+    } else if (currentPath.includes('/benjamin-graham')) {
+        targetRoute = `/analysis/benjamin-graham?ticker=${ticker}`;
+    } else if (currentPath.includes('/short-analysis')) {
+        targetRoute = `/analysis/short-analysis?ticker=${ticker}`;
+    } else if (currentPath.includes('/sentiment')) {
+        targetRoute = `/analysis/sentiment?symbol=${ticker}`;
+    } else if (currentPath.includes('/ai')) {
+        targetRoute = `/analysis/ai?ticker=${ticker}`;
+    } else {
+        // Default to technical analysis
+        targetRoute = `/analysis/technical?ticker=${ticker}`;
+    }
+    
+    window.location.href = targetRoute;
+}
+
+// Allow Enter key to trigger analysis on both inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const desktopInput = document.getElementById('ticker-input');
+    const mobileInput = document.getElementById('ticker-input-mobile');
+    
+    if (desktopInput) {
+        desktopInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeCustomTicker();
+            }
+        });
+    }
+    
+    if (mobileInput) {
+        mobileInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeCustomTickerMobile();
+            }
+        });
+    }
+});
+</script>

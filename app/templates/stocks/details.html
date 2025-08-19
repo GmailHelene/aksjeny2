@@ -1,0 +1,753 @@
+{% extends "base.html" %}
+
+{% block title %}{{ stock.symbol }} - {{ stock.name }} | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Stock Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-1">{{ stock.name or 'N/A' }}</h1>
+                            <p class="text-muted mb-0">{{ stock.symbol }} | {{ stock.exchange or 'Oslo Børs' }}</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <h2 class="h4 mb-1 
+                                {% if stock.change and stock.change > 0 %}text-success
+                                {% elif stock.change and stock.change < 0 %}text-danger
+                                {% else %}text-muted{% endif %}">
+                                {{ "%.2f"|format(stock.price or 0) }} NOK
+                            </h2>
+                            {% if stock.change %}
+                            <span class="
+                                {% if stock.change > 0 %}text-success
+                                {% elif stock.change < 0 %}text-danger
+                                {% else %}text-muted{% endif %}">
+                                {{ "%.2f"|format(stock.change) }} ({{ "%.2f"|format(stock.change_percent or 0) }}%)
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="stockTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                <i class="fas fa-chart-line me-1"></i>Oversikt
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">
+                                <i class="fas fa-chart-area me-1"></i>Kursutvikling
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab">
+                                <i class="fas fa-cogs me-1"></i>Teknisk Analyse
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="fundamentals-tab" data-bs-toggle="tab" data-bs-target="#fundamentals" type="button" role="tab">
+                                <i class="fas fa-calculator me-1"></i>Fundamental
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="stockTabsContent">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Nøkkeltall</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Åpning:</td>
+                                            <td class="text-end">{{ "%.2f"|format(stock.open or stock.price or 0) }} NOK</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Høyeste:</td>
+                                            <td class="text-end">{{ "%.2f"|format(stock.high or stock.price or 0) }} NOK</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Laveste:</td>
+                                            <td class="text-end">{{ "%.2f"|format(stock.low or stock.price or 0) }} NOK</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Volum:</td>
+                                            <td class="text-end">{{ "{:,}"|format(stock.volume or 0) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Markedsverdi:</td>
+                                            <td class="text-end">{{ stock.market_cap or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>P/E-forhold:</td>
+                                            <td class="text-end">{{ stock.pe_ratio or 'N/A' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Informasjon</h5>
+                                    <p><strong>Sektor:</strong> {{ stock.sector or 'N/A' }}</p>
+                                    <p><strong>Industri:</strong> {{ stock.industry or 'N/A' }}</p>
+                                    <p><strong>Land:</strong> {{ stock.country or 'Norge' }}</p>
+                                    {% if stock.description %}
+                                    <p><strong>Beskrivelse:</strong></p>
+                                    <p class="text-muted">{{ stock.description[:200] }}{% if stock.description|length > 200 %}...{% endif %}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Tab -->
+                        <div class="tab-pane fade" id="chart" role="tabpanel">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>Kursutvikling</h5>
+                                    <div id="price-chart" style="height: 400px;">
+                                        <div class="d-flex justify-content-center align-items-center h-100">
+                                            <div class="text-center">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Laster chart...</span>
+                                                </div>
+                                                <p class="mt-2 text-muted">Laster kursdata...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Chart Controls -->
+                                    <div class="mt-3">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="updateChart('1D')">1D</button>
+                                            <button type="button" class="btn btn-outline-secondary active" onclick="updateChart('1W')">1U</button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="updateChart('1M')">1M</button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="updateChart('3M')">3M</button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="updateChart('6M')">6M</button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="updateChart('1Y')">1Å</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Analysis Tab -->
+                        <div class="tab-pane fade" id="technical" role="tabpanel">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5>Tekniske Indikatorer</h5>
+                                    <div id="technical-loading" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Laster tekniske indikatorer...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Beregner tekniske indikatorer...</p>
+                                    </div>
+                                    <div id="technical-content" style="display: none;">
+                                        <!-- Technical indicators will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fundamentals Tab -->
+                        <div class="tab-pane fade" id="fundamentals" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Resultatregnskap</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Omsetning:</td>
+                                            <td class="text-end">{{ stock.revenue or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Netto resultat:</td>
+                                            <td class="text-end">{{ stock.net_income or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Resultat pr aksje:</td>
+                                            <td class="text-end">{{ stock.eps or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>EBITDA:</td>
+                                            <td class="text-end">{{ stock.ebitda or 'N/A' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Balanse</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Total gjeld:</td>
+                                            <td class="text-end">{{ stock.total_debt or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kontanter:</td>
+                                            <td class="text-end">{{ stock.cash or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Egenkapital:</td>
+                                            <td class="text-end">{{ stock.equity or 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bok verdi pr aksje:</td>
+                                            <td class="text-end">{{ stock.book_value or 'N/A' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Handlinger</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" onclick="addToWatchlist('{{ stock.symbol }}')">
+                            <i class="fas fa-star me-1"></i>Legg til favoritter
+                        </button>
+                        <button class="btn btn-success external-buy-btn" data-ticker="{{ stock.symbol }}">
+                            <i class="fas fa-shopping-cart me-1"></i>Kjøp
+                        </button>
+                        <a href="{{ url_for('analysis.ai_analysis', ticker=stock.symbol) }}" class="btn btn-info">
+                            <i class="fas fa-robot me-1"></i>AI Analyse
+                        </a>
+                        <a href="{{ url_for('analysis.technical_analysis', symbol=stock.symbol) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-chart-line me-1"></i>Teknisk Analyse
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Stocks -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Relaterte Aksjer</h5>
+                </div>
+                <div class="card-body">
+                    {% if similar_stocks %}
+                        {% for similar in similar_stocks[:5] %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <a href="{{ url_for('stocks.details', symbol=similar.symbol) }}" class="text-decoration-none">
+                                    <strong>{{ similar.symbol }}</strong>
+                                </a>
+                                <br>
+                                <small class="text-muted">{{ similar.name[:30] }}...</small>
+                            </div>
+                            <div class="text-end">
+                                <strong>{{ "%.2f"|format(similar.price or 0) }}</strong>
+                                <br>
+                                <small class="
+                                    {% if similar.change and similar.change > 0 %}text-success
+                                    {% elif similar.change and similar.change < 0 %}text-danger
+                                    {% else %}text-muted{% endif %}">
+                                    {{ "%.2f"|format(similar.change_percent or 0) }}%
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Ingen relaterte aksjer funnet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- News -->
+            {% if stock_news %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Nyheter</h5>
+                </div>
+                <div class="card-body">
+                    {% for news in stock_news[:3] %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="mb-1">
+                            <a href="{{ news.url }}" target="_blank" class="text-decoration-none">
+                                {{ news.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-1">{{ news.summary[:100] }}...</p>
+                        <small class="text-muted">{{ news.published_at.strftime('%d.%m.%Y %H:%M') if news.published_at else 'N/A' }}</small>
+                    </div>
+                    {% endfor %}
+                    <a href="{{ url_for('news_bp.search', q=stock.symbol) }}" class="btn btn-sm btn-outline-primary">
+                        Se alle nyheter
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+// Chart functionality
+let currentSymbol = '{{ stock.symbol }}';
+let chartData = null;
+
+function updateChart(period) {
+    // Update active button
+    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+    // Find and activate the correct button
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    buttons.forEach(btn => {
+        if (btn.textContent.includes(period)) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Show loading
+    document.getElementById('price-chart').innerHTML = `
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Laster chart...</span>
+                </div>
+                <p class="mt-2 text-muted">Laster kursdata for ${period}...</p>
+            </div>
+        </div>
+    `;
+    
+    // Simulate loading and create mock chart
+    setTimeout(() => {
+        createMockChart(period);
+    }, 1000);
+}
+
+function createMockChart(period) {
+    const dates = [];
+    const prices = [];
+    const volumes = [];
+    const basePrice = {{ stock.price or 100 }};
+    
+    // Generate mock data
+    const days = period === '1D' ? 24 : period === '1W' ? 7 : period === '1M' ? 30 : 
+                 period === '3M' ? 90 : period === '6M' ? 180 : 365;
+    
+    let currentPrice = basePrice;
+    
+    for (let i = days; i >= 0; i--) {
+        const date = new Date();
+        if (period === '1D') {
+            date.setHours(date.getHours() - i);
+        } else {
+            date.setDate(date.getDate() - i);
+        }
+        dates.push(period === '1D' ? date.toISOString() : date.toISOString().split('T')[0]);
+        
+        // More realistic price movement
+        const volatility = period === '1D' ? 0.001 : 0.02;
+        const randomChange = (Math.random() - 0.5) * (basePrice * volatility);
+        currentPrice = Math.max(currentPrice + randomChange, basePrice * 0.7);
+        prices.push(parseFloat(currentPrice.toFixed(2)));
+        
+        // Generate volume data
+        const baseVolume = 1000000;
+        const volumeVariation = Math.random() * baseVolume;
+        volumes.push(Math.floor(baseVolume + volumeVariation));
+    }
+    
+    // Price trace
+    const priceTrace = {
+        x: dates,
+        y: prices,
+        type: 'scatter',
+        mode: 'lines',
+        name: currentSymbol,
+        line: {
+            color: prices[prices.length - 1] > prices[0] ? '#28a745' : '#dc3545',
+            width: 2
+        },
+        hovertemplate: '<b>%{fullData.name}</b><br>' +
+                      'Dato: %{x}<br>' +
+                      'Pris: %{y} NOK<br>' +
+                      '<extra></extra>'
+    };
+    
+    // Volume trace (on secondary y-axis)
+    const volumeTrace = {
+        x: dates,
+        y: volumes,
+        type: 'bar',
+        name: 'Volum',
+        yaxis: 'y2',
+        marker: {
+            color: 'rgba(0, 123, 255, 0.3)'
+        },
+        hovertemplate: '<b>Volum</b><br>' +
+                      'Dato: %{x}<br>' +
+                      'Volum: %{y:,.0f}<br>' +
+                      '<extra></extra>'
+    };
+    
+    const layout = {
+        title: {
+            text: `${currentSymbol} - ${period}`,
+            font: { size: 18, color: '#333' }
+        },
+        xaxis: {
+            title: 'Tid',
+            type: 'date',
+            rangeslider: { visible: false },
+            showgrid: true,
+            gridcolor: 'rgba(0,0,0,0.1)'
+        },
+        yaxis: {
+            title: 'Pris (NOK)',
+            side: 'left',
+            showgrid: true,
+            gridcolor: 'rgba(0,0,0,0.1)',
+            tickformat: '.2f'
+        },
+        yaxis2: {
+            title: 'Volum',
+            overlaying: 'y',
+            side: 'right',
+            showgrid: false,
+            tickformat: '.2s'
+        },
+        showlegend: false,
+        responsive: true,
+        margin: {
+            l: 60,
+            r: 60,
+            t: 80,
+            b: 60
+        },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            family: 'system-ui, -apple-system, sans-serif',
+            size: 12,
+            color: '#333'
+        },
+        hovermode: 'x unified'
+    };
+    
+    const config = {
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d'],
+        displaylogo: false,
+        responsive: true
+    };
+    
+    Plotly.newPlot('price-chart', [priceTrace, volumeTrace], layout, config);
+}
+
+// Initialize chart when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load default chart when chart tab is shown
+    const chartTab = document.getElementById('chart-tab');
+    const chartPane = document.getElementById('chart');
+    
+    // Add event listener for when chart tab is clicked
+    chartTab.addEventListener('shown.bs.tab', function() {
+        if (!document.getElementById('price-chart').innerHTML.includes('Plotly')) {
+            updateChart('1W'); // Load default 1 week chart
+        }
+    });
+});
+
+// Technical analysis loading - Fixed
+document.getElementById('technical-tab').addEventListener('click', function() {
+    const loadingElement = document.getElementById('technical-loading');
+    const contentElement = document.getElementById('technical-content');
+    
+    if (loadingElement) {
+        // Show loading first
+        loadingElement.style.display = 'block';
+        if (contentElement) contentElement.style.display = 'none';
+        
+        // Load technical data
+        setTimeout(() => {
+            loadingElement.style.display = 'none';
+            if (contentElement) {
+                contentElement.style.display = 'block';
+                contentElement.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Trendindikatorer</h6>
+                            <table class="table table-sm">
+                                <tr><td>RSI (14)</td><td class="text-end"><span class="badge bg-warning">65.2</span></td></tr>
+                                <tr><td>SMA 20</td><td class="text-end">${({{ stock.price or 100 }} * 0.98).toFixed(2)} NOK</td></tr>
+                                <tr><td>SMA 50</td><td class="text-end">${({{ stock.price or 100 }} * 0.95).toFixed(2)} NOK</td></tr>
+                                <tr><td>EMA 12</td><td class="text-end">${({{ stock.price or 100 }} * 1.02).toFixed(2)} NOK</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Momentum</h6>
+                            <table class="table table-sm">
+                                <tr><td>MACD</td><td class="text-end"><span class="badge bg-success">Bullish</span></td></tr>
+                                <tr><td>Stokastisk</td><td class="text-end">78.5</td></tr>
+                                <tr><td>Williams %R</td><td class="text-end">-25.3</td></tr>
+                                <tr><td>ADX</td><td class="text-end"><span class="badge bg-info">42.1</span></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Analyse Sammendrag</h6>
+                            <div class="alert bg-dark-green">
+                                <strong>Teknisk utblick:</strong> Aksjen viser positive tekniske signaler med RSI på 65.2 som indikerer moderat overkjøpt nivå. 
+                                MACD viser bullish momentum. SMA 20 over SMA 50 bekrefter oppgående trend.
+                                <br><span class="badge bg-dark-green">BUY</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }, 1500);
+    }
+});
+
+// Add to watchlist function
+function addToWatchlist(ticker) {
+    {% if current_user.is_authenticated %}
+        fetch('/watchlist/api/watchlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({ ticker: ticker })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + ticker + ' lagt til i favoritter!');
+            } else {
+                alert('❌ Feil: ' + (data.error || 'Kunne ikke legge til i favoritter'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Teknisk feil ved adding til favoritter');
+        });
+    {% else %}
+        alert('ℹ️ Du må logge inn for å legge til favoritter');
+        window.location.href = '/auth/login';
+    {% endif %}
+}
+
+// Load technical indicators when tab is shown
+function loadTechnicalIndicators() {
+    const loading = document.getElementById('technical-loading');
+    const content = document.getElementById('technical-content');
+    
+    if (!loading || !content) return;
+    
+    // Simulate API call
+    setTimeout(() => {
+        const mockIndicators = {
+            rsi: (Math.random() * 40 + 30).toFixed(1),
+            macd: (Math.random() * 2 - 1).toFixed(2),
+            sma20: (Math.random() * 50 + 200).toFixed(2),
+            sma50: (Math.random() * 50 + 190).toFixed(2),
+            volume: (Math.random() * 1000000 + 500000).toFixed(0),
+            bollinger_upper: (Math.random() * 50 + 220).toFixed(2),
+            bollinger_lower: (Math.random() * 50 + 180).toFixed(2)
+        };
+        
+        content.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Momentum Indikatorer</h6>
+                            <table class="table table-sm">
+                                <tr><td>RSI (14)</td><td><span class="badge ${mockIndicators.rsi > 70 ? 'bg-danger' : mockIndicators.rsi < 30 ? 'bg-success' : 'bg-warning'}">${mockIndicators.rsi}</span></td></tr>
+                                <tr><td>MACD</td><td>${mockIndicators.macd}</td></tr>
+                                <tr><td>Stochastic</td><td>${(Math.random() * 40 + 30).toFixed(1)}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Trend Indikatorer</h6>
+                            <table class="table table-sm">
+                                <tr><td>SMA 20</td><td>${mockIndicators.sma20}</td></tr>
+                                <tr><td>SMA 50</td><td>${mockIndicators.sma50}</td></tr>
+                                <tr><td>Bollinger Upper</td><td>${mockIndicators.bollinger_upper}</td></tr>
+                                <tr><td>Bollinger Lower</td><td>${mockIndicators.bollinger_lower}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Signal</h6>
+                            <p class="text-${mockIndicators.rsi > 70 ? 'danger' : mockIndicators.rsi < 30 ? 'success' : 'warning'}">
+                                ${mockIndicators.rsi > 70 ? 'Overkjøpt - Vurder salg' : mockIndicators.rsi < 30 ? 'Oversolgt - Vurder kjøp' : 'Nøytral - Avvent'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    }, 2000);
+}
+
+// Listen for technical tab activation
+document.addEventListener('DOMContentLoaded', function() {
+    // Load technical indicators when technical tab is clicked
+    const technicalTab = document.getElementById('technical-tab');
+    if (technicalTab) {
+        technicalTab.addEventListener('click', function() {
+            const content = document.getElementById('technical-content');
+            if (content && content.innerHTML.trim() === '') {
+                loadTechnicalIndicators();
+            }
+        });
+    }
+});
+
+// Initialize chart on page load
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        createMockChart('1W');
+    }, 500);
+});
+</script>
+
+<style>
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: #6c757d;
+}
+
+.nav-tabs .nav-link.active {
+    border-bottom-color: #007bff;
+    color: #007bff;
+    background: none;
+}
+
+.nav-tabs .nav-link:hover {
+    border-bottom-color: #007bff;
+    color: #007bff;
+}
+
+#price-chart {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background: #f8f9fa;
+}
+
+.table td {
+    border: none;
+    padding: 0.5rem 0;
+}
+
+.table td:first-child {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+/* Custom dark green for BUY signal banner */
+.bg-dark-green {
+    background-color: #14532d !important;
+    color: #fff !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // External buy button functionality - redirect to external broker
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.dataset.ticker;
+            if (!ticker) return;
+            
+            // Update button to show loading state
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
+            this.disabled = true;
+            
+            // Construct external URL - using DNB Nettmegler as example
+            let externalUrl;
+            if (ticker.endsWith('.OL')) {
+                // Norwegian stock - remove .OL suffix for DNB
+                const norwegianTicker = ticker.replace('.OL', '');
+                externalUrl = `https://www.dnb.no/portalfront/dnbinvestor/omhandler/kjopselgaksjer?searchString=${norwegianTicker}`;
+            } else {
+                // International stock - use a different broker or search
+                externalUrl = `https://www.google.com/search?q=${ticker}+stock+buy+broker`;
+            }
+            
+            // Open external URL in new tab
+            try {
+                window.open(externalUrl, '_blank', 'noopener,noreferrer');
+                
+                // Reset button after short delay
+                setTimeout(() => {
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }, 2000);
+                
+                showToast(`Åpner kjøpsside for ${ticker}`, 'success');
+            } catch (error) {
+                console.error('Error opening external URL:', error);
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+                showToast('Kunne ikke åpne kjøpsside', 'error');
+            }
+        });
+    });
+});
+
+function showToast(message, type) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    // Add to toast container or create one
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    // Remove after hidden
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+</script>
+{% endblock %}

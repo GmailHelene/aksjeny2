@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Short Analyse - {{ ticker }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3><i class="bi bi-lightning me-2"></i>Short Analyse - {{ ticker }}</h3>
+                    <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Velg annen aksje
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if short_data %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Short Interest</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>Current Short Interest:</strong><br>
+                                            <span class="fs-4 text-danger">{{ short_data.short_interest.current }}%</span>
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Previous Month:</strong><br>
+                                            <span class="fs-4">{{ short_data.short_interest.previous }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <strong>Change:</strong>
+                                        {% if short_data.short_interest.change > 0 %}
+                                            <span class="text-danger">+{{ short_data.short_interest.change }}%</span>
+                                        {% else %}
+                                            <span class="text-success">{{ short_data.short_interest.change }}%</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Key Metrics</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    {% for metric in short_data.key_metrics %}
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>{{ metric.metric }}:</span>
+                                        <strong>{{ metric.value }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Analysis Summary</h5>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Short Squeeze Risk: {{ short_data.key_metrics[2].value }}</strong><br>
+                                Current short interest is at {{ short_data.short_interest.current }}%, 
+                                {% if short_data.short_interest.change > 0 %}
+                                    increasing by {{ short_data.short_interest.change }}% from last month.
+                                {% else %}
+                                    decreasing by {{ short_data.short_interest.change|abs }}% from last month.
+                                {% endif %}
+                                This indicates {{ short_data.key_metrics[2].value|lower }} risk for a potential short squeeze.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>Disclaimer:</strong> Short selling analysis is for informational purposes only. 
+                                Short selling involves significant risk and is not suitable for all investors. 
+                                Always do your own research and consider your risk tolerance.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No short analysis data available for {{ ticker }}.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

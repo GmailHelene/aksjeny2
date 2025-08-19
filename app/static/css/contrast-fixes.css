@@ -1,0 +1,247 @@
+/* 
+COMPREHENSIVE TEXT CONTRAST FIXES 
+Fixes dark text on dark backgrounds across the site
+*/
+
+/* WHITE TEXT ON BLUE BACKGROUNDS - ENHANCED FOR DEMO BANNER */
+.bg-primary, .bg-primary .text-dark, .bg-primary .text-black,
+.bg-info, .bg-info .text-dark, .bg-info .text-black,
+.text-bg-primary, .text-bg-info,
+.table-primary, .table-info,
+.alert-primary, .alert-info,
+.btn-primary, .btn-info,
+.badge-primary, .badge-info {
+    color: #ffffff !important;
+}
+
+/* DEMO BANNER SPECIFIC CONTRAST FIXES */
+.alert-info {
+    background-color: #004085 !important; /* Darker blue for better contrast */
+    border-color: #003366 !important;
+    color: #ffffff !important;
+}
+
+.alert-info h5, .alert-info p, .alert-info strong, .alert-info .mb-1, .alert-info .mb-0 {
+    color: #ffffff !important;
+}
+
+.alert-info i.bi {
+    color: #ffffff !important;
+}
+
+/* Alternative: Keep light blue but ensure dark text */
+.alert-info.light-variant {
+    background-color: #d1ecf1 !important;
+    border-color: #bee5eb !important;
+    color: #0c5460 !important;
+}
+
+.alert-info.light-variant h5, 
+.alert-info.light-variant p, 
+.alert-info.light-variant strong,
+.alert-info.light-variant .mb-1, 
+.alert-info.light-variant .mb-0 {
+    color: #0c5460 !important;
+}
+
+/* IMAGE SIZE CONSTRAINTS FOR NEWS ARTICLES */
+.news-article img,
+.article-content img,
+.prose img,
+img[src*="news"],
+img[src*="article"],
+.news-image,
+.article-image {
+    max-height: 200px !important; /* Reduced from 250px */
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    margin: 1rem auto !important;
+    display: block !important;
+}
+
+/* Mobile image constraints - even smaller */
+@media (max-width: 768px) {
+    .news-article img,
+    .article-content img,
+    .prose img,
+    img[src*="news"],
+    img[src*="article"],
+    .news-image,
+    .article-image {
+        max-height: 150px !important; /* Reduced from 180px */
+    }
+}
+
+/* ICON SIZE CONSTRAINTS */
+.bi, i.bi, i[class*="bi-"] {
+    font-size: 1rem !important; /* Ensure icons aren't too large */
+    max-width: 24px !important;
+    max-height: 24px !important;
+}
+
+/* Large icons in specific contexts */
+.fs-3 i.bi, .display-6 i.bi {
+    font-size: 1.5rem !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+}
+
+/* White text on dark backgrounds */
+.bg-dark, .bg-dark .text-dark, .bg-dark .text-black,
+.bg-secondary, .bg-secondary .text-dark, .bg-secondary .text-black,
+.text-bg-dark, .text-bg-secondary,
+.table-dark, .table-secondary,
+.alert-dark, .alert-secondary,
+.btn-dark, .btn-secondary,
+.badge-dark, .badge-secondary {
+    color: #ffffff !important;
+}
+
+/* White text on success/green backgrounds */
+.bg-success, .bg-success .text-dark, .bg-success .text-black,
+.text-bg-success,
+.table-success,
+.alert-success,
+.btn-success,
+.badge-success {
+    color: #ffffff !important;
+}
+
+/* Ensure white text on dark green and dark blue backgrounds */
+.bg-success, .bg-success .text-dark, .bg-success .text-black,
+.bg-dark, .bg-dark .text-dark, .bg-dark .text-black {
+    color: #ffffff !important;
+}
+
+/* Ensure white text on dark green backgrounds (custom class) */
+.bg-dark-green, .bg-dark-green h1, .bg-dark-green h2, .bg-dark-green h3, .bg-dark-green h4, .bg-dark-green h5, .bg-dark-green h6 {
+    color: #ffffff !important;
+}
+
+/* Fix card headers with poor text contrast */
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-dark,
+.card-header.bg-secondary,
+.card-header.bg-success,
+.card-header.bg-danger {
+    color: #ffffff !important;
+}
+
+/* Fix specific problematic headers by content */
+.card-header:contains("Sentiment Indikatorer"),
+.card-header:contains("Velg aksje for sentiment analyse"),
+.card-header:contains("Markedssentiment"),
+.card-header:contains("Tekniske Indikatorer") {
+    color: #ffffff !important;
+}
+
+/* Fix all headings on colored backgrounds */
+.bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+.bg-info h1, .bg-info h2, .bg-info h3, .bg-info h4, .bg-info h5, .bg-info h6,
+.bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+.bg-secondary h1, .bg-secondary h2, .bg-secondary h3, .bg-secondary h4, .bg-secondary h5, .bg-secondary h6,
+.bg-success h1, .bg-success h2, .bg-success h3, .bg-success h4, .bg-success h5, .bg-success h6,
+.bg-danger h1, .bg-danger h2, .bg-danger h3, .bg-danger h4, .bg-danger h5, .bg-danger h6 {
+    color: #ffffff !important;
+}
+
+/* Fix small text and descriptions on colored backgrounds */
+.bg-primary small, .bg-primary .small, .bg-primary .text-muted,
+.bg-info small, .bg-info .small, .bg-info .text-muted,
+.bg-dark small, .bg-dark .small, .bg-dark .text-muted,
+.bg-secondary small, .bg-secondary .small, .bg-secondary .text-muted,
+.bg-success small, .bg-success .small, .bg-success .text-muted,
+.bg-danger small, .bg-danger .small, .bg-danger .text-muted {
+    color: #ffffff !important;
+    opacity: 0.8;
+}
+
+/* Fix dashboard specific elements */
+.dashboard-card .card-header,
+.dashboard-card .text-dark,
+.investment-card .text-dark,
+.activity-card .text-dark {
+    color: #ffffff !important;
+}
+
+/* Fix navbar elements on dark backgrounds */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-brand,
+.navbar-dark .navbar-toggler-icon {
+    color: #ffffff !important;
+}
+
+/* Fix table elements */
+.table-dark th,
+.table-dark td,
+.table-dark thead th {
+    color: #ffffff !important;
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* Fix badges and pills */
+.badge.bg-secondary,
+.badge.bg-dark {
+    color: #ffffff !important;
+}
+
+/* Fix specific page elements that have contrast issues */
+.ai-prediction-header,
+.sentiment-header,
+.analysis-section-header {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd !important;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Override problematic inline styles */
+[style*="color: #000"][style*="background-color: #0d6efd"],
+[style*="color: black"][style*="background-color: blue"],
+[style*="color: #000"][style*="background-color: #212529"],
+[style*="color: black"][style*="background-color: black"] {
+    color: #ffffff !important;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .bg-primary, .bg-info, .bg-dark, .bg-secondary, .bg-success, .bg-danger {
+        color: #ffffff !important;
+    }
+}
+
+/* Utility classes for manual fixes */
+.text-white-force {
+    color: #ffffff !important;
+}
+
+.text-dark-force {
+    color: #212529 !important;
+}
+
+/* Fix "Markedsanalyse" and currency overview headings */
+h1.h3,
+.h3 {
+    color: #212529 !important;
+}
+
+/* Fix any white text that should be dark on light backgrounds */
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6 {
+    color: #212529 !important;
+}
+
+/* Fix card headers specifically */
+.card-header.bg-white h5,
+.card-header.bg-white h6,
+.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h5,
+.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h6 {
+    color: #212529 !important;
+}

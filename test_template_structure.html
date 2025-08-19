@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Test{% endblock %}
+{% block description %}Test{% endblock %}
+{% block keywords %}Test{% endblock %}
+
+{% block og_title %}Test{% endblock %}
+{% block og_description %}Test{% endblock %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+    <p>Logged in content here</p>
+{% else %}
+    <p>Not logged in content here</p>
+{% endif %}
+{% endblock content %}
+
+{% block extra_css %}
+<style>
+/* CSS here */
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+// JS here
+</script>
+{% endblock extra_js %}

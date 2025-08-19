@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'no' }}">
+<head>
+<!-- CACHE BUSTER: d2d20bf4 - 2025-08-06T11:42:44.362114 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token else '' }}">
+    <meta name="cache-bust" content="20250804_023121">
+    <!-- Force production cache refresh -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}</title>
+    <meta name="description" content="{% block description %}Aksjeradar er Norges mest avanserte aksjeplattform med AI-drevne analyser, sanntidsdata og profesjonelle verktøy for aksjehandel. Få tilgang til teknisk analyse, fundamental analyse og markedsinnsikt.{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}aksjer Norge, aksjeanalyse, teknisk analyse, fundamental analyse, Oslo Børs, aksjekurser, investering, trading, AI analyse, markedsdata, aksjetips{% endblock %}">
+    <meta name="author" content="Aksjeradar Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}AI-drevne aksjeanalyser og sanntidsdata for Oslo Børs og internasjonale markeder. Profesjonelle verktøy for moderne investorer.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/aksjeradar-og.jpg', _external=True) }}{% endblock %}">
+    <meta property="og:site_name" content="Aksjeradar">
+    <meta property="og:locale" content="nb_NO">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}Aksjeradar - Norges smarteste aksjeplattform{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}AI-drevne aksjeanalyser og sanntidsdata for Oslo Børs og internasjonale markeder.{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/aksjeradar-twitter.jpg', _external=True) }}{% endblock %}">
+    
+    <!-- Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Aksjeradar",
+        "description": "Norges smarteste aksjeplattform med AI-drevne analyser og sanntidsdata",
+        "url": "https://aksjeradar.trade",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "399",
+            "priceCurrency": "NOK",
+            "priceValidUntil": "2025-12-31"
+        },
+        "provider": {
+            "@type": "Organization",
+            "name": "Aksjeradar",
+            "url": "https://aksjeradar.trade",
+            "email": "kontakt@aksjeradar.trade"
+        }
+    }
+    </script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css?v=d2d20bf4" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css?v=d2d20bf4">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20250805_213110">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/clean-pc-navigation.css') }}?v=20250805_213110">
+    {% block extra_css %}{% endblock %}
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <!-- ✅ OLD NAVIGATION SCRIPT REMOVED TO PREVENT CONFLICTS -->
+    <!-- Script removed to prevent conflicts with optimized navigation below -->
+    window.addEventListener('load', function() {
+        console.log('🔥 WINDOW LOADED - INITIALIZING NAVIGATION!');
+        
+        // DESKTOP DROPDOWN FUNCTIONALITY
+        const desktopDropdowns = document.querySelectorAll('.navbar-nav-desktop .dropdown-toggle');
+        console.log('🖥️ Desktop Dropdowns found:', desktopDropdowns.length);
+        
+        desktopDropdowns.forEach((toggle, i) => {
+            console.log('🖥️ Setting up dropdown:', toggle.textContent.trim());
+            
+            // Visual debug indicator (remove when working)
+            toggle.style.border = '2px solid blue';
+            
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🖥️ DROPDOWN CLICKED:', this.textContent.trim());
+                
+                const dropdownMenu = this.nextElementSibling;
+                const isOpen = dropdownMenu.classList.contains('show');
+                
+                // Close all other dropdowns
+                document.querySelectorAll('.navbar-nav-desktop .dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.setAttribute('aria-expanded', 'false');
+                });
+                
+                // Toggle current dropdown
+                if (!isOpen) {
+                    dropdownMenu.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                    console.log('✅ Dropdown opened:', this.textContent.trim());
+                } else {
+                    dropdownMenu.classList.remove('show');
+                    this.setAttribute('aria-expanded', 'false');
+                    console.log('❌ Dropdown closed:', this.textContent.trim());
+                }
+            });
+        });
+        
+        // MOBILE HAMBURGER FUNCTIONALITY
+        const hamburger = document.querySelector('.navbar-toggler');
+        console.log('🍔 Hamburger found:', !!hamburger);
+        
+        if (hamburger) {
+            // Visual debug indicator (remove when working)
+            hamburger.style.border = '3px solid red';
+            
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🍔 HAMBURGER CLICKED!');
+                
+                const mobileNav = document.querySelector('.navbar-collapse');
+                if (mobileNav) {
+                    const isOpen = mobileNav.classList.contains('show');
+                    
+                    if (!isOpen) {
+                        mobileNav.classList.add('show');
+                        this.setAttribute('aria-expanded', 'true');
+                        console.log('✅ Mobile menu opened');
+                    } else {
+                        mobileNav.classList.remove('show');
+                        this.setAttribute('aria-expanded', 'false');
+                        console.log('❌ Mobile menu closed');
+                    }
+                }
+            });
+        }
+        
+        // MOBILE DROPDOWN FUNCTIONALITY
+        const mobileDropdowns = document.querySelectorAll('.d-lg-none .dropdown-toggle');
+        console.log('� Mobile Dropdowns found:', mobileDropdowns.length);
+        
+        mobileDropdowns.forEach((toggle, i) => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('📱 MOBILE DROPDOWN CLICKED:', this.textContent.trim());
+                
+                const dropdownMenu = this.nextElementSibling;
+                const isOpen = dropdownMenu.classList.contains('show');
+                
+                // Toggle current dropdown
+                if (!isOpen) {
+                    dropdownMenu.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                    console.log('✅ Mobile dropdown opened:', this.textContent.trim());
+                } else {
+                    dropdownMenu.classList.remove('show');
+                    this.setAttribute('aria-expanded', 'false');
+                    console.log('❌ Mobile dropdown closed:', this.textContent.trim());
+                }
+            });
+        });
+        
+        // CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                    const toggle = menu.previousElementSibling;
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+                console.log('🔒 All dropdowns closed (outside click)');
+            }
+        });
+        
+        console.log('🚀 NAVIGATION FULLY INITIALIZED!');
+            };
+        });
+    });
+    </script>
+    
+    <style>
+    /* CLEAN DESKTOP NAVIGATION - SEPARATE FROM MOBILE */
+    @media (min-width: 992px) {
+        /* Desktop-only navigation styles */
+        .navbar-nav-desktop {
+            display: flex !important;
+        }
+        
+        /* Desktop navigation links */
+        .navbar-nav-desktop .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500 !important;
+            padding: 0.5rem 0.75rem !important;
+            margin: 0 0.25rem !important;
+            border-radius: 6px !important;
+            transition: all 0.15s ease !important;
+            background: transparent !important;
+            text-shadow: none !important;
+            min-height: auto !important;
+        }
+        
+        .navbar-nav-desktop .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            text-decoration: none !important;
+        }
+        
+        /* Desktop dropdown toggles - SIMPLIFIED */
+        .navbar-nav-desktop .dropdown-toggle {
+            color: rgba(255, 255, 255, 0.9) !important;
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            position: relative !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-toggle:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-toggle::after {
+            content: "▼" !important;
+            margin-left: 0.5rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        /* Desktop dropdown menus - MANUAL CONTROL */
+        .navbar-nav-desktop .dropdown-menu {
+            background: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 0 !important;
+            min-width: 250px !important;
+            margin-top: 0.5rem !important;
+            position: absolute !important;
+            display: none !important;
+            z-index: 1050 !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-menu.show {
+            display: block !important;
+        }
+        
+        /* Desktop dropdown items */
+        .navbar-nav-desktop .dropdown-item {
+            color: #374151 !important;
+            padding: 0.75rem 1.25rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            background: transparent !important;
+            border: none !important;
+            border-left: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
+            transition: all 0.15s ease !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-item:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+            color: #1f2937 !important;
+            transform: translateX(4px) !important;
+            box-shadow: none !important;
+            text-decoration: none !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-item i {
+            color: #6b7280 !important;
+            margin-right: 0.75rem !important;
+            font-size: 1rem !important;
+            width: 20px !important;
+            text-align: center !important;
+            font-weight: normal !important;
+            filter: none !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-item:hover i {
+            color: #3b82f6 !important;
+        }
+        
+        /* Desktop dropdown headers */
+        .navbar-nav-desktop .dropdown-header {
+            color: #6b7280 !important;
+            font-weight: 700 !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 0.5rem 1.25rem 0.25rem !important;
+            margin-top: 0.5rem !important;
+        }
+        
+        .navbar-nav-desktop .dropdown-divider {
+            margin: 0.5rem 1rem !important;
+            opacity: 0.15 !important;
+        }
+        
+        /* User dropdown alignment */
+        .navbar-nav-desktop .dropdown-menu-end {
+            right: 0 !important;
+            left: auto !important;
+        }
+    }
+
+    /* CLEAN MOBILE NAVIGATION - COMPLETELY SEPARATE */
+    @media (max-width: 991px) {
+        /* Mobile menu toggle button - SUPER SIMPLE */
+        .navbar-toggler {
+            border: 2px solid white !important;
+            padding: 8px !important;
+            border-radius: 5px !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            width: 50px !important;
+            height: 50px !important;
+            position: relative !important;
+        }
+        
+        /* Create hamburger with CSS */
+        .navbar-toggler-icon {
+            display: block !important;
+            width: 25px !important;
+            height: 3px !important;
+            background: white !important;
+            position: relative !important;
+        }
+        
+        .navbar-toggler-icon::before,
+        .navbar-toggler-icon::after {
+            content: '' !important;
+            display: block !important;
+            width: 25px !important;
+            height: 3px !important;
+            background: white !important;
+            position: absolute !important;
+            transition: 0.3s !important;
+        }
+        
+        .navbar-toggler-icon::before {
+            top: -8px !important;
+        }
+        
+        .navbar-toggler-icon::after {
+            top: 8px !important;
+        }
+        
+        /* Full-screen mobile menu - PREVENT AUTO-CLOSE */
+        .navbar-collapse {
+            position: fixed !important;
+            top: 76px !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            z-index: 1050 !important;
+            transform: translateX(-100%) !important;
+            transition: transform 0.3s ease-in-out !important;
+            overflow-y: auto !important;
+            padding: 1rem !important;
+            max-height: calc(100vh - 76px) !important;
+            pointer-events: none !important;
+        }
+        
+        .navbar-collapse.show {
+            transform: translateX(0) !important;
+            pointer-events: auto !important;
+        }
+        
+        .mobile-menu-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Mobile section headers */
+        .mobile-nav-section {
+            color: #ffffff !important;
+            font-size: 0.85rem !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem !important;
+            margin: 0.75rem 0 0.25rem;
+            background: linear-gradient(135deg, rgba(0, 123, 255, 0.8) 0%, rgba(0, 86, 179, 0.8) 100%) !important;
+            border-radius: 8px;
+            border-left: 3px solid rgba(255, 255, 255, 0.5);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Mobile navigation items */
+        .mobile-nav-item {
+            margin: 0.125rem 0;
+        }
+        
+        .mobile-nav-link {
+            color: rgba(255, 255, 255, 0.95) !important;
+            padding: 0.75rem !important;
+            font-weight: 500 !important;
+            font-size: 0.95rem !important;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            min-height: 45px;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.08) !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            text-decoration: none !important;
+        }
+        
+        .mobile-nav-link:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+            color: #ffffff !important;
+            transform: translateX(6px);
+            text-shadow: none;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            text-decoration: none !important;
+        }
+        
+        .mobile-nav-link i {
+            opacity: 1 !important;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            color: #ffffff !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        }
+    }
+    /* Fix overlay issues on analysis pages */
+    .analysis-page .navbar-overlay,
+    .market-overview-page .navbar-overlay,
+    .duplicate-nav-overlay {
+        display: none !important;
+    }
+
+    /* Fix pricing banner margin */
+    .pricing-card .badge {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    /* Fix "Mest populær" banner cropping */
+    .pricing-monthly .badge {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    /* Navigation - Mobile-only: No dropdown arrows for better mobile UX */
+    @media (max-width: 991px) {
+        .navbar-nav .dropdown-toggle::after {
+            display: none !important;
+        }
+        
+        .navbar-nav .dropdown-toggle::before {
+            display: none !important;
+        }
+    }
+    
+    /* No hint arrows on PC either for clean design - DISABLED FOR PC FIX */
+    /* @media (min-width: 769px) {
+        .navbar-nav .dropdown-toggle {
+            position: relative;
+        }
+        
+        .navbar-nav .dropdown-toggle::after {
+            display: none !important;
+        }
+        
+        .navbar-nav .dropdown-toggle[aria-expanded="true"]::after {
+            display: none !important;
+        }
+    } */
+
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 576px) {
+        /* Container padding fixes for small screens */
+        .container {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        
+        /* Card and content spacing */
+        .card {
+            margin-bottom: 1rem;
+        }
+        
+        .card-body {
+            padding: 1rem 0.75rem;
+        }
+        
+        /* Analysis menu mobile fixes */
+        .analysis-menu .d-flex {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        
+        .analysis-menu .dropdown-menu {
+            position: static !important;
+            display: block !important;
+            float: none !important;
+            width: 100% !important;
+            background-color: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.375rem !important;
+            box-shadow: none !important;
+            margin-top: 0.25rem !important;
+        }
+        
+        .analysis-menu .dropdown-item {
+            padding: 0.5rem 1rem !important;
+            color: #212529 !important;
+        }
+        
+        .analysis-menu .dropdown-item:hover {
+            background-color: #e9ecef !important;
+        }
+    }
+        
+        /* Button improvements for touch */
+        .btn {
+            min-height: 44px;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-lg {
+            min-height: 48px;
+            font-size: 1rem;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        /* Form improvements */
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            font-size: 1rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        /* Table responsiveness */
+        .table-responsive {
+            font-size: 0.85rem;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.5rem 0.25rem;
+            vertical-align: middle;
+        }
+        
+        /* Hero section mobile optimization */
+        .hero-section {
+            padding: 2rem 0 !important;
+        }
+        
+        .hero-section h1 {
+            font-size: 1.75rem !important;
+            line-height: 1.3;
+        }
+        
+        .hero-section .lead {
+            font-size: 1rem !important;
+        }
+        
+        /* Demo page mobile fixes */
+        .demo-features .col-md-4 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .pricing-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Analysis page mobile fixes */
+        .analysis-grid .col-lg-6,
+        .analysis-grid .col-md-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Chart container mobile optimization */
+        .chart-container {
+            height: 300px !important;
+            margin-bottom: 1rem;
+        }
+        
+        /* Modal mobile optimization */
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+        
+        .modal-content {
+            border-radius: 0.5rem;
+        }
+        
+        /* Breadcrumb mobile fix */
+        .breadcrumb {
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        /* Footer mobile optimization */
+        .footer {
+            text-align: center;
+        }
+        
+        .footer .col-md-3,
+        .footer .col-md-4 {
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    /* Tablet optimization */
+    @media (min-width: 577px) and (max-width: 991px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Navigation improvements for tablet */
+        .navbar-nav .nav-link {
+            padding: 0.5rem 0.75rem !important;
+        }
+        
+        /* Card grid for tablets */
+        .row .col-md-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Hero section tablet optimization */
+        .hero-section h1 {
+            font-size: 2.25rem;
+        }
+        
+        .hero-section .lead {
+            font-size: 1.1rem;
+        }
+    }
+
+    /* Fix viewport zoom issues on iOS */
+    @media screen and (max-width: 768px) {
+        select,
+        textarea,
+        input[type="text"],
+        input[type="password"],
+        input[type="datetime"],
+        input[type="datetime-local"],
+        input[type="date"],
+        input[type="month"],
+        input[type="time"],
+        input[type="week"],
+        input[type="number"],
+        input[type="email"],
+        input[type="url"],
+        input[type="search"],
+        input[type="tel"],
+        input[type="color"] {
+            font-size: 16px !important;
+        }
+    }
+
+    /* Loading states for better UX */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* CRITICAL: News & content image size control - SUPER AGGRESSIVE */
+    .news-content img,
+    .article-content img,
+    .prose img,
+    article img,
+    .content img,
+    .news-image,
+    .news-card img,
+    .news-image-container img,
+    .card-body img:not(.logo):not(.icon):not(.avatar),
+    .article img,
+    .post-content img,
+    .article-body img,
+    main img:not(.logo):not(.icon):not(.avatar):not(.navbar-brand img),
+    .container img:not(.logo):not(.icon):not(.avatar) {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: 250px !important;
+        object-fit: cover !important;
+        border-radius: 8px !important;
+        margin: 0.5rem 0 !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* NUCLEAR OPTION: Override ANY problematic inline styles */
+    img[style*="height"],
+    img[style*="width"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 250px !important;
+        height: auto !important;
+    }
+    
+    /* Except for explicitly small images */
+    img[width="16"], img[width="20"], img[width="24"], img[width="32"],
+    img[height="16"], img[height="20"], img[height="24"], img[height="32"],
+    .navbar img, .nav img, .btn img, .icon, .logo, .avatar {
+        max-width: none !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: none !important;
+        object-fit: initial !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    /* Mobile news image restrictions - ULTRA STRICT */
+    @media (max-width: 768px) {
+        .news-content img,
+        .article-content img,
+        .prose img,
+        article img,
+        .content img,
+        .news-image,
+        .news-card img,
+        .news-image-container img,
+        .card-body img:not(.logo):not(.icon):not(.avatar),
+        .news-content img[style*="height"],
+        .news-content img[style*="width"],
+        .article-content img[style*="height"],
+        .article-content img[style*="width"],
+        .content img[style*="height"],
+        .content img[style*="width"],
+        img[class*="news"][style],
+        img[class*="article"][style] {
+            max-height: 200px !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+    }
+    
+    /* Very small mobile devices - EMERGENCY OVERRIDE */
+    @media (max-width: 480px) {
+        .news-content img,
+        .article-content img,
+        .prose img,
+        article img,
+        .content img,
+        .news-image,
+        .news-card img,
+        .news-image-container img,
+        .card-body img:not(.logo):not(.icon):not(.avatar),
+        .news-content img[style*="height"],
+        .news-content img[style*="width"],
+        .article-content img[style*="height"],
+        .article-content img[style*="width"],
+        .content img[style*="height"],
+        .content img[style*="width"],
+        img[class*="news"][style],
+        img[class*="article"][style] {
+            max-height: 160px !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+    }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <!-- Include mobile navigation styles -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-nav.css') }}"> -->
+    
+    <!-- DESKTOP NAVIGATION - Only visible on desktop -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top d-none d-lg-block">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <i class="bi bi-graph-up me-2"></i> Aksjeradar
+            </a>
+            
+            <div class="navbar-nav-desktop d-flex w-100">
+                <ul class="navbar-nav me-auto">
+                    <!-- Desktop Aksjer Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="desktopStocksDropdown" role="button" aria-expanded="false">
+                            <i class="bi bi-graph-up me-2"></i>Aksjer
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}">
+                                <i class="bi bi-graph-up me-2"></i>Alle aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}">
+                                <i class="bi bi-search me-2"></i>Søk aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}">
+                                <i class="bi bi-pie-chart-fill me-2"></i>Oslo Børs
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}">
+                                <i class="bi bi-bar-chart-line me-2"></i>Globale aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}">
+                                <i class="bi bi-percent me-2"></i>Alle priser
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}">
+                                <i class="bi bi-arrows-angle-expand me-2"></i>Sammenlign aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
+                                <i class="bi bi-star me-2"></i>Favoritter
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Desktop Crypto -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stocks.list_crypto') }}">
+                            <i class="bi bi-currency-bitcoin me-2"></i>Crypto
+                        </a>
+                    </li>
+
+                    <!-- Desktop Valuta -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stocks.list_currency') }}">
+                            <i class="bi bi-currency-exchange me-2"></i>Valuta
+                        </a>
+                    </li>
+
+                    <!-- Desktop Analyse Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="desktopAnalysisDropdown" role="button" aria-expanded="false">
+                            <i class="bi bi-bar-chart me-2"></i>Analyse
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
+                                <i class="bi bi-house me-2"></i>Alle analyser
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-graph-up me-2"></i>Teknisk analyse  
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}">
+                                <i class="bi bi-calculator me-2"></i>Fundamental analyse  
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
+                                <i class="bi bi-gem me-2"></i>Benjamin Graham  
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
+                                <i class="bi bi-funnel me-2"></i>Screener
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendations') }}">
+                                <i class="bi bi-lightbulb-fill me-2"></i>AI Anbefalinger
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                                <i class="bi bi-person-circle me-2"></i>Warren Buffett
+                            </a></li>
+                            <li><a class="dropdown-item" href="/insider-trading">
+                                <i class="bi bi-eye me-2"></i>Innsidehandel
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/features/ai-predictions">
+                                <i class="bi bi-robot me-2"></i>AI Prediksjoner
+                            </a></li>
+                            <li><a class="dropdown-item" href="/features/social-sentiment">
+                                <i class="bi bi-chat-dots me-2"></i>Social Sentiment
+                            </a></li>
+                            <li><a class="dropdown-item" href="/investment-analyzer">
+                                <i class="bi bi-brain me-2"></i>AI Investeringsanalyse
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Desktop Portefølje (for innloggede) -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="desktopPortfolioDropdown" role="button" aria-expanded="false">
+                            <i class="bi bi-briefcase me-2"></i>Portefølje
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
+                                <i class="bi bi-briefcase me-2"></i>Min portefølje
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
+                                <i class="bi bi-star me-2"></i>Watchlist
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}">
+                                <i class="bi bi-graph-down me-2"></i>Avansert analyse
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.add_tip') }}">
+                                <i class="bi bi-lightbulb me-2"></i>Portefølje Tips
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <!-- Desktop Nyheter -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/news">
+                            <i class="bi bi-newspaper me-2"></i>Nyheter
+                        </a>
+                    </li>
+
+                    <!-- Desktop Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/financial-dashboard">
+                            <i class="bi bi-graph-up-arrow me-2"></i>Dashboard
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Desktop User Navigation -->
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="desktopUserDropdown" role="button" aria-expanded="false">
+                                <i class="bi bi-person-circle me-2"></i>{{ current_user.username if current_user.username else current_user.email.split('@')[0] }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                                    <i class="bi bi-person me-2"></i>Profil
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('notifications.settings') }}">
+                                    <i class="bi bi-bell me-2"></i>Varsler
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}">
+                                    <i class="bi bi-star me-2"></i>Oppgrader
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logg ut
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="desktopAuthDropdown" role="button" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i>Konto
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.login') }}">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Logg inn
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.register') }}">
+                                    <i class="bi bi-person-plus me-2"></i>Registrer deg
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.demo') }}">
+                                    <i class="bi bi-play-circle me-2"></i>Demo
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE NAVIGATION - Only visible on mobile -->
+    <nav class="navbar navbar-dark bg-dark sticky-top d-lg-none">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <i class="bi bi-graph-up me-2"></i> Aksjeradar
+            </a>
+            <button class="navbar-toggler" type="button" aria-controls="mobileNavbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="mobileNavbarNav">
+                <div class="mobile-menu-content">
+                    <!-- Mobile Navigation Sections -->
+                    <div class="mobile-nav-section">📈 Markeder</div>
+                    
+                    <!-- Mobile Aksjer -->
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="{{ url_for('stocks.list_oslo') }}">
+                            <i class="bi bi-graph-up me-2"></i>Aksjer (alle)
+                        </a>
+                    </div>
+                    
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="{{ url_for('stocks.list_crypto') }}">
+                            <i class="bi bi-currency-bitcoin me-2"></i>Crypto
+                        </a>
+                    </div>
+
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="{{ url_for('stocks.list_currency') }}">
+                            <i class="bi bi-currency-exchange me-2"></i>Valuta
+                        </a>
+                    </div>
+
+                    <!-- Mobile Analysis Section -->
+                    <div class="mobile-nav-section">🔍 Analyse & Verktøy</div>
+
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="{{ url_for('analysis.index') }}">
+                            <i class="bi bi-bar-chart me-2"></i>Analyse
+                        </a>
+                    </div>
+
+                    {% if current_user.is_authenticated %}
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="{{ url_for('portfolio.index') }}">
+                            <i class="bi bi-briefcase me-2"></i>Portefølje
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Mobile Tools Section -->
+                    <div class="mobile-nav-section">🛠️ Nyheter & Verktøy</div>
+
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="/news">
+                            <i class="bi bi-newspaper me-2"></i>Nyheter
+                        </a>
+                    </div>
+
+                    <div class="mobile-nav-item">
+                        <a class="mobile-nav-link" href="/financial-dashboard">
+                            <i class="bi bi-graph-up-arrow me-2"></i>Dashboard
+                        </a>
+                    </div>
+
+                    <!-- Mobile User Section -->
+                    <div class="mobile-nav-section">👤 Bruker</div>
+                    
+                    {% if current_user.is_authenticated %}
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('main.profile') }}">
+                                <i class="bi bi-person-circle me-2"></i>{{ current_user.username if current_user.username else current_user.email.split('@')[0] }} (Profil)
+                            </a>
+                        </div>
+                        
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('notifications.settings') }}">
+                                <i class="bi bi-bell me-2"></i>Varsler
+                            </a>
+                        </div>
+                        
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logg ut
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Logg inn
+                            </a>
+                        </div>
+                        
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus me-2"></i>Registrer deg
+                            </a>
+                        </div>
+                        
+                        <div class="mobile-nav-item">
+                            <a class="mobile-nav-link" href="{{ url_for('main.demo') }}">
+                                <i class="bi bi-play-circle me-2"></i>Demo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+        <main class="main-content">
+        <div class="container-fluid px-2 px-md-3">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h6>Språk / Language</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="footerLanguageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i>
+                            <span id="footer-current-language">NO</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('no')">
+                                <i class="bi bi-flag"></i> Norsk
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('en')">
+                                <i class="bi bi-flag-fill"></i> English
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h6>Læring & Guider</h6>
+                    <div class="mb-2">
+                        <a href="/investment-guides" class="text-light text-decoration-none">
+                            <i class="bi bi-book-half me-1"></i>Investeringsguider
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/resources" class="text-light text-decoration-none">
+                            <i class="bi bi-folder me-1"></i>Ressurser
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <h6>Om Aksjeradar</h6>
+                    <div class="mb-2">
+                        <a href="{{ url_for('main.about') }}" class="text-light text-decoration-none">
+                            <i class="bi bi-info-circle me-1"></i>Om oss
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="{{ url_for('main.help') }}" class="text-light text-decoration-none">
+                            <i class="bi bi-question-circle me-1"></i>Hjelp & FAQ
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="/pricing" class="text-light text-decoration-none">
+                            <i class="bi bi-tags me-1"></i>Se priser & abonnementer
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <p>&copy; 2025 Aksjeradar. Alle rettigheter reservert.</p>
+                    <!-- Cache FORCE refresh: August 4, 2025 -->
+                    <div class="mt-3">
+                        <a href="{{ url_for('main.privacy') }}" class="text-white me-3">Personvern</a>
+                        <a href="{{ url_for('main.terms') }}" class="text-white me-3">Vilkår</a>
+                        <a href="{{ url_for('main.contact') }}" class="text-white">Kontakt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js?v=d2d20bf4"></script>
+    <!-- Internationalization -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}?v=20250805_213110"></script>
+    <script src="{{ url_for('static', filename='js/language-switcher.js') }}?v=20250805_213110"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20250805_213110"></script>
+    <script src="{{ url_for('static', filename='js/dropdown-navigation.js') }}?v=20250805_213110"></script>
+    
+    <script>
+    // 🔥 OPTIMIZED NAVIGATION - REMOVE CONFLICTS
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔥 OPTIMIZED NAVIGATION LOADING...');
+        
+        // REMOVE ANY EXISTING EVENT LISTENERS TO PREVENT CONFLICTS
+        const existingHandlers = window.navigationHandlers || [];
+        existingHandlers.forEach(handler => {
+            if (handler.element && handler.event && handler.listener) {
+                handler.element.removeEventListener(handler.event, handler.listener);
+            }
+        });
+        window.navigationHandlers = [];
+        
+        // =================================================================
+        // 1. MOBILE HAMBURGER - MANUAL TOGGLE (CONFLICT-FREE)
+        // =================================================================
+        const mobileToggler = document.querySelector('.d-lg-none .navbar-toggler');
+        const mobileMenu = document.querySelector('#mobileNavbarNav');
+        
+        if (mobileToggler && mobileMenu) {
+            console.log('📱 Mobile elements found');
+            
+            // Remove any Bootstrap data attributes that might interfere
+            mobileToggler.removeAttribute('data-bs-toggle');
+            mobileToggler.removeAttribute('data-bs-target');
+            
+            const mobileClickHandler = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('🍔 Mobile hamburger clicked');
+                
+                if (mobileMenu.classList.contains('show')) {
+                    mobileMenu.classList.remove('show');
+                    this.setAttribute('aria-expanded', 'false');
+                    console.log('📱 Mobile menu closed');
+                } else {
+                    mobileMenu.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                    console.log('📱 Mobile menu opened');
+                }
+            };
+            
+            mobileToggler.addEventListener('click', mobileClickHandler);
+            window.navigationHandlers.push({
+                element: mobileToggler,
+                event: 'click',
+                listener: mobileClickHandler
+            });
+            
+            // Close menu when links are clicked
+            const mobileLinks = mobileMenu.querySelectorAll('.mobile-nav-link');
+            mobileLinks.forEach(link => {
+                const linkClickHandler = function(e) {
+                    console.log('📱 Mobile link clicked:', this.textContent.trim());
+                    setTimeout(() => {
+                        mobileMenu.classList.remove('show');
+                        mobileToggler.setAttribute('aria-expanded', 'false');
+                        console.log('📱 Mobile menu closed after link click');
+                    }, 150);
+                };
+                
+                link.addEventListener('click', linkClickHandler);
+                window.navigationHandlers.push({
+                    element: link,
+                    event: 'click',
+                    listener: linkClickHandler
+                });
+            });
+            
+            console.log('✅ Mobile navigation initialized');
+        }
+        
+        // =================================================================
+        // 2. DESKTOP DROPDOWNS - FORCE MANUAL CONTROL (CONFLICT-FREE)
+        // =================================================================
+        const desktopDropdowns = document.querySelectorAll('.navbar-nav-desktop .dropdown-toggle');
+        console.log('🖥️ Found desktop dropdowns:', desktopDropdowns.length);
+        
+        desktopDropdowns.forEach((toggle, index) => {
+            // Remove Bootstrap data attributes that might interfere
+            toggle.removeAttribute('data-bs-toggle');
+            toggle.removeAttribute('data-bs-target');
+            
+            const dropdownMenu = toggle.nextElementSibling;
+            
+            if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                console.log(`🖥️ Setting up dropdown ${index + 1}:`, toggle.textContent.trim());
+                
+                const dropdownClickHandler = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🖱️ Desktop dropdown clicked:', this.textContent.trim());
+                    
+                    // Close all other dropdowns first
+                    desktopDropdowns.forEach((otherToggle, otherIndex) => {
+                        if (otherIndex !== index) {
+                            const otherMenu = otherToggle.nextElementSibling;
+                            if (otherMenu && otherMenu.classList.contains('dropdown-menu')) {
+                                otherMenu.classList.remove('show');
+                                otherToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        }
+                    });
+                    
+                    // Toggle this dropdown
+                    if (dropdownMenu.classList.contains('show')) {
+                        dropdownMenu.classList.remove('show');
+                        this.setAttribute('aria-expanded', 'false');
+                        console.log('🖥️ Dropdown closed');
+                    } else {
+                        dropdownMenu.classList.add('show');
+                        this.setAttribute('aria-expanded', 'true');
+                        console.log('🖥️ Dropdown opened');
+                    }
+                };
+                
+                toggle.addEventListener('click', dropdownClickHandler);
+                window.navigationHandlers.push({
+                    element: toggle,
+                    event: 'click',
+                    listener: dropdownClickHandler
+                });
+                
+                console.log(`✅ Desktop dropdown ${index + 1} initialized:`, toggle.textContent.trim());
+            }
+        });
+        
+        // =================================================================
+        // 3. OUTSIDE CLICK HANDLER - DESKTOP ONLY (CONFLICT-FREE)
+        // =================================================================
+        const outsideClickHandler = function(e) {
+            // Only close desktop dropdowns on outside clicks, not mobile menu
+            if (!e.target.closest('.navbar-nav-desktop .dropdown') && window.innerWidth >= 992) {
+                console.log('🖱️ Outside click - closing desktop dropdowns');
+                desktopDropdowns.forEach(toggle => {
+                    const menu = toggle.nextElementSibling;
+                    if (menu && menu.classList.contains('show')) {
+                        menu.classList.remove('show');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+        };
+        
+        document.addEventListener('click', outsideClickHandler);
+        window.navigationHandlers.push({
+            element: document,
+            event: 'click',
+            listener: outsideClickHandler
+        });
+        
+        console.log('✅ OPTIMIZED NAVIGATION FULLY INITIALIZED - CONFLICT-FREE!');
+    });
+    </script>
+    
+    <script>
+    // Global switchLanguage function for footer dropdown
+    function switchLanguage(language) {
+        if (window.languageSwitcher) {
+            window.languageSwitcher.setLanguage(language);
+        } else if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+            window.i18n.setLanguage(language);
+            localStorage.setItem('aksjeradar_language', language);
+            document.getElementById('footer-current-language').textContent = language.toUpperCase();
+        }
+    }
+    </script>
+    
+    <!-- Cache Busting Utility -->
+    <script>
+    // Aksjeradar Cache Busting - Quick Access
+    window.refreshCache = function() {
+        // Clear browser storage
+        if (typeof Storage !== "undefined") {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+        
+        // Add cache-busting parameters and reload
+        const url = new URL(window.location);
+        url.searchParams.set('v', Date.now());
+        url.searchParams.set('cache_refresh', 'true');
+        window.location.href = url.toString();
+    };
+    
+    // Keyboard shortcut: Ctrl+Shift+F5 for super cache refresh
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'F5') {
+            e.preventDefault();
+            window.refreshCache();
+        }
+    });
+    
+    // Auto-detect cache issues and offer refresh
+    window.addEventListener('error', function(e) {
+        if (e.filename && (e.filename.includes('.css') || e.filename.includes('.js'))) {
+            console.warn('🔄 Static file load failed - cache issue detected');
+            const shouldRefresh = confirm('Det ser ut som det kan være cache-problemer. Vil du refreshe cache?');
+            if (shouldRefresh) {
+                window.refreshCache();
+            }
+        }
+    });
+    </script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=d2d20bf4"></script>
+    
+    <!-- TradingView Charts -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js?v=d2d20bf4"></script>
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookieConsentBanner" class="cookie-consent-banner" style="display: none;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Vi bruker cookies for å forbedre din opplevelse. Ved å fortsette å bruke siden samtykker du til vår bruk av cookies.
+                        <a href="{{ url_for('main.privacy') }}" class="text-light">Les mer om personvern</a>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-light me-2" onclick="manageCookies()">
+                        Administrer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light" onclick="acceptCookies()">
+                        Godta alle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .cookie-consent-banner {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 123, 255, 0.95);
+        color: white;
+        padding: 15px 0;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .cookie-consent-banner p {
+        font-size: 0.9rem;
+    }
+    
+    .cookie-consent-banner a {
+        text-decoration: underline;
+    }
+    </style>
+
+    <script>
+    // Cookie Consent Management
+    function checkCookieConsent() {
+        const consent = localStorage.getItem('cookieConsent');
+        if (!consent) {
+            document.getElementById('cookieConsentBanner').style.display = 'block';
+        }
+    }
+
+    function acceptCookies() {
+        localStorage.setItem('cookieConsent', 'accepted');
+        localStorage.setItem('cookieConsentDate', new Date().toISOString());
+        document.getElementById('cookieConsentBanner').style.display = 'none';
+        
+        // Initialize analytics or other cookies here
+        console.log('✅ Cookie consent accepted');
+    }
+
+    function manageCookies() {
+        // For now, redirect to GDPR page - can be enhanced with modal
+        window.location.href = "{{ url_for('main.privacy') }}";
+    }
+
+    // Check consent on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkCookieConsent();
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

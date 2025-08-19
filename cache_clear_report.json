@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-08-09T18:43:50.810027",
+  "duration_seconds": 0.21,
+  "cleared_items_count": 8,
+  "cleared_items": [
+    "File cache: /workspaces/aksjeny/__pycache__",
+    "File cache: /workspaces/aksjeny/migrations/__pycache__",
+    "File cache: /workspaces/aksjeny/migrations/versions/__pycache__",
+    "File cache: /workspaces/aksjeny/app/__pycache__",
+    "File cache: /workspaces/aksjeny/app/utils/__pycache__",
+    "File cache: /workspaces/aksjeny/app/routes/__pycache__",
+    "File cache: /workspaces/aksjeny/app/services/__pycache__",
+    "File cache: /workspaces/aksjeny/app/models/__pycache__"
+  ],
+  "errors_count": 0,
+  "errors": []
+}

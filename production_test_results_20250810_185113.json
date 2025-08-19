@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Warren Buffett Analysis",
+    "url": "https://aksjeradar.trade/analysis/warren-buffett?ticker=KO",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['error']"
+    ],
+    "content_length": 34376
+  },
+  {
+    "name": "Stock Details - EQNR.OL",
+    "url": "https://aksjeradar.trade/stocks/details/EQNR.OL",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['500']"
+    ],
+    "content_length": 71593
+  },
+  {
+    "name": "Financial Dashboard",
+    "url": "https://aksjeradar.trade/financial-dashboard",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['error']"
+    ],
+    "content_length": 71593
+  },
+  {
+    "name": "Settings Page",
+    "url": "https://aksjeradar.trade/settings",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['error']"
+    ],
+    "content_length": 27936
+  },
+  {
+    "name": "Index Page (Homepage)",
+    "url": "https://aksjeradar.trade/",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['500']"
+    ],
+    "content_length": 23183
+  },
+  {
+    "name": "Crypto List",
+    "url": "https://aksjeradar.trade/stocks/list/crypto",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['500']"
+    ],
+    "content_length": 71593
+  },
+  {
+    "name": "Currency List",
+    "url": "https://aksjeradar.trade/stocks/list/currency",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['500']"
+    ],
+    "content_length": 71593
+  },
+  {
+    "name": "Global Stocks List",
+    "url": "https://aksjeradar.trade/stocks/list/global",
+    "status_code": 200,
+    "success": false,
+    "issues": [
+      "Found unwanted content: ['500']"
+    ],
+    "content_length": 71593
+  },
+  {
+    "name": "Sentiment Analysis",
+    "url": "https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL",
+    "status_code": 200,
+    "success": true,
+    "issues": [],
+    "content_length": 42701
+  }
+]

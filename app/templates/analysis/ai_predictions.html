@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}AI-prediksjoner | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4"><i class="bi bi-robot"></i> AI-prediksjoner</h1>
+    {% if predictions %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>{{ predictions.ticker }}</h4>
+            <p><strong>Nåværende pris:</strong> ${{ "{:.2f}".format(predictions.current_price) }}</p>
+            <p><strong>Predikert pris:</strong> ${{ "{:.2f}".format(predictions.predicted_price) }}</p>
+            <p><strong>Endring:</strong> {{ "{:.2f}".format(predictions.change_percent) }}%</p>
+            <p><strong>Modellens selvtillit:</strong> {{ "{:.0f}".format(predictions.confidence * 100) }}%</p>
+            <p><strong>Sentiment score:</strong> {{ "{:.2f}".format(predictions.sentiment_score) }}</p>
+            <p><strong>Nyhetssentiment:</strong> {{ "{:.2f}".format(predictions.news_sentiment) }}</p>
+            <p><strong>Volatilitet:</strong> {{ "{:.2f}".format(predictions.risk_metrics.volatility) }}</p>
+            <p><strong>Modellens nøyaktighet:</strong> {{ "{:.1f}".format(predictions.model_accuracy) }}%</p>
+            <h5 class="mt-4">Viktige faktorer</h5>
+            <ul>
+                {% for factor in predictions.key_factors %}
+                <li>{{ factor }}</li>
+                {% endfor %}
+            </ul>
+            <h5 class="mt-4">Prediksjonshistorikk</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Dato</th>
+                        <th>Predikert verdi</th>
+                        <th>Øvre konfidens</th>
+                        <th>Nedre konfidens</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(predictions.dates|length) %}
+                    <tr>
+                        <td>{{ predictions.dates[i] }}</td>
+                        <td>${{ "{:.2f}".format(predictions.predicted_values[i]) }}</td>
+                        <td>${{ "{:.2f}".format(predictions.confidence_upper[i]) }}</td>
+                        <td>${{ "{:.2f}".format(predictions.confidence_lower[i]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">Ingen prediksjonsdata tilgjengelig for valgt ticker.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,293 @@
+{
+  "passed": [
+    {
+      "path": "/health/detailed",
+      "status": 200,
+      "content_length": 717,
+      "description": "Status 200"
+    },
+    {
+      "path": "/register",
+      "status": 200,
+      "content_length": 40064,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing",
+      "status": 200,
+      "content_length": 48053,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing/pricing",
+      "status": 200,
+      "content_length": 48046,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing/subscription",
+      "status": 200,
+      "content_length": 48053,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks",
+      "status": 200,
+      "content_length": 58300,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list",
+      "status": 200,
+      "content_length": 38425,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/oslo",
+      "status": 200,
+      "content_length": 38437,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/global",
+      "status": 200,
+      "content_length": 82367,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/crypto",
+      "status": 200,
+      "content_length": 48203,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/currency",
+      "status": 200,
+      "content_length": 138819,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/compare",
+      "status": 200,
+      "content_length": 40473,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/details/AAPL",
+      "status": 200,
+      "content_length": 82288,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/details/DNB.OL",
+      "status": 200,
+      "content_length": 82432,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis",
+      "status": 200,
+      "content_length": 44961,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/market-overview",
+      "status": 200,
+      "content_length": 159996,
+      "description": "Status 200"
+    },
+    {
+      "path": "/news",
+      "status": 200,
+      "content_length": 62731,
+      "description": "Status 200"
+    },
+    {
+      "path": "/news/latest",
+      "status": 200,
+      "content_length": 63108,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/health",
+      "status": 200,
+      "content_length": 93,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/stocks/quick-prices",
+      "status": 200,
+      "content_length": 493,
+      "description": "Status 200"
+    },
+    {
+      "path": "/investment-guides",
+      "status": 200,
+      "content_length": 43206,
+      "description": "Status 200"
+    },
+    {
+      "path": "/investment-guides/index",
+      "status": 200,
+      "content_length": 43224,
+      "description": "Status 200"
+    }
+  ],
+  "failed": [],
+  "errors": [
+    {
+      "path": "/",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"IjA"
+    },
+    {
+      "path": "/demo",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"IjA"
+    },
+    {
+      "path": "/index",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"IjA"
+    },
+    {
+      "path": "/login",
+      "message": "404 Not Found"
+    },
+    {
+      "path": "/logout",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/profile",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/settings",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/search",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/technical",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/fundamental",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/ai",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/screener",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/screener-view",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/recommendation",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/prediction",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/currency-overview",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/oslo-overview",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/analysis/global-overview",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio/watchlist",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio/tips",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio/create",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio/transactions",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio/advanced",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/portfolio-analytics",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/news/company/AAPL",
+      "message": "404 Not Found"
+    },
+    {
+      "path": "/features/ai-predictions",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/features/social-sentiment",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/features/analyst-recommendations",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/api/homepage/market-data",
+      "message": "404 Not Found"
+    },
+    {
+      "path": "/api/realtime/market-summary",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/notifications",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/notifications/settings",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/advanced-analytics",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/financial-dashboard",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    },
+    {
+      "path": "/mobile-trading",
+      "message": "500 Internal Server Error: <!DOCTYPE html>\n<html lang=\"no\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n    <meta name=\"csrf-token\" content=\"ImQ"
+    }
+  ],
+  "warnings": [
+    {
+      "path": "/health",
+      "message": "Unexpected status: 503"
+    },
+    {
+      "path": "/health/ready",
+      "message": "Unexpected status: 503"
+    }
+  ]
+}

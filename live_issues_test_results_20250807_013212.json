@@ -1,0 +1,69 @@
+{
+  "timestamp": "20250807_013212",
+  "total_tests": 10,
+  "passed_tests": 10,
+  "test_results": {
+    "portfolio_overview": true,
+    "news_images": true,
+    "crypto_dashboard": true,
+    "technical_analysis_symbol": true,
+    "screener": true,
+    "fundamental_analysis": true,
+    "fundamental_oslo": true,
+    "analysis_main": true,
+    "portfolio_main": true,
+    "market_overview": true
+  },
+  "test_cases": [
+    {
+      "url": "/portfolio/overview",
+      "description": "Portfolio Overview - \"kan ikke laste\" fix",
+      "key": "portfolio_overview"
+    },
+    {
+      "url": "/news/",
+      "description": "News page - oversized images fix",
+      "key": "news_images"
+    },
+    {
+      "url": "/advanced/crypto-dashboard",
+      "description": "Crypto Dashboard implementation",
+      "key": "crypto_dashboard"
+    },
+    {
+      "url": "/analysis/technical?symbol=TEL.OL",
+      "description": "Technical Analysis - TEL.OL symbol validation",
+      "key": "technical_analysis_symbol"
+    },
+    {
+      "url": "/analysis/screener",
+      "description": "Screener page functionality",
+      "key": "screener"
+    },
+    {
+      "url": "/analysis/fundamental?ticker=AAPL",
+      "description": "Fundamental Analysis - stock_info undefined fix",
+      "key": "fundamental_analysis"
+    },
+    {
+      "url": "/analysis/fundamental?ticker=TEL.OL",
+      "description": "Fundamental Analysis - Oslo symbol test",
+      "key": "fundamental_oslo"
+    },
+    {
+      "url": "/analysis/",
+      "description": "Analysis main page",
+      "key": "analysis_main"
+    },
+    {
+      "url": "/portfolio/",
+      "description": "Portfolio main page",
+      "key": "portfolio_main"
+    },
+    {
+      "url": "/analysis/market-overview",
+      "description": "Market Overview page",
+      "key": "market_overview"
+    }
+  ]
+}

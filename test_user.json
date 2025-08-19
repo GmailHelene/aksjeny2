@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "username": "testuser",
+    "email": "testuser@example.com",
+    "email_notifications": 1,
+    "price_alerts": 1,
+    "market_news": 1,
+    "first_name": "Test",
+    "last_name": "User"
+  }
+]

@@ -1,0 +1,360 @@
+{
+  "passed": [
+    {
+      "path": "/",
+      "status": 200,
+      "content_length": 66208,
+      "description": "Status 200"
+    },
+    {
+      "path": "/demo",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/index",
+      "status": 200,
+      "content_length": 66223,
+      "description": "Status 200"
+    },
+    {
+      "path": "/health",
+      "status": 200,
+      "content_length": 157,
+      "description": "Status 200"
+    },
+    {
+      "path": "/health/ready",
+      "status": 200,
+      "content_length": 157,
+      "description": "Status 200"
+    },
+    {
+      "path": "/health/detailed",
+      "status": 200,
+      "content_length": 716,
+      "description": "Status 200"
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "content_length": 48994,
+      "description": "Status 200"
+    },
+    {
+      "path": "/register",
+      "status": 200,
+      "content_length": 50240,
+      "description": "Status 200"
+    },
+    {
+      "path": "/logout",
+      "status": 200,
+      "content_length": 66590,
+      "description": "Status 200"
+    },
+    {
+      "path": "/profile",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/settings",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/search",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing",
+      "status": 200,
+      "content_length": 67696,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing/pricing",
+      "status": 200,
+      "content_length": 67696,
+      "description": "Status 200"
+    },
+    {
+      "path": "/pricing/subscription",
+      "status": 200,
+      "content_length": 67696,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks",
+      "status": 200,
+      "content_length": 68335,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list",
+      "status": 200,
+      "content_length": 49098,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/oslo",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/global",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/crypto",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/list/currency",
+      "status": 200,
+      "content_length": 91910,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/compare",
+      "status": 200,
+      "content_length": 50657,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/details/AAPL",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/stocks/details/DNB.OL",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/technical",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/fundamental",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/ai",
+      "status": 200,
+      "content_length": 55241,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/screener",
+      "status": 200,
+      "content_length": 76950,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/recommendation",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/prediction",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/market-overview",
+      "status": 200,
+      "content_length": 83732,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/currency-overview",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/oslo-overview",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/analysis/global-overview",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio/watchlist",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio/tips",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio/create",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio/transactions",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio/advanced",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/portfolio-analytics",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/news",
+      "status": 200,
+      "content_length": 74100,
+      "description": "Status 200"
+    },
+    {
+      "path": "/news/latest",
+      "status": 200,
+      "content_length": 74477,
+      "description": "Status 200"
+    },
+    {
+      "path": "/news/company/AAPL",
+      "status": 200,
+      "content_length": 47714,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/health",
+      "status": 200,
+      "content_length": 93,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/stocks/quick-prices?tickers=AAPL,GOOGL",
+      "status": 200,
+      "content_length": 386,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/homepage/market-data",
+      "status": 200,
+      "content_length": 6652,
+      "description": "Status 200"
+    },
+    {
+      "path": "/api/realtime/market-summary",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/investment-guides",
+      "status": 200,
+      "content_length": 53373,
+      "description": "Status 200"
+    },
+    {
+      "path": "/investment-guides/index",
+      "status": 200,
+      "content_length": 53391,
+      "description": "Status 200"
+    },
+    {
+      "path": "/notifications",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/notifications/settings",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/advanced-analytics",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    },
+    {
+      "path": "/financial-dashboard",
+      "status": 200,
+      "content_length": 92411,
+      "description": "Status 200"
+    },
+    {
+      "path": "/mobile-trading",
+      "status": 200,
+      "content_length": 92345,
+      "description": "Status 200"
+    }
+  ],
+  "failed": [],
+  "errors": [
+    {
+      "path": "/analysis/screener-view",
+      "message": "500 Internal Server Error: <!doctype html>\n<html lang=en>\n  <head>\n    <title>werkzeug.routing.exceptions.BuildError: Could not build url for endpoint &#39;stocks.stock_details&#39; with values [&#39;ticker&#39;]. Did you mean "
+    },
+    {
+      "path": "/features/ai-predictions",
+      "message": "404 Not Found"
+    },
+    {
+      "path": "/features/social-sentiment",
+      "message": "404 Not Found"
+    },
+    {
+      "path": "/features/analyst-recommendations",
+      "message": "404 Not Found"
+    }
+  ],
+  "warnings": []
+}

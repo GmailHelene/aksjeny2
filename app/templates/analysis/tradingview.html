@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}TradingView Charts - {{ symbol if symbol else 'Aksjeradar' }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    {% include 'analysis/_menu.html' %}
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">
+                    <i class="bi bi-graph-up text-primary me-2"></i>
+                    TradingView Charts
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item active">TradingView</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> TradingView charts er midlertidig utilgjengelig.
+    </div>
+    {% endif %}
+
+    <!-- Stock Search -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-3">
+                        <i class="bi bi-search me-2"></i>Velg aksje/symbol for analyse
+                    </h5>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" id="symbolSearch" 
+                               placeholder="Aksjesymbol (f.eks. EQNR.OL, AAPL, BTC-USD)" 
+                               value="{{ symbol if symbol else '' }}">
+                        <button class="btn btn-primary" type="button" id="loadChart">
+                            <i class="bi bi-bar-chart-line"></i> Last chart
+                        </button>
+                    </div>
+                    <small class="text-muted">
+                        <strong>Eksempler:</strong> 
+                        <code>EQNR.OL</code> (Oslo Børs), 
+                        <code>AAPL</code> (US aksjer), 
+                        <code>BTC-USD</code> (Crypto), 
+                        <code>EURUSD=X</code> (Forex)
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    {% if stock_info %}
+                    <div class="text-md-end">
+                        <h6 class="mb-1 text-primary">{{ symbol }}</h6>
+                        <p class="text-muted mb-1">{{ stock_info.get('shortName', symbol) }}</p>
+                        {% if stock_info.get('regularMarketPrice') %}
+                        <span class="h5 text-success">{{ "%.2f"|format(stock_info.regularMarketPrice) }} {{ stock_info.get('currency', 'USD') }}</span>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-md-end text-muted">
+                        <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                        <p class="small mt-2">TradingView integrert chart</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main TradingView Widget -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-bar-chart me-2"></i>
+                Avansert Chart - {{ symbol if symbol else 'Velg aksje' }}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div id="tradingview_main_widget" style="height: 600px;"></div>
+        </div>
+    </div>
+
+    <!-- Additional TradingView Widgets -->
+    <div class="row">
+        <!-- Market Overview -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Markedsoversikt</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tradingview_market_overview" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical Analysis Widget -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Teknisk Analyse Sammendrag</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tradingview_technical_analysis" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Calendar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h6 class="mb-0">Økonomisk Kalender</h6>
+        </div>
+        <div class="card-body p-0">
+            <div id="tradingview_economic_calendar" style="height: 400px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentSymbol = '{{ symbol if symbol else "AAPL" }}';
+    
+    // Wait for TradingView to be fully loaded
+    let attempts = 0;
+    const maxAttempts = 100;
+    
+    function initializeCharts() {
+        if (typeof TradingView !== 'undefined' && TradingView.widget) {
+            console.log('TradingView loaded successfully, initializing charts...');
+            // Load main chart
+            loadMainChart(currentSymbol);
+            
+            // Load additional widgets
+            setTimeout(() => loadMarketOverview(), 1000);
+            setTimeout(() => loadTechnicalAnalysis(currentSymbol), 2000);
+            setTimeout(() => loadEconomicCalendar(), 3000);
+        } else if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(initializeCharts, 200);
+        } else {
+            console.error('TradingView failed to load after maximum attempts');
+            showFallbackMessage();
+        }
+    }
+    
+    function showFallbackMessage() {
+        const widgets = ['tradingview_main_widget', 'tradingview_market_overview', 'tradingview_technical_analysis', 'tradingview_economic_calendar'];
+        
+        widgets.forEach(function(widgetId) {
+            const element = document.getElementById(widgetId);
+            if (element) {
+                element.innerHTML = `
+                    <div class="text-center p-5 border rounded bg-light">
+                        <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 2rem;"></i>
+                        <h5>TradingView Charts ikke tilgjengelig</h5>
+                        <p class="text-muted">Charts kan ikke lastes for øyeblikket. Dette kan skyldes nettverksproblemer eller at TradingView er midlertidig utilgjengelig.</p>
+                        <button class="btn btn-outline-primary me-2" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                        </button>
+                        <a href="https://www.tradingview.com/symbols/${currentSymbol}" target="_blank" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-up-right"></i> Åpne i TradingView
+                        </a>
+                    </div>`;
+            }
+        });
+    }
+    
+    // Start initialization after a short delay to ensure DOM is fully ready
+    setTimeout(initializeCharts, 500);
+    
+    // Search functionality
+    document.getElementById('loadChart').addEventListener('click', function() {
+        const symbol = document.getElementById('symbolSearch').value.trim().toUpperCase();
+        if (symbol) {
+            window.location.href = `{{ url_for('analysis.tradingview') }}?symbol=${symbol}`;
+        }
+    });
+    
+    // Enter key search
+    document.getElementById('symbolSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('loadChart').click();
+        }
+    });
+});
+
+function showFallbackMessage() {
+    const widgets = ['tradingview_main_widget', 'tradingview_market_overview', 'tradingview_technical_analysis', 'tradingview_economic_calendar'];
+    widgets.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Laster...</span></div><p class="text-muted mt-3">Laster TradingView chart...</p></div>';
+        }
+    });
+}
+
+function loadMainChart(symbol) {
+    try {
+        // Add loading indicator first
+        const container = document.getElementById('tradingview_main_widget');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Laster chart...</span></div><p class="text-muted mt-3">Laster TradingView chart...</p></div>';
+        }
+        
+        // Add timeout check for TradingView loading
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        function tryLoadChart() {
+            attempts++;
+            if (typeof TradingView !== 'undefined' && TradingView.widget) {
+                // FIXED: Better symbol formatting for TradingView
+                let formattedSymbol = symbol.toUpperCase();
+                
+                // Handle different exchanges
+                if (formattedSymbol.endsWith('.OL')) {
+                    // Oslo Børs symbols: EQNR.OL -> OSL:EQNR
+                    formattedSymbol = `OSL:${formattedSymbol.replace('.OL', '')}`;
+                } else if (formattedSymbol.endsWith('.L')) {
+                    // London Stock Exchange: BA.L -> LSE:BA
+                    formattedSymbol = `LSE:${formattedSymbol.replace('.L', '')}`;
+                } else if (formattedSymbol.endsWith('.DE')) {
+                    // Frankfurt: SAP.DE -> FWB:SAP
+                    formattedSymbol = `FWB:${formattedSymbol.replace('.DE', '')}`;
+                } else if (formattedSymbol.includes('-USD')) {
+                    // Crypto: BTC-USD -> BINANCE:BTCUSDT
+                    const base = formattedSymbol.replace('-USD', '');
+                    formattedSymbol = `BINANCE:${base}USDT`;
+                } else if (formattedSymbol.includes('=X')) {
+                    // Forex: EURUSD=X -> FX:EURUSD
+                    formattedSymbol = `FX:${formattedSymbol.replace('=X', '')}`;
+                } else if (!formattedSymbol.includes(':')) {
+                    // Default to NASDAQ for US stocks
+                    formattedSymbol = `NASDAQ:${formattedSymbol}`;
+                }
+                
+                console.log(`Loading TradingView chart for symbol: ${formattedSymbol} (original: ${symbol})`);
+                
+                try {
+                    new TradingView.widget({
+                        "width": "100%",
+                        "height": 600,
+                        "symbol": formattedSymbol,
+                        "interval": "D",
+                        "timezone": "Europe/Oslo",
+                        "theme": "light",
+                        "style": "1",
+                        "locale": "no",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_main_widget",
+                        "studies": [
+                            "RSI@tv-basicstudies",
+                            "MACD@tv-basicstudies",
+                            "MASimple@tv-basicstudies"
+                        ],
+                        "show_popup_button": true,
+                        "popup_width": "1000",
+                        "popup_height": "650",
+                        "hide_side_toolbar": false,
+                        "details": true,
+                        "hotlist": true,
+                        "calendar": true,
+                        "watchlist": [
+                            "NASDAQ:AAPL",
+                            "NASDAQ:TSLA", 
+                            "NASDAQ:MSFT",
+                            "NASDAQ:GOOGL",
+                            "OSL:EQNR",
+                            "OSL:DNB",
+                            "OSL:MOWI",
+                            "OSL:TEL"
+                        ]
+                    });
+                    console.log('✅ TradingView main widget created successfully');
+                } catch (widgetError) {
+                    console.error('❌ Error creating TradingView widget:', widgetError);
+                    throw widgetError;
+                }
+            } else if (attempts < maxAttempts) {
+                // Try again after 500ms
+                console.log(`⏳ TradingView not ready, attempt ${attempts}/${maxAttempts}`);
+                setTimeout(tryLoadChart, 500);
+            } else {
+                // Fallback after max attempts
+                throw new Error('TradingView failed to load after maximum attempts');
+            }
+        }
+        
+        tryLoadChart();
+    } catch (error) {
+        console.error('❌ Error loading main chart:', error);
+        const container = document.getElementById('tradingview_main_widget');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center p-5 border rounded bg-light">
+                    <i class="bi bi-exclamation-triangle text-warning mb-3" style="font-size: 2rem;"></i>
+                    <h5>Chart kunne ikke lastes</h5>
+                    <p class="text-muted">Symbol: <code>${symbol}</code><br>
+                    Det oppstod en feil ved lasting av TradingView chart.</p>
+                    <button class="btn btn-primary me-2" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                    </button>
+                    <a href="https://www.tradingview.com/symbols/${symbol.replace('.OL', '').replace('.L', '').replace('-USD', 'USD')}" target="_blank" class="btn btn-outline-primary">
+                        <i class="bi bi-box-arrow-up-right"></i> Åpne i TradingView
+                    </a>
+                </div>`;
+        }
+    }
+}
+
+function loadMarketOverview() {
+    try {
+        const container = document.getElementById('tradingview_market_overview');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Laster...</span></div></div>';
+        }
+        
+        if (typeof TradingView !== 'undefined' && TradingView.MarketOverviewWidget) {
+            new TradingView.MarketOverviewWidget({
+                "colorTheme": "light",
+                "dateRange": "12M",
+                "showChart": true,
+                "locale": "no",
+                "largeChartUrl": "",
+                "isTransparent": false,
+                "showSymbolLogo": true,
+                "showFloatingTooltip": false,
+                "width": "100%",
+                "height": "300",
+                "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+                "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+                "gridLineColor": "rgba(240, 243, 250, 0)",
+                "scaleFontColor": "rgba(120, 123, 134, 1)",
+                "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+                "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+                "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+                "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+                "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+                "tabs": [
+                    {
+                        "title": "Oslo Børs",
+                        "symbols": [
+                            {"s": "OSL:EQNR", "d": "Equinor"},
+                            {"s": "OSL:DNB", "d": "DNB"},
+                            {"s": "OSL:YAR", "d": "Yara"},
+                            {"s": "OSL:MOWI", "d": "Mowi"}
+                        ]
+                    },
+                    {
+                        "title": "US Stocks",
+                        "symbols": [
+                            {"s": "AAPL", "d": "Apple"},
+                            {"s": "TSLA", "d": "Tesla"},
+                            {"s": "MSFT", "d": "Microsoft"},
+                            {"s": "AMZN", "d": "Amazon"}
+                        ]
+                    }
+                ],
+                "container_id": "tradingview_market_overview"
+            });
+            console.log('Market overview widget loaded');
+        } else {
+            throw new Error('TradingView MarketOverviewWidget not available');
+        }
+    } catch (error) {
+        console.error('Error loading market overview:', error);
+        const container = document.getElementById('tradingview_market_overview');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3 text-muted"><small>Markedsoversikt ikke tilgjengelig</small></div>';
+        }
+    }
+}
+            "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+            "gridLineColor": "rgba(240, 243, 250, 0)",
+            "scaleFontColor": "rgba(120, 123, 134, 1)",
+            "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+            "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+            "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+            "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+            "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+            "tabs": [
+                {
+                    "title": "Oslo Børs",
+                    "symbols": [
+                        {"s": "OSL:EQNR", "d": "Equinor"},
+                        {"s": "OSL:DNB", "d": "DNB"},
+                        {"s": "OSL:YAR", "d": "Yara"},
+                        {"s": "OSL:MOWI", "d": "Mowi"}
+                    ]
+                },
+                {
+                    "title": "US Stocks",
+                    "symbols": [
+                        {"s": "AAPL", "d": "Apple"},
+                        {"s": "TSLA", "d": "Tesla"},
+                        {"s": "MSFT", "d": "Microsoft"},
+                        {"s": "AMZN", "d": "Amazon"}
+                    ]
+                }
+            ],
+            "container_id": "tradingview_market_overview"
+        });
+    }
+}
+
+function loadTechnicalAnalysis(symbol) {
+    try {
+        const container = document.getElementById('tradingview_technical_analysis');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Laster...</span></div></div>';
+        }
+        
+        if (typeof TradingView !== 'undefined' && TradingView.TechnicalAnalysisWidget) {
+            // Format symbol for TradingView
+            let formattedSymbol = symbol;
+            if (symbol.endsWith('.OL')) {
+                formattedSymbol = `OSL:${symbol.replace('.OL', '')}`;
+            } else if (!symbol.includes(':')) {
+                formattedSymbol = `NASDAQ:${symbol}`;
+            }
+            
+            new TradingView.TechnicalAnalysisWidget({
+                "interval": "1D",
+                "width": "100%",
+                "isTransparent": false,
+                "height": "300",
+                "symbol": formattedSymbol,
+                "showIntervalTabs": true,
+                "locale": "no",
+                "colorTheme": "light",
+                "container_id": "tradingview_technical_analysis"
+            });
+            console.log('Technical analysis widget loaded');
+        } else {
+            throw new Error('TradingView TechnicalAnalysisWidget not available');
+        }
+    } catch (error) {
+        console.error('Error loading technical analysis:', error);
+        const container = document.getElementById('tradingview_technical_analysis');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3 text-muted"><small>Teknisk analyse ikke tilgjengelig</small></div>';
+        }
+    }
+}
+
+function loadEconomicCalendar() {
+    try {
+        const container = document.getElementById('tradingview_economic_calendar');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Laster...</span></div></div>';
+        }
+        
+        if (typeof TradingView !== 'undefined' && TradingView.EconomicCalendarWidget) {
+            new TradingView.EconomicCalendarWidget({
+                "colorTheme": "light",
+                "isTransparent": false,
+                "width": "100%",
+                "height": "400",
+                "locale": "no",
+                "importanceFilter": "-1,0,1",
+                "container_id": "tradingview_economic_calendar"
+            });
+            console.log('Economic calendar widget loaded');
+        } else {
+            throw new Error('TradingView EconomicCalendarWidget not available');
+        }
+    } catch (error) {
+        console.error('Error loading economic calendar:', error);
+        const container = document.getElementById('tradingview_economic_calendar');
+        if (container) {
+            container.innerHTML = '<div class="text-center p-3 text-muted"><small>Økonomisk kalender ikke tilgjengelig</small></div>';
+        }
+    }
+}
+</script>
+{% endblock %}

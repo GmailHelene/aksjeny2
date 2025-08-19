@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ portfolio.name }} - Portefølje | Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3">{{ portfolio.name }}</h1>
+                    <p class="text-muted">{{ portfolio.description or 'Ingen beskrivelse' }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Tilbake
+                    </a>
+                    <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Legg til aksje
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total verdi</h6>
+                    <h3 class="text-primary">
+                        {{ "{:,.0f}".format(portfolio.total_value|default(0)).replace(',', ' ') }} {{ portfolio.currency|default('NOK') }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Total avkastning</h6>
+                    <h3 class="{{ 'text-success' if portfolio.total_return >= 0 else 'text-danger' }}">
+                        {{ "{:+,.0f}".format(portfolio.total_return|default(0)).replace(',', ' ') }} {{ portfolio.currency|default('NOK') }}
+                    </h3>
+                    <small class="{{ 'text-success' if portfolio.return_percentage >= 0 else 'text-danger' }}">
+                        {{ "{:+.1f}".format(portfolio.return_percentage|default(0)) }}%
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Antall posisjoner</h6>
+                    <h3>{{ portfolio.holdings|length if portfolio.holdings else 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title text-muted">Siste oppdatering</h6>
+                    <h6>{{ portfolio.updated_at.strftime('%d.%m.%Y') if portfolio.updated_at else 'N/A' }}</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Holdings Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Beholdninger</h5>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addHoldingModal">
+                        <i class="fas fa-plus"></i> Legg til aksje
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if portfolio.holdings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Navn</th>
+                                    <th>Antall</th>
+                                    <th>Gjennomsnittspris</th>
+                                    <th>Nåværende pris</th>
+                                    <th>Markedsverdi</th>
+                                    <th>Avkastning</th>
+                                    <th>Avkastning %</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for holding in portfolio.holdings %}
+                                <tr>
+                                    <td><strong>{{ holding.symbol }}</strong></td>
+                                    <td>{{ holding.company_name|default(holding.symbol) }}</td>
+                                    <td>{{ holding.quantity }}</td>
+                                    <td>{{ "{:.2f}".format(holding.average_price).replace('.', ',') }} {{ portfolio.currency }}</td>
+                                    <td>{{ "{:.2f}".format(holding.current_price|default(0)).replace('.', ',') }} {{ portfolio.currency }}</td>
+                                    <td>{{ "{:,.0f}".format(holding.market_value|default(0)).replace(',', ' ') }} {{ portfolio.currency }}</td>
+                                    <td class="{{ 'text-success' if holding.unrealized_gain >= 0 else 'text-danger' }}">
+                                        {{ "{:+,.0f}".format(holding.unrealized_gain|default(0)).replace(',', ' ') }} {{ portfolio.currency }}
+                                    </td>
+                                    <td class="{{ 'text-success' if holding.unrealized_gain_percent >= 0 else 'text-danger' }}">
+                                        {{ "{:+.1f}".format(holding.unrealized_gain_percent|default(0)) }}%
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="editHolding('{{ holding.id }}')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="deleteHolding('{{ holding.id }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h5>Ingen beholdninger ennå</h5>
+                        <p class="text-muted">Klikk "Legg til aksje" for å begynne å bygge porteføljen din.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Holding Modal -->
+<div class="modal fade" id="addHoldingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Legg til aksje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addHoldingForm">
+                    <div class="mb-3">
+                        <label for="symbol" class="form-label">Aksjesymbol</label>
+                        <input type="text" class="form-control" id="symbol" name="symbol" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Antall aksjer</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_price" class="form-label">Kjøpspris per aksje</label>
+                        <input type="number" class="form-control" id="purchase_price" name="purchase_price" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="purchase_date" class="form-label">Kjøpsdato</label>
+                        <input type="date" class="form-control" id="purchase_date" name="purchase_date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" onclick="submitHolding()">Legg til</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitHolding() {
+    alert('Funksjonalitet kommer snart!');
+}
+
+function editHolding(holdingId) {
+    alert('Redigering kommer snart!');
+}
+
+function deleteHolding(holdingId) {
+    if (confirm('Er du sikker på at du vil slette denne beholdningen?')) {
+        alert('Sletting kommer snart!');
+    }
+}
+</script>
+{% endblock %}
