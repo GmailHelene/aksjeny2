@@ -546,8 +546,8 @@
                     
                     <div class="mt-4">
                         <div class="d-grid gap-2">
-                            <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-primary">
-                                <i class="bi bi-chart-bar"></i> Se fullstendig anbefaling
+                            <a href="{{ url_for('analysis.recommendation', ticker=ticker) }}" class="btn btn-primary">
+                                <i class="bi bi-chart-bar"></i> Se fullstendig anbefaling for {{ ticker }}
                             </a>
                         </div>
                     </div>
@@ -776,18 +776,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Enhanced price chart with volume bars and improved color contrast
     if (document.getElementById('priceChart') && window.Chart) {
         const ctx = document.getElementById('priceChart').getContext('2d');
+        const loadingElement = document.getElementById('chart-loading');
+        const chartCanvas = document.getElementById('priceChart');
+        
         fetch(`/stocks/api/chart-data/{{ ticker }}?period=30d`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.error) {
-                    console.error('Chart data error:', data.error);
-                    return;
+                    throw new Error(data.error);
                 }
+                
+                // Hide loading indicator and show chart
+                if (loadingElement) loadingElement.style.display = 'none';
+                if (chartCanvas) chartCanvas.style.display = 'block';
+                
                 // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
                 const existingChart = Chart.getChart(ctx);
                 if (existingChart) {
                     existingChart.destroy();
                 }
+                
                 window.mainPriceChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -859,47 +872,56 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                // Show chart and hide loading indicator
-                document.getElementById('chart-loading').style.display = 'none';
-                document.getElementById('priceChart').style.display = 'block';
             })
             .catch(error => {
                 console.error('Error loading chart data:', error);
                 // Hide loading indicator and show error message
-                document.getElementById('chart-loading').style.display = 'none';
+                if (loadingElement) loadingElement.style.display = 'none';
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'text-center text-muted py-5';
-                errorDiv.innerHTML = '<p>Kunne ikke laste kursdata. Prøv igjen senere.</p>';
+                errorDiv.innerHTML = `<p><i class="bi bi-exclamation-triangle text-warning"></i><br>Kunne ikke laste kursdata: ${error.message}<br><small>Prøv igjen senere</small></p>`;
                 document.getElementById('basicChartContainer').appendChild(errorDiv);
             });
     }
     });
     
-    // Add to portfolio functionality  
-    document.getElementById('add-to-portfolio').addEventListener('click', function() {
-        const ticker = this.dataset.ticker;
-        // Implementation would be here
-        alert(`Adding ${ticker} to portfolio`);
-    });
+    // Note: Portfolio actions are handled by the global PortfolioActionsManager
+    // loaded in base.html from portfolio-actions-enhanced.js
+    // No additional event listeners needed here as they're automatically setup
 
     // Load technical analysis data and charts
     function loadTechnicalAnalysis() {
         {% if technical_data %}
-        // Use data already available in template
-        const data = {
-            rsi: {{ technical_data.rsi }},
-            macd: {{ technical_data.macd }},
-            macd_signal: {{ technical_data.macd_signal }},
-            signal_line: {{ technical_data.macd_signal }}
-        };
-        
-        // Create RSI chart
-        createRSIChart(data);
-        
-        // Create MACD chart
-        createMACDChart(data);
+        try {
+            // Use data already available in template
+            const data = {
+                rsi: {{ technical_data.rsi|default(50) }},
+                macd: {{ technical_data.macd|default(0) }},
+                macd_signal: {{ technical_data.macd_signal|default(0) }},
+                signal_line: {{ technical_data.macd_signal|default(0) }}
+            };
+            
+            console.log('📊 Technical data loaded:', data);
+            
+            // Create RSI chart
+            createRSIChart(data);
+            
+            // Create MACD chart
+            createMACDChart(data);
+        } catch (error) {
+            console.error('Error loading technical analysis:', error);
+        }
         {% else %}
-        console.warn('No technical data available');
+        console.warn('No technical data available - using fallback');
+        // Use fallback data
+        const fallbackData = {
+            rsi: 50,
+            macd: 0,
+            macd_signal: 0,
+            signal_line: 0
+        };
+        createRSIChart(fallbackData);
+        createMACDChart(fallbackData);
         {% endif %}
     }
     
@@ -1482,7 +1504,16 @@ function showToast(message, type) {
     container.appendChild(toast);
     const bsToast = new bootstrap.Toast(toast);
     bsToast.show();
-    
+}
+
+// Initialize technical analysis charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing technical analysis charts');
+    setTimeout(() => {
+        loadTechnicalAnalysis();
+    }, 500); // Small delay to ensure Chart.js is loaded
+});
+
     // Remove after hidden
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }

@@ -1,56 +1,10 @@
 """
 Advanced News Service for Aksjeradar
-Fetche            # Norwegian sources with verified working RSS feeds
-            'e24': {
-                'name': 'E24',
-                'rss': 'https://e24.no/rss',
-                'base_url': 'https://e24.no',
-                'priority': 10,
-                'category': 'norwegian'
-            },
-            'nrk_nyheter': {
-                'name': 'NRK Økonomi',
-                'rss': 'https://www.nrk.no/toppsaker.rss',
-                'base_url': 'https://www.nrk.no',
-                'priority': 8,
-                'category': 'norwegian'
-            },
-            'tv2_nyheter': {
-                'name': 'TV2 Nyheter',
-                'rss': 'https://www.tv2.no/rss/nyheter',
-                'base_url': 'https://www.tv2.no',
-                'priority': 7,
-                'category': 'norwegian'
-            },
-            
-            # Disable problematic sources temporarily
-            # 'kapital': {
-            #     'name': 'Kapital',
-            #     'rss': 'https://feeds.feedburner.com/kapital',
-            #     'base_url': 'https://kapital.no',
-            #     'priority': 8,
-            #     'category': 'norwegian'
-            # },
-            # 'hegnar': {
-            #     'name': 'Finansavisen/Hegnar',
-            #     'rss': 'https://feeds.feedburner.com/finansavisen',
-            #     'base_url': 'https://www.finansavisen.no',
-            #     'priority': 9,
-            #     'category': 'norwegian'
-            # },
-            
-            # Working international sources
-            'bbc_business': {
-                'name': 'BBC Business',
-                'rss': 'http://feeds.bbci.co.uk/news/business/rss.xml',
-                'base_url': 'https://www.bbc.com',
-                'priority': 9,
-                'category': 'international'
-            },ancial news from major Norwegian and international sources
+Fetches and processes news from multiple sources with real-time integration
 """
 
+import logging
 import requests
-import feedparser
 import asyncio
 import aiohttp
 import concurrent.futures
@@ -59,12 +13,70 @@ from bs4 import BeautifulSoup
 import re
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
-import logging
-from dataclasses import dataclass
 from ..services.simple_cache import simple_cache
 from ..services.cache_service import cached
 
+# Set up logging first
 logger = logging.getLogger(__name__)
+
+# Safe import of feedparser with fallback
+try:
+    import feedparser
+    FEEDPARSER_AVAILABLE = True
+    logger.info("✅ feedparser imported successfully")
+except ImportError as e:
+    logger.warning(f"feedparser not available: {e}, some news features may be limited")
+    FEEDPARSER_AVAILABLE = False
+    # Create a mock feedparser for basic functionality
+    class MockFeedparser:
+        @staticmethod
+        def parse(content):
+            return {'entries': [], 'feed': {'title': 'News unavailable'}}
+    feedparser = MockFeedparser()
+
+# Configure news sources
+NEWS_SOURCES = {
+    'tv2': {
+        'name': 'TV2 Nyheter',
+        'rss': 'https://www.tv2.no/rss/nyheter',
+        'base_url': 'https://www.tv2.no',
+        'priority': 7,
+        'category': 'norwegian'
+    },
+    
+    # Disable problematic sources temporarily
+    # 'kapital': {
+    #     'name': 'Kapital',
+    #     'rss': 'https://feeds.feedburner.com/kapital',
+    #     'base_url': 'https://kapital.no',
+    #     'priority': 8,
+    #     'category': 'norwegian'
+    # },
+    # 'hegnar': {
+    #     'name': 'Finansavisen/Hegnar',
+    #     'rss': 'https://feeds.feedburner.com/finansavisen',
+    #     'base_url': 'https://www.finansavisen.no',
+    #     'priority': 9,
+    #     'category': 'norwegian'
+    # },
+    
+    # Working international sources
+    'bbc_business': {
+        'name': 'BBC Business',
+        'rss': 'http://feeds.bbci.co.uk/news/business/rss.xml',
+        'base_url': 'https://www.bbc.com',
+        'priority': 9,
+        'category': 'international'
+    },
+    
+    'reuters_business': {
+        'name': 'Reuters Business',
+        'rss': 'https://feeds.reuters.com/reuters/businessNews',
+        'base_url': 'https://www.reuters.com',
+        'priority': 10,
+        'category': 'international'
+    }
+}
 
 @dataclass
 class NewsArticle:
@@ -256,7 +268,12 @@ class NewsService:
                 
                 # Parse feed with error handling
                 try:
-                    feed = feedparser.parse(content)
+                    if FEEDPARSER_AVAILABLE:
+                        feed = feedparser.parse(content)
+                    else:
+                        logger.warning("feedparser not available, using fallback news data")
+                        feed = {'entries': [], 'feed': {'title': 'News service unavailable'}}
+                        
                     if not hasattr(feed, 'entries') or not feed.entries:
                         logger.warning(f"No entries found in feed for {source_id}")
                         return []

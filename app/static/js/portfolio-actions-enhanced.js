@@ -43,11 +43,14 @@ class PortfolioActionsManager {
      */
     setupFavoriteButtons() {
         const favoriteButtons = document.querySelectorAll('#add-to-watchlist, .favorite-btn, .watchlist-btn');
+        console.log('🔍 Found favorite buttons:', favoriteButtons.length);
         
         favoriteButtons.forEach(btn => {
+            console.log('🎯 Setting up favorite button:', btn.id, btn.dataset.ticker);
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const ticker = btn.dataset.ticker;
+                console.log('👆 Favorite button clicked for ticker:', ticker);
                 if (ticker) {
                     this.toggleFavorite(ticker, btn);
                 }
@@ -60,11 +63,14 @@ class PortfolioActionsManager {
      */
     setupPortfolioButtons() {
         const portfolioButtons = document.querySelectorAll('#add-to-portfolio, .portfolio-btn');
+        console.log('🔍 Found portfolio buttons:', portfolioButtons.length);
         
         portfolioButtons.forEach(btn => {
+            console.log('🎯 Setting up portfolio button:', btn.id, btn.dataset.ticker);
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const ticker = btn.dataset.ticker;
+                console.log('👆 Portfolio button clicked for ticker:', ticker);
                 if (ticker) {
                     this.addToPortfolio(ticker, btn);
                 }
@@ -166,7 +172,7 @@ class PortfolioActionsManager {
         try {
             const response = await fetch(`/stocks/api/favorites/check/${ticker}`);
             const data = await response.json();
-            return data.is_favorite || false;
+            return data.favorited || false;
         } catch (error) {
             console.error('Error checking favorite status:', error);
             return false;
@@ -206,25 +212,48 @@ class PortfolioActionsManager {
     }
 
     /**
-     * Add stock to portfolio (simplified implementation)
+     * Add stock to portfolio (full implementation)
      */
     async addToPortfolio(ticker, button) {
         try {
+            console.log(`🎯 Adding ${ticker} to portfolio`);
+            
             button.disabled = true;
+            const originalText = button.innerHTML;
             button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
 
-            // For now, just show a notification
-            // In the future, this could open a modal for quantity/price input
-            this.showNotification(`Funksjonalitet for å legge ${ticker} til portefølje kommer snart!`, 'info');
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
-            setTimeout(() => {
-                button.innerHTML = '<i class="bi bi-briefcase"></i> Portefølje';
-                button.disabled = false;
-            }, 2000);
+            const response = await fetch('/portfolio/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    shares: 1,
+                    price: 'current'
+                })
+            });
+
+            const data = await response.json();
+            console.log('📊 Portfolio API response:', data);
+
+            if (response.ok && data.success) {
+                this.showNotification(`✅ ${ticker} lagt til i portefølje`, 'success');
+                button.innerHTML = '<i class="bi bi-check-circle"></i> I portefølje';
+                button.classList.remove('btn-outline-success');
+                button.classList.add('btn-success');
+            } else {
+                throw new Error(data.message || 'Kunne ikke legge til i portefølje');
+            }
         } catch (error) {
             console.error('Error adding to portfolio:', error);
-            this.showNotification('Feil ved tillegging til portefølje', 'error');
+            button.innerHTML = originalText;
             button.disabled = false;
+            this.showNotification(`Feil ved å legge ${ticker} til portefølje: ${error.message}`, 'error');
         }
     }
 

@@ -1312,6 +1312,23 @@ class DataService:
         return DataService
     
     @staticmethod
+    def get_historical_data(symbol, period='3mo', interval='1d'):
+        """Get historical data for a symbol - wrapper for technical analysis"""
+        try:
+            if YFINANCE_AVAILABLE:
+                hist = SafeYfinance.get_ticker_history(symbol, period=period, interval=interval)
+                if hist is not None and not hist.empty and len(hist) > 5:
+                    logger.info(f"✅ Got historical data for technical analysis: {symbol} ({len(hist)} points)")
+                    return hist
+                    
+            logger.warning(f"⚠️ No historical data available for {symbol}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error getting historical data for {symbol}: {e}")
+            return None
+    
+    @staticmethod
     def get_comparative_data(symbols, period='6mo', interval='1d'):
         """Get comparative stock data for multiple symbols - ENHANCED for REAL DATA"""
         data = {}

@@ -19,7 +19,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Portefølje Verdi</h6>
-                                    <h4 id="portfolio-value">NOK 1,250,000</h4>
+                                    <h4 id="portfolio-value">{{ user_data.portfolio_value if user_data else 'NOK 125,000' }}</h4>
                                 </div>
                                 <i class="fas fa-wallet fa-2x opacity-75"></i>
                             </div>
@@ -33,11 +33,11 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Daglig Endring</h6>
-                                    <h4 id="daily-change">+2.45%</h4>
+                                    <h4 id="daily-change">{{ user_data.daily_change if user_data else '+2.45%' }}</h4>
                                 </div>
                                 <i class="fas fa-chart-line fa-2x opacity-75"></i>
                             </div>
-                            <small class="text-light opacity-75">+NOK 30,625 i dag</small>
+                            <small class="text-light opacity-75">{{ user_data.daily_change_amount if user_data else '+NOK 30,625' }} i dag</small>
                         </div>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Kryptovaluta</h6>
-                                    <h4 id="crypto-count">5 coins</h4>
+                                    <h4 id="crypto-count">{{ user_data.crypto_count if user_data else '5 coins' }}</h4>
                                 </div>
                                 <i class="fab fa-bitcoin fa-2x opacity-75"></i>
                             </div>
@@ -61,7 +61,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <h6 class="card-title">Aksjer i Portefølje</h6>
-                                    <h4 id="stock-count">12 aksjer</h4>
+                                    <h4 id="stock-count">{{ user_data.stock_count if user_data else '12 aksjer' }}</h4>
                                 </div>
                                 <i class="fas fa-chart-bar fa-2x opacity-75"></i>
                             </div>
