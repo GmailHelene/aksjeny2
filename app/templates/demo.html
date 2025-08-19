@@ -258,7 +258,7 @@
                     </a>
                     {% else %}
                     <!-- For uinnloggede brukere: Gå til pricing side -->
-                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-light btn-lg w-100 mb-3">
+                    <a href="{{ url_for('main.subscription') }}" class="btn btn-light btn-lg w-100 mb-3">
                         <i class="bi bi-rocket"></i> Start abonnement nå
                     </a>
                     {% endif %}
@@ -842,7 +842,7 @@
                         </form>
                         {% else %}
                         <!-- For uinnloggede brukere: Gå til pricing side -->
-                        <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-warning btn-lg px-4">
+                        <a href="{{ url_for('main.subscription') }}" class="btn btn-warning btn-lg px-4">
                             <i class="bi bi-crown"></i> Start ditt abonnement nå
                         </a>
                         {% endif %}
@@ -922,7 +922,7 @@
                                     <button type="submit" class="btn btn-primary">Velg Månedlig</button>
                                 </form>
                                 {% else %}
-                                <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">Velg Månedlig</a>
+                                <a href="{{ url_for('main.subscription') }}" class="btn btn-primary">Velg Månedlig</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -942,7 +942,7 @@
                                     <button type="submit" class="btn btn-success">Velg Årlig</button>
                                 </form>
                                 {% else %}
-                                <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-success">Velg Årlig</a>
+                                <a href="{{ url_for('main.subscription') }}" class="btn btn-success">Velg Årlig</a>
                                 {% endif %}
                             </div>
                         </div>

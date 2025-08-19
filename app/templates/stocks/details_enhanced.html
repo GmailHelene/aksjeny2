@@ -203,14 +203,15 @@
                         </div>
                         <div class="card-body">
                             <!-- Basic Chart -->
-                            <div id="basicChartContainer">
-                                <canvas id="priceChart" height="300"></canvas>
+                            <div id="basicChartContainer" style="display: block;">
+                                <div id="chart-loading" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Laster kursdata...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Henter kursdata...</p>
+                                </div>
+                                <canvas id="priceChart" height="300" style="display: none;"></canvas>
                             </div>
-                                    {% if chart_data and chart_data|length > 0 %}
-                                        <canvas id="priceChart" height="300"></canvas>
-                                    {% else %}
-                                        <div class="text-center text-muted">Ingen kursdata tilgjengelig</div>
-                                    {% endif %}
                             
                             <!-- TradingView Chart -->
                             <div id="tradingViewContainer" style="display: none; height: 700px;">
@@ -405,7 +406,7 @@
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
-                                <a href="{{ url_for('analysis.technical', ticker=ticker) }}" class="btn btn-outline-primary">
+                                <a href="{{ url_for('analysis.technical_analysis', symbol=ticker) }}" class="btn btn-outline-primary">
                                     <i class="bi bi-graph-up"></i> Fullt teknisk analyse
                                 </a>
                                 <a href="{{ url_for('analysis.ai', ticker=ticker) }}" class="btn btn-outline-info">
@@ -545,7 +546,7 @@
                     
                     <div class="mt-4">
                         <div class="d-grid gap-2">
-                            <a href="{{ url_for('analysis.recommendation', symbol=ticker) }}" class="btn btn-primary">
+                            <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-primary">
                                 <i class="bi bi-chart-bar"></i> Se fullstendig anbefaling
                             </a>
                         </div>
@@ -613,7 +614,7 @@
                     </div>
                     
                     <div class="mt-3">
-                        <a href="{{ url_for('insider_trading.index') }}" class="btn btn-outline-primary">
+                        <a href="{{ url_for('analysis.insider_trading') }}" class="btn btn-outline-primary">
                             <i class="bi bi-eye"></i> Se alle innsidehandler
                         </a>
                     </div>
@@ -746,7 +747,7 @@
                             </div>
                             
                             <div class="mt-3">
-                                <a href="{{ url_for('news_bp.search') }}?q={{ ticker }}" class="btn btn-outline-primary">
+                                <a href="{{ url_for('main.search') }}?q={{ ticker }}" class="btn btn-outline-primary">
                                     <i class="bi bi-newspaper"></i> Se alle nyheter
                                 </a>
                             </div>
@@ -857,10 +858,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
+                
+                // Show chart and hide loading indicator
+                document.getElementById('chart-loading').style.display = 'none';
+                document.getElementById('priceChart').style.display = 'block';
             })
             .catch(error => {
                 console.error('Error loading chart data:', error);
-                ctx.fillText('Kunne ikke laste chart data', 50, 50);
+                // Hide loading indicator and show error message
+                document.getElementById('chart-loading').style.display = 'none';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'text-center text-muted py-5';
+                errorDiv.innerHTML = '<p>Kunne ikke laste kursdata. Prøv igjen senere.</p>';
+                document.getElementById('basicChartContainer').appendChild(errorDiv);
             });
     }
     });
@@ -871,76 +881,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Implementation would be here
         alert(`Adding ${ticker} to portfolio`);
     });
-    
-    // Initialize price chart
-    if (document.getElementById('priceChart') && window.Chart) {
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        
-        // Fetch real chart data from API
-        fetch(`/stocks/api/chart-data/{{ ticker }}?period=30d`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Chart data error:', data.error);
-                    return;
-                }
-                
-                // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
-                const existingChart = Chart.getChart(ctx);
-                if (existingChart) {
-                    existingChart.destroy();
-                }
-                
-                window.mainPriceChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.dates,
-                        datasets: [{
-                            label: 'Kurs ({{ stock_info.get("currency", "NOK") if stock_info else "NOK" }})',
-                            data: data.prices,
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: false,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    color: 'rgba(0,0,0,0.1)'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            title: {
-                                display: true,
-                                text: 'Kursutvikling - Siste 30 dager'
-                            }
-                        }
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error loading chart data:', error);
-                // Fallback to simple message
-                ctx.fillText('Kunne ikke laste chart data', 50, 50);
-            });
-    }
-    
+
     // Load technical analysis data and charts
     function loadTechnicalAnalysis() {
         {% if technical_data %}
@@ -1472,10 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize all charts and indicators
-    initializePriceChart();
-    initializeRSIChart();
-    initializeMACDChart();
+    // Initialize technical indicators only
     updateTechnicalIndicators();
     
     // External buy button functionality - redirect to external broker

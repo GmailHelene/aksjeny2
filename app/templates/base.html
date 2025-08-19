@@ -204,7 +204,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
                                 <i class="bi bi-star"></i> Anbefalinger
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
                                 <i class="bi bi-calculator-fill"></i> Investment Analyzer
                             </a></li>
                         </ul>
@@ -240,7 +240,7 @@
                     
                     <!-- News -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('news_bp.index') }}">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
                             <i class="bi bi-newspaper"></i> Nyheter
                         </a>
                     </li>
@@ -269,7 +269,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
                                 <i class="bi bi-robot"></i> AI Analyse
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
                                 <i class="bi bi-calculator-fill"></i> Investment Analyzer
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
@@ -525,6 +525,11 @@
         console.log('✅ Global error suppression system initialized');
     });
     </script>
+    
+    <!-- Portfolio and Favorites JavaScript -->
+    <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/watchlist-fix.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
 </body>
