@@ -62,17 +62,18 @@ function displayDemoResult(title, content, type) {
 }
 
 // Demo AI Analysis function
-function demoAIAnalysis() {
-    showNotification('Starter AI-analyse...', 'info');
+function demoAIAnalysis(symbol) {
+    symbol = symbol || 'EQNR.OL';
+    showNotification('Starter AI-analyse for ' + symbol + '...', 'info');
     var container = document.getElementById('demo-result-container');
     if (container) {
-        container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Analyserer med AI...</p></div>';
+        container.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Analyserer ' + symbol + ' med AI...</p></div>';
     }
     
     setTimeout(function() {
         var analysisHTML = '<div class="card border-primary">' +
             '<div class="card-header bg-primary text-white">' +
-            '<h6 class="mb-0"><i class="bi bi-robot"></i> AI Markedsanalyse</h6>' +
+            '<h6 class="mb-0"><i class="bi bi-robot"></i> AI Markedsanalyse - ' + symbol + '</h6>' +
             '</div>' +
             '<div class="card-body">' +
             '<div class="row">' +
@@ -467,14 +468,14 @@ window.demoScreener = function() {
             '</tr>' +
             '</thead>' +
             '<tbody>' +
-            '<tr class="table-success">' +
+            '<tr class="table-dark" style="background-color: #198754 !important; color: white;">' +
             '<td><strong>STL.OL</strong></td>' +
             '<td>8.2</td>' +
             '<td>24%</td>' +
             '<td>0.3</td>' +
             '<td><span class="badge bg-success">9.1</span></td>' +
             '</tr>' +
-            '<tr class="table-success">' +
+            '<tr class="table-dark" style="background-color: #198754 !important; color: white;">' +
             '<td><strong>MOWI.OL</strong></td>' +
             '<td>11.5</td>' +
             '<td>18%</td>' +

@@ -61,7 +61,9 @@ class Config:
     VALIDATE_STRIPE_ON_STARTUP = os.environ.get('VALIDATE_STRIPE_ON_STARTUP', 'true').lower() == 'true'
     
     # Translation Services Configuration
-    CONVEYTHIS_API_KEY = os.environ.get('CONVEYTHIS_API_KEY')
+    # ConveyThis: Get API key from https://app.conveythis.com/account/register/
+    # After registration: Dashboard > Settings > API Key
+    CONVEYTHIS_API_KEY = os.environ.get('CONVEYTHIS_API_KEY')  # Set your ConveyThis API key here
     GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY')
     
     # Translation Settings

@@ -467,14 +467,14 @@ window.demoScreener = function() {
             '</tr>' +
             '</thead>' +
             '<tbody>' +
-            '<tr class="table-success">' +
+            '<tr class="table-dark" style="background-color: #198754 !important; color: white;">' +
             '<td><strong>STL.OL</strong></td>' +
             '<td>8.2</td>' +
             '<td>24%</td>' +
             '<td>0.3</td>' +
             '<td><span class="badge bg-success">9.1</span></td>' +
             '</tr>' +
-            '<tr class="table-success">' +
+            '<tr class="table-dark" style="background-color: #198754 !important; color: white;">' +
             '<td><strong>MOWI.OL</strong></td>' +
             '<td>11.5</td>' +
             '<td>18%</td>' +

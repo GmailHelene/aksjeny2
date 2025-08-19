@@ -190,13 +190,28 @@
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="{% block description %}Norges beste aksjeanalyseplattform. AI-drevne analyser, sanntidsdata og teknisk analyse for Oslo Børs og globale markeder. Investeringsverktøy for både nybegynnere og erfarne investorer.{% endblock %}">
-    <meta name="keywords" content="{% block keywords %}aksjer, aksjeanalyse, Oslo Børs, investeringer, teknisk analyse, fundamental analyse, AI analyse, aksjekurser, børs, finansiell analyse, EQNR, DNB, TEL, norske aksjer{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}aksjer, aksjeanalyse, Oslo Børs, investeringer, teknisk analyse, fundamental analyse, AI analyse, aksjekurser, børs, finansiell analyse, EQNR, DNB, TEL, norske aksjer, google norge, investering norge{% endblock %}">
     <meta name="author" content="Aksjeradar">
     <meta name="robots" content="index, follow">
     <meta name="language" content="Norwegian">
     <meta name="geo.region" content="NO">
     <meta name="geo.country" content="Norway">
     <meta name="geo.placename" content="Norway">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
+    
+    <!-- Norwegian specific meta tags -->
+    <meta name="google" content="notranslate">
+    <meta http-equiv="content-language" content="no">
+    <meta name="target_country" content="NO">
+    <meta name="ICBM" content="59.9139, 10.7522">
+    <meta name="DC.title" content="{% block dc_title %}Aksjeradar - Oslo Børs Analyse{% endblock %}">
+    
+    <!-- Local Business Schema for Norway -->
+    <meta property="place:location:latitude" content="59.9139">
+    <meta property="place:location:longitude" content="10.7522">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -221,11 +236,23 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "WebSite",
+        "@type": ["WebSite", "FinancialService"],
         "name": "Aksjeradar",
         "alternateName": "Aksjeradar.trade",
         "url": "{{ url_for('main.index', _external=True) }}",
-        "description": "Norges beste aksjeanalyseplattform med AI-drevne analyser og sanntidsdata",
+        "description": "Norges beste aksjeanalyseplattform med AI-drevne analyser og sanntidsdata for Oslo Børs",
+        "inLanguage": "no",
+        "areaServed": {
+            "@type": "Country",
+            "name": "Norway",
+            "sameAs": "https://en.wikipedia.org/wiki/Norway"
+        },
+        "serviceType": "Stock Market Analysis",
+        "provider": {
+            "@type": "Organization",
+            "name": "Aksjeradar",
+            "url": "{{ url_for('main.index', _external=True) }}"
+        },
         "potentialAction": {
             "@type": "SearchAction",
             "target": "{{ url_for('stocks.search', _external=True) }}?q={search_term_string}",
@@ -234,7 +261,15 @@
         "sameAs": [
             "https://www.facebook.com/aksjeradar",
             "https://twitter.com/aksjeradar"
-        ]
+        ],
+        "keywords": ["Oslo Børs", "norske aksjer", "aksjeanalyse", "investeringer", "teknisk analyse", "AI analyse"],
+        "audience": {
+            "@type": "Audience",
+            "geographicArea": {
+                "@type": "Country",
+                "name": "Norway"
+            }
+        }
     }
     </script>
 </head>
@@ -661,5 +696,8 @@
     <script src="{{ url_for('static', filename='js/watchlist-fix.js') }}"></script>
     
     {% block extra_js %}{% endblock %}
+    
+    <!-- GDPR Cookie Banner -->
+    {% include 'shared/cookie_banner.html' %}
 </body>
 </html>

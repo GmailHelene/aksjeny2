@@ -215,6 +215,7 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize form handling
@@ -269,131 +270,153 @@
         {% for ticker in tickers %}
         if ('{{ ticker }}' in {{ chart_data|tojson }}) {
             const tickerData = {{ chart_data|tojson }}['{{ ticker }}'];
+            console.log('Chart data for {{ ticker }}:', tickerData);
             
-            // Price dataset
-            priceDatasets.push({
-                label: '{{ ticker }}',
-                data: tickerData.map(d => ({x: d.date, y: d.close})),
-                borderColor: colors[{{ loop.index0 }} % colors.length],
-                backgroundColor: 'transparent',
-                borderWidth: 2,
-                tension: 0.1,
-                pointRadius: 0,
-                pointHoverRadius: 5
-            });
-            
-            // Volume dataset
-            volumeDatasets.push({
-                label: '{{ ticker }} Volume',
-                data: tickerData.map(d => ({x: d.date, y: d.volume})),
-                backgroundColor: colors[{{ loop.index0 }} % colors.length],
-                borderColor: colors[{{ loop.index0 }} % colors.length],
-                borderWidth: 1,
-                type: 'bar'
-            });
+            if (tickerData && tickerData.length > 0) {
+                // Price dataset
+                priceDatasets.push({
+                    label: '{{ ticker }}',
+                    data: tickerData.map(d => ({x: d.date, y: d.close})),
+                    borderColor: colors[{{ loop.index0 }} % colors.length],
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                });
+                
+                // Volume dataset
+                volumeDatasets.push({
+                    label: '{{ ticker }} Volume',
+                    data: tickerData.map(d => ({x: d.date, y: d.volume})),
+                    backgroundColor: colors[{{ loop.index0 }} % colors.length] + '80',
+                    borderColor: colors[{{ loop.index0 }} % colors.length],
+                    borderWidth: 1
+                });
+            }
         }
         {% endfor %}
         
-        // Create price chart
-        const priceChart = new Chart(priceCtx, {
-            type: 'line',
-            data: {
-                datasets: priceDatasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
+        if (priceDatasets.length > 0) {
+            // Create price chart
+            const priceChart = new Chart(priceCtx, {
+                type: 'line',
+                data: {
+                    datasets: priceDatasets
                 },
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
-                            tooltipFormat: 'dd.MM.yyyy'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
+                                tooltipFormat: 'dd.MM.yyyy',
+                                displayFormats: {
+                                    day: 'dd.MM',
+                                    week: 'dd.MM',
+                                    month: 'MM.yyyy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Dato'
+                            }
                         },
-                        title: {
-                            display: true,
-                            text: 'Dato'
+                        y: {
+                            title: {
+                                display: true,
+                                text: '{{ 'Normalisert pris (%)' if normalize else 'Pris' }}'
+                            }
                         }
                     },
-                    y: {
+                    plugins: {
                         title: {
                             display: true,
-                            text: '{{ 'Normalisert pris (%)' if normalize else 'Pris' }}'
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Prissammenligning'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.dataset.label || '';
-                                const value = context.parsed.y;
-                                return `${label}: ${value.toFixed(2)}{{ ' %' if normalize else '' }}`;
+                            text: 'Prissammenligning'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${value.toFixed(2)}{{ ' %' if normalize else '' }}`;
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            document.getElementById('priceChart').style.display = 'none';
+            document.querySelector('.chart-container').innerHTML = '<div class="alert alert-warning">Ingen chart data tilgjengelig</div>';
+        }
         
-        // Create volume chart
-        const volumeChart = new Chart(volumeCtx, {
-            type: 'bar',
-            data: {
-                datasets: volumeDatasets
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
+        if (volumeDatasets.length > 0) {
+            // Create volume chart
+            const volumeChart = new Chart(volumeCtx, {
+                type: 'bar',
+                data: {
+                    datasets: volumeDatasets
                 },
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
-                            tooltipFormat: 'dd.MM.yyyy'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
+                                tooltipFormat: 'dd.MM.yyyy',
+                                displayFormats: {
+                                    day: 'dd.MM',
+                                    week: 'dd.MM',
+                                    month: 'MM.yyyy'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Dato'
+                            }
                         },
-                        title: {
-                            display: true,
-                            text: 'Dato'
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Volum'
+                            },
+                            beginAtZero: true
                         }
                     },
-                    y: {
+                    plugins: {
                         title: {
                             display: true,
-                            text: 'Volum'
+                            text: 'Volumsammenligning'
                         },
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Volumsammenligning'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.dataset.label || '';
-                                const value = context.parsed.y;
-                                return `${label}: ${new Intl.NumberFormat().format(value)}`;
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return `${label}: ${new Intl.NumberFormat().format(value)}`;
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            document.getElementById('volumeChart').style.display = 'none';
+            document.querySelector('.chart-container:nth-of-type(2)').innerHTML = '<div class="alert alert-warning">Ingen volum data tilgjengelig</div>';
+        }
         {% endif %}
         
         // Handle favorite buttons

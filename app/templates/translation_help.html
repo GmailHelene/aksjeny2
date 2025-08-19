@@ -143,6 +143,17 @@
                                     <br>
                                     <em>Advanced AI-powered translation with better context and quality.</em>
                                 </p>
+                                
+                                <div class="alert alert-info small">
+                                    <strong>Hvordan få ConveyThis API key:</strong>
+                                    <ol class="mb-0 mt-2">
+                                        <li>Gå til <a href="https://app.conveythis.com/account/register/" target="_blank">app.conveythis.com</a></li>
+                                        <li>Opprett gratis konto (2500 ord gratis)</li>
+                                        <li>Gå til Dashboard → Settings → API Key</li>
+                                        <li>Kopier API key og sett i miljøvariabel CONVEYTHIS_API_KEY</li>
+                                    </ol>
+                                </div>
+                                
                                 {% if config.CONVEYTHIS_API_KEY %}
                                     <button class="btn btn-success btn-sm" onclick="activateConveyThis()">
                                         <i class="fas fa-magic me-1"></i>
@@ -150,7 +161,7 @@
                                     </button>
                                 {% else %}
                                     <small class="text-muted">
-                                        Ikke konfigurert / Not configured
+                                        Ikke konfigurert - følg instruksjonene over / Not configured - follow instructions above
                                     </small>
                                 {% endif %}
                             </div>

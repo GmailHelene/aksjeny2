@@ -109,6 +109,21 @@ img[src*="article"],
     color: #ffffff !important;
 }
 
+/* Override light green table-success with darker green */
+.table-success {
+    --bs-table-color: #ffffff !important;
+    --bs-table-bg: #198754 !important;
+    --bs-table-border-color: #146c43 !important;
+    --bs-table-striped-bg: #1b7c5a !important;
+    --bs-table-striped-color: #ffffff !important;
+    --bs-table-active-bg: #146c43 !important;
+    --bs-table-active-color: #ffffff !important;
+    --bs-table-hover-bg: #1b7c5a !important;
+    --bs-table-hover-color: #ffffff !important;
+    background-color: #198754 !important;
+    color: #ffffff !important;
+}
+
 /* Ensure white text on dark green and dark blue backgrounds */
 .bg-success, .bg-success .text-dark, .bg-success .text-black,
 .bg-dark, .bg-dark .text-dark, .bg-dark .text-black {
