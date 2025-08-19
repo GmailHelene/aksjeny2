@@ -417,6 +417,12 @@ class SimpleI18n {
         if (languageDisplay) {
             languageDisplay.textContent = this.currentLanguage.toUpperCase();
         }
+        
+        // Also update footer language display
+        const footerLanguageDisplay = document.getElementById('footer-current-language');
+        if (footerLanguageDisplay) {
+            footerLanguageDisplay.textContent = this.currentLanguage.toUpperCase();
+        }
     }
     
     /**

@@ -2665,20 +2665,32 @@ class DataService:
         try:
             logger.info("🔄 Loading Oslo Børs overview with REAL DATA from get_stock_info")
             
-            # Oslo Børs top tickers
+            # UTVIDET Oslo Børs ticker liste - økt fra 20 til 50+ aktier
             oslo_tickers = [
+                # Olsenbanden (store selskaper)
                 'EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL', 'NHY.OL', 'AKER.OL', 'YAR.OL', 'STL.OL',
                 'SALM.OL', 'NEL.OL', 'REC.OL', 'TGS.OL', 'PGS.OL', 'SCATEC.OL',
-                'AKERBP.OL', 'FRONTL.OL', 'GOGL.OL', 'KOG.OL', 'LSG.OL', 'MPCC.OL'
+                'AKERBP.OL', 'FRONTL.OL', 'GOGL.OL', 'KOG.OL', 'LSG.OL', 'MPCC.OL',
+                
+                # Tilleggsaktier for økt volum
+                'ORK.OL', 'OTELLO.OL', 'PHO.OL', 'PCIB.OL', 'PROT.OL', 'QFRE.OL',
+                'RAHF.OL', 'SDRL.OL', 'SUBC.OL', 'THIN.OL', 'XXL.OL', 'ZAL.OL',
+                'BOUVET.OL', 'BWE.OL', 'CRAYN.OL', 'DANO.OL', 'ENDUR.OL', 'BAKKA.OL',
+                'EMAS.OL', 'FJORD.OL', 'GRONG.OL', 'HAVI.OL', 'IDEX.OL', 'JPRO.OL',
+                'KID.OL', 'LIFECARE.OL', 'MEDI.OL', 'NORBIT.OL', 'OPERA.OL', 'PARETO.OL',
+                
+                # Flere aktive handlende aksjer
+                'QUANTAF.OL', 'REACH.OL', 'SALMON.OL', 'TECH.OL', 'ULTI.OL', 'VISTIN.OL',
+                'WAWI.OL', 'XEN.OL', 'B2HOLD.OL', 'BONHR.OL', 'CLOUD.OL', 'DIGI.OL'
             ]
             
             oslo_stocks = {}
             successful_fetches = 0
             
             # Use the working get_stock_info method for real data
-            logger.info("🔄 Using get_stock_info method for REAL Oslo Børs data")
+            logger.info(f"🔄 Attempting to fetch REAL data for {len(oslo_tickers)} Oslo Børs tickers")
             
-            for ticker in oslo_tickers:
+            for i, ticker in enumerate(oslo_tickers):
                 try:
                     # Use the working get_stock_info method that returns real data
                     stock_info = DataService.get_stock_info(ticker)
@@ -2697,7 +2709,8 @@ class DataService:
                             'source': stock_info.get('data_source', 'REAL DATA')
                         }
                         successful_fetches += 1
-                        logger.info(f"✅ Got REAL data for {ticker}: {stock_info['last_price']}")
+                        if successful_fetches <= 5:  # Log first 5 for verification
+                            logger.info(f"✅ Got REAL data for {ticker}: {stock_info['last_price']}")
                         
                     else:
                         logger.warning(f"⚠️ get_stock_info returned invalid data for {ticker}")
@@ -2705,14 +2718,19 @@ class DataService:
                 except Exception as e:
                     logger.warning(f"Failed to get real data for {ticker}: {e}")
                     continue
+                    
+                # Break early if we have enough real data (min 30 stocks)
+                if successful_fetches >= 30:
+                    logger.info(f"✅ Early break: Got {successful_fetches} real stocks, sufficient for Oslo Børs")
+                    break
             
-            # If we got some real data, return it
-            if successful_fetches > 0:
+            # If we got good amount of real data, return it
+            if successful_fetches >= 15:  # Reduced threshold but still substantial
                 logger.info(f"✅ Oslo Børs overview loaded with {successful_fetches} REAL stocks from get_stock_info")
                 return oslo_stocks
             
-            # Only fallback to enhanced demo data if absolutely no real data available
-            logger.warning("🔄 No real data available, using enhanced fallback")
+            # Only fallback to enhanced demo data if insufficient real data
+            logger.warning(f"🔄 Only got {successful_fetches} real stocks, using enhanced fallback")
             return DataService._get_guaranteed_oslo_data()
             
         except Exception as e:
@@ -2848,17 +2866,26 @@ class DataService:
         try:
             logger.info("🔄 Loading global stocks overview with REAL DATA from get_stock_info")
             
-            # Global stock tickers - top companies
+            # UTVIDET Global stock tickers - økt fra 16 til 40+ selskaper
             global_tickers = [
+                # Mega caps
                 'AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX',
-                'BABA', 'V', 'JNJ', 'WMT', 'JPM', 'PG', 'UNH', 'HD'
+                'BABA', 'V', 'JNJ', 'WMT', 'JPM', 'PG', 'UNH', 'HD',
+                
+                # Large caps
+                'ADBE', 'CRM', 'PYPL', 'INTC', 'AMD', 'QCOM', 'CSCO', 'ORCL',
+                'IBM', 'COST', 'NKE', 'DIS', 'PFE', 'KO', 'PEP', 'MCD',
+                
+                # Growth and tech
+                'ZOOM', 'SPOT', 'SQ', 'ROKU', 'SHOP', 'UBER', 'LYFT', 'SNAP',
+                'TWTR', 'PINS', 'ZM', 'DOCU', 'OKTA', 'CRWD', 'NET', 'SNOW'
             ]
             
             global_stocks = {}
             successful_fetches = 0
             
             # Use the working get_stock_info method for real data
-            logger.info("🔄 Using get_stock_info method for REAL global stock data")
+            logger.info(f"🔄 Attempting to fetch REAL data for {len(global_tickers)} global tickers")
             
             for ticker in global_tickers:
                 try:
@@ -2879,7 +2906,8 @@ class DataService:
                             'source': stock_info.get('data_source', 'REAL DATA')
                         }
                         successful_fetches += 1
-                        logger.info(f"✅ Got REAL data for {ticker}: {stock_info['last_price']}")
+                        if successful_fetches <= 5:  # Log first 5 for verification
+                            logger.info(f"✅ Got REAL data for {ticker}: {stock_info['last_price']}")
                         
                     else:
                         logger.warning(f"⚠️ get_stock_info returned invalid data for {ticker}")
@@ -2887,14 +2915,19 @@ class DataService:
                 except Exception as e:
                     logger.warning(f"Failed to get real data for {ticker}: {e}")
                     continue
+                    
+                # Break early if we have enough real data (min 25 stocks)
+                if successful_fetches >= 25:
+                    logger.info(f"✅ Early break: Got {successful_fetches} real global stocks, sufficient")
+                    break
             
-            # If we got some real data, return it
-            if successful_fetches > 0:
+            # If we got good amount of real data, return it
+            if successful_fetches >= 10:  # Reduced threshold but still substantial
                 logger.info(f"✅ Global stocks overview loaded with {successful_fetches} REAL stocks from get_stock_info")
                 return global_stocks
             
-            # Only fallback to enhanced demo data if absolutely no real data available
-            logger.warning("🔄 No real data available, using enhanced fallback")
+            # Only fallback to enhanced demo data if insufficient real data
+            logger.warning(f"🔄 Only got {successful_fetches} real global stocks, using enhanced fallback")
             return DataService._get_guaranteed_global_data()
             
         except Exception as e:
@@ -3583,12 +3616,49 @@ class DataService:
         
     @staticmethod
     def get_currency_overview(base='NOK'):
-        """Get comprehensive currency overview with enhanced data"""
+        """Get comprehensive currency overview with REAL data attempt first"""
         try:
-            # For production stability, use enhanced fallback data for currencies
-            # This avoids rate limiting issues with Yahoo Finance for currency pairs
-            logger.info("Using enhanced fallback currency data for reliable performance")
+            logger.info("🔄 Attempting to fetch REAL currency data...")
+            
+            # Currency pairs to fetch real data for
+            currency_pairs = ['USDNOK=X', 'EURNOK=X', 'GBPNOK=X', 'CADNOK=X', 'AUDNOK=X', 'JPYNOK=X', 'CHFNOK=X', 'SEKNOK=X', 'DKKNOK=X']
+            
+            real_currency_data = {}
+            successful_fetches = 0
+            
+            for pair in currency_pairs:
+                try:
+                    # Try to get real currency data using get_stock_info
+                    currency_info = DataService.get_stock_info(pair)
+                    
+                    if currency_info and currency_info.get('last_price', 0) > 0:
+                        real_currency_data[pair] = {
+                            'name': DataService._get_currency_pair_name(pair),
+                            'last_price': currency_info['last_price'],
+                            'change': currency_info.get('change', 0),
+                            'change_percent': currency_info.get('change_percent', 0),
+                            'open': currency_info.get('open', currency_info['last_price']),
+                            'high': currency_info.get('high', currency_info['last_price'] * 1.01),
+                            'low': currency_info.get('low', currency_info['last_price'] * 0.99),
+                            'volume': currency_info.get('volume', 'N/A'),
+                            'source': 'REAL DATA'
+                        }
+                        successful_fetches += 1
+                        logger.info(f"✅ Got REAL currency data for {pair}: {currency_info['last_price']}")
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to get real currency data for {pair}: {e}")
+                    continue
+            
+            # If we got substantial real currency data, return it
+            if successful_fetches >= 3:  # At least 3 currency pairs with real data
+                logger.info(f"✅ Currency overview loaded with {successful_fetches} REAL currency pairs")
+                return real_currency_data
+            
+            # Only fallback if insufficient real data
+            logger.warning(f"🔄 Only got {successful_fetches} real currency pairs, using enhanced fallback")
             return DataService._get_enhanced_fallback_currency()
+            
         except Exception as e:
             logger.error(f"Error getting currency overview: {str(e)}")
             return DataService._get_enhanced_fallback_currency()

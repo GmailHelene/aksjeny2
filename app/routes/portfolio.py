@@ -135,6 +135,10 @@ def overview():
 
                         portfolio_value += current_value
                         portfolio_gain_loss += profit_loss
+                        
+                        # KRITISK FIX: Akkumuler totaler for alle porteføljer
+                        total_value += current_value
+                        total_gain_loss += profit_loss
 
                         sector = stock_data_service.get('sector', 'Annet') if stock_data_service else 'Annet'
                         if sector not in sector_distribution:
@@ -252,22 +256,29 @@ def watchlist():
             try:
                 symbol = getattr(item, 'symbol', getattr(item, 'ticker', 'UNKNOWN'))
                 stock_data = get_data_service().get_stock_info(symbol)
+                
+                # KRITISK FIX: Sikre at alle verdier er numeriske
+                current_price = float(stock_data.get('regularMarketPrice', 0)) if stock_data.get('regularMarketPrice') is not None else 0.0
+                change = float(stock_data.get('regularMarketChange', 0)) if stock_data.get('regularMarketChange') is not None else 0.0
+                change_percent = float(stock_data.get('regularMarketChangePercent', 0)) if stock_data.get('regularMarketChangePercent') is not None else 0.0
+                
                 watchlist_data.append({
                     'item': item,
                     'ticker': symbol,
-                    'current_price': stock_data.get('regularMarketPrice', 0),
-                    'change': stock_data.get('regularMarketChange', 0),
-                    'change_percent': stock_data.get('regularMarketChangePercent', 0),
-                    'name': stock_data.get('shortName', symbol)
+                    'current_price': current_price,
+                    'change': change,
+                    'change_percent': change_percent,
+                    'name': stock_data.get('shortName', symbol) if stock_data else symbol
                 })
             except Exception as e:
                 current_app.logger.warning(f"Could not get data for watchlist item {symbol}: {e}")
+                # KRITISK FIX: Alltid bruk numeriske fallback-verdier
                 watchlist_data.append({
                     'item': item,
                     'ticker': symbol,
-                    'current_price': 0,
-                    'change': 0,
-                    'change_percent': 0,
+                    'current_price': 0.0,
+                    'change': 0.0,
+                    'change_percent': 0.0,
                     'name': symbol
                 })
         
@@ -308,6 +319,7 @@ def index():
         
         # Calculate total portfolio value safely
         total_value = 0
+        total_profit_loss = 0  # KRITISK FIX: Legg til manglende total_profit_loss
         portfolio_data = []
         
         for p in portfolios:
@@ -376,6 +388,7 @@ def index():
                         logger.error(f"Error processing stock {stock.ticker}: {stock_error}")
 
                 total_value += portfolio_value
+                total_profit_loss += portfolio_gain_loss  # KRITISK FIX: Akkumuler total profit/loss
                 portfolio_data.append({
                     'id': p.id,
                     'name': p.name,
@@ -397,7 +410,8 @@ def index():
         
         return render_template('portfolio/index.html',
                              portfolios=portfolio_data,
-                             total_value=total_value)
+                             total_value=total_value,
+                             total_profit_loss=total_profit_loss)  # KRITISK FIX: Send total_profit_loss til template
                              
     except Exception as e:
         logger.error(f"Error in portfolio index: {e}")

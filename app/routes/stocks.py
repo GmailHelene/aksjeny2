@@ -271,6 +271,11 @@ def list_currency():
                              base_currency='NOK',
                              error=True)
 
+@stocks.route('/<symbol>')
+def stock_symbol(symbol):
+    """Direct stock access via symbol - redirects to details"""
+    return redirect(url_for('stocks.details', symbol=symbol))
+
 @stocks.route('/details/<symbol>')
 def details(symbol):
     """Stock details page with complete analysis data"""

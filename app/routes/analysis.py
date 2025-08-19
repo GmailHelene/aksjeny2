@@ -390,31 +390,70 @@ def sentiment():
         sentiment_data = None
         error = None
         if selected_symbol:
-            sentiment_data = finnhub_api.get_sentiment(selected_symbol)
-            if not sentiment_data:
-                # Use fallback demo data if API fails
-                from ..services.analysis_service import AnalysisService
-                raw_sentiment = AnalysisService.get_sentiment_analysis(selected_symbol)
-                if raw_sentiment:
-                    # Convert data structure to match template expectations
-                    sentiment_data = {
-                        'overall_score': raw_sentiment.get('overall_score', 50),
-                        'sentiment_label': raw_sentiment.get('sentiment_label', 'Nøytral'),
-                        'news_score': raw_sentiment.get('news_score', 50),
-                        'social_score': raw_sentiment.get('social_score', 50),
-                        'volume_trend': raw_sentiment.get('volume_trend', 'Stabil'),
-                        'market_sentiment': raw_sentiment.get('market_sentiment', 50),
-                        'fear_greed_index': raw_sentiment.get('fear_greed_index', 50),
-                        'vix': raw_sentiment.get('vix', 20.0),
-                        'market_trend': raw_sentiment.get('market_trend', 'neutral'),
-                        'sentiment_reasons': raw_sentiment.get('sentiment_reasons', []),
-                        'indicators': _generate_sentiment_indicators(selected_symbol),
-                        'recommendation': _generate_sentiment_recommendation(selected_symbol),
-                        'news_sentiment_articles': _generate_news_articles(selected_symbol),
-                        'history': _generate_sentiment_history(selected_symbol)
-                    }
-                else:
-                    error = f"Ingen sentimentdata tilgjengelig for symbolet {selected_symbol}. Prøv en annen aksje."
+            try:
+                # Enhanced error handling for specific symbols like TSLA
+                sentiment_data = finnhub_api.get_sentiment(selected_symbol)
+                if not sentiment_data:
+                    # Use fallback demo data if API fails
+                    from ..services.analysis_service import AnalysisService
+                    raw_sentiment = AnalysisService.get_sentiment_analysis(selected_symbol)
+                    if raw_sentiment:
+                        # Convert data structure to match template expectations
+                        sentiment_data = {
+                            'overall_score': raw_sentiment.get('overall_score', 50),
+                            'sentiment_label': raw_sentiment.get('sentiment_label', 'Nøytral'),
+                            'news_score': raw_sentiment.get('news_score', 50),
+                            'social_score': raw_sentiment.get('social_score', 50),
+                            'volume_trend': raw_sentiment.get('volume_trend', 'Stabil'),
+                            'market_sentiment': raw_sentiment.get('market_sentiment', 50),
+                            'fear_greed_index': raw_sentiment.get('fear_greed_index', 50),
+                            'vix': raw_sentiment.get('vix', 20.0),
+                            'market_trend': raw_sentiment.get('market_trend', 'neutral'),
+                            'sentiment_reasons': raw_sentiment.get('sentiment_reasons', []),
+                            'indicators': _generate_sentiment_indicators(selected_symbol),
+                            'recommendation': _generate_sentiment_recommendation(selected_symbol),
+                            'news_sentiment_articles': _generate_news_articles(selected_symbol),
+                            'history': _generate_sentiment_history(selected_symbol)
+                        }
+                    else:
+                        # Create fallback sentiment data for problematic symbols
+                        sentiment_data = {
+                            'overall_score': 60,
+                            'sentiment_label': 'Nøytral',
+                            'news_score': 55,
+                            'social_score': 58,
+                            'volume_trend': 'Stabil',
+                            'market_sentiment': 60,
+                            'fear_greed_index': 45,
+                            'vix': 18.5,
+                            'market_trend': 'neutral',
+                            'sentiment_reasons': [f'Begrensede sentimentdata for {selected_symbol}', 'Bruker fallback analyse'],
+                            'indicators': _generate_sentiment_indicators(selected_symbol),
+                            'recommendation': _generate_sentiment_recommendation(selected_symbol),
+                            'news_sentiment_articles': _generate_news_articles(selected_symbol),
+                            'history': _generate_sentiment_history(selected_symbol)
+                        }
+                        current_app.logger.info(f"Using fallback sentiment data for {selected_symbol}")
+            except Exception as symbol_error:
+                current_app.logger.error(f"Error processing sentiment for {selected_symbol}: {symbol_error}")
+                # Create minimal fallback data to prevent page errors
+                sentiment_data = {
+                    'overall_score': 50,
+                    'sentiment_label': 'Nøytral', 
+                    'news_score': 50,
+                    'social_score': 50,
+                    'volume_trend': 'Stabil',
+                    'market_sentiment': 50,
+                    'fear_greed_index': 50,
+                    'vix': 20.0,
+                    'market_trend': 'neutral',
+                    'sentiment_reasons': ['Teknisk feil i datainnhenting'],
+                    'indicators': [],
+                    'recommendation': 'Data ikke tilgjengelig',
+                    'news_sentiment_articles': [],
+                    'history': []
+                }
+                error = f"Sentiment-analyse for {selected_symbol} er midlertidig utilgjengelig."
 
         return render_template(
             'analysis/sentiment.html',

@@ -86,3 +86,57 @@ På relevante søkeord, og at vi møter kravene når det gjelder cookies og GDPR
 ---
 Test all pages and features for real data, no fallback/mockup except rare cases
 
+kan vi fikse så vår side aksjeradar.trade blir tydeligere differensieert fra våre konkurrenter som InvestWiser, Simply Wall St og Koyfin2?
+
+[2025-08-19 23:09:05,328] ERROR in portfolio: Error in watchlist: type Undefined doesn't define __round__ method
+[2025-08-19 23:09:06,668] ERROR in portfolio: Error in portfolio index: 'total_profit_loss' is undefined
+[2025-08-19 23:09:06,669] ERROR in __init__: Template rendering error: 'total_profit_loss' is undefined
+Dette ser jeg i railway logs,hvis det ikke er fiket,fikser du d et nå
+--
+[2025-08-19 23:06:00,404] INFO in data_service: Using enhanced fallback currency data for reliable performance
+dette bør ikke være tilfelle? fiks så det klarer å hentes inn ekte data her?
+
+-
+[2025-08-19 23:05:51,782] INFO in main: Oslo stocks count: 10
+Dette var et ekstremt lavt antall for innhenting av ekte data på oslo stocks?? Det må økes?? sjekk ogfså at dette tsallet er høyt nok i alle innhenting av ekte data funksjoner.
+
+
+---
+
+Viktig endring! ALle steder det står om priser og abonnementer, så må priser og lenkene foir å kjøpe abonnement hos stripe oppdateres:
+
+Nye priser og lenker:
+måned abonnement 249,-   ny lenke: https://buy.stripe.com/5kQcN503z30z2oL35wfYY03
+
+Årlig: 2499,- Ny lenke: https://buy.stripe.com/dRm3cvbMh1WvbZldKafYY04
+Fiks dette alle steder det er priser og abonnements kjøp lenker til stripe
+
+--
+FØlgende: KAn du implementere dette på en god måte som et endepunkt som også skalvære SEO optimalisert, for å dra innn trafikk,nye brukere spesielt: 
+Få mer igjen for pengene med Aksjeradar.trade
+Sanntidsdata, AI-analyse og investeringsverktøy – test ROI nå
+
+Hvorfor velge Aksjeradar.trade?
+✅ Sanntidsdata fra Oslo Børs, globale markeder, krypto og valuta
+✅ Avansert AI-analyse med prediksjoner og anbefalinger
+✅ Teknisk og fundamental screening
+✅ Porteføljeoptimalisering og verdibaserte strategier
+✅ Ingen registrering nødvendig for testing
+[Bilde: AI-analyse og aksjegraf]
+ROI Kalkulator – Hva får du igjen?
+Basert på typiske gevinster fra bedre beslutninger og innsikt:
+
+Abonnementstype	Kostnad	Estimert gevinst	ROI
+Månedlig	249 kr	600 kr	141%
+Årlig	2499 kr	7200 kr	188%
+Hva betyr dette?
+Med Aksjeradar.trade får du mer igjen for hver krone – både i innsikt, tid og avkastning. ROI på over 100% betyr at verktøyet betaler seg selv flere ganger.
+
+🚀 Start din gratis test nå – ingen registrering nødvendig
+👉 Besøk Aksjeradar.trade
+Vanlige spørsmål
+Er dataene sanntid? Ja, både Oslo Børs, globale aksjer, krypto og valuta.
+Er AI-funksjonene inkludert? Ja, prediksjoner og screening er inkludert i abonnementet.
+Kan jeg teste gratis? Ja, du kan teste alle funksjoner uten registrering.
+[Bilde: Porteføljeoptimalisering og screening]
+(gjerne sett inn passende bilder de 2 stedene)
