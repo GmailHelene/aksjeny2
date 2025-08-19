@@ -192,22 +192,16 @@
                                         </a>
                                     </div>
                                     <div class="col-md-3">
-                                        <a href="{{ url_for('analysis.sentiment', ticker=ticker) }}" class="btn btn-outline-info w-100">
-                                            <i class="bi bi-heart me-2"></i>
-                                            Sentiment
+                                        <a href="{{ url_for('analysis.benjamin_graham', ticker=ticker) }}" class="btn btn-outline-warning w-100">
+                                            <i class="bi bi-mortarboard me-2"></i>
+                                            Benjamin Graham
                                         </a>
                                     </div>
                                     <div class="col-md-3">
-                                        <a href="{{ url_for('stocks.compare', symbols=ticker) }}" class="btn btn-outline-secondary w-100">
-                                            <i class="bi bi-arrows-angle-expand me-2"></i>
-                                            Jämför
-                                        </a>
+                                        <!-- Empty space for layout balance -->
                                     </div>
                                     <div class="col-md-3">
-                                        <a href="{{ url_for('portfolio.add_stock', symbol=ticker) }}" class="btn btn-outline-success w-100">
-                                            <i class="bi bi-plus-circle me-2"></i>
-                                            Lägg till Portfolio
-                                        </a>
+                                        <!-- Empty space for layout balance -->
                                     </div>
                                 </div>
                             </div>

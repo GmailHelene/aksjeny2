@@ -27,40 +27,62 @@ def financial_dashboard():
         user_stock_count = 0
         
         if current_user.is_authenticated:
-            # Get user's actual portfolio data
             try:
-                from ..models.portfolio import Portfolio
+                from ..models.portfolio import Portfolio, PortfolioStock
+                from ..models.favorites import Favorites
+                from ..models.watchlist import Watchlist
+                
+                # Get actual portfolio data
                 user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
+                total_stocks = 0
                 
                 for portfolio in user_portfolios:
-                    # This would need to be implemented based on your portfolio model
-                    # For now, use demo data but make it user-specific
-                    user_hash = abs(hash(current_user.id)) % 10000 if current_user.id else 1000
-                    user_portfolio_value += 50000 + (user_hash * 100)  # Between 50k-1.05M
-                    user_stock_count += len(portfolio.holdings) if hasattr(portfolio, 'holdings') else 3
+                    try:
+                        portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=portfolio.id).all()
+                        for stock in portfolio_stocks:
+                            # Get current price and calculate value
+                            stock_data = DataService().get_single_stock_data(stock.ticker)
+                            if stock_data:
+                                current_price = float(stock_data.get('last_price', stock.purchase_price))
+                                current_value = current_price * stock.quantity
+                                purchase_value = stock.purchase_price * stock.quantity
+                                
+                                user_portfolio_value += current_value
+                                user_daily_change += (current_value - purchase_value)
+                                total_stocks += 1
+                    except Exception as e:
+                        logger.warning(f"Error calculating portfolio value: {e}")
                 
-                # Get crypto holdings if available
-                user_crypto_count = 2 + (user_hash % 8)  # 2-10 cryptos
+                # Get actual user statistics
+                user_stock_count = total_stocks
+                user_crypto_count = Favorites.query.filter_by(user_id=current_user.id).filter(Favorites.symbol.like('%USD')).count()
                 
-                # Calculate daily change (demo calculation)
-                user_daily_change = user_portfolio_value * 0.024  # 2.4% gain
-                user_daily_change_percent = 2.4
+                # Calculate percentages
+                if user_portfolio_value > 0:
+                    user_daily_change_percent = (user_daily_change / user_portfolio_value) * 100
+                else:
+                    # New user with no portfolio - show starter data
+                    user_portfolio_value = 0
+                    user_daily_change = 0
+                    user_daily_change_percent = 0
+                    user_stock_count = 0
+                    user_crypto_count = 0
                 
             except Exception as e:
                 logger.warning(f"Could not load user portfolio data: {e}")
-                # Use fallback demo data
-                user_portfolio_value = 125000
-                user_daily_change = 3056
-                user_daily_change_percent = 2.45
-                user_crypto_count = 5
-                user_stock_count = 12
+                # Empty portfolio for new users
+                user_portfolio_value = 0
+                user_daily_change = 0
+                user_daily_change_percent = 0
+                user_crypto_count = 0
+                user_stock_count = 0
         else:
-            # Demo user data
-            user_portfolio_value = 125000
-            user_daily_change = 3056
-            user_daily_change_percent = 2.45
-            user_crypto_count = 5
-            user_stock_count = 12
+            # Demo user data - show zero/empty portfolio to encourage registration
+            user_portfolio_value = 0
+            user_daily_change = 0
+            user_daily_change_percent = 0
+            user_crypto_count = 0
+            user_stock_count = 0
         
         # Format user data for template
         user_data = {

@@ -376,7 +376,8 @@ def market_overview():
 def sentiment():
     """Market sentiment analysis"""
     try:
-        selected_symbol = request.args.get('symbol', '').strip().upper()
+        # Support both 'symbol' and 'ticker' parameters
+        selected_symbol = (request.args.get('symbol') or request.args.get('ticker', '')).strip().upper()
 
         # Validate the selected symbol
         if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():

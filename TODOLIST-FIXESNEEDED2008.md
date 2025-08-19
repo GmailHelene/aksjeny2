@@ -19,6 +19,9 @@
 - [ ] **Compare visualisering** - Fiks manglende grafer
 - [ ] **Sentiment analyse** - Fiks teknisk
 
+oversettelseknappen i footer for norsk/engelsk ,kan vi implementere denne med ovversettelse løsningen vår?
+
+Og når man høyreklikker og velger f.eks engelsk språk, så må man gjøre det på nytt for hver side man er inne på, altså hver underside av aksjeradar.trade, dette er veldig tungivnt, går det an at overtesslesespråket man har valgt gjelder og varer over hele appen, alle undrside,rfor brukerens session?
 
 flere ting som ikke er fikset (innlogget bruker) fortsett til alt er fikset
 
