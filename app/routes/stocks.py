@@ -351,13 +351,18 @@ def details(symbol):
         # Generate technical data with REAL calculations
         try:
             # Try to get historical data for technical analysis
+            logger.info(f"[TECHNICAL] Getting historical data for {symbol}")
             historical_data = DataService.get_historical_data(symbol, period='3mo')
             
             if historical_data is not None and not historical_data.empty:
+                logger.info(f"[TECHNICAL] Got historical data for {symbol}, shape: {historical_data.shape}")
+                logger.info(f"[TECHNICAL] Historical data columns: {historical_data.columns.tolist()}")
                 # Import the new technical analysis module
                 from ..services.technical_analysis import calculate_comprehensive_technical_data
                 technical_data = calculate_comprehensive_technical_data(historical_data)
+                logger.info(f"[TECHNICAL] Calculated technical data for {symbol}: RSI={technical_data.get('rsi')}, MACD={technical_data.get('macd')}")
             else:
+                logger.warning(f"[TECHNICAL] No historical data available for {symbol}, using fallback")
                 # Fallback to demo data if no historical data available
                 technical_data = {
                     'rsi': 30.0 + (base_hash % 40),
@@ -376,7 +381,8 @@ def details(symbol):
                     'signal_reason': 'Demo data - historical data unavailable'
                 }
         except Exception as e:
-            logger.warning(f"Error calculating technical data for {symbol}: {e}")
+            logger.warning(f"[TECHNICAL] Error calculating technical data for {symbol}: {e}")
+            logger.warning(f"[TECHNICAL] Exception type: {type(e)}", exc_info=True)
             # Fallback to demo data
             technical_data = {
                 'rsi': 30.0 + (base_hash % 40),
@@ -392,7 +398,7 @@ def details(symbol):
                 'stochastic_d': 25.0 + (base_hash % 50),
                 'signal': stock_info.get('signal', 'HOLD'),
                 'signal_strength': 'Medium',
-                'signal_reason': 'Fallback demo data'
+                'signal_reason': 'Fallback demo data - calculation error'
             }
         
         # Create enhanced stock_info object with ALL required fields

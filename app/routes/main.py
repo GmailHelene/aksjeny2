@@ -1404,23 +1404,37 @@ def settings():
     if request.method == 'POST' and current_user.is_authenticated:
         try:
             # Handle form submission for authenticated users
-            full_name = request.form.get('full_name')
-            email = request.form.get('email') 
-            phone = request.form.get('phone')
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            email = request.form.get('email')
+            language = request.form.get('language', 'no')
             
-            # Update user profile
-            current_user.full_name = full_name
-            current_user.email = email
-            current_user.phone = phone
+            # Handle notification preferences
+            email_notifications = request.form.get('email_notifications') == 'on'
+            price_alerts = request.form.get('price_alerts') == 'on' 
+            market_news = request.form.get('market_news') == 'on'
+            
+            # Update user profile with available fields
+            if first_name:
+                current_user.first_name = first_name
+            if last_name:
+                current_user.last_name = last_name
+            if email and email != current_user.email:
+                current_user.email = email
+            current_user.language = language
+            current_user.email_notifications = email_notifications
+            current_user.price_alerts = price_alerts
+            current_user.market_news = market_news
             
             # Commit changes
             db.session.commit()
             
-            flash('Profil oppdatert!', 'success')
+            flash('Innstillinger oppdatert!', 'success')
             return redirect(url_for('main.settings'))
             
         except Exception as e:
-            flash('Feil ved oppdatering av profil.', 'error')
+            logger.error(f"Error updating settings: {e}")
+            flash('Feil ved oppdatering av innstillinger.', 'error')
             db.session.rollback()
     
     return render_template('settings.html', 

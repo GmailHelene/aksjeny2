@@ -36,15 +36,15 @@ def create_app(config_class=None):
     if config_class is None:
         config_name = os.getenv('FLASK_ENV', 'default')
         app.config.from_object(config[config_name])
-        app.logger.info(f"✅ App created in {config_name} mode")
+        app.logger.info(f"OK App created in {config_name} mode")
     elif isinstance(config_class, str):
         # Handle string config names (existing behavior)
         app.config.from_object(config[config_class])
-        app.logger.info(f"✅ App created in {config_class} mode")
+        app.logger.info(f"OK App created in {config_class} mode")
     else:
         # Handle config class objects (for testing)
         app.config.from_object(config_class)
-        app.logger.info(f"✅ App created with custom config")
+        app.logger.info(f"OK App created with custom config")
     
     # Initialize Flask extensions
     db.init_app(app)
@@ -59,7 +59,7 @@ def create_app(config_class=None):
     # Register WebSocket handlers
     try:
         from .routes import websocket_handlers
-        app.logger.info("✅ WebSocket handlers registered")
+        app.logger.info("OK WebSocket handlers registered")
     except Exception as e:
         app.logger.warning(f"Failed to register WebSocket handlers: {e}")
     
@@ -96,9 +96,9 @@ def create_app(config_class=None):
     # Import models for database creation
     try:
         from . import models
-        app.logger.info("✅ Database models imported successfully")
+        app.logger.info("OK Database models imported successfully")
     except Exception as e:
-        app.logger.error(f"❌ Failed to import models: {e}")
+        app.logger.error(f"ERROR Failed to import models: {e}")
         raise
     
     # Import cache service to initialize
@@ -113,12 +113,13 @@ def create_app(config_class=None):
         try:
             from .services.price_monitor_service import price_monitor
             price_monitor.start_monitoring(app)
-            app.logger.info("✅ Price monitoring service started")
+            app.logger.info("OK Price monitoring service started")
         except Exception as e:
             app.logger.warning(f"Price monitoring service failed to start: {e}")
     else:
         app.logger.info("Price monitoring service disabled in Railway production environment")
     
+    app.logger.info("DEBUG Starting try block for blueprint registration")
     try:
         # Log static endpoint
         for rule in app.url_map.iter_rules():
@@ -126,7 +127,9 @@ def create_app(config_class=None):
                 app.logger.info(f"Endpoint: {rule.endpoint} -> {rule}")
                 break
         
+        app.logger.info("DEBUG About to call register_blueprints")
         register_blueprints(app)
+        app.logger.info("DEBUG register_blueprints completed successfully")
         setup_error_handlers(app)
         
         # Setup global access control middleware - DISABLED to fix redirect issues
@@ -164,7 +167,7 @@ def create_app(config_class=None):
                 app.jinja_env.globals['t'] = t
                 app.jinja_env.globals['get_current_language'] = get_current_language
                 app.jinja_env.globals['get_supported_languages'] = get_supported_languages
-                app.logger.info("✅ Translation service integrated")
+                app.logger.info("OK Translation service integrated")
                 return True
             except Exception as e:
                 app.logger.warning(f"Translation service setup failed: {e}")
@@ -178,14 +181,14 @@ def create_app(config_class=None):
             try:
                 from .utils.i18n import get_current_language as fallback_get_current_language
                 app.jinja_env.globals['get_current_language'] = fallback_get_current_language
-                app.logger.info("✅ Fallback get_current_language added to Jinja2 globals")
+                app.logger.info("OK Fallback get_current_language added to Jinja2 globals")
             except Exception as e:
                 app.logger.warning(f"Fallback get_current_language setup failed: {e}")
                 # Final fallback: always provide a safe default
                 def get_current_language():
                     return 'no'  # Default to Norwegian
                 app.jinja_env.globals['get_current_language'] = get_current_language
-                app.logger.info("✅ Default get_current_language added to Jinja2 globals")
+                app.logger.info("OK Default get_current_language added to Jinja2 globals")
             
             # Always provide a dummy translation function if t is missing
             if 't' not in app.jinja_env.globals:
@@ -193,7 +196,7 @@ def create_app(config_class=None):
                     fallback = kwargs.get('fallback', key)
                     return fallback
                 app.jinja_env.globals['t'] = t
-                app.logger.info("✅ Default translation function 't' added to Jinja2 globals")
+                app.logger.info("OK Default translation function 't' added to Jinja2 globals")
 
         # Add a global error handler for template rendering issues
         from jinja2 import TemplateError
@@ -238,7 +241,7 @@ def create_app(config_class=None):
                 from .services.market_data_service import MarketDataService
                 # Initialize market data service
                 app.market_data_service = MarketDataService()
-                app.logger.info("✅ Market data service initialized")
+                app.logger.info("OK Market data service initialized")
                 return True
             except Exception as e:
                 app.logger.warning(f"Market data service setup failed: {e}")
@@ -247,7 +250,7 @@ def create_app(config_class=None):
         # Setup market data service
         setup_market_data_service()
         
-        app.logger.info("✅ App initialization complete")
+        app.logger.info("OK App initialization complete")
         
         # Initialize database tables within app context
         with app.app_context():
@@ -260,11 +263,12 @@ def create_app(config_class=None):
         return app
         
     except Exception as e:
-        app.logger.error(f"❌ Critical error during app creation: {e}")
+        app.logger.error(f"ERROR Critical error during app creation: {e}")
         raise
 
 def register_blueprints(app):
     """Register all blueprints"""
+    app.logger.info("DEBUG register_blueprints function called!")
     blueprints_registered = []
     
     # Core blueprints that must be registered
@@ -283,7 +287,7 @@ def register_blueprints(app):
             from .routes.stripe_routes import stripe_bp
             app.register_blueprint(stripe_bp)
             blueprints_registered.append('stripe')
-            app.logger.info("✅ Registered Stripe blueprint")
+            app.logger.info("OK Registered Stripe blueprint")
         except ImportError as e:
             app.logger.warning(f"Could not import Stripe blueprint: {e}")
         
@@ -292,7 +296,7 @@ def register_blueprints(app):
             from .auth import auth
             app.register_blueprint(auth, url_prefix='/auth')
             blueprints_registered.append('auth')
-            app.logger.info("✅ Registered Auth blueprint")
+            app.logger.info("OK Registered Auth blueprint")
         except ImportError as e:
             app.logger.warning(f"Could not import Auth blueprint: {e}")
         
@@ -301,7 +305,7 @@ def register_blueprints(app):
             from .routes.cache_management import cache_bp
             app.register_blueprint(cache_bp)
             blueprints_registered.append('cache_management')
-            app.logger.info("✅ Registered Cache Management blueprint")
+            app.logger.info("OK Registered Cache Management blueprint")
         except ImportError as e:
             app.logger.warning(f"Could not import Cache Management blueprint: {e}")
     except ImportError as e:
@@ -344,13 +348,16 @@ def register_blueprints(app):
         ('.routes.notifications', 'notifications_web_bp', None),
     ]
     
-    for module_path, blueprint_name, url_prefix in blueprint_configs:
+    app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")
+    
+    for i, (module_path, blueprint_name, url_prefix) in enumerate(blueprint_configs):
+        app.logger.info(f"Processing blueprint {i+1}/{len(blueprint_configs)}: {blueprint_name} from {module_path}")
         try:
             from importlib import import_module
             
-            # Special debug logging for price_alerts
-            if blueprint_name == 'price_alerts':
-                app.logger.info(f"🔍 Starting price_alerts blueprint registration...")
+            # Special debug logging for stocks and price_alerts
+            if blueprint_name in ['stocks', 'price_alerts']:
+                app.logger.info(f"Starting {blueprint_name} blueprint registration...")
                 app.logger.info(f"Module path: {module_path}")
             
             module = import_module(module_path, package=__name__)
@@ -362,31 +369,35 @@ def register_blueprints(app):
             else:
                 app.register_blueprint(blueprint)
             blueprints_registered.append(blueprint_name)
-            app.logger.info(f"✅ Registered blueprint: {blueprint_name}")
+            app.logger.info(f"Registered blueprint: {blueprint_name}")
             
-            # Special confirmation for price_alerts
-            if blueprint_name == 'price_alerts':
-                app.logger.info(f"🎯 price_alerts blueprint registered successfully with prefix: {url_prefix}")
+            # Special confirmation for stocks and price_alerts
+            if blueprint_name in ['stocks', 'price_alerts']:
+                app.logger.info(f"{blueprint_name} blueprint registered successfully with prefix: {url_prefix}")
                 
         except ImportError as e:
             app.logger.warning(f"Could not import {blueprint_name}: {e}")
-            # Special error logging for price_alerts
-            if blueprint_name == 'price_alerts':
-                app.logger.error(f"🚨 CRITICAL: price_alerts blueprint import failed: {e}")
+            # Special error logging for stocks and price_alerts
+            if blueprint_name in ['stocks', 'price_alerts']:
+                app.logger.error(f"CRITICAL: {blueprint_name} blueprint import failed: {e}")
+                import traceback
+                app.logger.error(f"Full traceback: {traceback.format_exc()}")
         except Exception as e:
             app.logger.error(f"Error registering {blueprint_name}: {e}")
-            # Special error logging for price_alerts
-            if blueprint_name == 'price_alerts':
-                app.logger.error(f"🚨 CRITICAL: price_alerts blueprint registration failed: {e}")
+            # Special error logging for stocks and price_alerts
+            if blueprint_name in ['stocks', 'price_alerts']:
+                app.logger.error(f"CRITICAL: {blueprint_name} blueprint registration failed: {e}")
+                import traceback
+                app.logger.error(f"Full traceback: {traceback.format_exc()}")
     
-    app.logger.info(f"✅ Registered {len(blueprints_registered)} blueprints: {', '.join(blueprints_registered)}")
+    app.logger.info(f"OK Registered {len(blueprints_registered)} blueprints: {', '.join(blueprints_registered)}")
     
     # Register the realtime_api blueprint
     try:
         from .routes.realtime_api import realtime_api
         app.register_blueprint(realtime_api)
         blueprints_registered.append('realtime_api')
-        app.logger.info("✅ Registered realtime_api blueprint")
+        app.logger.info("OK Registered realtime_api blueprint")
     except ImportError as e:
         app.logger.warning(f"Could not import realtime_api blueprint: {e}")
 
@@ -396,13 +407,13 @@ def setup_production_database(app):
         with app.app_context():
             # Create database tables if they don't exist
             db.create_all()
-            app.logger.info("✅ Database tables created/verified")
+            app.logger.info("OK Database tables created/verified")
             
             # Set up exempt users for production
             setup_exempt_users(app)
             
     except Exception as e:
-        app.logger.error(f"❌ Production database setup failed: {e}")
+        app.logger.error(f"ERROR Production database setup failed: {e}")
 
 def setup_exempt_users(app):
     """Set up exempt users for production"""
@@ -430,10 +441,10 @@ def setup_exempt_users(app):
                 db.session.add(user)
         
         db.session.commit()
-        app.logger.info("✅ Exempt users setup completed")
+        app.logger.info("OK Exempt users setup completed")
         
     except Exception as e:
-        app.logger.error(f"❌ Failed to setup exempt users: {e}")
+        app.logger.error(f"ERROR Failed to setup exempt users: {e}")
 
 def setup_stripe(app):
     """Initialize Stripe with proper error handling"""
@@ -443,7 +454,7 @@ def setup_stripe(app):
         
         if stripe_secret_key:
             stripe.api_key = stripe_secret_key
-            app.logger.info("✅ Stripe initialized successfully")
+            app.logger.info("OK Stripe initialized successfully")
         else:
             app.logger.warning("⚠️ Stripe secret key not found in environment")
         
@@ -451,7 +462,7 @@ def setup_stripe(app):
         
         if stripe_public_key:
             app.config['STRIPE_PUBLISHABLE_KEY'] = stripe_public_key
-            app.logger.info("✅ Stripe publishable key configured")
+            app.logger.info("OK Stripe publishable key configured")
         else:
             app.logger.info("ℹ️ Stripe publishable key not configured - payment features disabled")
             app.config['STRIPE_PUBLISHABLE_KEY'] = None
@@ -459,7 +470,7 @@ def setup_stripe(app):
     except ImportError:
         app.logger.warning("⚠️ Stripe not installed")
     except Exception as e:
-        app.logger.error(f"❌ Stripe initialization failed: {e}")
+        app.logger.error(f"ERROR Stripe initialization failed: {e}")
 
 def setup_error_handlers(app):
     """Setup custom error handlers"""

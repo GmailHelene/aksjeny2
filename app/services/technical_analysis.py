@@ -265,7 +265,13 @@ def calculate_comprehensive_technical_data(df: pd.DataFrame) -> Dict[str, Any]:
         Dictionary with all technical indicators
     """
     try:
+        print(f"[TECHNICAL_CALC] Input DataFrame shape: {df.shape if df is not None else 'None'}")
+        if df is not None:
+            print(f"[TECHNICAL_CALC] DataFrame columns: {df.columns.tolist()}")
+            print(f"[TECHNICAL_CALC] DataFrame head:\n{df.head()}")
+            
         if df is None or df.empty:
+            print("[TECHNICAL_CALC] No data provided, returning neutral values")
             # Return neutral values if no data
             return {
                 'rsi': 50.0,
@@ -290,16 +296,18 @@ def calculate_comprehensive_technical_data(df: pd.DataFrame) -> Dict[str, Any]:
         # Ensure we have the required columns
         required_cols = ['Close']
         if not all(col in df.columns for col in required_cols):
-            print(f"Missing required columns. Available: {df.columns.tolist()}")
+            print(f"[TECHNICAL_CALC] Missing required columns. Available: {df.columns.tolist()}")
             # Use the first numeric column as Close if Close is not available
             numeric_cols = df.select_dtypes(include=[np.number]).columns
             if len(numeric_cols) > 0:
                 close_col = numeric_cols[0]
+                print(f"[TECHNICAL_CALC] Using column '{close_col}' as Close")
                 df = df.rename(columns={close_col: 'Close'})
             else:
                 raise ValueError("No numeric columns found")
                 
         close_prices = df['Close'].dropna()
+        print(f"[TECHNICAL_CALC] Close prices length: {len(close_prices)}")
         
         if len(close_prices) == 0:
             raise ValueError("No valid close prices")
@@ -309,11 +317,25 @@ def calculate_comprehensive_technical_data(df: pd.DataFrame) -> Dict[str, Any]:
         low_prices = df.get('Low', close_prices)
         
         # Calculate indicators
+        print("[TECHNICAL_CALC] Calculating RSI...")
         rsi = calculate_rsi(close_prices)
+        print(f"[TECHNICAL_CALC] RSI calculated: {rsi}")
+        
+        print("[TECHNICAL_CALC] Calculating MACD...")
         macd_data = calculate_macd(close_prices)
+        print(f"[TECHNICAL_CALC] MACD calculated: {macd_data}")
+        
+        print("[TECHNICAL_CALC] Calculating Bollinger Bands...")
         bollinger = calculate_bollinger_bands(close_prices)
+        print(f"[TECHNICAL_CALC] Bollinger calculated: {bollinger}")
+        
+        print("[TECHNICAL_CALC] Calculating Moving Averages...")
         moving_averages = calculate_moving_averages(close_prices)
+        print(f"[TECHNICAL_CALC] Moving averages calculated: {moving_averages}")
+        
+        print("[TECHNICAL_CALC] Calculating Stochastic...")
         stochastic = calculate_stochastic(high_prices, low_prices, close_prices)
+        print(f"[TECHNICAL_CALC] Stochastic calculated: {stochastic}")
         
         # Generate trading signal
         signal_data = generate_technical_signal(
