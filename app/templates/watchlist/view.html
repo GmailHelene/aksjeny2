@@ -158,7 +158,7 @@
                                     <i class="fas fa-plus me-2"></i>Add to Portfolio
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#">
+                                <li><a class="dropdown-item text-danger" href="#" onclick="removeFromWatchlist('{{ stock.symbol }}', this)">
                                     <i class="fas fa-trash me-2"></i>Remove
                                 </a></li>
                             </ul>
@@ -274,6 +274,97 @@
 </div>
 
 <script>
+async function removeFromWatchlist(symbol, buttonElement) {
+    if (!confirm(`Are you sure you want to remove ${symbol} from this watchlist?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/watchlist/api/watchlist/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                symbol: symbol
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Remove the stock card from the DOM
+            const stockCard = buttonElement.closest('.col-lg-6');
+            if (stockCard) {
+                stockCard.style.transition = 'all 0.3s ease';
+                stockCard.style.opacity = '0';
+                stockCard.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    stockCard.remove();
+                }, 300);
+            }
+            
+            // Show success message
+            showSuccessMessage(data.message || `${symbol} removed from watchlist`);
+        } else {
+            showErrorMessage(data.error || 'Failed to remove from watchlist');
+        }
+    } catch (error) {
+        console.error('Error removing from watchlist:', error);
+        showErrorMessage('Failed to remove from watchlist');
+    }
+}
+
+function getCsrfToken() {
+    // Try to get CSRF token from meta tag or form
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) return metaToken.getAttribute('content');
+    
+    const formToken = document.querySelector('input[name="csrf_token"]');
+    if (formToken) return formToken.value;
+    
+    return '';
+}
+
+function showSuccessMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        <i class="fas fa-check-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+function showErrorMessage(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        <i class="fas fa-exclamation-circle me-2"></i>${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Notification toggle
     document.getElementById('notifications').addEventListener('change', function() {

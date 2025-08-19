@@ -207,8 +207,7 @@ PREMIUM_ENDPOINTS = {
     'portfolio.watchlist',
     'portfolio.stock_tips',
     'portfolio.transactions',
-    'portfolio.add_stock',
-    'portfolio.overview'
+    'portfolio.add_stock'
 }
 
 def url_is_safe(target):
@@ -788,49 +787,62 @@ def index():
                             user_stats=user_stats)
 
 @main.route('/demo')
-@demo_access
 def demo():
-    """Demo page with full functionality preview"""
+    """
+    Demo page with safe access control - prevents redirect loops
+    Available to all users (authenticated and unauthenticated)
+    """
     try:
+        # Prevent redirect loops by always allowing demo access
+        from ..utils.access_control_unified import get_access_level, log_access_attempt
+        
+        access_level = get_access_level()
+        log_access_attempt('main.demo', 
+                          getattr(current_user, 'id', None) if current_user.is_authenticated else None,
+                          access_level)
+        
         # Get real data for demo stocks
         data_service = get_data_service()
         oslo_stocks = ['EQNR.OL', 'DNB.OL', 'TEL.OL']
         
         stocks_data = []
         for symbol in oslo_stocks:
-            stock_info = data_service.get_stock_info(symbol)
-            if stock_info:
-                current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
-                previous_close = stock_info.get('previousClose', current_price)
-                
-                # Calculate change
-                if previous_close and previous_close > 0:
-                    change_abs = current_price - previous_close
-                    change_percent = (change_abs / previous_close) * 100
-                    change_str = f"{'+' if change_abs >= 0 else ''}{change_percent:.1f}%"
-                else:
-                    change_percent = 0.0
-                    change_str = "0.0%"
-                
-                # Simple signal logic
-                if change_percent > 1:
-                    signal = 'KJØP'
-                    analysis = 'Positiv momentum'
-                elif change_percent < -1:
-                    signal = 'SELG'
-                    analysis = 'Svak utvikling'
-                else:
-                    signal = 'HOLD'
-                    analysis = 'Stabil utvikling'
-                
-                stocks_data.append({
-                    'symbol': symbol,
-                    'name': stock_info.get('longName', stock_info.get('shortName', symbol)),
-                    'price': current_price,
-                    'change': change_str,
-                    'signal': signal,
-                    'analysis': analysis
-                })
+            try:
+                stock_info = data_service.get_stock_info(symbol)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    
+                    # Calculate change
+                    if previous_close and previous_close > 0:
+                        change_abs = current_price - previous_close
+                        change_percent = (change_abs / previous_close) * 100
+                        change_str = f"{'+' if change_abs >= 0 else ''}{change_percent:.1f}%"
+                    else:
+                        change_percent = 0.0
+                        change_str = "0.0%"
+                    
+                    # Simple signal logic
+                    if change_percent > 1:
+                        signal = 'KJØP'
+                        analysis = 'Positiv momentum'
+                    elif change_percent < -1:
+                        signal = 'SELG'
+                        analysis = 'Svak utvikling'
+                    else:
+                        signal = 'HOLD'
+                        analysis = 'Stabil utvikling'
+                    
+                    stocks_data.append({
+                        'symbol': symbol,
+                        'name': stock_info.get('longName', stock_info.get('shortName', symbol)),
+                        'price': current_price,
+                        'change': change_str,
+                        'signal': signal,
+                        'analysis': analysis
+                    })
+            except Exception as e:
+                logger.warning(f"Error getting data for {symbol}: {e}")
         
         # If no real data available, use minimal fallback
         if not stocks_data:
@@ -840,8 +852,18 @@ def demo():
                 {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'price': 'N/A', 'change': 'N/A', 'signal': 'HOLD', 'analysis': 'Venter på data'}
             ]
         
+        # Determine user context for demo experience
+        demo_context = {
+            'is_authenticated': current_user.is_authenticated,
+            'access_level': access_level,
+            'can_upgrade': access_level in ['demo', 'none'],
+            'show_trial_message': not current_user.is_authenticated,
+            'trial_expired': False  # We'll implement this later if needed
+        }
+        
         demo_data = {
             'demo_mode': True,
+            'context': demo_context,
             'stocks': stocks_data,
             'analysis': {
                 'recommendation': 'KJØP',
@@ -867,11 +889,23 @@ def demo():
             }
         }
         
+        return render_template('demo.html', **demo_data)
+        
     except Exception as e:
         logger.error(f"Error getting real data for demo page: {e}")
+        
         # Fallback with clear indication it's demo data
+        fallback_context = {
+            'is_authenticated': current_user.is_authenticated if current_user else False,
+            'access_level': 'none',
+            'can_upgrade': True,
+            'show_trial_message': True,
+            'trial_expired': False
+        }
+        
         demo_data = {
             'demo_mode': True,
+            'context': fallback_context,
             'stocks': [
                 {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 'Demo', 'change': 'Demo', 'signal': 'DEMO', 'analysis': 'Demo data - registrer for ekte data'},
                 {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'price': 'Demo', 'change': 'Demo', 'signal': 'DEMO', 'analysis': 'Demo data - registrer for ekte data'},
@@ -900,8 +934,8 @@ def demo():
                 ]
             }
         }
-    
-    return render_template('demo.html', **demo_data)
+        
+        return render_template('demo.html', **demo_data)
 
 # Portfolio routes moved to portfolio blueprint
 
@@ -1397,6 +1431,13 @@ def help():
                          title="Hjelp og FAQ",
                          now=datetime.now())
 
+@main.route('/translation-help')
+def translation_help():
+    """Translation help page showing all available translation options"""
+    return render_template('translation_help.html',
+                         title="Oversettelse til engelsk - Translation to English",
+                         now=datetime.now())
+
 @main.route('/settings', methods=['GET', 'POST'])
 @demo_access 
 def settings():
@@ -1657,10 +1698,25 @@ def my_subscription():
 
 @main.route('/set_language/<language>')
 def set_language(language=None):
-    """Set user language preference"""
-    if language in ['no', 'en']:
-        session['language'] = language
-        flash(f'Språk endret til {"Norsk" if language == "no" else "English"}', 'success')
+    """Set user language preference with enhanced translation support"""
+    from ..utils.translation_service import TranslationService
+    
+    try:
+        service = TranslationService()
+        
+        if language in ['no', 'en']:
+            success = service.set_user_language(language)
+            if success:
+                language_names = {'no': 'Norsk', 'en': 'English'}
+                flash(f'Språk endret til {language_names[language]} / Language changed to {language_names[language]}', 'success')
+            else:
+                flash('Ugyldig språk / Invalid language', 'error')
+        else:
+            flash('Språk ikke støttet / Language not supported', 'error')
+    
+    except Exception as e:
+        current_app.logger.error(f"Error setting language: {e}")
+        flash('Feil ved endring av språk / Error changing language', 'error')
     
     # Redirect back to referring page or home
     return redirect(request.referrer or url_for('main.index'))
@@ -1922,7 +1978,6 @@ def update_profile():
 def update_notifications():
     """Update notification preferences"""
     try:
-        # Gather all notification fields from form
         notification_fields = [
             'email_notifications', 'price_alerts', 'market_news',
             'push_notifications', 'ai_predictions', 'portfolio_updates',
@@ -1930,42 +1985,41 @@ def update_notifications():
         ]
         updates = {}
         for field in notification_fields:
-            updates[field] = field in request.form
+            updates[field] = request.form.get(field) == 'on' or request.form.get(field) == 'true' or field in request.form
 
-        # Add missing columns if needed
+        # Ensure all columns exist in the database
         for field in notification_fields:
             if not hasattr(current_user, field):
                 try:
                     db.session.execute(text(f"ALTER TABLE users ADD COLUMN {field} BOOLEAN DEFAULT 1"))
                     db.session.commit()
-                except Exception:
-                    pass
+                    logger.info(f"Added missing column: {field}")
+                except Exception as colerr:
+                    logger.warning(f"Could not add column {field}: {colerr}")
 
-        # Update all notification preferences
+        # Try to update user object
         try:
             for field, value in updates.items():
                 setattr(current_user, field, value)
             db.session.commit()
-            # Refresh user object
             db.session.refresh(current_user)
             flash('Varselinnstillinger oppdatert!', 'success')
+            logger.info(f"Notification settings updated for user {current_user.id}: {updates}")
         except Exception as e:
             logger.error(f"Error setting user attributes: {e}")
-            # Try alternative method using raw SQL
+            # Try raw SQL fallback
             try:
                 set_clause = ', '.join([f"{field} = :{field}" for field in notification_fields])
                 params = updates.copy()
                 params['user_id'] = current_user.id
-                db.session.execute(text(f"""
-                    UPDATE users SET {set_clause} WHERE id = :user_id
-                """), params)
+                db.session.execute(text(f"UPDATE users SET {set_clause} WHERE id = :user_id"), params)
                 db.session.commit()
                 flash('Varselinnstillinger oppdatert!', 'success')
+                logger.info(f"Notification settings updated via SQL for user {current_user.id}: {updates}")
             except Exception as e2:
                 logger.error(f"Error with SQL update: {e2}")
                 flash('Feil ved oppdatering av varselinnstillinger.', 'error')
                 db.session.rollback()
-
     except Exception as e:
         logger.error(f"Error updating notifications: {e}")
         flash('Feil ved oppdatering av varselinnstillinger.', 'error')

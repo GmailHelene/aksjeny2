@@ -509,45 +509,108 @@
 
                         {% if predictions and predictions|length > 0 %}
                             <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
+                                <table class="table table-hover table-striped">
+                                    <thead class="table-dark">
                                         <tr>
-                                            <th>Aksje</th>
-                                            <th>Nåværende Pris</th>
-                                            <th>7-dagers Prediksjon</th>
-                                            <th>Endring</th>
-                                            <th>Konfidens</th>
-                                            <th></th>
+                                            <th><i class="fas fa-chart-line me-1"></i>Aksje</th>
+                                            <th class="text-end"><i class="fas fa-dollar-sign me-1"></i>Nåværende Pris</th>
+                                            <th class="text-end"><i class="fas fa-crystal-ball me-1"></i>7-dagers Prediksjon</th>
+                                            <th class="text-center"><i class="fas fa-percentage me-1"></i>Endring</th>
+                                            <th class="text-center"><i class="fas fa-shield-alt me-1"></i>Konfidens</th>
+                                            <th class="text-center"><i class="fas fa-signal me-1"></i>Signal</th>
+                                            <th class="text-center"><i class="fas fa-tools me-1"></i>Handlinger</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for pred in predictions %}
                                         <tr>
-                                            <td class="fw-bold">{{ pred.ticker }}</td>
-                                            <td>${{ pred.current_price }}</td>
-                                            <td>${{ pred.predicted_price }}</td>
                                             <td>
-                                                <span class="badge 
-                                                    {% if pred.change_percent > 0 %}bg-success
+                                                <strong class="text-primary">{{ pred.ticker }}</strong>
+                                                {% if pred.company_name %}
+                                                <br><small class="text-muted">{{ pred.company_name[:25] }}{% if (pred.company_name|length) > 25 %}...{% endif %}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>
+                                                {% if '.OL' in pred.ticker %}
+                                                    {{ "{:.2f}".format(pred.current_price) }} NOK
+                                                {% else %}
+                                                    ${{ "{:.2f}".format(pred.current_price) }}
+                                                {% endif %}
+                                                </strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="{% if pred.change_percent > 0 %}text-success{% elif pred.change_percent < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                                {% if '.OL' in pred.ticker %}
+                                                    {{ "{:.2f}".format(pred.predicted_price) }} NOK
+                                                {% else %}
+                                                    ${{ "{:.2f}".format(pred.predicted_price) }}
+                                                {% endif %}
+                                                </strong>
+                                                {% if pred.change_percent > 0 %}
+                                                    <i class="fas fa-arrow-up text-success ms-1"></i>
+                                                {% elif pred.change_percent < 0 %}
+                                                    <i class="fas fa-arrow-down text-danger ms-1"></i>
+                                                {% else %}
+                                                    <i class="fas fa-minus text-muted ms-1"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge fs-6 px-3 py-2
+                                                    {% if pred.change_percent > 5 %}bg-success
+                                                    {% elif pred.change_percent > 0 %}bg-primary
+                                                    {% elif pred.change_percent > -5 %}bg-warning text-dark
                                                     {% else %}bg-danger{% endif %}">
-                                                    {% if pred.change_percent > 0 %}+{% endif %}{{ pred.change_percent }}%
+                                                    {% if pred.change_percent > 0 %}+{% endif %}{{ "{:.1f}".format(pred.change_percent) }}%
                                                 </span>
                                             </td>
-                                            <td>
-                                                <div class="progress" style="width: 100px; height: 20px;">
-                                                    <div class="progress-bar 
-                                                        {% if pred.confidence > 0.8 %}bg-success
-                                                        {% elif pred.confidence > 0.6 %}bg-warning
-                                                        {% else %}bg-danger{% endif %}" 
-                                                        style="width: {{ pred.confidence * 100|round }}%">
-                                                        {{ pred.confidence * 100|round }}%
+                                            <td class="text-center">
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <div class="progress mb-1" style="width: 80px; height: 20px;">
+                                                        <div class="progress-bar 
+                                                            {% if pred.confidence > 0.8 %}bg-success
+                                                            {% elif pred.confidence > 0.6 %}bg-warning
+                                                            {% else %}bg-danger{% endif %}" 
+                                                            style="width: {{ (pred.confidence * 100)|round }}%">
+                                                        </div>
                                                     </div>
+                                                    <small class="text-muted">{{ (pred.confidence * 100)|round }}%</small>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <a href="{{ url_for('analysis.ai_predictions', ticker=pred.ticker) }}" 
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-chart-line"></i> Detaljer
+                                            <td class="text-center">
+                                                {% if pred.change_percent > 5 %}
+                                                    <span class="badge bg-success">🚀 STERK KJØP</span>
+                                                {% elif pred.change_percent > 2 %}
+                                                    <span class="badge bg-success">📈 KJØP</span>
+                                                {% elif pred.change_percent > 0 %}
+                                                    <span class="badge bg-primary">👍 HOLD+</span>
+                                                {% elif pred.change_percent > -2 %}
+                                                    <span class="badge bg-warning text-dark">⚠️ HOLD</span>
+                                                {% elif pred.change_percent > -5 %}
+                                                    <span class="badge bg-warning text-dark">📉 VURDER SALG</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">🔻 SELG</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="{{ url_for('analysis.ai_predictions', ticker=pred.ticker) }}" 
+                                                       class="btn btn-outline-primary" title="Se detaljert analyse">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-success" 
+                                                            onclick="addToWatchlist('{{ pred.ticker }}')" 
+                                                            title="Legg til i watchlist">
+                                                        <i class="fas fa-heart"></i>
+                                                    </button>
+                                                    {% if pred.change_percent > 0 %}
+                                                    <a href="{{ url_for('stocks.details', symbol=pred.ticker) }}" 
+                                                       class="btn btn-outline-info" title="Se aksjedetaljer">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
                                                 </a>
                                             </td>
                                         </tr>

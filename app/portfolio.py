@@ -17,15 +17,83 @@ portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 def portfolio_index():
     """Portfolio overview with pagination and lazy loading"""
     try:
-        # Provide default values to avoid Undefined errors
+        # Get all portfolios for the current user
+        user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
+        
+        if not user_portfolios:
+            # No portfolios exist - show creation prompt
+            context = {
+                'total_value': 0,
+                'total_profit_loss': 0,
+                'active_alerts': 0,
+                'stocks': [],
+                'portfolio': None,
+                'portfolios': []
+            }
+            return render_template('portfolio/index.html', **context)
+        
+        # Get the first portfolio to display (or could be selected portfolio)
+        primary_portfolio = user_portfolios[0]
+        
+        # Get stocks in the primary portfolio
+        portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=primary_portfolio.id).all()
+        
+        # Calculate portfolio values
+        total_value = 0
+        total_profit_loss = 0
+        stocks_data = {}
+        
+        for stock in portfolio_stocks:
+            try:
+                # Get current market data for the stock
+                stock_data = DataService.get_single_stock_data(stock.ticker)
+                if stock_data:
+                    current_price = float(stock_data.get('last_price', 0))
+                    purchase_value = stock.purchase_price * stock.quantity
+                    current_value = current_price * stock.quantity
+                    profit_loss = current_value - purchase_value
+                    profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
+                    
+                    total_value += current_value
+                    total_profit_loss += profit_loss
+                    
+                    stocks_data[stock.ticker] = {
+                        'shares': stock.quantity,
+                        'purchase_price': stock.purchase_price,
+                        'last_price': current_price,
+                        'profit_loss': profit_loss,
+                        'profit_loss_percent': profit_loss_percent,
+                        'stock_id': stock.id
+                    }
+                else:
+                    # Fallback if no market data available
+                    purchase_value = stock.purchase_price * stock.quantity
+                    total_value += purchase_value
+                    
+                    stocks_data[stock.ticker] = {
+                        'shares': stock.quantity,
+                        'purchase_price': stock.purchase_price,
+                        'last_price': 'N/A',
+                        'profit_loss': 0,
+                        'profit_loss_percent': 0,
+                        'stock_id': stock.id
+                    }
+            except Exception as stock_error:
+                current_app.logger.warning(f"Error getting data for stock {stock.ticker}: {stock_error}")
+                # Continue with other stocks
+                continue
+        
         context = {
-            'total_value': 0,
-            'total_profit_loss': 0,
-            'active_alerts': 0,
-            'stocks': [],
-            'portfolio': None
+            'total_value': total_value,
+            'total_profit_loss': total_profit_loss,
+            'active_alerts': 0,  # Could be calculated from actual alerts
+            'stocks': stocks_data,
+            'portfolio': primary_portfolio,
+            'portfolios': user_portfolios
         }
+        
         return render_template('portfolio/index.html', **context)
+        
     except Exception as e:
         current_app.logger.error(f"Error in portfolio index: {str(e)}")
         flash('Det oppstod en feil ved lasting av porteføljer.', 'error')

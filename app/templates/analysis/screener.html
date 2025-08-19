@@ -44,7 +44,17 @@
                             <select name="preset" class="form-select" onchange="selectPreset(this.value)">
                                 <option value="">-- Velg preset --</option>
                                 {% for preset_name, filters in preset_screens.items() %}
-                                <option value="{{ preset_name }}">{{ preset_name }}</option>
+                                <option value="{{ preset_name }}">
+                                    {% if preset_name == 'value_stocks' %}
+                                        🎯 Verdiaksjer
+                                    {% elif preset_name == 'growth_stocks' %}
+                                        📈 Vekstaksjer
+                                    {% elif preset_name == 'dividend_stocks' %}
+                                        💰 Utbytteaksjer
+                                    {% else %}
+                                        {{ preset_name|title }}
+                                    {% endif %}
+                                </option>
                                 {% endfor %}
                             </select>
                             <small class="text-muted">Velg en ferdig screening eller bygg din egen under</small>
@@ -155,15 +165,27 @@
                                     </td>
                                     <td>
                                         <div>
-                                            <div class="fw-bold">{{ stock.get('company', 'N/A')[:30] }}{% if stock.get('company', '')|length > 30 %}...{% endif %}</div>
-                                            <small class="text-muted">{{ stock.get('industry', 'N/A')[:25] }}{% if stock.get('industry', '')|length > 25 %}...{% endif %}</small>
+                                            <div class="fw-bold" title="{{ stock.get('company', 'N/A') }}">
+                                                {{ stock.get('company', 'N/A')[:30] }}{% if (stock.get('company', '')|length) > 30 %}...{% endif %}
+                                            </div>
+                                            <small class="text-muted" title="{{ stock.get('industry', 'N/A') }}">
+                                                {{ stock.get('industry', 'N/A')[:25] }}{% if (stock.get('industry', '')|length) > 25 %}...{% endif %}
+                                            </small>
                                         </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-dark">{{ stock.get('sector', 'N/A') }}</span>
                                     </td>
                                     <td>
-                                        <strong>${{ "{:.2f}".format(stock.get('price', 0)|float) }}</strong>
+                                        {% set price_val = stock.get('price', 0)|float %}
+                                        {% set ticker = stock.get('ticker', '') %}
+                                        <strong>
+                                        {% if '.OL' in ticker %}
+                                            {{ "{:.2f}".format(price_val) }} NOK
+                                        {% else %}
+                                            ${{ "{:.2f}".format(price_val) }}
+                                        {% endif %}
+                                        </strong>
                                     </td>
                                     <td>
                                         {% set change_val = stock.get('change_percent', 0)|float %}
@@ -172,13 +194,33 @@
                                             <i class="bi bi-{% if change_val > 0 %}arrow-up{% elif change_val < 0 %}arrow-down{% else %}dash{% endif %}"></i>
                                         </span>
                                     </td>
-                                    <td>{{ "{:.2f}".format(stock.get('pe_ratio', 0)|float) if stock.get('pe_ratio', 0) else '-' }}</td>
-                                    <td>{{ "{:.2f}".format(stock.get('pb_ratio', 0)|float) if stock.get('pb_ratio', 0) else '-' }}</td>
                                     <td>
-                                        {% set rsi_val = stock.get('rsi', 50)|float %}
-                                        <span class="{% if rsi_val < 30 %}text-success{% elif rsi_val > 70 %}text-danger{% else %}text-muted{% endif %}">
-                                            {{ "{:.1f}".format(rsi_val) if rsi_val else '-' }}
-                                        </span>
+                                        {% set pe_val = stock.get('pe_ratio', 0) %}
+                                        {% if pe_val and pe_val != 0 %}
+                                            {{ "{:.2f}".format(pe_val|float) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set pb_val = stock.get('pb_ratio', 0) %}
+                                        {% if pb_val and pb_val != 0 %}
+                                            {{ "{:.2f}".format(pb_val|float) }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set rsi_val = stock.get('rsi', 50) %}
+                                        {% if rsi_val and rsi_val != 0 %}
+                                            {% set rsi_float = rsi_val|float %}
+                                            <span class="{% if rsi_float < 30 %}text-success fw-bold{% elif rsi_float > 70 %}text-danger fw-bold{% else %}text-muted{% endif %}" 
+                                                  title="{% if rsi_float < 30 %}Oversolgt{% elif rsi_float > 70 %}Overkjøpt{% else %}Nøytral{% endif %}">
+                                                {{ "{:.1f}".format(rsi_float) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {% set rec_val = stock.get('recommendation', 'HOLD') %}

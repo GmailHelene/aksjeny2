@@ -59,6 +59,15 @@ class Config:
     # Additional Stripe Configuration
     STRIPE_WEBHOOK_ENDPOINT_SECRET = os.environ.get('STRIPE_WEBHOOK_ENDPOINT_SECRET', STRIPE_WEBHOOK_SECRET)
     VALIDATE_STRIPE_ON_STARTUP = os.environ.get('VALIDATE_STRIPE_ON_STARTUP', 'true').lower() == 'true'
+    
+    # Translation Services Configuration
+    CONVEYTHIS_API_KEY = os.environ.get('CONVEYTHIS_API_KEY')
+    GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY')
+    
+    # Translation Settings
+    DEFAULT_LANGUAGE = 'no'  # Norwegian as source
+    SUPPORTED_LANGUAGES = ['no', 'en']  # Norwegian and English
+    TRANSLATION_SERVICE = os.environ.get('TRANSLATION_SERVICE', 'browser')  # browser, conveythis, google
 
 class DevelopmentConfig(Config):
     DEBUG = True

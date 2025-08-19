@@ -73,9 +73,19 @@
                     {% if user_favorites and user_favorites|length > 0 %}
                         <ul class="list-group">
                             {% for fav in user_favorites %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><strong>{{ fav.symbol }}</strong> - {{ fav.name or '' }}</span>
-                                    <span class="badge bg-primary">{{ fav.exchange or '' }}</span>
+                                <li class="list-group-item d-flex justify-content-between align-items-center" data-symbol="{{ fav.symbol }}">
+                                    <div>
+                                        <span><strong>{{ fav.symbol }}</strong> - {{ fav.name or '' }}</span>
+                                        <small class="text-muted ms-2">{{ fav.exchange or '' }}</small>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('stocks.details', symbol=fav.symbol) }}" class="btn btn-sm btn-outline-primary me-2" title="Se detaljer">
+                                            <i class="bi bi-graph-up"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger remove-favorite-btn" data-symbol="{{ fav.symbol }}" title="Fjern fra favoritter">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -342,7 +352,127 @@ document.addEventListener('DOMContentLoaded', function() {
             personalMessageDiv.style.display = this.checked ? 'block' : 'none';
         });
     }
+
+    // Handle favorite removal
+    document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const symbol = this.getAttribute('data-symbol');
+            
+            if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra favorittene?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/stocks/api/favorites/remove', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ symbol: symbol })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the list item from the DOM
+                    const listItem = this.closest('li');
+                    if (listItem) {
+                        listItem.style.transition = 'all 0.3s ease';
+                        listItem.style.opacity = '0';
+                        listItem.style.transform = 'translateX(-100%)';
+                        setTimeout(() => {
+                            listItem.remove();
+                            
+                            // Check if no favorites left and show message
+                            const favoritesList = document.querySelector('.list-group');
+                            if (favoritesList && favoritesList.children.length === 0) {
+                                favoritesList.parentNode.innerHTML = '<div class="alert alert-info mb-0">Du har ingen favoritter ennå. Trykk på stjerneknappen ved en aksje for å legge til favoritt.</div>';
+                            }
+                        }, 300);
+                    }
+                    
+                    // Show success message
+                    showSuccessToast(data.message || `${symbol} fjernet fra favoritter`);
+                } else {
+                    showErrorToast(data.error || 'Kunne ikke fjerne fra favoritter');
+                }
+            } catch (error) {
+                console.error('Error removing favorite:', error);
+                showErrorToast('Kunne ikke fjerne fra favoritter');
+            }
+        });
+    });
 });
+
+function getCsrfToken() {
+    // Try to get CSRF token from meta tag or form
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) return metaToken.getAttribute('content');
+    
+    const formToken = document.querySelector('input[name="csrf_token"]');
+    if (formToken) return formToken.value;
+    
+    return '';
+}
+
+function showSuccessToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+
+function showErrorToast(message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-exclamation-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Initialize and show toast
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
 </script>
 {% endblock %}
 

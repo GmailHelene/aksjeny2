@@ -42,11 +42,13 @@
         border: 1px solid #dee2e6;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 250px;
     }
     
     .dropdown-item {
         color: #212529;
         padding: 0.75rem 1.25rem;
+        transition: all 0.2s ease;
     }
     
     .dropdown-item:hover {
@@ -57,6 +59,62 @@
     .dropdown-item i {
         margin-right: 0.5rem;
         color: #6c757d;
+        width: 1.2rem;
+        text-align: center;
+    }
+    
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        opacity: 0.1;
+    }
+
+    /* Mobile navigation enhancements */
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background-color: rgba(26, 26, 26, 0.98);
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar-nav .nav-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.25rem;
+        }
+        
+        .navbar-nav .nav-item:last-child {
+            border-bottom: none;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            background-color: rgba(52, 58, 64, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-left: 1rem;
+            margin-top: 0.25rem;
+            position: static;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-nav .dropdown-item {
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .navbar-nav .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff !important;
+        }
+        
+        .navbar-nav .dropdown-item i {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .navbar-nav .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
     }
     
     /* Enhanced text contrast fixes */
@@ -76,6 +134,36 @@
     .premium-badge .badge {
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
+
+    /* Search field enhancements */
+    .navbar .input-group .form-control {
+        background-color: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #333;
+    }
+    
+    .navbar .input-group .form-control:focus {
+        background-color: #ffffff;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        color: #333;
+    }
+    
+    .navbar .input-group .form-control::placeholder {
+        color: #666;
+    }
+    
+    .navbar .btn-outline-secondary {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #666;
+    }
+    
+    .navbar .btn-outline-secondary:hover {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #ffffff;
+    }
     </style>
     
     <!-- Bootstrap CSS -->
@@ -85,6 +173,7 @@
     <!-- Text Contrast Fixes -->
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}" rel="stylesheet">
     <!-- Responsive Images -->
     <link href="{{ url_for('static', filename='css/responsive-images.css') }}" rel="stylesheet">
     <!-- Favicon -->
@@ -166,6 +255,28 @@
             <!-- Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Search Form - Hidden on mobile -->
+                    <li class="nav-item d-none d-lg-block me-3">
+                        <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get" style="max-width: 300px;">
+                            <div class="input-group input-group-sm">
+                                <input type="search" name="q" class="form-control" 
+                                       placeholder="Søk aksjer..." aria-label="Søk aksjer"
+                                       style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                                <button class="btn btn-outline-secondary" type="submit" 
+                                        style="border-radius: 0 20px 20px 0; border-left: none;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </li>
+                    
+                    <!-- Search Button for Mobile -->
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="{{ url_for('stocks.search') }}">
+                            <i class="bi bi-search"></i> Søk
+                        </a>
+                    </li>
+                    
                     <!-- Analysis Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
@@ -175,8 +286,11 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
                                 <i class="bi bi-graph-up"></i> Oversikt
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
                                 <i class="bi bi-cpu"></i> AI Prediksjoner
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
+                                <i class="bi bi-funnel"></i> Aksje-screener
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
                                 <i class="bi bi-currency-exchange"></i> Valuta
@@ -198,17 +312,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}">
                                 <i class="bi bi-emoji-smile"></i> Sentiment analyse
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
-                                <i class="bi bi-star"></i> AI Prediksjoner
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
-                                <i class="bi bi-funnel"></i> Aksje-screener
-                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
                                 <i class="bi bi-star"></i> Anbefalinger
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
-                                <i class="bi bi-calculator-fill"></i> Investment Analyzer
                             </a></li>
                         </ul>
                     </li>
@@ -255,22 +360,18 @@
                             <i class="bi bi-tools"></i> Verktøy
                         </a>
                         <ul class="dropdown-menu">
-                                <!-- Pro verktøy removed -->
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
+                                <i class="bi bi-robot"></i> AI Analyse
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-lightning"></i> Hurtiganalyse
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}">
                                 <i class="bi bi-arrow-left-right"></i> Valutakonverter
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
                                 <i class="bi bi-eye-fill"></i> Innsidehandel
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
-                                <i class="bi bi-robot"></i> AI Analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
-                                <i class="bi bi-calculator-fill"></i> Investment Analyzer
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
-                                <i class="bi bi-lightning"></i> Hurtiganalyse
                             </a></li>
                         </ul>
                     </li>
@@ -283,10 +384,7 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
-                                <i class="bi bi-briefcase"></i> Oversikt
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.overview') }}">
-                                <i class="bi bi-graph-up"></i> Mine porteføljer
+                                <i class="bi bi-briefcase"></i> Mine porteføljer
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
                                 <i class="bi bi-eye"></i> Watchlist
@@ -332,6 +430,11 @@
                         </ul>
                     </li>
                 </ul>
+                
+                <!-- Language Switcher -->
+                <div class="d-flex align-items-center ms-3">
+                    {% include 'language_switcher.html' %}
+                </div>
             </div>
         </div>
     </nav>
@@ -424,6 +527,32 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀 Clean navigation system loaded');
+        
+        // Enhanced mobile navigation functionality
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        const navbarCollapse = document.querySelector('.navbar-collapse');
+        
+        if (navbarToggler && navbarCollapse) {
+            // Close mobile menu when clicking nav links (but not dropdowns)
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link:not(.dropdown-toggle)');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+            
+            // Close mobile menu when clicking dropdown items
+            const dropdownItems = document.querySelectorAll('.navbar-nav .dropdown-item');
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        setTimeout(() => navbarToggler.click(), 150);
+                    }
+                });
+            });
+        }
         
         // Language switcher for footer
         window.switchLanguage = function(language) {
