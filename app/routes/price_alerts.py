@@ -115,7 +115,7 @@ def create():
                     # Convert dict to list format for template
                     popular_stocks = [
                         {
-                            'ticker': ticker,
+                            'symbol': ticker,
                             'name': data.get('name', ticker),
                             'last_price': data.get('last_price', 0)
                         }

@@ -6,7 +6,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /portfolio (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D1613690>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /portfolio (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE153750>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -16,7 +16,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/sentiment?symbol=TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D15FFB90>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/sentiment?symbol=TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE13F1D0>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -26,7 +26,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/sentiment?symbol=EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D1622610>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/sentiment?symbol=EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE1626D0>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -36,7 +36,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /watchlist (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D162C9D0>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /watchlist (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE16CA90>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -46,7 +46,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/screener (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D162EB50>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /analysis/screener (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE16EC10>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -56,7 +56,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /stocks/TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D1638E90>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /stocks/TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE178F50>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -66,7 +66,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /stocks/EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D162E190>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /stocks/EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE16EC50>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -76,7 +76,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /set_language/no (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D162D450>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /set_language/no (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE16C750>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -86,7 +86,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /set_language/en (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D1623750>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /set_language/en (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE163010>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -96,7 +96,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/stock-info/TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D0DCA5D0>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/stock-info/TSLA (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE160910>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   },
   {
@@ -106,7 +106,7 @@
     "success": false,
     "content_length": 0,
     "errors": [
-      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/stock-info/EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001E6D1638510>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
+      "Request failed: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /api/stock-info/EQNR.OL (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000148CE178050>: Failed to establish a new connection: [WinError 10061] Kan ikke koble til fordi m\u00e5lmaskinen avslo tilkobling'))"
     ]
   }
 ]

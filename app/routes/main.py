@@ -1993,50 +1993,24 @@ def update_profile():
 def update_notifications():
     """Update notification preferences"""
     try:
-        notification_fields = [
-            'email_notifications', 'price_alerts', 'market_news',
-            'push_notifications', 'ai_predictions', 'portfolio_updates',
-            'news_alerts', 'market_alerts'
-        ]
-        updates = {}
-        for field in notification_fields:
-            updates[field] = request.form.get(field) == 'on' or request.form.get(field) == 'true' or field in request.form
-
-        # Ensure all columns exist in the database
-        for field in notification_fields:
-            if not hasattr(current_user, field):
-                try:
-                    db.session.execute(text(f"ALTER TABLE users ADD COLUMN {field} BOOLEAN DEFAULT 1"))
-                    db.session.commit()
-                    logger.info(f"Added missing column: {field}")
-                except Exception as colerr:
-                    logger.warning(f"Could not add column {field}: {colerr}")
-
-        # Try to update user object
-        try:
-            for field, value in updates.items():
-                setattr(current_user, field, value)
-            db.session.commit()
-            db.session.refresh(current_user)
-            flash('Varselinnstillinger oppdatert!', 'success')
-            logger.info(f"Notification settings updated for user {current_user.id}: {updates}")
-        except Exception as e:
-            logger.error(f"Error setting user attributes: {e}")
-            # Try raw SQL fallback
-            try:
-                set_clause = ', '.join([f"{field} = :{field}" for field in notification_fields])
-                params = updates.copy()
-                params['user_id'] = current_user.id
-                db.session.execute(text(f"UPDATE users SET {set_clause} WHERE id = :user_id"), params)
-                db.session.commit()
-                flash('Varselinnstillinger oppdatert!', 'success')
-                logger.info(f"Notification settings updated via SQL for user {current_user.id}: {updates}")
-            except Exception as e2:
-                logger.error(f"Error with SQL update: {e2}")
-                flash('Feil ved oppdatering av varselinnstillinger.', 'error')
-                db.session.rollback()
+        # Get only the form fields that exist in the user model
+        email_notifications = request.form.get('email_notifications') == 'on'
+        price_alerts = request.form.get('price_alerts') == 'on'
+        market_news = request.form.get('market_news') == 'on'
+        
+        # Update user attributes directly
+        current_user.email_notifications = email_notifications
+        current_user.price_alerts = price_alerts
+        current_user.market_news = market_news
+        
+        # Commit the changes
+        db.session.commit()
+        
+        flash('Varselinnstillinger oppdatert!', 'success')
+        logger.info(f"Notification settings updated for user {current_user.id}")
+        
     except Exception as e:
-        logger.error(f"Error updating notifications: {e}")
+        logger.error(f"Error updating notifications for user {current_user.id}: {e}")
         flash('Feil ved oppdatering av varselinnstillinger.', 'error')
         db.session.rollback()
 

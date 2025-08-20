@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ConveyThis Test</title>
+    <script>
+    window.ConveyThis = window.ConveyThis || {};
+    window.ConveyThis.api_key = "pub_85496d2f253bff365fbf0fa9429277e3";
+    </script>
+    <script src="https://cdn.convey.app/convey.js"></script>
+</head>
+<body>
+    <h1>ConveyThis Integration Test</h1>
+    <p>This is a test page to verify ConveyThis is working.</p>
+    
+    <div style="margin: 20px 0;">
+        <button onclick="ConveyThis.changeLanguage('no')" style="margin-right: 10px;">Norsk</button>
+        <button onclick="ConveyThis.changeLanguage('en')">English</button>
+    </div>
+    
+    <div id="test-content">
+        <h2>Test Content</h2>
+        <p>This content should be translatable by ConveyThis.</p>
+        <ul>
+            <li>Portfolio</li>
+            <li>Analysis</li>
+            <li>Stocks</li>
+            <li>Market Data</li>
+        </ul>
+    </div>
+    
+    <script>
+    // Test if ConveyThis is loaded
+    setTimeout(() => {
+        if (window.ConveyThis && typeof ConveyThis.changeLanguage === 'function') {
+            console.log('✅ ConveyThis loaded successfully');
+            document.getElementById('test-content').innerHTML += '<p style="color: green;">✅ ConveyThis API loaded successfully!</p>';
+        } else {
+            console.log('❌ ConveyThis failed to load');
+            document.getElementById('test-content').innerHTML += '<p style="color: red;">❌ ConveyThis API failed to load</p>';
+        }
+    }, 3000);
+    </script>
+</body>
+</html>

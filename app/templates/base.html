@@ -272,6 +272,10 @@
         }
     }
     </script>
+    
+    <!-- ConveyThis Script Start -->
+    <script src="//cdn.conveythis.com/javascript/conveythis.js?api_key=pub_85496d2f253bff365fbf0fa9429277e3"></script>
+    <!-- ConveyThis Script End -->
 </head>
 <body>
     <!-- Simple Bootstrap Navigation -->
@@ -413,13 +417,6 @@
                         </ul>
                     </li>
                     
-                    <!-- ROI Calculator -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.roi_kalkulator') }}">
-                            <i class="bi bi-calculator"></i> ROI Kalkulator
-                        </a>
-                    </li>
-                    
                     <!-- User Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -455,11 +452,6 @@
                         </ul>
                     </li>
                 </ul>
-                
-                <!-- Language Switcher -->
-                <div class="d-flex align-items-center ms-3">
-                    {% include 'language_switcher.html' %}
-                </div>
             </div>
         </div>
     </nav>
@@ -492,10 +484,10 @@
                             <span id="footer-current-language">NO</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
-                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('no')">
+                            <li><a class="dropdown-item" href="#" onclick="ConveyThis.changeLanguage('no')">
                                 <i class="bi bi-flag"></i> Norsk
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('en')">
+                            <li><a class="dropdown-item" href="#" onclick="ConveyThis.changeLanguage('en')">
                                 <i class="bi bi-flag-fill"></i> English
                             </a></li>
                         </ul>

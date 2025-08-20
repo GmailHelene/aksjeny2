@@ -436,8 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <div class="col-md-4 text-center mb-3">
                             <h6 class="text-muted">Nyhetssentiment</h6>
-                            <h3 class="{{ 'text-success' if sentiment_data.news_sentiment > 0 else 'text-danger' if sentiment_data.news_sentiment < 0 else 'text-muted' }}">
-                                {{ sentiment_data.news_sentiment|default(0)|round(1) }}
+                            <h3 class="{{ 'text-success' if sentiment_data.news_score > 0 else 'text-danger' if sentiment_data.news_score < 0 else 'text-muted' }}">
+                                {{ sentiment_data.news_score|default(0)|round(1) }}
                             </h3>
                             <small class="text-muted">{{ sentiment_data.news_count|default(0) }} artikler</small>
                         </div>

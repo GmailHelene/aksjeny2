@@ -18,8 +18,40 @@
 - [ ] **Navigasjonsendringer** - Reorganiser hovednavigasjon
 - [ ] **Compare visualisering** - Fiks manglende grafer
 - [ ] **Sentiment analyse** - Fiks teknisk
+https://aksjeradar.trade/analysis/
+Jeg mener at https://aksjeradar.trade/analysis/ai-predictions siden også skal ligge i UNDERMENYEN her,den som er på alle analysesidene (Sjekk også at denne undermenyen analysemenyen som jeg kaller det, ER på alle analysesider,og understider fo analyse av ticers osv, OG den må ligge som en ny rubrikk på oversiktsiden, analysis, altså sammen med ;  AI Analyse
+Få AI-drevne anbefalinger og prediksjoner for aksjer.
 
-Kandu nå hjelpe meg med å implementere dette ferdig:
+ Teknisk analyse
+Analyser kursmønstre og tekniske indikatorer.
+
+ Fundamental analyse
+Vurder selskapets økonomi og nøkkeltall.
+
+ Sentiment analyse
+Se markedets sentiment fra sosiale medier og nyheter.
+
+ Aksje-screener
+Finn aksjer basert på dine kriterier.
+
+ Markedsoversikt
+Få oversikt over globale markeder og trender.
+
+ AI Anbefalinger
+Få databaserte investeringsanbefalinger fra vår AI.
+
+ Innsidehandel
+Se innsidehandel og institusjonell aktivitet i norske selskaper.
+
+ Warren Buffett
+Analyser aksjer etter Warren Buffetts investeringsprinsipper.
+
+, så legg til en ny rubrikk for predictions siden, OG jeg ser også at vi mangler en egen rubrikk for short siden,fikser du dette 
+
+
+
+
+Kan du nå hjelpe meg med å implementere dette ferdig:
 Add The ConveyThis Integration To Your Website!
 Set up ConveyThis on your website by following the next simple steps!
 
