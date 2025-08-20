@@ -29,8 +29,13 @@ def access_required(f):
             if current_user.email in exempt_emails:
                 return f(*args, **kwargs)
             
-            # For JSON requests, return error
-            if request.is_json:
+            # For JSON/API requests, return JSON error instead of redirect
+            is_api_request = (request.is_json or 
+                              '/api/' in request.path or 
+                              request.content_type and 'application/json' in request.content_type or
+                              request.headers.get('Accept', '').find('application/json') != -1)
+            
+            if is_api_request:
                 return jsonify({
                     'error': 'Premium access required',
                     'message': 'This feature requires a premium subscription'

@@ -150,23 +150,12 @@
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ url_for('analysis.recommendations', symbol=rec.symbol) }}" 
                                                class="btn btn-outline-primary" title="Se detaljer">
-                                                <i class="bi bi-eye"></i>
+                                                <i class="bi bi-eye"></i> Detaljer
                                             </a>
                                             <a href="{{ url_for('stocks.details', symbol=rec.symbol) }}" 
                                                class="btn btn-outline-secondary" title="Aksjeside">
-                                                <i class="bi bi-graph-up"></i>
+                                                <i class="bi bi-graph-up"></i> Aksje
                                             </a>
-                                            <button class="btn btn-outline-warning btn-star-favorite" 
-                                                    title="Legg til favoritt" 
-                                                    data-ticker="{{ rec.symbol }}" 
-                                                    onclick="toggleFavorite('{{ rec.symbol }}', this)">
-                                                <i class="bi bi-star"></i>
-                                            </button>
-                                            <button class="btn btn-success external-buy-btn" 
-                                                    data-ticker="{{ rec.symbol }}" 
-                                                    title="Kjøp aksje">
-                                                <i class="bi bi-plus-circle"></i>
-                                            </button>
                                         </div>
                                     </td>
                                 </tr>

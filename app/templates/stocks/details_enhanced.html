@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const loadingElement = document.getElementById('chart-loading');
         const chartCanvas = document.getElementById('priceChart');
         
-        fetch(`/stocks/api/chart-data/{{ ticker }}?period=30d`)
+        fetch(`/stocks/api/demo/chart-data/{{ ticker }}?period=30d`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);

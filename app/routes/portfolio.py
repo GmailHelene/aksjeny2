@@ -546,7 +546,7 @@ def create_portfolio():
                 db.session.add(new_portfolio)
                 db.session.commit()
                 
-                # Track achievement for creating portfolio
+                # Track achievement for creating portfolio (moved after success flash)
                 try:
                     from ..models.achievements import UserStats, check_user_achievements
                     user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
@@ -558,8 +558,9 @@ def create_portfolio():
                     
                     # Check for new achievements
                     check_user_achievements(current_user.id, 'portfolios', user_stats.portfolios_created)
-                except Exception:
-                    pass  # Don't fail portfolio creation if achievement tracking fails
+                except Exception as achievement_error:
+                    logger.warning(f"Achievement tracking failed but portfolio created: {achievement_error}")
+                    # Don't fail portfolio creation if achievement tracking fails
                 
                 flash(f'Porteføljen "{name}" ble opprettet!', 'success')
                 return redirect(url_for('portfolio.view_portfolio', id=new_portfolio.id))
