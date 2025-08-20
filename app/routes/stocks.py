@@ -293,10 +293,10 @@ def stock_symbol(symbol):
 def details(symbol):
     """Stock details page with complete analysis data"""
     try:
-        # Get stock data from DataService  
+        current_app.logger.info(f"Accessing details route for symbol: {symbol}")
+        
+        # Get stock data from DataService with fallback
         stock_info = DataService.get_stock_info(symbol)
-        logger.info(f"DEBUG: stock_info type: {type(stock_info)}")
-        logger.info(f"DEBUG: stock_info content: {stock_info}")
         
         # Generate base hash for consistent demo data
         base_hash = hash(symbol) % 1000
@@ -318,7 +318,8 @@ def details(symbol):
         
         # Get current price    
         current_price = stock_info.get('last_price', stock_info.get('price', 100.0))
-        # Now assign technical_data after fallback stock_info is created
+        
+        # Create technical data with fallback
         try:
             from ..services.technical_analysis import calculate_comprehensive_technical_data
             historical_data = DataService.get_historical_data(symbol, period='3mo')
@@ -328,15 +329,6 @@ def details(symbol):
                 technical_data = {
                     'rsi': 30.0 + (base_hash % 40),
                     'macd': -2.0 + (base_hash % 40) / 10,
-                    'macd_signal': -1.5 + (base_hash % 30) / 10,
-                    'bollinger_upper': stock_info.get('last_price', 100.0) * (1.05 + (base_hash % 5) / 100),
-                    'bollinger_middle': stock_info.get('last_price', 100.0),
-                    'bollinger_lower': stock_info.get('last_price', 100.0) * (0.95 - (base_hash % 5) / 100),
-                    'sma_20': stock_info.get('last_price', 100.0) * (0.98 + (base_hash % 6) / 100),
-                    'sma_50': stock_info.get('last_price', 100.0) * (0.95 + (base_hash % 8) / 100),
-                    'ema_12': stock_info.get('last_price', 100.0) * (0.99 + (base_hash % 4) / 100),
-                    'stochastic_k': 20.0 + (base_hash % 60),
-                    'stochastic_d': 25.0 + (base_hash % 50),
                     'signal': stock_info.get('signal', 'HOLD'),
                     'signal_strength': 'Medium',
                     'signal_reason': 'Demo data - historical data unavailable'
@@ -346,21 +338,12 @@ def details(symbol):
             technical_data = {
                 'rsi': 30.0 + (base_hash % 40),
                 'macd': -2.0 + (base_hash % 40) / 10,
-                'macd_signal': -1.5 + (base_hash % 30) / 10,
-                'bollinger_upper': stock_info.get('last_price', 100.0) * (1.05 + (base_hash % 5) / 100),
-                'bollinger_middle': stock_info.get('last_price', 100.0),
-                'bollinger_lower': stock_info.get('last_price', 100.0) * (0.95 - (base_hash % 5) / 100),
-                'sma_20': stock_info.get('last_price', 100.0) * (0.98 + (base_hash % 6) / 100),
-                'sma_50': stock_info.get('last_price', 100.0) * (0.95 + (base_hash % 8) / 100),
-                'ema_12': stock_info.get('last_price', 100.0) * (0.99 + (base_hash % 4) / 100),
-                'stochastic_k': 20.0 + (base_hash % 60),
-                'stochastic_d': 25.0 + (base_hash % 50),
                 'signal': stock_info.get('signal', 'HOLD'),
                 'signal_strength': 'Medium',
                 'signal_reason': 'Demo data - historical data unavailable'
             }
-        # End of try/except block for technical_data
 
+        # Create stock info for template
         currency = 'NOK' if symbol.endswith('.OL') else 'USD'
         template_stock_info = {
             'longName': stock_info.get('name', symbol),
@@ -372,38 +355,10 @@ def details(symbol):
             'regularMarketVolume': stock_info.get('volume', 1000000),
             'currency': currency,
             'sector': stock_info.get('sector', 'Technology' if not symbol.endswith('.OL') else 'Industrials'),
-            'industry': stock_info.get('sector', 'Technology'),
-            'longBusinessSummary': f"{stock_info.get('name', symbol)} er et ledende selskap innen {stock_info.get('sector', 'sin sektor')}. Selskapet har en sterk markedsposisjon og fokuserer på innovasjon og bærekraftig vekst.",
             'dayHigh': current_price * 1.03,
             'dayLow': current_price * 0.97,
-            'fiftyTwoWeekHigh': current_price * 1.25,
-            'fiftyTwoWeekLow': current_price * 0.75,
-            'previousClose': current_price - stock_info.get('change', 0),
-            'open': current_price * 0.99,
-            'trailingPE': 15.5 + (base_hash % 20),
-            'priceToBook': 1.2 + (base_hash % 5) / 10,
-            'enterpriseToEbitda': 8.5 + (base_hash % 10),
-            'returnOnEquity': 0.12 + (base_hash % 20) / 100,
-            'returnOnAssets': 0.08 + (base_hash % 15) / 100,
-            'grossMargins': 0.35 + (base_hash % 30) / 100,
-            'profitMargins': 0.15 + (base_hash % 20) / 100,
-            'operatingMargins': 0.20 + (base_hash % 25) / 100,
-            'dividendYield': 0.02 + (base_hash % 6) / 100 if symbol.endswith('.OL') else 0.015 + (base_hash % 4) / 100,
-            'dividendRate': current_price * (0.02 + (base_hash % 6) / 100),
-            'payoutRatio': 0.40 + (base_hash % 30) / 100,
-            'marketCap': stock_info.get('market_cap', (current_price * 100000000)),
-            'enterpriseValue': stock_info.get('market_cap', (current_price * 100000000)) * 1.1,
-            'floatShares': 50000000 + (base_hash % 100000000),
-            'sharesOutstanding': 100000000 + (base_hash % 200000000),
-            'earningsGrowth': 0.08 + (base_hash % 15) / 100,
-            'revenueGrowth': 0.12 + (base_hash % 20) / 100,
-            'earningsQuarterlyGrowth': 0.05 + (base_hash % 25) / 100,
-            'beta': 0.8 + (base_hash % 8) / 10,
-            'trailingEps': current_price / (15.5 + (base_hash % 20)),
-            'forwardEps': current_price / (14.0 + (base_hash % 18)),
-            'bookValue': current_price / (1.2 + (base_hash % 5) / 10),
-            'priceToSalesTrailing12Months': 2.5 + (base_hash % 8) / 10,
         }
+        
         stock = {
             'symbol': symbol,
             'name': stock_info.get('name', symbol),
@@ -414,20 +369,12 @@ def details(symbol):
             'change_percent': stock_info.get('change_percent', 0),
             'volume': stock_info.get('volume', 1000000),
             'sector': stock_info.get('sector', 'Technology'),
-            'industry': stock_info.get('sector', 'Technology'),
-            'longBusinessSummary': template_stock_info['longBusinessSummary'],
-            'open': template_stock_info['open'],
-            'high': template_stock_info['dayHigh'],
-            'low': template_stock_info['dayLow'],
-            'country': 'Norge' if symbol.endswith('.OL') else 'USA',
-            'fullTimeEmployees': 5000 + (base_hash % 15000),
-            'address1': 'Hovedkontor gate 1' if symbol.endswith('.OL') else 'Corporate Plaza 100',
-            'city': 'Oslo' if symbol.endswith('.OL') else 'New York',
         }
 
         # Return the stock details template with all data
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
+                             ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock=stock,
                              stock_info=template_stock_info,
                              technical_data=technical_data,
@@ -438,9 +385,11 @@ def details(symbol):
         
     except Exception as e:
         current_app.logger.error(f"Error loading stock details for {symbol}: {e}")
+        current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
         # Return the details template with error rather than redirect
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
+                             ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock={'symbol': symbol, 'name': symbol},
                              stock_info={'symbol': symbol, 'longName': symbol},
                              technical_data={},
