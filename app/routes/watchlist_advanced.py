@@ -614,7 +614,7 @@ def create_watchlist():
         db.session.commit()
         
         flash(f'Watchlist "{name}" opprettet!', 'success')
-        return redirect(url_for('watchlist.view_watchlist', id=watchlist.id))
+        return redirect(url_for('watchlist_advanced.view_watchlist', id=watchlist.id))
     
     return render_template('watchlist/create.html')
 
@@ -650,13 +650,13 @@ def add_stock(id):
     
     if not symbol:
         flash('Ticker-symbol er påkrevd', 'error')
-        return redirect(url_for('watchlist.view_watchlist', id=id))
+        return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
     
     # Sjekk om aksjen allerede er i watchlist
     existing = WatchlistItem.query.filter_by(watchlist_id=id, symbol=symbol).first()
     if existing:
         flash(f'{symbol} er allerede i watchlist', 'warning')
-        return redirect(url_for('watchlist.view_watchlist', id=id))
+        return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
     
     # Valider at ticker eksisterer
     analyzer = WatchlistAnalyzer()
@@ -664,7 +664,7 @@ def add_stock(id):
     
     if not stock_data:
         flash(f'Kunne ikke finne data for {symbol}', 'error')
-        return redirect(url_for('watchlist.view_watchlist', id=id))
+        return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
     
     item = WatchlistItem(
         watchlist_id=id,
@@ -677,7 +677,7 @@ def add_stock(id):
     db.session.commit()
     
     flash(f'{symbol} lagt til i watchlist!', 'success')
-    return redirect(url_for('watchlist.view_watchlist', id=id))
+    return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
 
 @watchlist_bp.route('/item/<int:item_id>/remove', methods=['POST'])
 @login_required
@@ -691,7 +691,7 @@ def remove_stock(item_id):
     db.session.commit()
     
     flash(f'{symbol} fjernet fra watchlist', 'success')
-    return redirect(url_for('watchlist.view_watchlist', id=watchlist.id))
+    return redirect(url_for('watchlist_advanced.view_watchlist', id=watchlist.id))
 
 @watchlist_bp.route('/api/alerts/<int:watchlist_id>')
 @login_required

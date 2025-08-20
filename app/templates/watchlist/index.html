@@ -61,7 +61,7 @@
                                 <i class="bi bi-three-dots"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('watchlist.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">Slett</a></li>
@@ -104,7 +104,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('watchlist.view_watchlist', id=watchlist.id) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye"></i> Vis detaljer
                             </a>
                             <button class="btn btn-outline-info btn-sm" onclick="getWatchlistAlerts({{ watchlist.id }})">

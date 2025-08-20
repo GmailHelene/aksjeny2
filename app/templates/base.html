@@ -296,51 +296,35 @@
             <!-- Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <!-- Search Form - Hidden on mobile -->
-                    <li class="nav-item d-none d-lg-block me-3">
-                        <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get" style="max-width: 300px;">
-                            <div class="input-group input-group-sm">
-                                <input type="search" name="q" class="form-control" 
-                                       placeholder="Søk aksjer..." aria-label="Søk aksjer"
-                                       style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
-                                <button class="btn btn-outline-secondary" type="submit" 
-                                        style="border-radius: 0 20px 20px 0; border-left: none;">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </li>
-                    
-                    <!-- Search Button for Mobile -->
-                    <li class="nav-item d-lg-none">
-                        <a class="nav-link" href="{{ url_for('stocks.search') }}">
-                            <i class="bi bi-search"></i> Søk
+                    <!-- Aksjer/Stocks -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stocks.list_oslo') }}">
+                            <i class="bi bi-graph-up-arrow"></i> Aksjer
                         </a>
                     </li>
                     
-                    <!-- Analysis Dropdown -->
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <!-- Analysis Dropdown (Simplified) -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-graph-up"></i> Analyse
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
-                                <i class="bi bi-graph-up"></i> Oversikt
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}">
+                                <i class="bi bi-pie-chart"></i> Markedsoversikt
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
+                                <i class="bi bi-robot"></i> AI Analyser
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
                                 <i class="bi bi-cpu"></i> AI Prediksjoner
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}">
-                                <i class="bi bi-graph-up-arrow"></i> Predictions
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}">
-                                <i class="bi bi-graph-down-arrow"></i> Short Analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
-                                <i class="bi bi-funnel"></i> Aksje-screener
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
-                                <i class="bi bi-currency-exchange"></i> Valuta
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
@@ -349,60 +333,18 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}">
                                 <i class="bi bi-calculator"></i> Fundamental analyse
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
-                                <i class="bi bi-robot"></i> AI analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
-                                <i class="bi bi-mortarboard"></i> Benjamin Graham analyse
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
-                                <i class="bi bi-eye-fill"></i> Innsidehandel
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}">
-                                <i class="bi bi-calculator-fill"></i> Investment Analyzer
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}">
                                 <i class="bi bi-emoji-smile"></i> Sentiment analyse
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
-                                <i class="bi bi-star"></i> Anbefalinger
-                            </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
+                                <i class="bi bi-funnel"></i> Aksje-screener
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.backtest') }}">
                                 <i class="bi bi-graph-up"></i> Backtest
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.strategy_builder') }}">
                                 <i class="bi bi-tools"></i> Strategibygger
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Stocks/Prices Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.list_oslo') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-graph-up-arrow"></i> Aksjer
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}">
-                                <i class="bi bi-pie-chart"></i> Markedsoversikt
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}">
-                                <i class="bi bi-currency-dollar"></i> Aksjekurser
-                            </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/oslo">
-                                <i class="bi bi-geo-alt"></i> Oslo Børs
-                            </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/global">
-                                <i class="bi bi-globe"></i> Globale aksjer
-                            </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/currency">
-                                <i class="bi bi-currency-exchange"></i> Valutakurser
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
-                                <i class="bi bi-currency-bitcoin"></i> Kryptovaluta
                             </a></li>
                         </ul>
                     </li>
@@ -431,62 +373,7 @@
                         </ul>
                     </li>
                     
-                    <!-- Daily View -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('daily_view.index') }}">
-                            <i class="bi bi-calendar-day"></i> Dagens Marked
-                        </a>
-                    </li>
-                    
-                    <!-- News -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="bi bi-newspaper"></i> Nyheter
-                        </a>
-                    </li>
-                    
-                    <!-- Forum -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('forum.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-chat-dots"></i> Forum
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('forum.index') }}">
-                                <i class="bi bi-house"></i> Hovedside
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category_name='enkelaksjer') }}">
-                                <i class="bi bi-graph-up"></i> Enkeltaksjer
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category_name='investeringsstrategier') }}">
-                                <i class="bi bi-lightbulb"></i> Investeringsstrategier
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category_name='teknisk-analyse') }}">
-                                <i class="bi bi-bar-chart"></i> Teknisk Analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category_name='markedsnyheter') }}">
-                                <i class="bi bi-newspaper"></i> Markedsnyheter
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category_name='begynnerhjornet') }}">
-                                <i class="bi bi-mortarboard"></i> Begynnerhjørnet
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Backtest -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analysis.backtest') }}">
-                            <i class="bi bi-graph-down-arrow"></i> Backtest
-                        </a>
-                    </li>
-                    
-                    <!-- Strategibygger -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analysis.strategy_builder') }}">
-                            <i class="bi bi-tools"></i> Strategibygger
-                        </a>
-                    </li>
-                    
-                    <!-- Portfolio Dropdown -->
+                    <!-- Portfolio Dropdown (Simplified) -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-briefcase"></i> Portfolio
@@ -498,10 +385,17 @@
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
                                 <i class="bi bi-eye"></i> Watchlist
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}">
-                                <i class="bi bi-lightbulb"></i> Aksjetips
+                            <li><a class="dropdown-item" href="{{ url_for('price_alerts.index') }}">
+                                <i class="bi bi-bell"></i> Prisalarmer
                             </a></li>
                         </ul>
+                    </li>
+                    
+                    <!-- Forum (Simple link) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('forum.index') }}">
+                            <i class="bi bi-chat-dots"></i> Forum
+                        </a>
                     </li>
                     
                     <!-- User Dropdown -->
@@ -564,21 +458,16 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
-                    <h6>Språk / Language</h6>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="footerLanguageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-globe"></i>
-                            <span id="footer-current-language">NO</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
-                            <li><a class="dropdown-item" href="#" onclick="ConveyThis.changeLanguage('no')">
-                                <i class="bi bi-flag"></i> Norsk
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="ConveyThis.changeLanguage('en')">
-                                <i class="bi bi-flag-fill"></i> English
-                            </a></li>
-                        </ul>
-                    </div>
+                    <h6>Søk aksjer</h6>
+                    <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control" 
+                                   placeholder="Søk aksjer..." aria-label="Søk aksjer">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
                 <div class="col-md-3">
                     <h6>Læring & Guider</h6>

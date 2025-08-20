@@ -349,6 +349,8 @@ def register_blueprints(app):
         ('.routes.norwegian_intel', 'norwegian_intel', '/norwegian-intel'),
         ('.routes.daily_view', 'daily_view', '/daily-view'),
         ('.routes.forum', 'forum', '/forum'),
+        ('.routes.sentiment_tracker', 'sentiment_tracker', '/sentiment'),
+        ('.routes.oil_correlation', 'oil_correlation', '/oil-correlation'),
     ]
     
     app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")

@@ -35,7 +35,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('forum.create_topic', category=category) }}" id="create-topic-form">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         
                         <!-- Category Selection -->
                         {% if not category %}
