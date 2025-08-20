@@ -396,6 +396,7 @@ def details(symbol):
                              stock=stock,
                              stock_info=template_stock_info,
                              technical_data=technical_data,
+                             ai_recommendations={'summary': 'Demo AI-analyse', 'recommendation': 'HOLD', 'confidence': 75},
                              news=[],
                              earnings=[],
                              competitors=[],
@@ -426,6 +427,7 @@ def details(symbol):
                                  'signal_strength': 'N/A',
                                  'signal_reason': 'Error loading data'
                              },
+                             ai_recommendations={'summary': 'Feil ved lasting av data - ingen AI-analyse tilgjengelig', 'recommendation': 'HOLD', 'confidence': 0},
                              news=[],
                              earnings=[],
                              competitors=[],
