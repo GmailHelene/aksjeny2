@@ -813,6 +813,22 @@ def add_to_favorites():
             name=name,
             exchange=exchange
         )
+        
+        # Track achievement for adding favorites
+        try:
+            from ..models.achievements import UserStats, check_user_achievements
+            user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+            if not user_stats:
+                user_stats = UserStats(user_id=current_user.id)
+                db.session.add(user_stats)
+            user_stats.favorites_added += 1
+            db.session.commit()
+            
+            # Check for new achievements
+            check_user_achievements(current_user.id, 'favorites', user_stats.favorites_added)
+        except Exception:
+            pass  # Don't fail favorites if achievement tracking fails
+        
         # Update favorite_count and create activity
         try:
             current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()

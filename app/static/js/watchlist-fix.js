@@ -55,24 +55,34 @@ class WatchlistStateManager {
             }
         };
 
-        // Intercept location.href changes
-        let locationHref = window.location.href;
-        Object.defineProperty(window, 'location', {
-            get: function() {
-                return new Proxy(window.location, {
-                    set: (target, property, value) => {
-                        if (property === 'href' && value === locationHref) {
-                            // Prevent reload to same URL
+        // Intercept location.href changes safely
+        try {
+            let locationHref = window.location.href;
+            const originalLocation = window.location;
+            
+            // Store original location.href setter if available
+            const descriptor = Object.getOwnPropertyDescriptor(window.location, 'href') || 
+                             Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window.location), 'href');
+            
+            if (descriptor && descriptor.set && !window._locationIntercepted) {
+                window._locationIntercepted = true;
+                
+                const originalSetter = descriptor.set;
+                Object.defineProperty(window.location, 'href', {
+                    set: function(value) {
+                        if (value === locationHref) {
                             console.log('WatchlistStateManager: Preventing reload to same URL');
-                            return true;
+                            return;
                         }
-                        target[property] = value;
-                        return true;
-                    }
+                        originalSetter.call(this, value);
+                    },
+                    get: descriptor.get,
+                    configurable: true
                 });
-            },
-            configurable: true
-        });
+            }
+        } catch (e) {
+            console.log('Could not intercept location.href, continuing without interception:', e.message);
+        }
     }
 
     shouldAllowReload() {

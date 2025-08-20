@@ -20,6 +20,20 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
+            
+            # Track login achievement
+            try:
+                from app.models.achievements import UserStats
+                user_stats = UserStats.query.filter_by(user_id=user.id).first()
+                if not user_stats:
+                    user_stats = UserStats(user_id=user.id)
+                    db.session.add(user_stats)
+                user_stats.update_consecutive_logins()
+                db.session.commit()
+            except Exception as e:
+                # Don't fail login if achievement tracking fails
+                pass
+            
             # Redirect to next page after successful login
             next_page = request.args.get('next')
             if next_page:

@@ -545,6 +545,22 @@ def create_portfolio():
                 )
                 db.session.add(new_portfolio)
                 db.session.commit()
+                
+                # Track achievement for creating portfolio
+                try:
+                    from ..models.achievements import UserStats, check_user_achievements
+                    user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+                    if not user_stats:
+                        user_stats = UserStats(user_id=current_user.id)
+                        db.session.add(user_stats)
+                    user_stats.portfolios_created += 1
+                    db.session.commit()
+                    
+                    # Check for new achievements
+                    check_user_achievements(current_user.id, 'portfolios', user_stats.portfolios_created)
+                except Exception:
+                    pass  # Don't fail portfolio creation if achievement tracking fails
+                
                 flash(f'Porteføljen "{name}" ble opprettet!', 'success')
                 return redirect(url_for('portfolio.view_portfolio', id=new_portfolio.id))
                 

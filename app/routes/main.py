@@ -1520,13 +1520,19 @@ def profile():
     """User profile page with proper error handling"""
     try:
         # @access_required guarantees authenticated user with subscription
-        # Safely get user subscription info
+        # Since access_required only allows premium users, set appropriate defaults
         subscription = None
-        subscription_status = 'free'
+        subscription_status = 'active'  # Users here have active subscription
+        
+        # Ensure user has subscription properties set correctly
+        if not hasattr(current_user, 'subscription_type') or not current_user.subscription_type:
+            current_user.subscription_type = 'monthly'  # Default to monthly
+            current_user.has_subscription = True
+            db.session.commit()
         
         if hasattr(current_user, 'subscription') and current_user.subscription:
             subscription = current_user.subscription
-            subscription_status = getattr(subscription, 'status', 'free')
+            subscription_status = getattr(subscription, 'status', 'active')
         
         # Get user stats safely
         user_stats = {

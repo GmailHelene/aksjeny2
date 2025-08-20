@@ -96,6 +96,7 @@ def create_app(config_class=None):
     # Import models for database creation
     try:
         from . import models
+        from .models import achievements  # Import achievements models explicitly
         app.logger.info("OK Database models imported successfully")
     except Exception as e:
         app.logger.error(f"ERROR Failed to import models: {e}")
@@ -351,6 +352,7 @@ def register_blueprints(app):
         ('.routes.forum', 'forum', '/forum'),
         ('.routes.sentiment_tracker', 'sentiment_tracker', '/sentiment'),
         ('.routes.oil_correlation', 'oil_correlation', '/oil-correlation'),
+        ('.routes.achievements', 'achievements_bp', '/achievements'),
     ]
     
     app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")
