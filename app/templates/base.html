@@ -369,7 +369,7 @@
             <!-- Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <!-- Aksjer/Stocks Dropdown - RESTORED -->
+                    <!-- Aksjer/Stocks Dropdown - EXPANDED -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-graph-up-arrow"></i> Aksjer
@@ -381,40 +381,32 @@
                             <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}">
                                 <i class="bi bi-globe"></i> Globale aksjer
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
-                                <i class="bi bi-currency-bitcoin"></i> Krypto
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_currency') }}">
-                                <i class="bi bi-currency-exchange"></i> Valuta
-                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}">
-                                <i class="bi bi-search"></i> Søk aksjer
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}">
-                                <i class="bi bi-arrows-angle-expand"></i> Sammenlign aksjer
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Crypto Section -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.list_crypto') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-currency-bitcoin"></i> Krypto
-                        </a>
-                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Kryptovaluta</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
                                 <i class="bi bi-currency-bitcoin"></i> Kryptovalutaer
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('advanced_features.crypto_dashboard') }}">
                                 <i class="bi bi-graph-up-arrow"></i> Crypto Dashboard
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('api.get_crypto') }}">
                                 <i class="bi bi-graph-up"></i> Crypto Data
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('api.get_crypto_trending') }}">
                                 <i class="bi bi-trending-up"></i> Trending Crypto
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_currency') }}">
+                                <i class="bi bi-currency-exchange"></i> Valuta
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}">
+                                <i class="bi bi-currency-dollar"></i> Aksjekurser
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}">
+                                <i class="bi bi-search"></i> Søk aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}">
+                                <i class="bi bi-arrows-angle-expand"></i> Sammenlign aksjer
                             </a></li>
                         </ul>
                     </li>
@@ -497,9 +489,16 @@
                             <li><a class="dropdown-item" href="{{ url_for('market_intel.index') }}">
                                 <i class="bi bi-info-circle"></i> Oversikt
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
-                                <i class="bi bi-eye"></i> Insider Trading
+                            <li><hr class="dropdown-divider"></li>
+                            
+                            <!-- Insider Trading moved here -->
+                            <li><a class="dropdown-item" href="{{ url_for('insider_trading.index') }}">
+                                <i class="bi bi-eye"></i> Innsidehandel
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
+                                <i class="bi bi-eye-fill"></i> Insider Trading Analysis
+                            </a></li>
+                            
                             <li><a class="dropdown-item" href="{{ url_for('market_intel.earnings_calendar') }}">
                                 <i class="bi bi-calendar-event"></i> Resultatkalender
                             </a></li>
@@ -509,6 +508,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('market_intel.economic_indicators') }}">
                                 <i class="bi bi-graph-down"></i> Økonomiske indikatorer
                             </a></li>
+                            
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Nyheter & Intelligence</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}">
@@ -517,12 +517,16 @@
                             <li><a class="dropdown-item" href="{{ url_for('news_intelligence.news_dashboard') }}">
                                 <i class="bi bi-lightning-fill"></i> News Intelligence
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('features.market_news_sentiment') }}">
+                                <i class="bi bi-emoji-smile-fill"></i> Market News Sentiment
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('daily_view.index') }}">
                                 <i class="bi bi-calendar-day"></i> Dagens marked
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sentiment_tracker.sentiment_tracker_page') }}">
                                 <i class="bi bi-emoji-smile"></i> Sentiment Tracker
                             </a></li>
+                            
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Norge</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}">
@@ -540,6 +544,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">
                                 <i class="bi bi-truck"></i> Shipping Intelligence
                             </a></li>
+                            
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('external_data.market_intelligence') }}">
                                 <i class="bi bi-cloud-download"></i> Ekstern Data
@@ -550,16 +555,18 @@
                         </ul>
                     </li>
                     
-                    <!-- Pro Tools - RESTORED -->
+                    <!-- Pro Tools - EXPANDED -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-tools"></i> Pro Tools
                         </a>
                         <ul class="dropdown-menu">
+                            <!-- Dashboard moved here -->
                             <li><a class="dropdown-item" href="{{ url_for('main.index') }}">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.advanced_screener') }}">
                                 <i class="bi bi-funnel-fill"></i> Avansert screener
                             </a></li>
@@ -572,6 +579,12 @@
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.export_tools') }}">
                                 <i class="bi bi-download"></i> Eksportverktøy
                             </a></li>
+                            
+                            <!-- Analyst recommendations moved here -->
+                            <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}">
+                                <i class="bi bi-people-fill"></i> Analytiker Anbefalinger
+                            </a></li>
+                            
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.api_documentation') }}">
                                 <i class="bi bi-file-earmark-code"></i> API dokumentasjon
@@ -634,13 +647,6 @@
                         </ul>
                     </li>
                     
-                    <!-- Forum -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('forum.index') }}">
-                            <i class="bi bi-chat-dots"></i> Forum
-                        </a>
-                    </li>
-                    
                     <!-- Resources & Learning Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('resources.index') }}" role="button" data-bs-toggle="dropdown">
@@ -663,6 +669,9 @@
                                 <i class="bi bi-question-circle"></i> Guider
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.index') }}">
+                                <i class="bi bi-chat-dots"></i> Forum
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('blog.index') }}">
                                 <i class="bi bi-journal-text"></i> Blogg
                             </a></li>
@@ -701,13 +710,6 @@
                                 <i class="bi bi-phone"></i> Mobile Trading
                             </a></li>
                         </ul>
-                    </li>
-                    
-                    <!-- Pricing/Subscription -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('pricing.pricing_page') }}">
-                            <i class="bi bi-credit-card"></i> Abonnement
-                        </a>
                     </li>
                     
                     <!-- User Dropdown - EXPANDED -->
@@ -1098,7 +1100,7 @@
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/service-worker.js')
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
                 .then(function(registration) {
                     console.log('ServiceWorker registered: ', registration);
                 })

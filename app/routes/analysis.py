@@ -272,21 +272,13 @@ def warren_buffett():
                                      current_price=0,
                                      analysis_data=None,
                                      error_message=f"Kunne ikke hente data for {ticker}. Prøv et annet symbol.")
-                    'assessment': 'Ledelsen har levert sterke resultater og har god kapitalallokering.'
-                },
-                'recommendation': 'Buy',
-                'confidence': 85,
-                'fair_value': 180.0,
-                'reasons': ['Robust fallback data used'],
-                'concerns': ['No real analysis available'],
-                'error': None
-            }
         # Ensure all required fields exist for template
         required_fields = {
             'ticker': ticker,
             'company_name': ticker,
             'buffett_score': 50,
-            'intrinsic_value': 100.0,
+            'intrinsic_value': 100.0
+        }
         
         # If we have real analysis data, return it
         return render_template('analysis/warren_buffett.html',

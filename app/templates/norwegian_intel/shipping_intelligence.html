@@ -8,7 +8,7 @@
         <h1><i class="bi bi-ship text-info"></i> Norwegian Shipping Intelligence</h1>
         <div>
             <span class="badge bg-info">Baltic Dry Index</span>
-            <small class="text-muted">Sist oppdatert: {{ moment().format('HH:mm:ss') }}</small>
+            <small class="text-muted">Sist oppdatert: {{ current_time.strftime('%H:%M:%S') if current_time else 'Live' }}</small>
         </div>
     </div>
     

@@ -1,5 +1,48 @@
 
 Noen flere nødvendige fixes: Fortsett til du  er ferdig, og test alle punkter, at det fungerer som ønsket, bruk testbruker om nødvendig for å vertifisere
+
+NAVIGASJONSENDRINGER:
+
+husk at vi ville ha med disse 2 sidene i navigasjonen også:
+https://aksjeradar.trade/features/market-news-sentiment
+Denne  kan implementeres under "Market Intel" submenyen-. (Der også nyheter lenkene skal være) i hovednavigasjonen, sjekk også at det er ekte data her
+https://aksjeradar.trade/features/analyst-recommendations
+Denne siden må være med i submenyen til Pro tools
+Og alle Crypto sider under Crypto i hovednavigasjonen kan flyttes til under "Aksjer" menyelementet
+PS: pass på at ingen lenker/funksjoner forsvinner helt vekk fra hovednavigasjonen/submenyene nå da,under struktureringen
+og ja: alle vi har flyttet inn i andre submenyer,skal selvsagt fjernes fra topp level i navigasjonen (crypto,dashboard,norge,nyheter(skal inn under market intel. og insider trading (inn under pro tools)))
+
+En rekke feil under submenyen "Konto":
+https://aksjeradar.trade/notifications/ fungerer ikke, redirecter til forsiden
+
+/achievements gir 500 error
+
+https://aksjeradar.trade/referrals
+AttributeError
+AttributeError: type object 'ReferralService' has no attribute 'get_or_create_referral_code'
+Traceback (most recent call last)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+return self.wsgi_app(environ, start_response)
+File "/usr/local/lib/python3.10/site-packages/flask_socketio/__init__.py", line 43, in __call__
+return super(_SocketIOMiddleware, self).__call__(environ,
+
+
+https://aksjeradar.trade/features/
+Får her: "Error loading notifications. Please try again later."
+
+https://aksjeradar.trade/api/docs
+{
+  "message": "API endpoint error - authentication required",
+  "redirect": "/login",
+  "success": false
+} ser jeg her..
+
+https://aksjeradar.trade/settings
+Når jeg slår på varsler her, f.eks e-post varsler, så fungerer det ikke
+Og får meldingen: "Error loading notifications. Please try again later."
+
+
+
 Sjekk at alle de nyeste sidene/templatene/funksjonene våre, bruker EKTE data?ikke mockup, hardkodet osv..
 
 Vi hadde tidlgigere under AKsjer i menyen en side som het AKsjekurser, ønsker den tilbake i navigasjonen
@@ -299,7 +342,7 @@ Test all pages and features for real data, no fallback/mockup except rare cases
 
 500 errorer:
 ALLE disse sidene gir 500 error..dette må fikses, implementer riktig innhold på disse sidene og fiks 500 erroren
-
+https://aksjeradar.trade/achievements/
 https://aksjeradar.trade/external-data/analyst-coverage
 https://aksjeradar.trade/external-data/market-intelligence
 https://aksjeradar.trade/market-intel/economic-indicators

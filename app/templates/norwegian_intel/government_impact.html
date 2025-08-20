@@ -8,7 +8,7 @@
         <h1><i class="bi bi-building text-primary"></i> Government Impact Analyzer</h1>
         <div>
             <span class="badge bg-warning">Policy Tracker</span>
-            <small class="text-muted">Sist oppdatert: {{ moment().format('HH:mm:ss') }}</small>
+            <small class="text-muted">Sist oppdatert: {{ current_time.strftime('%H:%M:%S') if current_time else 'Live' }}</small>
         </div>
     </div>
     

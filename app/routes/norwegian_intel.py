@@ -53,7 +53,8 @@ def oil_correlation():
     
     return render_template('norwegian_intel/oil_correlation.html',
                          correlations=correlations,
-                         oil_data=oil_price_data)
+                         oil_data=oil_price_data,
+                         current_time=datetime.now())
 
 @norwegian_intel.route('/government-impact')
 def government_impact():
@@ -83,7 +84,8 @@ def government_impact():
     ]
     
     return render_template('norwegian_intel/government_impact.html',
-                         announcements=recent_announcements)
+                         announcements=recent_announcements,
+                         current_time=datetime.now())
 
 @norwegian_intel.route('/shipping-intelligence')
 def shipping_intelligence():
@@ -104,7 +106,8 @@ def shipping_intelligence():
     
     return render_template('norwegian_intel/shipping_intelligence.html',
                          shipping_data=shipping_data,
-                         bdi_data=baltic_dry_index)
+                         bdi_data=baltic_dry_index,
+                         current_time=datetime.now())
 
 @norwegian_intel.route('/api/real-time-sentiment/<ticker>')
 def api_real_time_sentiment(ticker):
