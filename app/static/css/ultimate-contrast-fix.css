@@ -203,3 +203,36 @@ Ensures white text on all dark/colored backgrounds across the entire site
     color: #ffffff !important;
     text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
 }
+
+/* STOCK DETAILS PAGE SPECIFIC FIXES */
+/* Fix for section headers on white card backgrounds */
+.card-header h5.mb-0,
+.card-header h5,
+.card-header .card-title,
+.card-header .card-title * {
+    color: #212529 !important;  /* Dark text on light card headers */
+    font-weight: 600 !important;
+}
+
+/* For buttons in card headers (like Grunnleggende/TradingView tabs) */
+.card-header .btn-group .btn,
+.card-header .btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.card-header .btn-group .btn.active,
+.card-header .btn-outline-primary.active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+    border-color: #0d6efd !important;
+}
+
+/* Override any white text forced on card headers with light backgrounds */
+.card-header:not(.bg-primary):not(.bg-secondary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) {
+    color: #212529 !important;
+}
+
+.card-header:not(.bg-primary):not(.bg-secondary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) * {
+    color: #212529 !important;
+}
