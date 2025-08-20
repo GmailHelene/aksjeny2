@@ -5,12 +5,14 @@ import time
 from datetime import datetime, timedelta
 import redis
 import json
+import logging
 from ..services.stock_service import StockService
 from ..services.news_service import NewsService
 from ..utils.cache_manager import cache_manager
 from ..utils.rate_limiter import rate_limiter
 
 api = Blueprint('api', __name__, url_prefix='/api')
+logger = logging.getLogger(__name__)
 
 # Helper functions
 def get_company_name(ticker):
@@ -29,8 +31,8 @@ def get_company_name(ticker):
     }
     return company_names.get(ticker, ticker.replace('.OL', ''))
 
-def generate_mock_signal(data):
-    """Generate mock trading signal based on change percent"""
+def generate_signal_from_real_data(data):
+    """Generate trading signal based on real market data"""
     change_percent = data.get('regularMarketChangePercent', 0)
     if change_percent > 5:
         return {'signal': 'STRONG_BUY', 'confidence': 0.9}
@@ -42,6 +44,22 @@ def generate_mock_signal(data):
         return {'signal': 'SELL', 'confidence': 0.7}
     else:
         return {'signal': 'HOLD', 'confidence': 0.5}
+
+def get_real_company_name(ticker, stock_info=None):
+    """Get real company name from stock data, with fallback to ticker"""
+    if stock_info:
+        return stock_info.get('longName', stock_info.get('shortName', ticker))
+    
+    # Fallback for when stock_info is not available
+    return ticker.replace('.OL', '')
+
+def generate_mock_signal(data):
+    """DEPRECATED: Generate mock trading signal - use generate_signal_from_real_data instead"""
+    return generate_signal_from_real_data(data)
+
+def get_company_name(ticker):
+    """DEPRECATED: Get company name for ticker - use get_real_company_name instead"""
+    return get_real_company_name(ticker)
 
 # Rate limiting decorator
 def api_rate_limit(max_requests=60, window=60):
@@ -105,32 +123,68 @@ def get_quick_prices():
 def get_homepage_market_data():
     """Optimized endpoint for homepage market overview tables"""
     try:
+        from ..services.data_service import DataService
+        from ..services.technical_analysis import TechnicalAnalysis
+        
         oslo_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'YAR.OL']
         global_tickers = ['AAPL', 'GOOGL', 'TSLA', 'MSFT', 'AMZN']
         
         oslo_data = []
         global_data = []
         
-        # Generate mock data
+        # Get real Oslo stock data
         for ticker in oslo_tickers:
-            oslo_data.append({
-                'ticker': ticker,
-                'name': get_company_name(ticker),
-                'price': 200.0 + hash(ticker) % 300,
-                'change_percent': (hash(ticker) % 100 - 50) / 10,
-                'currency': 'NOK',
-                'signal': generate_mock_signal({'regularMarketChangePercent': (hash(ticker) % 100 - 50) / 10})
-            })
+            try:
+                stock_info = DataService.get_stock_info(ticker)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    company_name = stock_info.get('longName', stock_info.get('shortName', ticker.replace('.OL', '')))
+                    
+                    change_percent = 0
+                    if previous_close and previous_close > 0:
+                        change_percent = ((current_price - previous_close) / previous_close) * 100
+                    
+                    # Generate real signal based on actual data
+                    signal = generate_signal_from_real_data({'regularMarketChangePercent': change_percent})
+                    
+                    oslo_data.append({
+                        'ticker': ticker,
+                        'name': company_name,
+                        'price': round(current_price, 2),
+                        'change_percent': round(change_percent, 2),
+                        'currency': 'NOK',
+                        'signal': signal
+                    })
+            except Exception as e:
+                current_app.logger.warning(f"Error getting data for {ticker}: {e}")
         
+        # Get real global stock data
         for ticker in global_tickers:
-            global_data.append({
-                'ticker': ticker,
-                'name': get_company_name(ticker),
-                'price': 100.0 + hash(ticker) % 200,
-                'change_percent': (hash(ticker) % 80 - 40) / 10,
-                'currency': 'USD',
-                'signal': generate_mock_signal({'regularMarketChangePercent': (hash(ticker) % 80 - 40) / 10})
-            })
+            try:
+                stock_info = DataService.get_stock_info(ticker)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    company_name = stock_info.get('longName', stock_info.get('shortName', ticker))
+                    
+                    change_percent = 0
+                    if previous_close and previous_close > 0:
+                        change_percent = ((current_price - previous_close) / previous_close) * 100
+                    
+                    # Generate real signal based on actual data
+                    signal = generate_signal_from_real_data({'regularMarketChangePercent': change_percent})
+                    
+                    global_data.append({
+                        'ticker': ticker,
+                        'name': company_name,
+                        'price': round(current_price, 2),
+                        'change_percent': round(change_percent, 2),
+                        'currency': 'USD',
+                        'signal': signal
+                    })
+            except Exception as e:
+                current_app.logger.warning(f"Error getting data for {ticker}: {e}")
         
         result = {
             'oslo': oslo_data,
@@ -147,7 +201,7 @@ def get_homepage_market_data():
         
     except Exception as e:
         current_app.logger.error(f"Homepage market data API error: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': 'Kunne ikke hente markedsdata. Prøv igjen senere.'}), 500
 
 @api.route('/news/latest')
 @api_rate_limit(max_requests=20, window=60)
@@ -157,50 +211,31 @@ def get_latest_news():
         limit = min(int(request.args.get('limit', 6)), 20)
         category = request.args.get('category', 'general')
         
-        # Mock Norwegian financial news
-        mock_articles = [
-            {
-                'title': 'Equinor rapporterer sterke kvartalstall',
-                'summary': 'Norges største oljeselskap overgår forventningene med økt produksjon.',
-                'description': 'Equinor leverte sterke resultater for andre kvartal...',
-                'url': 'https://e24.no/equinor-kvartal',
-                'source': 'E24',
-                'published_at': datetime.now().isoformat(),
-                'sentiment': 'positive',
-                'relevance_score': 0.9
-            },
-            {
-                'title': 'Oslo Børs åpner med oppgang',
-                'summary': 'Hovedindeksen starter uken positivt med støtte fra energisektoren.',
-                'description': 'Oslo Børs åpnet med bred oppgang mandag morgen...',
-                'url': 'https://finansavisen.no/oslo-bors-oppgang',
-                'source': 'Finansavisen',
-                'published_at': datetime.now().isoformat(),
-                'sentiment': 'positive',
-                'relevance_score': 0.8
-            },
-            {
-                'title': 'Fed holder rentene uendret',
-                'summary': 'Den amerikanske sentralbanken opprettholder renten som ventet.',
-                'description': 'Federal Reserve besluttet å holde federal funds rate uendret...',
-                'url': 'https://reuters.com/fed-rates',
-                'source': 'Reuters',
-                'published_at': datetime.now().isoformat(),
-                'sentiment': 'neutral',
-                'relevance_score': 0.7
-            }
-        ]
+        # Try to get real news from NewsService
+        try:
+            news_articles = NewsService.get_latest_news(category=category, limit=limit)
+            if news_articles:
+                return jsonify({
+                    'success': True,
+                    'articles': news_articles,
+                    'cached': False,
+                    'timestamp': time.time()
+                })
+        except Exception as e:
+            logger.warning(f"Error fetching real news: {e}")
         
+        # If real news is not available, show error instead of fake news
         return jsonify({
-            'success': True,
-            'articles': mock_articles[:limit],
+            'success': False,
+            'error': 'Nyheter er ikke tilgjengelig for øyeblikket',
+            'articles': [],
             'cached': False,
             'timestamp': time.time()
         })
         
     except Exception as e:
         current_app.logger.error(f"Latest news API error: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': 'Kunne ikke hente nyheter. Prøv igjen senere.'}), 500
 
 @api.route('/market/status')
 @api_rate_limit(max_requests=30, window=60)
@@ -477,19 +512,59 @@ def insider_trading_latest():
 def insider_trading_trending():
     """Get trending insider trading stocks"""
     try:
-        # Mock trending data - can be enhanced with real analysis
-        trending = [
-            {'symbol': 'EQNR', 'recent_activity': '12', 'trend': 'bullish'},
-            {'symbol': 'TEL', 'recent_activity': '8', 'trend': 'bearish'},
-            {'symbol': 'NOK', 'recent_activity': '6', 'trend': 'neutral'},
-            {'symbol': 'DNB', 'recent_activity': '5', 'trend': 'bullish'},
-            {'symbol': 'MOWI', 'recent_activity': '4', 'trend': 'neutral'},
-            {'symbol': 'YAR', 'recent_activity': '3', 'trend': 'bullish'},
-            {'symbol': 'SALM', 'recent_activity': '3', 'trend': 'bearish'},
-            {'symbol': 'STL', 'recent_activity': '2', 'trend': 'neutral'}
-        ]
+        # Try to get real trending data from ExternalAPIService
+        try:
+            from ..services.external_apis import ExternalAPIService
+            
+            # Get real insider trading data for popular Norwegian stocks
+            popular_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'YAR.OL', 'MOWI.OL', 'YAR.OL']
+            trending = []
+            
+            for ticker in popular_tickers:
+                try:
+                    insider_data = ExternalAPIService.get_insider_trading(ticker, limit=10)
+                    if insider_data:
+                        recent_activity = len(insider_data)
+                        
+                        # Calculate trend based on recent transactions
+                        buy_count = sum(1 for trade in insider_data if 
+                                      trade.get('transaction_type', '').upper() in ['BUY', 'KJØP'])
+                        sell_count = len(insider_data) - buy_count
+                        
+                        if buy_count > sell_count * 1.5:
+                            trend = 'bullish'
+                        elif sell_count > buy_count * 1.5:
+                            trend = 'bearish'
+                        else:
+                            trend = 'neutral'
+                        
+                        trending.append({
+                            'symbol': ticker.replace('.OL', ''),
+                            'recent_activity': str(recent_activity),
+                            'trend': trend
+                        })
+                except Exception as e:
+                    logger.warning(f"Error getting insider data for {ticker}: {e}")
+                    continue
+            
+            # Sort by activity level
+            trending.sort(key=lambda x: int(x['recent_activity']), reverse=True)
+            
+            if trending:
+                return jsonify({'success': True, 'trending': trending[:8]})
+                
+        except ImportError:
+            logger.warning("ExternalAPIService not available for insider trading trending")
+        except Exception as e:
+            logger.warning(f"Error getting real trending data: {e}")
         
-        return jsonify({'success': True, 'trending': trending})
+        # If real data is not available, show error instead of fake data
+        return jsonify({
+            'success': False, 
+            'error': 'Insider trading trending data is not available at this time',
+            'trending': []
+        })
+        
     except Exception as e:
         current_app.logger.error(f"Error in trending endpoint: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -522,20 +597,92 @@ def insider_trading_export():
 def insider_trading_stats():
     """Get insider trading statistics"""
     try:
-        # Mock statistics data
-        stats = {
-            'total_transactions': 2547,
-            'buy_sell_ratio': 1.43,
-            'average_transaction_value': 2500000,
-            'most_active_stock': 'EQNR',
-            'top_sectors': [
-                {'sector': 'Oil & Gas', 'count': 45},
-                {'sector': 'Telecommunications', 'count': 38},
-                {'sector': 'Banking', 'count': 32}
-            ]
-        }
+        # Try to get real statistics from ExternalAPIService
+        try:
+            from ..services.external_apis import ExternalAPIService
+            
+            # Get real insider trading data for calculation
+            popular_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'YAR.OL', 'MOWI.OL']
+            all_transactions = []
+            
+            for ticker in popular_tickers:
+                try:
+                    insider_data = ExternalAPIService.get_insider_trading(ticker, limit=50)
+                    if insider_data:
+                        all_transactions.extend(insider_data)
+                except Exception as e:
+                    logger.warning(f"Error getting insider data for {ticker}: {e}")
+                    continue
+            
+            if all_transactions:
+                # Calculate real statistics
+                total_transactions = len(all_transactions)
+                
+                buy_count = sum(1 for trade in all_transactions if 
+                              trade.get('transaction_type', '').upper() in ['BUY', 'KJØP'])
+                sell_count = total_transactions - buy_count
+                buy_sell_ratio = buy_count / max(sell_count, 1)
+                
+                # Calculate average transaction value
+                values = [trade.get('value', 0) for trade in all_transactions if trade.get('value', 0) > 0]
+                average_transaction_value = sum(values) / len(values) if values else 0
+                
+                # Find most active stock
+                ticker_counts = {}
+                for trade in all_transactions:
+                    ticker = trade.get('symbol', '').replace('.OL', '')
+                    ticker_counts[ticker] = ticker_counts.get(ticker, 0) + 1
+                
+                most_active_stock = max(ticker_counts.items(), key=lambda x: x[1])[0] if ticker_counts else 'N/A'
+                
+                # Calculate sector distribution (simplified)
+                sector_map = {
+                    'EQNR': 'Oil & Gas',
+                    'DNB': 'Banking', 
+                    'TEL': 'Telecommunications',
+                    'NHY': 'Materials',
+                    'YAR': 'Materials',
+                    'MOWI': 'Food Production'
+                }
+                
+                sector_counts = {}
+                for trade in all_transactions:
+                    ticker = trade.get('symbol', '').replace('.OL', '')
+                    sector = sector_map.get(ticker, 'Other')
+                    sector_counts[sector] = sector_counts.get(sector, 0) + 1
+                
+                top_sectors = [{'sector': sector, 'count': count} 
+                             for sector, count in sorted(sector_counts.items(), 
+                                                       key=lambda x: x[1], reverse=True)[:3]]
+                
+                stats = {
+                    'total_transactions': total_transactions,
+                    'buy_sell_ratio': round(buy_sell_ratio, 2),
+                    'average_transaction_value': int(average_transaction_value),
+                    'most_active_stock': most_active_stock,
+                    'top_sectors': top_sectors
+                }
+                
+                return jsonify({'success': True, 'stats': stats})
+                
+        except ImportError:
+            logger.warning("ExternalAPIService not available for insider trading stats")
+        except Exception as e:
+            logger.warning(f"Error calculating real statistics: {e}")
         
-        return jsonify({'success': True, 'stats': stats})
+        # If real data is not available, show error instead of fake statistics
+        return jsonify({
+            'success': False, 
+            'error': 'Insider trading statistics are not available at this time',
+            'stats': {
+                'total_transactions': 0,
+                'buy_sell_ratio': 0,
+                'average_transaction_value': 0,
+                'most_active_stock': 'N/A',
+                'top_sectors': []
+            }
+        })
+        
     except Exception as e:
         current_app.logger.error(f"Error in stats endpoint: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500

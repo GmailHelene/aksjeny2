@@ -20,6 +20,7 @@ from .tip import StockTip
 from .favorites import Favorites
 from .activity import UserActivity
 from .price_alert import PriceAlert, AlertNotificationSettings
+from .forum import ForumCategory, ForumTopic, ForumPost, ForumPostLike, ForumTopicView
 
 # Add new models to __all__
 __all__ = [
@@ -37,6 +38,11 @@ __all__ = [
     'Favorites',
     'PriceAlert',
     'AlertNotificationSettings',
+    'ForumCategory',
+    'ForumTopic', 
+    'ForumPost',
+    'ForumPostLike',
+    'ForumTopicView',
     'LoginAttempt',
     'UserSession'
 ]

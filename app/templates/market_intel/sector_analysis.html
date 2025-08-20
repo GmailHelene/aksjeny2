@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block title %}Sektoranalyse - Market Intelligence{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+/* Fix color contrast issues - make backgrounds dark for white text */
+.bg-danger, .bg-primary, .bg-warning, .bg-info {
+    background-color: #dc3545 !important; /* Dark red for proper contrast */
+}
+
+.bg-success {
+    background-color: #198754 !important; /* Dark green for proper contrast */
+}
+
+.alert-danger {
+    background-color: #721c24 !important; /* Very dark red */
+    border-color: #dc3545 !important;
+    color: #f8d7da !important;
+}
+
+.card-header.bg-primary {
+    background-color: #0d47a1 !important; /* Very dark blue */
+}
+
+.card-header.bg-danger {
+    background-color: #b71c1c !important; /* Very dark red */
+}
+
+.market-intel-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.market-intel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.sector-performance {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.sector-performance.positive {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+}
+
+.sector-performance.negative {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.dark-card {
+    background-color: #2d3436 !important;
+    color: white !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-pie-chart me-3"></i>Sektoranalyse
+                </h1>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active">Dagens Oversikt</button>
+                    <button type="button" class="btn btn-outline-primary">Ukentlig</button>
+                    <button type="button" class="btn btn-outline-primary">Månedlig</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-value">+2.4%</div>
+                <div class="metric-label">Oslo Børs (OSEBX)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="metric-value">+1.8%</div>
+                <div class="metric-label">S&P 500</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                <div class="metric-value">+0.9%</div>
+                <div class="metric-label">DAX</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);">
+                <div class="metric-value">-0.3%</div>
+                <div class="metric-label">Nikkei 225</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sector Performance -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Sektorutvikling (Dagens endring)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="sector-performance positive">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Energi</strong>
+                                        <div class="small text-muted">EQNR, AKE, VAR</div>
+                                    </div>
+                                    <div class="text-success">
+                                        <strong>+3.2%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance positive">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Sjømat</strong>
+                                        <div class="small text-muted">MOWI, SalMar, LSG</div>
+                                    </div>
+                                    <div class="text-success">
+                                        <strong>+2.8%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance positive">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Shipping</strong>
+                                        <div class="small text-muted">FLNG, EURN, DHT</div>
+                                    </div>
+                                    <div class="text-success">
+                                        <strong>+1.9%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance positive">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Bank</strong>
+                                        <div class="small text-muted">DNB, SpareBank 1</div>
+                                    </div>
+                                    <div class="text-success">
+                                        <strong>+1.4%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="sector-performance negative">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Teknologi</strong>
+                                        <div class="small text-muted">KAHOOT, AutoStore</div>
+                                    </div>
+                                    <div class="text-danger">
+                                        <strong>-2.1%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance negative">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Telekom</strong>
+                                        <div class="small text-muted">TEL, ICE</div>
+                                    </div>
+                                    <div class="text-danger">
+                                        <strong>-1.3%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Industri</strong>
+                                        <div class="small text-muted">AKER, YAR, AKSO</div>
+                                    </div>
+                                    <div class="text-muted">
+                                        <strong>+0.2%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="sector-performance">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Forbruksvarer</strong>
+                                        <div class="small text-muted">NordicSemi, AKVA</div>
+                                    </div>
+                                    <div class="text-muted">
+                                        <strong>-0.1%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card market-intel-card mb-3">
+                <div class="card-header" style="background-color: #198754 !important; color: white;">
+                    <h6 class="mb-0">
+                        <i class="bi bi-trophy me-2"></i>Dagens Toppytere
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>EQNR.OL</strong>
+                            <div class="small text-muted">Equinor ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+4.2%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>MOWI.OL</strong>
+                            <div class="small text-muted">Mowi ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+3.8%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>AKE.OL</strong>
+                            <div class="small text-muted">Aker ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #198754 !important;">+3.1%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #b71c1c !important; color: white;">
+                    <h6 class="mb-0">
+                        <i class="bi bi-arrow-down me-2"></i>Dagens Tapere
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>KAHOOT.OL</strong>
+                            <div class="small text-muted">Kahoot! ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-3.2%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>TEL.OL</strong>
+                            <div class="small text-muted">Telenor ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-2.1%</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>ICE.OL</strong>
+                            <div class="small text-muted">Ice Group ASA</div>
+                        </div>
+                        <span class="badge" style="background-color: #b71c1c !important;">-1.8%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Analysis -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card market-intel-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>Markedsanalyse
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Sektorrotasjon</h6>
+                            <p>Energisektoren viser fortsatt styrke grunnet høye oljepriser og sterke kvartalstall fra EQNR. Sjømatsektoren nyter godt av høye laksepriser og optimistiske prognoser for 2025.</p>
+                            
+                            <h6 class="mt-3">Risikoer</h6>
+                            <p>Teknologisektoren påvirkes av globale rentebekymringer og lavere vekstforventninger. Telekomsektoren står overfor økt konkurranse og regulatoriske utfordringer.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Muligheter</h6>
+                            <p>Shipping-sektoren kan dra nytte av økt global handel og lavere flåtekapasitet. Banksektoren kan tjene på høyere renter og forbedret kredittkvalitet.</p>
+                            
+                            <h6 class="mt-3">Anbefaling</h6>
+                            <div class="alert" style="background-color: #721c24 !important; border-color: #dc3545 !important; color: #f8d7da !important;">
+                                <strong>Diversifisering anbefales:</strong> Vekt energi og sjømat, undervekt teknologi på kort sikt.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

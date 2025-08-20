@@ -77,66 +77,140 @@ def technical():
                                  show_search_prompt=True,
                                  error_message=None)
         if symbol and symbol.strip():
-            # Mock technical data for symbol with realistic Norwegian stock prices
+            # Get real technical data for symbol from authentic Norwegian stock data
             symbol = symbol.strip().upper()
             
-            # Set realistic prices based on symbol
-            if symbol == 'AKER.OL':
-                price = 546.88
-                change = 4.90
-                change_percent = 0.90
-                name = "Aker ASA"
-            elif symbol == 'EQNR.OL':
-                price = 285.50
-                change = 6.85
-                change_percent = 2.46
-                name = "Equinor ASA"
-            elif symbol == 'DNB.OL':
-                price = 215.26
-                change = 0.06
-                change_percent = 0.03
-                name = "DNB Bank ASA"
-            elif symbol == 'TEL.OL':
-                price = 145.01
-                change = -0.78
-                change_percent = -0.54
-                name = "Telenor ASA"
-            else:
-                # Default values
-                price = 150.0 + (hash(symbol) % 500)
-                change = ((hash(symbol) % 20) - 10) / 10
-                change_percent = change / price * 100
-                name = symbol.replace('.OL', ' ASA').replace('_', ' ').title()
-            
-            technical_data = {
-                'symbol': symbol,
-                'name': name,
-                'last_price': price,  # Changed from current_price to last_price
-                'change': change,
-                'change_percent': change_percent,
-                'indicators': {
-                    'rsi': 65.5,
-                    'macd': 2.3,
-                    'volume': 1200000
-                }
-            }
-            return render_template('analysis/technical.html',
-                                 symbol=symbol,
-                                 technical_data=technical_data,
-                                 show_analysis=True)
+            try:
+                # Import DataService for real Norwegian stock data
+                from ..services.data_service import DataService
+                
+                # Get real stock data instead of hardcoded values
+                stock_info = DataService.get_stock_info(symbol)
+                technical_data = None
+                
+                if stock_info and isinstance(stock_info, dict):
+                    # Extract real price data
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    company_name = stock_info.get('longName', stock_info.get('shortName', symbol))
+                    volume = stock_info.get('regularMarketVolume', stock_info.get('volume', 0))
+                    
+                    # Calculate real change
+                    if previous_close and previous_close > 0:
+                        change = current_price - previous_close
+                        change_percent = (change / previous_close) * 100
+                    else:
+                        change = 0
+                        change_percent = 0
+                    
+                    # Get real technical indicators
+                    try:
+                        from ..services.technical_analysis import TechnicalAnalysis
+                        technical_indicators = TechnicalAnalysis.get_technical_indicators(symbol)
+                        
+                        if technical_indicators:
+                            rsi = technical_indicators.get('rsi', 50.0)
+                            macd = technical_indicators.get('macd', 0.0)
+                            sma_20 = technical_indicators.get('sma_20', current_price)
+                            sma_50 = technical_indicators.get('sma_50', current_price)
+                            bollinger_upper = technical_indicators.get('bollinger_upper', current_price * 1.02)
+                            bollinger_lower = technical_indicators.get('bollinger_lower', current_price * 0.98)
+                        else:
+                            # Calculate basic indicators if service fails
+                            rsi = 50.0  # Neutral RSI
+                            macd = 0.0  # Neutral MACD
+                            sma_20 = current_price
+                            sma_50 = current_price
+                            bollinger_upper = current_price * 1.02
+                            bollinger_lower = current_price * 0.98
+                    except Exception as tech_error:
+                        logger.warning(f"Error getting technical indicators for {symbol}: {tech_error}")
+                        # Use neutral values instead of mock data
+                        rsi = 50.0
+                        macd = 0.0
+                        sma_20 = current_price
+                        sma_50 = current_price
+                        bollinger_upper = current_price * 1.02
+                        bollinger_lower = current_price * 0.98
+                    
+                    technical_data = {
+                        'symbol': symbol,
+                        'name': company_name,
+                        'last_price': current_price,
+                        'change': change,
+                        'change_percent': change_percent,
+                        'indicators': {
+                            'rsi': round(rsi, 1),
+                            'macd': round(macd, 2),
+                            'volume': volume,
+                            'sma_20': round(sma_20, 2),
+                            'sma_50': round(sma_50, 2),
+                            'bollinger_upper': round(bollinger_upper, 2),
+                            'bollinger_lower': round(bollinger_lower, 2)
+                        },
+                        'is_real_data': True
+                    }
+                
+                # If real data unavailable, show error instead of mock data
+                if not technical_data:
+                    return render_template('analysis/technical.html',
+                                         symbol=symbol,
+                                         technical_data=None,
+                                         show_analysis=False,
+                                         error_message=f"Ekte markedsdata for {symbol} er ikke tilgjengelig. Prøv et annet symbol.")
+                
+                return render_template('analysis/technical.html',
+                                     symbol=symbol,
+                                     technical_data=technical_data,
+                                     show_analysis=True)
+                                     
+            except Exception as e:
+                logger.error(f"Error getting real data for {symbol}: {e}")
+                return render_template('analysis/technical.html',
+                                     symbol=symbol,
+                                     technical_data=None,
+                                     show_analysis=False,
+                                     error_message=f"Feil ved henting av data for {symbol}. Prøv igjen senere.")
         else:
-            # Show technical analysis overview with popular stocks but no default analysis
+            # Show technical analysis overview with popular stocks using real data
             popular_stocks = []
             oslo_tickers = ['EQNR.OL', 'DNB.OL', 'YAR.OL', 'MOWI.OL', 'TEL.OL']
             global_tickers = ['AAPL', 'TSLA', 'MSFT', 'AMZN', 'GOOGL']
             
-            for ticker in oslo_tickers + global_tickers:
-                popular_stocks.append({
-                    'symbol': ticker,
-                    'name': ticker.replace('.OL', ' ASA'),
-                    'price': 100.0 + hash(ticker) % 200,
-                    'change_percent': (hash(ticker) % 10) - 5
-                })
+            try:
+                from ..services.data_service import DataService
+                
+                # Get real data for popular stocks
+                for ticker in oslo_tickers + global_tickers:
+                    try:
+                        stock_info = DataService.get_stock_info(ticker)
+                        if stock_info and isinstance(stock_info, dict):
+                            current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                            previous_close = stock_info.get('previousClose', current_price)
+                            company_name = stock_info.get('longName', stock_info.get('shortName', ticker.replace('.OL', ' ASA')))
+                            
+                            # Calculate real change percentage
+                            if previous_close and previous_close > 0:
+                                change_percent = ((current_price - previous_close) / previous_close) * 100
+                            else:
+                                change_percent = 0.0
+                            
+                            popular_stocks.append({
+                                'symbol': ticker,
+                                'name': company_name,
+                                'price': current_price,
+                                'change_percent': round(change_percent, 2),
+                                'is_real_data': True
+                            })
+                    except Exception as ticker_error:
+                        logger.warning(f"Error getting data for {ticker}: {ticker_error}")
+                        # Skip this ticker instead of adding mock data
+                        continue
+                        
+            except Exception as e:
+                logger.warning(f"Error loading popular stocks data: {e}")
+                # If no real data available, show empty list with message
+                popular_stocks = []
             
             # No default symbol - user must search
             return render_template('analysis/technical.html',
@@ -167,37 +241,37 @@ def warren_buffett():
             from ..services.buffett_analyzer import BuffettAnalyzer
             analysis_data = BuffettAnalyzer.analyze_stock(ticker)
         except Exception as analyzer_error:
-            logger.warning(f"BuffettAnalyzer failed for {ticker}: {analyzer_error}, using fallback demo data")
+            logger.warning(f"BuffettAnalyzer failed for {ticker}: {analyzer_error}")
             analysis_data = None
 
-        # Fallback demo/mock data if analysis_data is missing or incomplete
+        # If no real analysis data available, show error instead of fake data
         if not analysis_data or not isinstance(analysis_data, dict):
-            analysis_data = {
-                'ticker': ticker,
-                'company_name': ticker,
-                'buffett_score': 75.5,
-                'intrinsic_value': 180.0,
-                'current_price': 150.0,
-                'margin_of_safety': 16.7,
-                'quality_score': 'Good',
-                'moat_data': {
-                    'brand_strength': 75,
-                    'market_position': 80,
-                    'type': 'Economic Moat',
-                    'advantages': ['Merkestyrke', 'Nettverk effekt']
-                },
-                'metrics': {
-                    'roe': 18.5,
-                    'profit_margin': 22.3,
-                    'revenue_growth': 7.2,
-                    'debt_ratio': 25.8
-                },
-                'management': {
-                    'ceo': 'John Doe',
-                    'tenure': '10 years',
-                    'track_record': 'Excellent',
-                    'capital_allocation': 85,
-                    'shareholder_friendly': 90,
+            # Try to get basic stock info for context
+            try:
+                from ..services.data_service import DataService
+                stock_info = DataService.get_stock_info(ticker)
+                
+                if stock_info:
+                    company_name = stock_info.get('longName', stock_info.get('shortName', ticker))
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                else:
+                    company_name = ticker
+                    current_price = 0
+                    
+                return render_template('analysis/warren_buffett.html',
+                                     ticker=ticker,
+                                     company_name=company_name,
+                                     current_price=current_price,
+                                     analysis_data=None,
+                                     error_message=f"Warren Buffett-analyse for {company_name} er ikke tilgjengelig. Denne analysen krever omfattende fundamental data som ikke er tilgjengelig for dette selskapet.")
+            except Exception as e:
+                logger.error(f"Error getting basic stock info for {ticker}: {e}")
+                return render_template('analysis/warren_buffett.html',
+                                     ticker=ticker,
+                                     company_name=ticker,
+                                     current_price=0,
+                                     analysis_data=None,
+                                     error_message=f"Kunne ikke hente data for {ticker}. Prøv et annet symbol.")
                     'assessment': 'Ledelsen har levert sterke resultater og har god kapitalallokering.'
                 },
                 'recommendation': 'Buy',
@@ -213,89 +287,62 @@ def warren_buffett():
             'company_name': ticker,
             'buffett_score': 50,
             'intrinsic_value': 100.0,
-            'current_price': 100.0,
-            'margin_of_safety': 10.0,
-            'quality_score': 'Average',
-            'moat_data': {
-                'brand_strength': 50,
-                'market_position': 50,
-                'type': 'Economic Moat',
-                'advantages': ['Merkestyrke']
-            },
-            'metrics': {
-                'roe': 10.0,
-                'profit_margin': 10.0,
-                'revenue_growth': 5.0,
-                'debt_ratio': 30.0
-            },
-            'management': {
-                'ceo': 'N/A',
-                'tenure': 'N/A',
-                'track_record': 'N/A',
-                'capital_allocation': 50,
-                'shareholder_friendly': 50,
-                'assessment': 'Ingen vurdering tilgjengelig.'
-            },
-            'recommendation': 'Hold',
-            'confidence': 50,
-            'fair_value': 100.0,
-            'reasons': ['Ingen analyse tilgjengelig'],
-            'concerns': ['Ingen bekymringer registrert'],
-            'error': None
-        }
-        for field, default_value in required_fields.items():
-            if field not in analysis_data or analysis_data[field] is None:
-                analysis_data[field] = default_value
-        # Ensure nested fields exist
-        if 'moat_data' not in analysis_data or not isinstance(analysis_data['moat_data'], dict):
-            analysis_data['moat_data'] = required_fields['moat_data']
-        if 'metrics' not in analysis_data or not isinstance(analysis_data['metrics'], dict):
-            analysis_data['metrics'] = required_fields['metrics']
-        if 'management' not in analysis_data or not isinstance(analysis_data['management'], dict):
-            analysis_data['management'] = required_fields['management']
-        if 'reasons' not in analysis_data or not isinstance(analysis_data['reasons'], list):
-            analysis_data['reasons'] = required_fields['reasons']
-        if 'concerns' not in analysis_data or not isinstance(analysis_data['concerns'], list):
-            analysis_data['concerns'] = required_fields['concerns']
-        if 'error' not in analysis_data:
-            analysis_data['error'] = None
-        # Catch-all error handler for template rendering
-        try:
-            # Make sure moat_data exists in analysis_data
-            if 'moat_data' not in analysis_data or not isinstance(analysis_data['moat_data'], dict):
-                analysis_data['moat_data'] = {
-                    'brand_strength': 50,
-                    'market_position': 50,
-                    'type': 'Economic Moat',
-                    'advantages': ['Merkestyrke']
-                }
-                
-            return render_template('analysis/warren_buffett.html',
-                                 analysis=analysis_data,
-                                 ticker=ticker)
-        except Exception as template_error:
-            logger.error(f"Template rendering failed for Warren Buffett analysis: {template_error}")
-            return render_template('analysis/warren_buffett.html',
-                                 analysis=None,
-                                 ticker=ticker,
-                                 error="Feil ved visning av analyse. Kontakt support.")
+        
+        # If we have real analysis data, return it
+        return render_template('analysis/warren_buffett.html',
+                             analysis=analysis_data,
+                             ticker=ticker)
 
-    # Show selection page
+    # Show selection page with real stock data
     try:
-        oslo_stocks = {
-            'EQNR.OL': {'name': 'Equinor ASA', 'last_price': 270.50, 'change_percent': 1.2},
-            'DNB.OL': {'name': 'DNB Bank ASA', 'last_price': 185.20, 'change_percent': -0.8},
-            'TEL.OL': {'name': 'Telenor ASA', 'last_price': 125.30, 'change_percent': 0.5},
-            'YAR.OL': {'name': 'Yara International', 'last_price': 350.80, 'change_percent': 2.1},
-            'MOWI.OL': {'name': 'Mowi ASA', 'last_price': 198.40, 'change_percent': -1.3}
-        }
-        global_stocks = {
-            'AAPL': {'name': 'Apple Inc.', 'last_price': 185.00, 'change_percent': 0.9},
-            'MSFT': {'name': 'Microsoft Corporation', 'last_price': 420.50, 'change_percent': 1.5},
-            'GOOGL': {'name': 'Alphabet Inc.', 'last_price': 140.20, 'change_percent': -0.3},
-            'TSLA': {'name': 'Tesla Inc.', 'last_price': 220.80, 'change_percent': 3.2},
-            'AMZN': {'name': 'Amazon.com Inc.', 'last_price': 155.90, 'change_percent': 0.7}
-        }
+        from ..services.data_service import DataService
+        
+        # Get real Norwegian stocks
+        oslo_stocks = {}
+        global_stocks = {}
+        
+        oslo_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'YAR.OL', 'MOWI.OL']
+        global_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN']
+        
+        for ticker in oslo_tickers:
+            try:
+                stock_info = DataService.get_stock_info(ticker)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    company_name = stock_info.get('longName', stock_info.get('shortName', ticker))
+                    
+                    change_percent = 0
+                    if previous_close and previous_close > 0:
+                        change_percent = ((current_price - previous_close) / previous_close) * 100
+                    
+                    oslo_stocks[ticker] = {
+                        'name': company_name,
+                        'last_price': current_price,
+                        'change_percent': round(change_percent, 1)
+                    }
+            except Exception as e:
+                logger.warning(f"Error getting data for {ticker}: {e}")
+        
+        for ticker in global_tickers:
+            try:
+                stock_info = DataService.get_stock_info(ticker)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    company_name = stock_info.get('longName', stock_info.get('shortName', ticker))
+                    
+                    change_percent = 0
+                    if previous_close and previous_close > 0:
+                        change_percent = ((current_price - previous_close) / previous_close) * 100
+                    
+                    global_stocks[ticker] = {
+                        'name': company_name,
+                        'last_price': current_price,
+                        'change_percent': round(change_percent, 1)
+                    }
+            except Exception as e:
+                logger.warning(f"Error getting data for {ticker}: {e}")
 
         return render_template('analysis/warren_buffett.html',
                               oslo_stocks=oslo_stocks,

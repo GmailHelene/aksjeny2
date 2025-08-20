@@ -17,110 +17,24 @@ except ImportError as e:
 logger = logging.getLogger(__name__)
 market_intel = Blueprint('market_intel', __name__, url_prefix='/market-intel')
 
+def get_real_insider_data(ticker):
+    """Get real insider trading data for a specific ticker"""
+    try:
+        if ExternalAPIService:
+            # Get real insider trading data
+            insider_data = ExternalAPIService.get_insider_trading(ticker, limit=15)
+            if insider_data:
+                return insider_data
+    except Exception as e:
+        logger.warning(f"Error fetching real insider data for {ticker}: {e}")
+    
+    # Return empty list instead of fake data
+    return []
+
 def generate_demo_insider_data(ticker):
-    """Generate realistic demo insider trading data for a specific ticker"""
-    import random
-    from datetime import datetime, timedelta
-    
-    # Generate 5-15 transactions for the last 3 months
-    transactions = []
-    num_transactions = random.randint(5, 15)
-    
-    # Ticker-specific insider data
-    company_data = {
-        'EQNR.OL': {
-            'name': 'Equinor ASA',
-            'insiders': [
-                ('Anders Opedal', 'CEO'),
-                ('Lars Christian Bacher', 'CFO'),
-                ('Pål Eitrheim', 'EVP'),
-                ('Al Cook', 'EVP Technology'),
-                ('Irene Rummelhoff', 'EVP Marketing'),
-                ('Geir Tungesvik', 'EVP Operations')
-            ],
-            'price_range': (250, 320)
-        },
-        'DNB.OL': {
-            'name': 'DNB Bank ASA',
-            'insiders': [
-                ('Kjerstin Braathen', 'CEO'),
-                ('Ottar Ertzeid', 'CFO'),
-                ('Harald Serck-Hanssen', 'Chairman'),
-                ('Ida Lerner', 'EVP'),
-                ('Ingjerd Blekeli Spiten', 'EVP'),
-                ('Thomas Midteide', 'EVP')
-            ],
-            'price_range': (180, 240)
-        },
-        'TEL.OL': {
-            'name': 'Telenor ASA',
-            'insiders': [
-                ('Sigve Brekke', 'CEO'),
-                ('Tone H. Bachke', 'CFO'),
-                ('Gunn Wærsted', 'Chairman'),
-                ('Ruza Sabanovic', 'EVP'),
-                ('Amina Hodzic', 'EVP'),
-                ('Abdulmajeed Alkhereiji', 'EVP')
-            ],
-            'price_range': (120, 160)
-        },
-        'NHY.OL': {
-            'name': 'Norsk Hydro ASA',
-            'insiders': [
-                ('Hilde Merete Aasheim', 'CEO'),
-                ('Pål Kildemo', 'CFO'),
-                ('Dag Mejdell', 'Chairman'),
-                ('Arvid Moss', 'EVP'),
-                ('Eivind Kallevik', 'EVP'),
-                ('Kjetil Ebbesberg', 'EVP')
-            ],
-            'price_range': (60, 85)
-        },
-        # Default for unknown tickers
-        'DEFAULT': {
-            'name': f'Company {ticker}',
-            'insiders': [
-                ('John Anderson', 'CEO'),
-                ('Sarah Johnson', 'CFO'),
-                ('Michael Brown', 'Chairman'),
-                ('Emily Davis', 'EVP Operations'),
-                ('Robert Wilson', 'EVP Technology'),
-                ('Lisa Thompson', 'EVP Marketing')
-            ],
-            'price_range': (50, 200)
-        }
-    }
-    
-    # Get company-specific data or use default
-    company_info = company_data.get(ticker, company_data['DEFAULT'])
-    company_name = company_info['name']
-    insiders = company_info['insiders']
-    price_min, price_max = company_info['price_range']
-    
-    for i in range(num_transactions):
-        days_back = random.randint(1, 90)
-        transaction_date = datetime.now() - timedelta(days=days_back)
-        
-        insider_name, title = random.choice(insiders)
-        transaction_type = random.choice(['Purchase', 'Sale', 'Sale', 'Purchase'])  # More sales than purchases
-        shares = random.randint(1000, 50000)
-        price = random.uniform(price_min, price_max)
-        
-        transactions.append({
-            'transaction_date': transaction_date.strftime('%Y-%m-%d'),
-            'insider_name': insider_name,
-            'title': title,
-            'transaction_type': transaction_type,
-            'shares': shares,
-            'price': round(price, 2),
-            'value': round(shares * price, 2),
-            'symbol': ticker,
-            'company': company_name
-        })
-    
-    # Sort by date (newest first)
-    transactions.sort(key=lambda x: x['transaction_date'], reverse=True)
-    return transactions
+    """DEPRECATED: Use get_real_insider_data instead"""
+    logger.warning(f"generate_demo_insider_data called for {ticker} - this function is deprecated")
+    return get_real_insider_data(ticker)
 
 @market_intel.route('/')
 @access_required
@@ -138,8 +52,42 @@ def index():
                                  market_news=[],
                                  error="Ekstern data-service er ikke tilgjengelig.")
         
-        # Get recent insider trading for popular stocks
-        popular_tickers = ['EQNR.OL', 'DNB.OL', 'AAPL', 'MSFT', 'TSLA']
+        # Get recent insider trading for popular Norwegian and global stocks
+        try:
+            from ..services.data_service import DataService
+            
+            # Get top Norwegian stocks by market cap/volume
+            oslo_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'YAR.OL']
+            global_tickers = ['AAPL', 'MSFT', 'TSLA']
+            
+            # Combine and prioritize based on real market data availability
+            popular_tickers = []
+            
+            # Add Oslo stocks that have real data
+            for ticker in oslo_tickers[:3]:
+                try:
+                    stock_info = DataService.get_stock_info(ticker)
+                    if stock_info and stock_info.get('regularMarketPrice'):
+                        popular_tickers.append(ticker)
+                except:
+                    continue
+            
+            # Add global stocks that have real data
+            for ticker in global_tickers:
+                try:
+                    stock_info = DataService.get_stock_info(ticker)
+                    if stock_info and stock_info.get('regularMarketPrice'):
+                        popular_tickers.append(ticker)
+                        if len(popular_tickers) >= 5:  # Limit total
+                            break
+                except:
+                    continue
+            
+        except Exception as e:
+            logger.warning(f"Error getting dynamic popular tickers: {e}")
+            # Fallback to basic Norwegian stocks only
+            popular_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL']
+        
         insider_data = {}
         
         for ticker in popular_tickers[:3]:  # Limit to avoid API rate limits

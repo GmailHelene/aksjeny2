@@ -844,13 +844,18 @@ def demo():
             except Exception as e:
                 logger.warning(f"Error getting data for {symbol}: {e}")
         
-        # If no real data available, use enhanced fallback with realistic demo data
+        # If no real data available, show error instead of fake data
         if not stocks_data:
-            stocks_data = [
-                {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': '285.40', 'change': '+2.3%', 'signal': 'KJØP', 'analysis': 'Positiv momentum med sterke energipriser'},
-                {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'price': '218.60', 'change': '+1.8%', 'signal': 'HOLD', 'analysis': 'Solid banking fundamentals, venter på rentebeslutning'},
-                {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'price': '142.80', 'change': '-0.5%', 'signal': 'HOLD', 'analysis': 'Stabil telecom med god utbytte'}
-            ]
+            logger.warning("No real stock data available for demo")
+            demo_data = {
+                'demo_mode': True,
+                'context': demo_context,
+                'error': 'Markedsdata er ikke tilgjengelig for øyeblikket. Prøv igjen senere.',
+                'stocks': [],
+                'analysis': None,
+                'portfolio': None
+            }
+            return render_template('demo.html', **demo_data)
         
         # Determine user context for demo experience
         demo_context = {
@@ -866,35 +871,31 @@ def demo():
             'context': demo_context,
             'stocks': stocks_data,
             'analysis': {
-                'recommendation': 'KJØP',
-                'confidence': '85%',
-                'target_price': '320 NOK',
-                'risk_level': 'Moderat',
-                'time_horizon': '6-12 måneder',
+                'recommendation': 'N/A',
+                'confidence': 'Data ikke tilgjengelig',
+                'target_price': 'N/A',
+                'risk_level': 'N/A',
+                'time_horizon': 'N/A',
                 'signals': [
-                    'Sterk teknisk momentum',
-                    'Positiv fundamental utvikling', 
-                    'Økende institusjonell interesse'
+                    'Markedsdata ikke tilgjengelig',
+                    'Kontakt support for hjelp', 
+                    'Prøv igjen senere'
                 ]
             },
             'portfolio': {
-                'total_value': 'Varierer med markedet',
-                'daily_change': 'Sanntids beregning',
-                'daily_change_percent': 'Live data',
-                'holdings': [
-                    {'symbol': 'EQNR.OL', 'name': 'Equinor', 'quantity': 100, 'value': 'Live data', 'change': 'Live data'},
-                    {'symbol': 'DNB.OL', 'name': 'DNB Bank', 'quantity': 200, 'value': 'Live data', 'change': 'Live data'},
-                    {'symbol': 'TEL.OL', 'name': 'Telenor', 'quantity': 50, 'value': 'Live data', 'change': 'Live data'}
-                ]
+                'total_value': 'Data ikke tilgjengelig',
+                'daily_change': 'Data ikke tilgjengelig',
+                'daily_change_percent': 'N/A',
+                'holdings': []
             }
         }
         
         return render_template('demo.html', **demo_data)
         
     except Exception as e:
-        logger.error(f"Error getting real data for demo page: {e}")
+        logger.error(f"Error in demo route: {e}")
         
-        # Fallback with clear indication it's demo data
+        # Error fallback with clear indication of service issues
         fallback_context = {
             'is_authenticated': current_user.is_authenticated if current_user else False,
             'access_level': 'none',
@@ -906,33 +907,10 @@ def demo():
         demo_data = {
             'demo_mode': True,
             'context': fallback_context,
-            'stocks': [
-                {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 'Demo', 'change': 'Demo', 'signal': 'DEMO', 'analysis': 'Demo data - registrer for ekte data'},
-                {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'price': 'Demo', 'change': 'Demo', 'signal': 'DEMO', 'analysis': 'Demo data - registrer for ekte data'},
-                {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'price': 'Demo', 'change': 'Demo', 'signal': 'DEMO', 'analysis': 'Demo data - registrer for ekte data'}
-            ],
-            'analysis': {
-                'recommendation': 'DEMO',
-                'confidence': 'Demo',
-                'target_price': 'Demo data',
-                'risk_level': 'Demo',
-                'time_horizon': 'Demo',
-                'signals': [
-                    'Dette er demo data',
-                    'Registrer for ekte markedsdata', 
-                    'Live priser og analyse'
-                ]
-            },
-            'portfolio': {
-                'total_value': 'Demo data',
-                'daily_change': 'Demo data',
-                'daily_change_percent': 'Demo',
-                'holdings': [
-                    {'symbol': 'EQNR.OL', 'name': 'Equinor', 'quantity': 100, 'value': 'Demo', 'change': 'Demo'},
-                    {'symbol': 'DNB.OL', 'name': 'DNB Bank', 'quantity': 200, 'value': 'Demo', 'change': 'Demo'},
-                    {'symbol': 'TEL.OL', 'name': 'Telenor', 'quantity': 50, 'value': 'Demo', 'change': 'Demo'}
-                ]
-            }
+            'error': 'Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.',
+            'stocks': [],
+            'analysis': None,
+            'portfolio': None
         }
         
         return render_template('demo.html', **demo_data)

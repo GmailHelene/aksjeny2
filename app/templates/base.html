@@ -8,6 +8,55 @@
     
     <!-- Simple navbar styling -->
     <style>
+    /* GLOBAL COLOR CONTRAST FIXES - Ensure dark backgrounds for white text */
+    .bg-danger, .badge-danger, .btn-danger, .alert-danger {
+        background-color: #b71c1c !important; /* Very dark red for white text */
+        border-color: #b71c1c !important;
+    }
+    
+    .bg-primary, .badge-primary, .btn-primary {
+        background-color: #0d47a1 !important; /* Very dark blue for white text */
+        border-color: #0d47a1 !important;
+    }
+    
+    .bg-warning, .badge-warning, .btn-warning {
+        background-color: #e65100 !important; /* Dark orange instead of light yellow */
+        color: white !important;
+        border-color: #e65100 !important;
+    }
+    
+    .bg-info, .badge-info, .btn-info {
+        background-color: #01579b !important; /* Very dark cyan for white text */
+        border-color: #01579b !important;
+    }
+    
+    .bg-success, .badge-success, .btn-success {
+        background-color: #1b5e20 !important; /* Very dark green for white text */
+        border-color: #1b5e20 !important;
+    }
+    
+    /* Alert overrides for better contrast */
+    .alert-danger {
+        background-color: #721c24 !important;
+        color: #f8d7da !important;
+    }
+    
+    .alert-warning {
+        background-color: #664d03 !important;
+        color: #fff3cd !important;
+    }
+    
+    /* Card header overrides */
+    .card-header.bg-primary {
+        background-color: #0d47a1 !important;
+        color: white !important;
+    }
+    
+    .card-header.bg-danger {
+        background-color: #b71c1c !important;
+        color: white !important;
+    }
+    
     .navbar {
         background-color: #1a1a1a !important;
         border-bottom: 1px solid #333;
@@ -348,13 +397,6 @@
                         </ul>
                     </li>
                     
-                    <!-- Dashboard -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    
                     <!-- Crypto Section -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.list_crypto') }}" role="button" data-bs-toggle="dropdown">
@@ -446,13 +488,6 @@
                         </ul>
                     </li>
                     
-                    <!-- Insider Trading -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('insider_trading.index') }}">
-                            <i class="bi bi-eye-fill"></i> Innsidehandel
-                        </a>
-                    </li>
-                    
                     <!-- Market Intelligence Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('market_intel.index') }}" role="button" data-bs-toggle="dropdown">
@@ -475,6 +510,37 @@
                                 <i class="bi bi-graph-down"></i> Økonomiske indikatorer
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Nyheter & Intelligence</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}">
+                                <i class="bi bi-newspaper"></i> Finansnyheter
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('news_intelligence.news_dashboard') }}">
+                                <i class="bi bi-lightning-fill"></i> News Intelligence
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('daily_view.index') }}">
+                                <i class="bi bi-calendar-day"></i> Dagens marked
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('sentiment_tracker.sentiment_tracker_page') }}">
+                                <i class="bi bi-emoji-smile"></i> Sentiment Tracker
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">Norge</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}">
+                                <i class="bi bi-flag"></i> Norge Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.social_sentiment') }}">
+                                <i class="bi bi-chat-square-text"></i> Sosial sentiment
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}">
+                                <i class="bi bi-droplet"></i> Olje-korrelasjon
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}">
+                                <i class="bi bi-building"></i> Regjeringsinnvirkning
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">
+                                <i class="bi bi-truck"></i> Shipping Intelligence
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('external_data.market_intelligence') }}">
                                 <i class="bi bi-cloud-download"></i> Ekstern Data
                             </a></li>
@@ -490,6 +556,10 @@
                             <i class="bi bi-tools"></i> Pro Tools
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('main.index') }}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.advanced_screener') }}">
                                 <i class="bi bi-funnel-fill"></i> Avansert screener
                             </a></li>
@@ -505,30 +575,6 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.api_documentation') }}">
                                 <i class="bi bi-file-earmark-code"></i> API dokumentasjon
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Norwegian Intelligence -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('norwegian_intel.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-flag"></i> Norge
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}">
-                                <i class="bi bi-info-circle"></i> Oversikt
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.social_sentiment') }}">
-                                <i class="bi bi-chat-square-text"></i> Sosial sentiment
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}">
-                                <i class="bi bi-droplet"></i> Olje-korrelasjon
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}">
-                                <i class="bi bi-building"></i> Regjeringsinnvirkning
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">
-                                <i class="bi bi-truck"></i> Shipping Intelligence
                             </a></li>
                         </ul>
                     </li>
@@ -584,28 +630,6 @@
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}">
                                 <i class="bi bi-robot"></i> ML Analytics
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- News & Intelligence - RESTORED -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('news_bp.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-newspaper"></i> Nyheter
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}">
-                                <i class="bi bi-newspaper"></i> Finansnyheter
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('news_intelligence.news_dashboard') }}">
-                                <i class="bi bi-lightning-fill"></i> News Intelligence
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('daily_view.index') }}">
-                                <i class="bi bi-calendar-day"></i> Dagens marked
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('sentiment_tracker.sentiment_tracker_page') }}">
-                                <i class="bi bi-emoji-smile"></i> Sentiment Tracker
                             </a></li>
                         </ul>
                     </li>
