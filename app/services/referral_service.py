@@ -12,6 +12,23 @@ class ReferralService:
     """Service for handling referral logic"""
     
     @staticmethod
+    def get_or_create_referral_code(user):
+        """Get or create a referral code for a user"""
+        try:
+            # Check if user already has a referral that can be used
+            existing_referral = Referral.query.filter_by(referrer_id=user.id).first()
+            if existing_referral:
+                return existing_referral.referral_code
+            
+            # If no existing referral, generate a new code for this user
+            referral_code = Referral.generate_referral_code()
+            return referral_code
+            
+        except Exception as e:
+            logger.error(f"Error getting/creating referral code for user {user.id}: {e}")
+            return Referral.generate_referral_code()
+    
+    @staticmethod
     def create_referral(referrer_id, referred_email):
         """Create a new referral"""
         try:

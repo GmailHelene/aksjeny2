@@ -573,21 +573,10 @@
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}">
                                 <i class="bi bi-bell-fill"></i> Prisalarmer
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.portfolio_analyzer') }}">
-                                <i class="bi bi-briefcase-fill"></i> Portefølje-analysator
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.export_tools') }}">
-                                <i class="bi bi-download"></i> Eksportverktøy
-                            </a></li>
                             
                             <!-- Analyst recommendations moved here -->
                             <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}">
                                 <i class="bi bi-people-fill"></i> Analytiker Anbefalinger
-                            </a></li>
-                            
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.api_documentation') }}">
-                                <i class="bi bi-file-earmark-code"></i> API dokumentasjon
                             </a></li>
                         </ul>
                     </li>
@@ -631,6 +620,9 @@
                             <li><a class="dropdown-item" href="{{ url_for('portfolio_analytics.analytics_dashboard') }}">
                                 <i class="bi bi-bar-chart-line-fill"></i> Portfolio Analytics
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.portfolio_analyzer') }}">
+                                <i class="bi bi-briefcase-fill"></i> Portefølje-analysator
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.optimization_page') }}">
                                 <i class="bi bi-bullseye"></i> Optimalisering
                             </a></li>
@@ -669,10 +661,10 @@
                                 <i class="bi bi-question-circle"></i> Guider
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.index') }}">
+                            <li><a class="dropdown-item" href="/forum/">
                                 <i class="bi bi-chat-dots"></i> Forum
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('blog.index') }}">
+                            <li><a class="dropdown-item" href="/blog/">
                                 <i class="bi bi-journal-text"></i> Blogg
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.help') }}">
