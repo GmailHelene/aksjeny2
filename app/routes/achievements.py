@@ -5,12 +5,13 @@ from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 from ..models.achievements import Achievement, UserAchievement, UserStats, check_user_achievements, init_default_achievements
 from ..extensions import db
+from ..utils.access_control import demo_access
 from datetime import datetime
 
 achievements_bp = Blueprint('achievements', __name__, url_prefix='/achievements')
 
 @achievements_bp.route('/')
-@login_required
+@demo_access
 def index():
     """Show user achievements page"""
     # Get user's earned achievements
@@ -38,7 +39,7 @@ def index():
                          user_stats=user_stats)
 
 @achievements_bp.route('/api/progress')
-@login_required
+@demo_access
 def get_progress():
     """Get user's current progress for AJAX updates"""
     user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
@@ -56,7 +57,7 @@ def get_progress():
     })
 
 @achievements_bp.route('/api/update_stat', methods=['POST'])
-@login_required
+@demo_access
 def update_stat():
     """Update user stat and check for new achievements"""
     data = request.json

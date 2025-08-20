@@ -158,6 +158,7 @@ def insider_trading():
         return redirect(url_for('insider_trading.index'), code=301)
 
 @market_intel.route('/earnings-calendar')
+@demo_access
 def earnings_calendar():
     """Earnings calendar page"""
     days_ahead = request.args.get('days', 30, type=int)
@@ -202,6 +203,7 @@ def earnings_calendar():
         return render_template('error.html', error="Kunne ikke hente resultatkalender.")
 
 @market_intel.route('/sector-analysis')
+@demo_access
 def sector_analysis():
     """Sector performance analysis"""
     try:
@@ -234,6 +236,7 @@ def sector_analysis():
         return render_template('error.html', error="Kunne ikke hente sektoranalyse.")
 
 @market_intel.route('/economic-indicators')
+@demo_access
 def economic_indicators():
     """Economic indicators and market overview"""
     try:

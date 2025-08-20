@@ -1300,7 +1300,7 @@ def my_subscription():
                 },
                 {
                     'name': 'Premium',
-                    'price': 2999,
+                    'price': 2499,
                     'billing': 'yearly',
                     'features': [
                         'Alt i månedspakken',

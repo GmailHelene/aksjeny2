@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required
+from ..utils.access_control import demo_access
 import json
 import random
 from datetime import datetime, timedelta
@@ -8,11 +9,13 @@ from datetime import datetime, timedelta
 norwegian_intel = Blueprint('norwegian_intel', __name__, url_prefix='/norwegian-intel')
 
 @norwegian_intel.route('/')
+@demo_access
 def index():
     """Norwegian Market Intelligence Hub"""
     return render_template('norwegian_intel/index.html')
 
 @norwegian_intel.route('/social-sentiment')
+@demo_access
 def social_sentiment():
     """Real-time social sentiment for Norwegian stocks"""
     # Simulated data - in production would connect to Twitter/Reddit APIs
@@ -32,6 +35,7 @@ def social_sentiment():
                          last_updated=datetime.now())
 
 @norwegian_intel.route('/oil-correlation')
+@demo_access
 def oil_correlation():
     """Oil price correlation matrix for Norwegian stocks"""
     # Simulated correlation data
@@ -57,6 +61,7 @@ def oil_correlation():
                          current_time=datetime.now())
 
 @norwegian_intel.route('/government-impact')
+@demo_access
 def government_impact():
     """Government announcement impact analyzer"""
     recent_announcements = [
@@ -88,6 +93,7 @@ def government_impact():
                          current_time=datetime.now())
 
 @norwegian_intel.route('/shipping-intelligence')
+@demo_access
 def shipping_intelligence():
     """Norwegian shipping intelligence with Baltic Dry Index correlation"""
     shipping_data = [

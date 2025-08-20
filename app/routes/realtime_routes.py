@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from flask_login import login_required, current_user
-from ..utils.access_control import access_required
+from ..utils.access_control import access_required, demo_access
 from app.services.realtime_data_service import RealTimeDataService
 from app.models import User
 import logging
@@ -13,6 +13,7 @@ realtime_service = RealTimeDataService()
 
 @realtime_bp.route('/')
 @realtime_bp.route('/dashboard')
+@demo_access
 def dashboard():
     """Real-time market data dashboard"""
     try:

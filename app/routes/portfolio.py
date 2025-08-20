@@ -92,7 +92,7 @@ def delete_portfolio(id):
         return redirect(url_for('portfolio.overview'))
 
 @portfolio.route('/overview')
-@login_required
+@demo_access
 def overview():
     """Portfolio overview page with enhanced error handling"""
     error = None
@@ -1143,7 +1143,7 @@ def optimization_page():
         return render_template('error.html', error=str(e)), 500
 
 @portfolio.route('/performance-analytics')
-@access_required
+@demo_access
 def performance_page():
     """Performance analytics interface"""
     try:

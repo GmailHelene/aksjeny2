@@ -175,7 +175,7 @@ def api_pricing_plans():
             {
                 'id': 'monthly',
                 'name': 'Månedlig',
-                'price_monthly': 399,
+                'price_monthly': 249,
                 'price_yearly': None,
                 'currency': 'NOK'
             },

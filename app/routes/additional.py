@@ -17,7 +17,7 @@ def subscription():
         'plans': [
             {'name': 'Basic', 'price': '199 kr/mnd'},
             {'name': 'Pro', 'price': '249 kr/mnd'},
-            {'name': 'Pro Årlig', 'price': '2999 kr/år'}
+            {'name': 'Pro Årlig', 'price': '2499 kr/år'}
         ]
     })
 

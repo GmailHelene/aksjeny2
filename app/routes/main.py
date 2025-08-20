@@ -1581,7 +1581,7 @@ def my_subscription():
                 'start_date': current_user.created_at if hasattr(current_user, 'created_at') else None,
                 'end_date': None,
                 'next_billing': None,
-                'price': 399,
+                'price': 249,
                 'currency': 'NOK',
                 'features': [
                     'Ubegrenset tilgang til alle aksjer',
@@ -1612,7 +1612,7 @@ def my_subscription():
                 'upgrade_options': [
                 {
                     'name': 'Premium',
-                    'price': 399,
+                    'price': 249,
                     'billing': 'monthly',
                     'features': [
                         'Ubegrenset tilgang til alle aksjer',

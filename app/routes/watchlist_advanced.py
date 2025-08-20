@@ -602,7 +602,7 @@ def create_watchlist():
         
         if not name:
             flash('Navn er påkrevd', 'error')
-            return redirect(url_for('watchlist.create_watchlist'))
+            return redirect(url_for('watchlist_advanced.create_watchlist'))
         
         watchlist = Watchlist(
             name=name,

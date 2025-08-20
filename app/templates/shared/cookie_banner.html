@@ -2,14 +2,21 @@
 <style>
 #cookie-banner {
     display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    max-width: 400px;
+    z-index: 9999;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 </style>
-<div id="cookie-banner" class="alert alert-info alert-dismissible fade show fixed-bottom mb-0" role="alert">
-  <div class="container d-flex justify-content-between align-items-center">
-    <span>
+<div id="cookie-banner" class="alert alert-info alert-dismissible fade show" role="alert">
+  <div class="d-flex flex-column">
+    <span class="mb-2">
       Vi bruker informasjonskapsler (cookies) for å forbedre din opplevelse og for å møte GDPR-krav. <a href="/gdpr" class="alert-link">Les mer</a>.
     </span>
-    <button type="button" class="btn btn-primary btn-sm ms-3" id="accept-cookies">Godta</button>
+    <button type="button" class="btn btn-primary btn-sm" id="accept-cookies">Godta</button>
   </div>
 </div>
 <script>

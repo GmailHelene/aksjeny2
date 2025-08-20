@@ -3,45 +3,56 @@ COMPREHENSIVE TEXT CONTRAST FIXES
 Fixes dark text on dark backgrounds across the site
 */
 
-/* WHITE TEXT ON BLUE BACKGROUNDS - ENHANCED FOR DEMO BANNER */
-.bg-primary, .bg-primary .text-dark, .bg-primary .text-black,
-.bg-info, .bg-info .text-dark, .bg-info .text-black,
-.text-bg-primary, .text-bg-info,
-.table-primary, .table-info,
-.alert-primary, .alert-info,
-.btn-primary, .btn-info,
-.badge-primary, .badge-info {
+/* WHITE TEXT ON DARK BACKGROUNDS - ENHANCED CONTRAST */
+.bg-danger, .bg-danger *, .badge-danger, .btn-danger, .alert-danger,
+.bg-primary, .bg-primary *, .badge-primary, .btn-primary, .alert-primary,
+.bg-warning, .bg-warning *, .badge-warning, .btn-warning, .alert-warning,
+.bg-info, .bg-info *, .badge-info, .btn-info, .alert-info,
+.bg-success, .bg-success *, .badge-success, .btn-success, .alert-success,
+.bg-dark, .bg-dark *, .badge-dark, .btn-dark, .alert-dark,
+.text-bg-danger, .text-bg-primary, .text-bg-warning, .text-bg-info, .text-bg-success, .text-bg-dark,
+.table-danger, .table-primary, .table-warning, .table-info, .table-success, .table-dark {
     color: #ffffff !important;
 }
 
-/* DEMO BANNER SPECIFIC CONTRAST FIXES */
-.alert-info {
-    background-color: #004085 !important; /* Darker blue for better contrast */
-    border-color: #003366 !important;
+/* Ensure all text content in dark backgrounds is white */
+.bg-danger h1, .bg-danger h2, .bg-danger h3, .bg-danger h4, .bg-danger h5, .bg-danger h6,
+.bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+.bg-success h1, .bg-success h2, .bg-success h3, .bg-success h4, .bg-success h5, .bg-success h6,
+.bg-info h1, .bg-info h2, .bg-info h3, .bg-info h4, .bg-info h5, .bg-info h6,
+.bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+.bg-danger p, .bg-primary p, .bg-success p, .bg-info p, .bg-dark p,
+.bg-danger span, .bg-primary span, .bg-success span, .bg-info span, .bg-dark span,
+.bg-danger div, .bg-primary div, .bg-success div, .bg-info div, .bg-dark div,
+.bg-danger small, .bg-primary small, .bg-success small, .bg-info small, .bg-dark small {
     color: #ffffff !important;
 }
 
-.alert-info h5, .alert-info p, .alert-info strong, .alert-info .mb-1, .alert-info .mb-0 {
-    color: #ffffff !important;
+/* DARK BACKGROUND COLORS FOR BETTER CONTRAST */
+.bg-danger, .badge-danger, .btn-danger, .alert-danger {
+    background-color: #b71c1c !important; /* Very dark red for white text */
+    border-color: #b71c1c !important;
 }
 
-.alert-info i.bi {
-    color: #ffffff !important;
+.bg-primary, .badge-primary, .btn-primary {
+    background-color: #0d47a1 !important; /* Very dark blue for white text */
+    border-color: #0d47a1 !important;
 }
 
-/* Alternative: Keep light blue but ensure dark text */
-.alert-info.light-variant {
-    background-color: #d1ecf1 !important;
-    border-color: #bee5eb !important;
-    color: #0c5460 !important;
+.bg-warning, .badge-warning, .btn-warning {
+    background-color: #e65100 !important; /* Dark orange instead of light yellow */
+    color: white !important;
+    border-color: #e65100 !important;
 }
 
-.alert-info.light-variant h5, 
-.alert-info.light-variant p, 
-.alert-info.light-variant strong,
-.alert-info.light-variant .mb-1, 
-.alert-info.light-variant .mb-0 {
-    color: #0c5460 !important;
+.bg-info, .badge-info, .btn-info {
+    background-color: #01579b !important; /* Very dark cyan for white text */
+    border-color: #01579b !important;
+}
+
+.bg-success, .badge-success, .btn-success {
+    background-color: #1b5e20 !important; /* Very dark green for white text */
+    border-color: #1b5e20 !important;
 }
 
 /* IMAGE SIZE CONSTRAINTS FOR NEWS ARTICLES */

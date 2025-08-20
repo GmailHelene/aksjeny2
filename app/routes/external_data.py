@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
-from ..utils.access_control import access_required
+from ..utils.access_control import access_required, demo_access
 try:
     from app.services.external_data import (
         get_stock_comprehensive_data, 
@@ -160,6 +160,7 @@ def insider_trading_overview():
         return render_template('error.html', error="Kunne ikke hente innsidehandel data"), 500
 
 @external_data_bp.route('/analyst-coverage')
+@demo_access
 def analyst_coverage():
     """Show analyst coverage overview"""
     try:
@@ -219,6 +220,7 @@ def analyst_coverage():
         return render_template('error.html', error="Kunne ikke hente analytiker data"), 500
 
 @external_data_bp.route('/market-intelligence')
+@demo_access
 def market_intelligence():
     """Comprehensive market intelligence dashboard"""
     try:

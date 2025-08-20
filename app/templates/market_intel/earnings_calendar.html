@@ -16,6 +16,12 @@
 
 .card-header.bg-primary {
     background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* Ensure all card headers with inline bg-primary style have white text */
+.card-header[style*="background-color: #0d47a1"] {
+    color: white !important;
 }
 
 .earnings-card {

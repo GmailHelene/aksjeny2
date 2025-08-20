@@ -518,8 +518,8 @@
         </div>
     </div>
     
-    <!-- Market Data for Public Users -->
-    {% if market_data and market_data.oslo_stocks %}
+    <!-- Market Data for AUTHENTICATED Users ONLY -->
+    {% if current_user.is_authenticated and market_data and market_data.oslo_stocks %}
     <div class="container mt-5">
         <div class="row mb-4">
             <div class="col-12">
@@ -607,7 +607,7 @@
     {% endif %}
     
     <!-- Global Stocks for Public Users -->
-    {% if market_data and market_data.global_stocks %}
+    {% if current_user.is_authenticated and market_data and market_data.global_stocks %}
     <div class="container mt-4">
         <div class="row mb-4">
             <div class="col-12">
@@ -694,8 +694,8 @@
     </div>
     {% endif %}
     
-    <!-- Crypto for Public Users -->
-    {% if market_data and market_data.crypto_stocks %}
+    <!-- Crypto for AUTHENTICATED Users ONLY -->
+    {% if current_user.is_authenticated and market_data and market_data.crypto_stocks %}
     <div class="container mt-4 mb-5">
         <div class="row mb-4">
             <div class="col-12">

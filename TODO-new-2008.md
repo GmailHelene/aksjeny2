@@ -51,6 +51,130 @@
 - [ ] Validate all forms and calculators work
 - [ ] Confirm real data displays instead of mock data
 
+
+dobbeltsjekk at alle lenker som er under hovendavigasjonen. for innlogget bet. bruker (utenom konto submenyen og elementene der, REDIRECTER til /demo for brukere som ikke er innlogget, dersom de havner inn pån noen av disse siden by mistake f.eks)
+
+
+https://aksjeradar.trade/achievements/
+Denne gir 500 error
+-
+https://aksjeradar.trade/stocks/compare
+Fortsatt 500 error her..
+-
+https://aksjeradar.trade/portfolio/overview
+Denne siden gir 500 error ("oversikt" under Portfolio i menyen) Men er også overflødig,
+Så du kan fjerne denne lenken far POrtfolio submenyen (altså fjerne "Oversikt" submenyelementet)
+
+Oslo Børs - Populære Aksjer Globale Aksjer, Kryptovaltuaer
+Disse tabellene skal IKKE ligget på forsiden /index for brukere som ikke er innlgoget!
+-
+Når jeg ikke er innlogget bruker, så skal jeg ikke kunne se hele hovednavigasjonen,det gjør jeg nå...
+https://aksjeradar.trade/demo?source=login_required 
+Det må fikses
+
+Det er også mange sider (testet flere i hovernav.. som IKKE redirecter som de skal til /Demo, alle sider må stort sett gjøre det! Utenom generelle sider for priser, abb. logg inn,registrer og lignende..)
+-
+" Start ditt abonnement nå
+Få tilgang til alle funksjoner og sanntidsdata
+399,-
+per måned
+eller 2499,- per år (spar 17%)"
+Dette banneret har FEIL pris! (på /Demo) det er 249,- pr mnd...
+og det e rFOETSATT FEIL PRISER HER: https://aksjeradar.trade/pricing
+SKal være 249,- og 2499,- fiks dette overalt priser er nevnt!
+
+-
+Språkflaggvelgeren er i veien for accept cookie ,så en av delene må flyttes f.eks til venstre,enten sprsåkflagggreia, eller cookie accept knappen
+-
+https://aksjeradar.trade/fa-mer-igjen-for-pengene
+Denne fungerer enda ikke..
+-
+
+Innlogget bruker:
+Hele Ressurser submenyen kan fjernes fra hovednav. Den kan være i footer i stedet.
+Hele Avansert submenyen kan fjernes, flytt heller elementene som er i den til å være inni ProTools submenyen
+
+-
+Markedsoversikt, Oslo børs oversikt, Global oversikt og Valutaoversikt , disse som står øverst under Analyse hovedelement i hovednav. , flytt disse heller til inn under hovedelementet "Aksjer".
+-
+!! stocks/Details/tickers sidene er IKKE fikset!!
+Feil ved lasting av aksjedetaljer for AAPL, får dette på alle jeg tester...
+
+-----
+/watchlist får her:
+BuildError
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'watchlist.create_watchlist'. Did you mean 'watchlist_advanced.create_watchlist' instead?
+
+Traceback (most recent call last)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+return self.wsgi_app(environ, start_response)
+File "/usr/local/lib/python3.10/site-packages/flask_socketio/__init__.py", line 43, in __call__
+return super(_SocketIOMiddleware, self).__call__(environ,
+File "/usr/local/lib/python3.10/site-packages/engineio/middleware.py", line 74, in __call__
+return self.wsgi_app(environ, start_response)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+response = self.handle_exception(e)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+response = self.full_dispatch_request()
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+rv = self.handle_user_exception(e)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+rv = self.dispatch_request()
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return
+-
+https://aksjeradar.trade/portfolio/performance-analytics
+https://aksjeradar.trade/portfolio/overview
+https://aksjeradar.trade/portfolio-analytics/
+500 error på disse 3 sidene
+-
+https://aksjeradar.trade/portfolio/performance-analytics
+Får her feilmeld: bekalger en feil oppstod
+_
+Menylenken transaksjoner , kan fjernes fra navigasjonen
+-
+/realtime-dashboard vil ikke laste inn
+-
+https://aksjeradar.trade/portfolio/watchlist
+Her må det gå an å slette også
+
+https://aksjeradar.trade/achievements/
+Denne gir 500 error
+_
+Funksjoner og API dokumentasjon,dissse 2 menyelementene kan du fjerne helt fra hovednavigasjonen (ligger i submenyen Konto)
+
+---
+KONTRAST STYLING ISSUES:Dobbeltsjekk igjen at Når bakgrunnen er rød, mørkblå,sort,grønn,skal teksten voer være HVIT, nå er den sort, noen få steder, måm vøre hvit når bakgrunnen er mørkrød,blå,grønn,sort  Dette må fikses
+
+
+LITT MER ENDRINGER I NAVIGASJONEN:
+
+Funksjoner og API dokumentasjon,dissse 2 menyelementene kan du fjerne helt fra hovednavigasjonen (ligger i submenyen Konto)
+
+De 2 øverste menyelementene under Market Intel menyen,lenker til akkurat samme sider/template, så en av de kan fjernes
+Fra denne submenyen
+-
+Crypto Dashboard menyelementet kan fjernes fra submenyen "Avansert"
+-
+Økonomisk kalender
+Konkurranseanalyse
+Disse 2 menyelementene kan du fjerne helt fra hovednavigasjonen (Står under "Avansert"
+-
+Valutakonverter
+Investment Analyzer
+Realtime Dashboard
+Mobile Trading
+Disse 4 menyelementene flytter du fra Avnansert submenyh, til Pro Tools submeny.
+Deretter kan toplevel menyelementet "Avansert" fjernes helt.
+-
+Prisalarmer står både i submenyen til Pro Tools, og i submenyen til Konto,
+Disse 2 er forskjellige (tempaltes) og ingen av de fungerer...
+Behold 1 av de 2 og fiks funksjonaliteten.
+
+- 
+PS: Hele ressurser submenyen skal flyttes ut av hovednavigasjonen og kun være i footer.
+
+
 NAVIGASJONSENDRINGER:
 
 husk at vi ville ha med disse 2 sidene i navigasjonen også:
@@ -120,3 +244,11 @@ alle disse lenkene på denne siden (her: /forum)
 gir også 500 error
 Søkefeltet på /forum når jeg tester det, gir også 500 error
 https://aksjeradar.trade/forum/search?q=test
+
+https://aksjeradar.trade/achievements/
+
+https://aksjeradar.trade/stocks/compare
+
+https://aksjeradar.trade/portfolio/overview
+Denne siden gir 500 error ("oversikt" under Portfolio i menyen) Men er også overflødig,
+Så du kan fjerne denne lenken far POrtfolio submenyen 

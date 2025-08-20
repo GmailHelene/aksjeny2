@@ -39,7 +39,7 @@
                                 <i class="bi bi-calendar-month text-danger" style="font-size: 3rem;"></i>
                                 <h3 class="mt-3 text-danger">Månedlig</h3>
                                 <div class="mb-3">
-                                    <span class="display-4 fw-bold">kr 399</span>
+                                    <span class="display-4 fw-bold">kr 249</span>
                                     <span class="text-muted h5">/mnd</span>
                                 </div>
                                 <div class="mb-3">
@@ -53,7 +53,7 @@
                                 </ul>
                                 {% if current_user.is_authenticated %}
                                 <a href="https://buy.stripe.com/5kQcN503z30z2oL35wfYY03" target="_blank" class="btn btn-outline-danger btn-lg w-100">
-                                    Velg månedlig - kr 399/mnd
+                                    Velg månedlig - kr 249/mnd
                                 </a>
                                 {% else %}
                                 <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-outline-danger btn-lg w-100">
@@ -90,7 +90,7 @@
                                 </ul>
                                 {% if current_user.is_authenticated %}
                                 <a href="https://buy.stripe.com/dRm3cvbMh1WvbZldKafYY04" target="_blank" class="btn btn-success btn-lg w-100 shadow">
-                                    <i class="bi bi-star-fill me-2"></i>Velg årlig - kr 2999/år
+                                    <i class="bi bi-star-fill me-2"></i>Velg årlig - kr 2499/år
                                 </a>
                                 {% else %}
                                 <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-success btn-lg w-100 shadow">
@@ -149,7 +149,7 @@
                             <div class="col-md-6">
                                 <div class="p-3 bg-light rounded">
                                     <h5 class="text-muted">Månedlig</h5>
-                                    <div class="h4">kr 399 × 12 = <span class="text-danger">kr 4,788</span></div>
+                                    <div class="h4">kr 249 × 12 = <span class="text-danger">kr 2,988</span></div>
                                     <small class="text-muted">Per år med månedlig betaling</small>
                                 </div>
                             </div>
