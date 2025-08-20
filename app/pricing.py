@@ -8,7 +8,7 @@ pricing = Blueprint('pricing', __name__)
 PRICING_PLANS = {
     'monthly': {
         'name': 'Månedlig',
-        'price': 399,
+        'price': 249,
         'currency': 'NOK',
         'period': 'month',
         'features': [
@@ -22,12 +22,12 @@ PRICING_PLANS = {
     },
     'yearly': {
         'name': 'Årlig',
-        'price': 2999,
+        'price': 2499,
         'currency': 'NOK',
         'period': 'year',
         'features': [
             'Alt i månedlig plan',
-            'Spar 1789 kr per år',
+            'Spar 1489 kr per år',
             'Prioritert support',
             'Eksklusive rapporter',
             'Beta-tilgang'

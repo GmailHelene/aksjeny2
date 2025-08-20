@@ -761,17 +761,23 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tabs
-    const tabTriggerList = document.querySelectorAll('#stockDetailTabs button');
-    const tabList = [...tabTriggerList].map(tabTriggerEl => new bootstrap.Tab(tabTriggerEl));
-    
-
-    // Use unified favorite button handler and initialize button state
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
-            window.portfolioActionsManager.initializeFavoriteButtonStates();
+    // Initialize tabs with error handling
+    try {
+        const tabTriggerList = document.querySelectorAll('#stockDetailTabs button');
+        if (tabTriggerList.length > 0 && typeof bootstrap !== 'undefined') {
+            const tabList = [...tabTriggerList].map(tabTriggerEl => new bootstrap.Tab(tabTriggerEl));
+            console.log('Tabs initialized successfully:', tabList.length);
+        } else {
+            console.warn('Bootstrap not available or no tab triggers found');
         }
-    });
+    } catch (error) {
+        console.error('Error initializing tabs:', error);
+    }
+
+    // Initialize favorite button states
+    if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
+        window.portfolioActionsManager.initializeFavoriteButtonStates();
+    }
     
     // Enhanced price chart with volume bars and improved color contrast
     if (document.getElementById('priceChart') && window.Chart) {

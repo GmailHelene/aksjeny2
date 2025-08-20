@@ -34,6 +34,9 @@
                 <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
                     <i class="bi bi-emoji-smile me-1"></i>Sentiment
                 </a>
+                <a href="{{ url_for('analysis.ai_predictions') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai_predictions' else 'btn-outline-primary' }}">
+                    <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
+                </a>
                 <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
                     <i class="bi bi-funnel me-1"></i>Screener
                 </a>

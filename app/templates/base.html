@@ -328,6 +328,12 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
                                 <i class="bi bi-cpu"></i> AI Prediksjoner
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}">
+                                <i class="bi bi-graph-up-arrow"></i> Predictions
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}">
+                                <i class="bi bi-graph-down-arrow"></i> Short Analyse
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
                                 <i class="bi bi-funnel"></i> Aksje-screener
                             </a></li>
@@ -392,11 +398,69 @@
                         </ul>
                     </li>
                     
+                    <!-- Norwegian Intelligence -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('norwegian_intel.index') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-flag"></i> Norge
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}">
+                                <i class="bi bi-info-circle"></i> Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.social_sentiment') }}">
+                                <i class="bi bi-chat-square-text"></i> Sosial sentiment
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}">
+                                <i class="bi bi-droplet"></i> Olje-korrelasjon
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}">
+                                <i class="bi bi-building"></i> Regjeringsinnvirkning
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">
+                                <i class="bi bi-truck"></i> Shipping Intelligence
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Daily View -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('daily_view.index') }}">
+                            <i class="bi bi-calendar-day"></i> Dagens Marked
+                        </a>
+                    </li>
+                    
                     <!-- News -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}">
                             <i class="bi bi-newspaper"></i> Nyheter
                         </a>
+                    </li>
+                    
+                    <!-- Forum -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('forum.index') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-chat-dots"></i> Forum
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('forum.index') }}">
+                                <i class="bi bi-house"></i> Hovedside
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category='enkelaksjer') }}">
+                                <i class="bi bi-graph-up"></i> Enkeltaksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category='investeringsstrategier') }}">
+                                <i class="bi bi-lightbulb"></i> Investeringsstrategier
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category='teknisk-analyse') }}">
+                                <i class="bi bi-bar-chart"></i> Teknisk Analyse
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category='markedsnyheter') }}">
+                                <i class="bi bi-newspaper"></i> Markedsnyheter
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('forum.category', category='begynnerhjornet') }}">
+                                <i class="bi bi-mortarboard"></i> Begynnerhjørnet
+                            </a></li>
+                        </ul>
                     </li>
                     
                     <!-- Portfolio Dropdown -->

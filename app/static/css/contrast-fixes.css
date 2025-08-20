@@ -99,13 +99,26 @@ img[src*="article"],
     color: #ffffff !important;
 }
 
-/* White text on success/green backgrounds */
+/* White text on success/green backgrounds - FIXED FOR DARK GREEN */
 .bg-success, .bg-success .text-dark, .bg-success .text-black,
 .text-bg-success,
 .table-success,
 .alert-success,
 .btn-success,
 .badge-success {
+    color: #ffffff !important;
+    background-color: #155724 !important; /* Dark green instead of light green */
+}
+
+/* Specific alert-success fixes for banners */
+.alert-success {
+    background-color: #155724 !important; /* Dark green */
+    border-color: #0f4419 !important; /* Darker border */
+    color: #ffffff !important;
+}
+
+.alert-success h1, .alert-success h2, .alert-success h3, .alert-success h4, .alert-success h5, .alert-success h6,
+.alert-success p, .alert-success span, .alert-success div, .alert-success i {
     color: #ffffff !important;
 }
 
@@ -186,6 +199,41 @@ img[src*="article"],
 .navbar-dark .navbar-nav .nav-link,
 .navbar-dark .navbar-brand,
 .navbar-dark .navbar-toggler-icon {
+    color: #ffffff !important;
+}
+
+/* Navigation submenu fixes - NO MORE WHITE ON WHITE */
+.navbar .dropdown-menu {
+    background-color: #212529 !important; /* Dark background for all dropdowns */
+    border: 1px solid #495057 !important;
+}
+
+.navbar .dropdown-menu .dropdown-item {
+    color: #ffffff !important; /* White text on dark background */
+    background-color: transparent !important;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    background-color: #495057 !important; /* Light gray hover on dark */
+    color: #ffffff !important;
+}
+
+.navbar .dropdown-menu .dropdown-item.active {
+    background-color: #0d6efd !important; /* Blue for active items */
+    color: #ffffff !important;
+}
+
+/* Specific navbar dark theme enforcement */
+.navbar-dark .navbar-nav .nav-link.dropdown-toggle {
+    color: #ffffff !important;
+}
+
+.navbar-dark .navbar-nav .dropdown-menu {
+    background-color: #212529 !important;
+}
+
+.navbar-dark .navbar-nav .dropdown-menu .dropdown-item {
     color: #ffffff !important;
 }
 

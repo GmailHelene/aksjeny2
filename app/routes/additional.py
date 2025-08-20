@@ -16,7 +16,7 @@ def subscription():
         'message': 'Abonnement-side fungerer!',
         'plans': [
             {'name': 'Basic', 'price': '199 kr/mnd'},
-            {'name': 'Pro', 'price': '399 kr/mnd'},
+            {'name': 'Pro', 'price': '249 kr/mnd'},
             {'name': 'Pro Årlig', 'price': '2999 kr/år'}
         ]
     })

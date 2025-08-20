@@ -566,11 +566,31 @@ class WatchlistAnalyzer:
         return recommendations
 
 @watchlist_bp.route('/')
-@login_required
+@demo_access
 def index():
     """Hovedside for watchlist"""
+    if not current_user.is_authenticated:
+        # Demo mode - show demo watchlists
+        demo_watchlists = [
+            {
+                'id': 1,
+                'name': 'Mine favoritter',
+                'description': 'Demo watchlist',
+                'stock_count': 5,
+                'created_at': datetime.now(),
+                'stocks': [
+                    {'symbol': 'EQNR.OL', 'name': 'Equinor', 'price': 280.5, 'change': 2.1},
+                    {'symbol': 'DNB.OL', 'name': 'DNB Bank', 'price': 195.8, 'change': -1.2},
+                    {'symbol': 'AAPL', 'name': 'Apple', 'price': 175.3, 'change': 3.5},
+                    {'symbol': 'TSLA', 'name': 'Tesla', 'price': 245.7, 'change': -5.2},
+                    {'symbol': 'MSFT', 'name': 'Microsoft', 'price': 378.9, 'change': 1.8}
+                ]
+            }
+        ]
+        return render_template('watchlist/index.html', watchlists=demo_watchlists, demo_mode=True)
+    
     watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
-    return render_template('watchlist/index.html', watchlists=watchlists)
+    return render_template('watchlist/index.html', watchlists=watchlists, demo_mode=False)
 
 @watchlist_bp.route('/create', methods=['GET', 'POST'])
 @login_required

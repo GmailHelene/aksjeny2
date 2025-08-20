@@ -346,6 +346,9 @@ def register_blueprints(app):
         ('.routes.portfolio_analytics', 'portfolio_analytics', '/portfolio-analytics'),
         ('.routes.notifications', 'notifications_bp', '/notifications'),
         ('.routes.notifications', 'notifications_web_bp', None),
+        ('.routes.norwegian_intel', 'norwegian_intel', '/norwegian-intel'),
+        ('.routes.daily_view', 'daily_view', '/daily-view'),
+        ('.routes.forum', 'forum', '/forum'),
     ]
     
     app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")

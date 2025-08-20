@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Market View - {{ date.strftime('%d.%m.%Y') }} | Aksjeradar{% endblock %}
+{% block description %}Dagens markedssammendrag, nøkkelhendelser og analyser for Oslo Børs og globale markeder{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5">📈 Daily Market View</h1>
+                    <p class="lead text-muted">{{ date.strftime('%d. %B %Y') }} - Dagens markedssammendrag</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success fs-6">Live</span>
+                    <br>
+                    <small class="text-muted">Oppdatert {{ date.strftime('%H:%M') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Insights -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🔥 Dagens Markedsnyheter</h4>
+                </div>
+                <div class="card-body">
+                    {% for insight in insights %}
+                    <div class="d-flex align-items-start mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="flex-shrink-0 me-3">
+                            <span class="badge bg-{% if insight.impact == 'Meget Positiv' %}success{% elif insight.impact == 'Positiv' %}info{% elif insight.impact == 'Negativ' %}danger{% else %}secondary{% endif %} rounded-pill">
+                                {{ insight.time }}
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ insight.title }}</h6>
+                            <p class="mb-2 text-muted">{{ insight.summary }}</p>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-outline-primary me-2">{{ insight.category }}</span>
+                                <span class="badge bg-{% if insight.impact == 'Meget Positiv' %}success{% elif insight.impact == 'Positiv' %}info{% elif insight.impact == 'Negativ' %}danger{% else %}secondary{% endif %} me-2">
+                                    {{ insight.impact }}
+                                </span>
+                                <small class="text-muted">
+                                    Berører: 
+                                    {% for stock in insight.affected_stocks %}
+                                        <strong>{{ stock }}</strong>{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Market Movers -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">📈 Dagens Vinnere</h5>
+                </div>
+                <div class="card-body">
+                    {% for stock in movers.gainers %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ stock.ticker }}</strong>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success fw-bold">{{ stock.change }}</div>
+                            <small class="text-muted">{{ stock.price }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">📉 Dagens Tapere</h5>
+                </div>
+                <div class="card-body">
+                    {% for stock in movers.losers %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ stock.ticker }}</strong>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-danger fw-bold">{{ stock.change }}</div>
+                            <small class="text-muted">{{ stock.price }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Economic Calendar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">📅 Økonomisk Kalender - I dag</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tid</th>
+                                    <th>Hendelse</th>
+                                    <th>Viktighet</th>
+                                    <th>Forventet</th>
+                                    <th>Forrige</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in events %}
+                                <tr>
+                                    <td><strong>{{ event.time }}</strong></td>
+                                    <td>{{ event.event }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if event.importance == 'Høy' %}danger{% elif event.importance == 'Medium' %}warning{% else %}secondary{% endif %}">
+                                            {{ event.importance }}
+                                        </span>
+                                    </td>
+                                    <td>{{ event.expected }}</td>
+                                    <td class="text-muted">{{ event.previous }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analysis Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">🧐 Dagens Markedsanalyse</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Oslo Børs viser mixed signaler i dag med sterke bevegelser i olje- og banksektoren. 
+                        Økte oljepriser støtter energiaksjer, mens bankenes kvartalstall gir positive impulser. 
+                        Regjeringens forslag til nye skatteregler skaper usikkerhet i olje- og gasssektoren.
+                    </p>
+                    <p>
+                        <strong>Nøkkelfaktorer å følge:</strong>
+                    </p>
+                    <ul>
+                        <li>Brent crude prisutvikling og geopolitiske faktorer</li>
+                        <li>Norges Banks rentebeslutning klokka 14:30</li>
+                        <li>Internasjonale markeders påvirkning på Oslo Børs</li>
+                        <li>Valutakurser, spesielt USD/NOK og EUR/NOK</li>
+                    </ul>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('daily_view.daily_analysis', date=date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">
+                            📊 Les Full Analyse
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Updates Notification -->
+<div id="live-updates" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <!-- Live updates will be inserted here via JavaScript -->
+</div>
+
+<script>
+// Live updates functionality
+function loadLiveUpdates() {
+    fetch('/daily-view/api/live-updates')
+        .then(response => response.json())
+        .then(data => {
+            // Display latest update as toast notification
+            if (data.length > 0) {
+                const latest = data[0];
+                showToast(latest.message, latest.type);
+            }
+        })
+        .catch(error => console.log('Live updates unavailable'));
+}
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast show" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">Live Update</strong>
+                <small class="text-muted">nå</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('live-updates').innerHTML = toastHtml;
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        const toast = document.querySelector('.toast');
+        if (toast) toast.remove();
+    }, 5000);
+}
+
+// Load live updates every 2 minutes
+setInterval(loadLiveUpdates, 120000);
+loadLiveUpdates(); // Initial load
+</script>
+{% endblock %}

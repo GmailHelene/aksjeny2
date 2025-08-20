@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from ..services.data_service import DataService, YFINANCE_AVAILABLE
 from ..services.analysis_service import AnalysisService
 from ..services.usage_tracker import usage_tracker
-from ..utils.access_control import access_required, demo_access
+from ..utils.access_control import access_required, demo_access, subscription_required
 from ..models.favorites import Favorites
 from ..services.notification_service import NotificationService
 from ..utils.exchange_utils import get_exchange_url
@@ -29,7 +29,7 @@ def index():
 
 
 @stocks.route('/list/oslo', strict_slashes=False)
-@access_required
+@demo_access
 def list_oslo():
     """List Oslo Stock Exchange stocks - accessible in demo mode"""
     try:
@@ -49,6 +49,10 @@ def list_oslo():
         insider_trades = DataService.get_insider_trades('oslo') or []
         ai_recommendations = DataService.get_ai_recommendations('oslo') or []
         
+        # Get real market status
+        market_status = DataService.get_market_status()
+        oslo_status = market_status.get('oslo_bors', {}) if market_status else {}
+        
         return render_template('stocks/oslo_dedicated.html',
                              stocks=stocks,
                              top_gainers=top_gainers,
@@ -56,6 +60,7 @@ def list_oslo():
                              most_active=most_active,
                              insider_trades=insider_trades,
                              ai_recommendations=ai_recommendations,
+                             market_status=oslo_status,
                              market='Oslo Børs',
                              market_type='oslo',
                              category='oslo')
@@ -64,6 +69,9 @@ def list_oslo():
         # Use guaranteed fallback data even on exception
         try:
             stocks = DataService._get_guaranteed_oslo_data() or {}
+            # Get market status even in fallback
+            market_status = DataService.get_market_status()
+            oslo_status = market_status.get('oslo_bors', {}) if market_status else {}
             return render_template('stocks/oslo_dedicated.html',
                                  stocks=stocks,
                                  top_gainers=[],
@@ -71,6 +79,7 @@ def list_oslo():
                                  most_active=[],
                                  insider_trades=[],
                                  ai_recommendations=[],
+                                 market_status=oslo_status,
                                  market='Oslo Børs',
                                  market_type='oslo',
                                  category='oslo')
@@ -81,10 +90,11 @@ def list_oslo():
                                  market='Oslo Børs',
                                  market_type='oslo',
                                  category='oslo',
+                                 market_status={'status': 'Ukjent'},
                                  error=True)
 
 @stocks.route('/list/global')
-@access_required
+@subscription_required
 def global_list():
     """Global stocks"""
     try:
@@ -138,6 +148,7 @@ def global_list():
                                  error=True)
 
 @stocks.route('/list/crypto')
+@demo_access
 def list_crypto():
     """Crypto currencies"""
     try:
@@ -241,7 +252,7 @@ def list_index():
                              error=True)
 
 @stocks.route('/list/currency')
-@access_required
+@demo_access
 def list_currency():
     """Currency rates - demo accessible"""
     try:
@@ -272,11 +283,13 @@ def list_currency():
                              error=True)
 
 @stocks.route('/<symbol>')
+@subscription_required
 def stock_symbol(symbol):
     """Direct stock access via symbol - redirects to details"""
     return redirect(url_for('stocks.details', symbol=symbol))
 
 @stocks.route('/details/<symbol>')
+@demo_access
 def details(symbol):
     """Stock details page with complete analysis data"""
     try:

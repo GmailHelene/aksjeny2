@@ -75,10 +75,13 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white">
+            <div class="card {% if market_status.get('is_open') %}bg-success{% else %}bg-secondary{% endif %} text-white">
                 <div class="card-body text-center">
-                    <h4>ÅPEN</h4>
+                    <h4>{{ market_status.get('status', 'UKJENT') }}</h4>
                     <small>Markedsstatus</small>
+                    {% if market_status.get('local_time') %}
+                    <div class="small mt-1">{{ market_status.get('local_time') }}</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -172,8 +175,14 @@
                                                title="AI Analyse">
                                                 <i class="bi bi-robot"></i>
                                             </a>
-                                            <button class="btn btn-sm btn-outline-warning" 
-                                                    onclick="toggleFavorite('{{ symbol }}')"
+                                            <button class="btn btn-sm btn-success external-buy-btn" 
+                                                    data-ticker="{{ symbol }}"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Kjøp aksje">
+                                                <i class="bi bi-cart-plus"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning favorite-btn" 
+                                                    data-ticker="{{ symbol }}"
                                                     data-bs-toggle="tooltip" 
                                                     title="Legg til favoritter">
                                                 <i class="bi bi-star"></i>
@@ -257,29 +266,29 @@
 </div>
 
 <script>
-function toggleFavorite(symbol) {
-    fetch(`/stocks/api/favorites/toggle/${symbol}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update button appearance
-            const btn = document.querySelector(`[onclick="toggleFavorite('${symbol}')"]`);
-            if (data.favorited) {
-                btn.classList.add('btn-warning');
-                btn.classList.remove('btn-outline-warning');
+// External buy button functionality - redirect to external broker
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize favorite button states using the portfolioActionsManager
+    if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
+        window.portfolioActionsManager.initializeFavoriteButtonStates();
+    }
+    
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.getAttribute('data-ticker');
+            // Redirect to external broker based on ticker
+            let brokerUrl;
+            if (ticker.endsWith('.OL')) {
+                // Norwegian stocks - redirect to Norwegian broker
+                brokerUrl = `https://www.nordnet.no/market/stocks/${ticker.replace('.OL', '')}`;
             } else {
-                btn.classList.remove('btn-warning');
-                btn.classList.add('btn-outline-warning');
+                // International stocks - redirect to international broker
+                brokerUrl = `https://www.etrade.com/stock/${ticker}`;
             }
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+            window.open(brokerUrl, '_blank');
+        });
+    });
+});
 
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function () {

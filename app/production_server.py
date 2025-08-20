@@ -107,7 +107,7 @@ def demo():
         },
         'upgrade_info': {
             'basic_plan': '199 kr/mnd',
-            'pro_plan': '399 kr/mnd',
+            'pro_plan': '249 kr/mnd',
             'annual_savings': '27% ved årlig betaling'
         }
     })
@@ -153,7 +153,7 @@ def pricing():
             },
             'pro': {
                 'name': 'Pro',
-                'price': '399 kr/mnd',
+                'price': '249 kr/mnd',
                 'features': [
                     'Alt i Basic',
                     'AI-anbefalinger',
