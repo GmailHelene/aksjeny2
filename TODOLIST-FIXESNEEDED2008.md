@@ -19,6 +19,26 @@
 - [ ] **Compare visualisering** - Fiks manglende grafer
 - [ ] **Sentiment analyse** - Fiks teknisk
 
+Kandu nå hjelpe meg med å implementere dette ferdig:
+Add The ConveyThis Integration To Your Website!
+Set up ConveyThis on your website by following the next simple steps!
+
+Visit the documentation  or video tutorial  for more information.
+
+Copy and paste the following JavaScript code in your HTML page just before your </head> tag.
+
+<!-- ConveyThis Script Start -->
+<script src="//cdn.conveythis.com/javascript/conveythis.js?api_key=pub_85496d2f253bff365fbf0fa9429277e3"></script>
+<!-- ConveyThis Script End -->
+
+
+https://aksjeradar.trade/analysis/ai-predictions?ticker=aapl
+På disse sidene så savner jeg analyse-menyen som er på de andre sidene"! (Sjekk at analyse menyen finnes på alle analysesider, undersider, analyse tickers sider)
+
+https://aksjeradar.trade/analysis/ai-predictions?ticker=aapl (eksempelticker)
+Her ønsker jeg at det også er lenker/knapper som er relevante ved de ulike tickers
+
+
 oversettelseknappen i footer for norsk/engelsk ,kan vi implementere denne med ovversettelse løsningen vår?
 
 Og når man høyreklikker og velger f.eks engelsk språk, så må man gjøre det på nytt for hver side man er inne på, altså hver underside av aksjeradar.trade, dette er veldig tungivnt, går det an at overtesslesespråket man har valgt gjelder og varer over hele appen, alle undrside,rfor brukerens session?

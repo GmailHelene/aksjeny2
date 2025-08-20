@@ -183,14 +183,14 @@ class PortfolioActionsManager {
      * Initialize favorite button states on page load
      */
     async initializeFavoriteButtonStates() {
-        const favoriteButtons = document.querySelectorAll('#add-to-watchlist, .favorite-btn, .watchlist-btn');
+        const favoriteButtons = document.querySelectorAll('#add-to-watchlist, .favorite-btn, .watchlist-btn, .btn-star-favorite');
         
         for (const button of favoriteButtons) {
-            const ticker = button.dataset.ticker;
+            const ticker = button.dataset.ticker || button.onclick?.toString().match(/'([^']+)'/)?.[1];
             if (ticker) {
                 try {
                     const isFavorite = await this.checkFavoriteStatus(ticker);
-                    this.updateFavoriteButton(button, isFavorite);
+                    this.updateFavoriteButtonState(button, isFavorite);
                 } catch (error) {
                     console.error(`Error initializing favorite state for ${ticker}:`, error);
                 }
@@ -208,6 +208,27 @@ class PortfolioActionsManager {
         } else {
             button.innerHTML = '<i class="bi bi-star"></i> Favoritt';
             button.className = 'btn btn-outline-warning';
+        }
+    }
+
+    /**
+     * Update favorite button state (for different button types)
+     */
+    updateFavoriteButtonState(button, isFavorite) {
+        if (button.classList.contains('btn-star-favorite')) {
+            // Handle star buttons in stock list
+            if (isFavorite) {
+                button.innerHTML = '<i class="bi bi-star-fill"></i>';
+                button.classList.add('btn-warning');
+                button.classList.remove('text-white');
+            } else {
+                button.innerHTML = '<i class="bi bi-star"></i>';
+                button.classList.remove('btn-warning');
+                button.classList.add('text-white');
+            }
+        } else {
+            // Handle regular favorite buttons
+            this.updateFavoriteButton(button, isFavorite);
         }
     }
 

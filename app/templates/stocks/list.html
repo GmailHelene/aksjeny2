@@ -130,7 +130,7 @@ Oslo Børs, norske aksjer, EQNR, DNB, TEL, MOWI, NEL, aksjekurser Norge, børs O
                                                     <button class="btn btn-sm btn-success external-buy-btn" data-ticker="{{ ticker }}">
                                                         <i class="bi bi-plus-circle"></i> Kjøp
                                                     </button>
-                                                    <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" onclick="toggleFavorite('{{ ticker }}', this)">
+                                                    <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" data-ticker="{{ ticker }}" onclick="toggleFavorite('{{ ticker }}', this)">
                                                         <i class="bi bi-star"></i>
                                                     </button>
                                                     <a href="{{ url_for('analysis.technical', symbol=ticker) }}" class="btn btn-sm btn-outline-secondary">

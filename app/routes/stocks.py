@@ -825,7 +825,7 @@ def add_to_favorites():
         return jsonify({'error': 'Failed to add to favorites'}), 500
 
 @stocks.route('/api/favorites/remove', methods=['POST'])
-@login_required
+@demo_access
 def remove_from_favorites():
     """Remove stock from favorites"""
     try:
@@ -833,6 +833,11 @@ def remove_from_favorites():
         symbol = data.get('symbol')
         if not symbol:
             return jsonify({'error': 'Symbol required'}), 400
+            
+        if not current_user.is_authenticated:
+            # Demo users - show success message but don't actually save
+            return jsonify({'success': True, 'message': f'{symbol} fjernet fra favoritter (demo-modus)'})
+            
         # Check if in favorites
         if not Favorites.is_favorite(current_user.id, symbol):
             return jsonify({'success': False, 'message': f'{symbol} er ikke i favoritter'})

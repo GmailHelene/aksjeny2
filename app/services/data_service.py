@@ -2724,14 +2724,20 @@ class DataService:
                     logger.info(f"✅ Early break: Got {successful_fetches} real stocks, sufficient for Oslo Børs")
                     break
             
-            # If we got good amount of real data, return it
-            if successful_fetches >= 15:  # Reduced threshold but still substantial
-                logger.info(f"✅ Oslo Børs overview loaded with {successful_fetches} REAL stocks from get_stock_info")
-                return oslo_stocks
+            # Always combine real data with guaranteed data to ensure we have 40+ stocks
+            logger.info(f"🔄 Got {successful_fetches} real stocks, combining with guaranteed data to ensure 40+ stocks")
+            guaranteed_data = DataService._get_guaranteed_oslo_data()
             
-            # Only fallback to enhanced demo data if insufficient real data
-            logger.warning(f"🔄 Only got {successful_fetches} real stocks, using enhanced fallback")
-            return DataService._get_guaranteed_oslo_data()
+            # Convert guaranteed_data to proper format and combine with any real data we got
+            combined_stocks = oslo_stocks.copy()
+            existing_tickers = set(oslo_stocks.keys())
+            
+            for ticker, info in guaranteed_data.items():
+                if ticker not in existing_tickers:
+                    combined_stocks[ticker] = DataService._create_guaranteed_stock_data(ticker, info)
+            
+            logger.info(f"✅ Combined Oslo data: {len(combined_stocks)} total stocks ({successful_fetches} real + {len(guaranteed_data) - successful_fetches} guaranteed)")
+            return combined_stocks
             
         except Exception as e:
             logger.error(f"Error in get_oslo_bors_overview: {e}")
@@ -2816,76 +2822,52 @@ class DataService:
             'OPERA.OL': {'name': 'Opera Limited', 'base_price': 85.60, 'sector': 'Technology'},
             'PARETO.OL': {'name': 'Pareto Bank ASA', 'base_price': 58.80, 'sector': 'Finance'}
         }
-            'AKERBP.OL': {'name': 'Aker BP ASA', 'base_price': 247.90, 'sector': 'Oil & Gas'},
-            'FRONTL.OL': {'name': 'Frontline Ltd', 'base_price': 146.30, 'sector': 'Maritime'},
-            'GOGL.OL': {'name': 'Golden Ocean Group Limited', 'base_price': 98.75, 'sector': 'Shipping'},
-            'KOG.OL': {'name': 'Klaveness Combination Carriers ASA', 'base_price': 78.20, 'sector': 'Maritime'},
-            'LSG.OL': {'name': 'Lerøy Seafood Group ASA', 'base_price': 58.90, 'sector': 'Seafood'},
-            'MPCC.OL': {'name': 'MPC Container Ships ASA', 'base_price': 19.44, 'sector': 'Shipping'},
-            'NAS.OL': {'name': 'Norwegian Air Shuttle ASA', 'base_price': 12.58, 'sector': 'Aviation'},
-            'NRC.OL': {'name': 'Norwegian Cruise Line Holdings Ltd', 'base_price': 142.35, 'sector': 'Travel'},
-            'ORK.OL': {'name': 'Orkla ASA', 'base_price': 81.46, 'sector': 'Consumer Goods'},
-            'PCIB.OL': {'name': 'Protector Forsikring ASA', 'base_price': 89.20, 'sector': 'Insurance'},
-            'QFUEL.OL': {'name': 'Quest Fuel ASA', 'base_price': 5.68, 'sector': 'Energy'},
-            'RAKP.OL': {'name': 'Rakkestad Sparebank', 'base_price': 248.00, 'sector': 'Banking'},
-            'SUBC.OL': {'name': 'Subsea 7 SA', 'base_price': 134.80, 'sector': 'Energy Services'},
-            'TIDE.OL': {'name': 'Tidewater Inc', 'base_price': 87.45, 'sector': 'Energy Services'},
-            'ULTI.OL': {'name': 'Ultimovacs ASA', 'base_price': 28.75, 'sector': 'Biotech'},
-            'VAREG.OL': {'name': 'Vår Energi ASA', 'base_price': 35.94, 'sector': 'Oil & Gas'},
-            'BAKKA.OL': {'name': 'Bakkavor Group plc', 'base_price': 156.50, 'sector': 'Food'},
-            'BWLPG.OL': {'name': 'BW LPG Limited', 'base_price': 89.60, 'sector': 'Gas Shipping'},
-            'GRONG.OL': {'name': 'Grong Sparebank', 'base_price': 165.00, 'sector': 'Banking'},
-            'HUNTER.OL': {'name': 'Hunter Group ASA', 'base_price': 12.40, 'sector': 'Shipping'},
-            'KAHOT.OL': {'name': 'Kahoot! ASA', 'base_price': 28.66, 'sector': 'EdTech'}
-        }
         
-        result = {}
-        current_time = datetime.now()
-        
+        # Generate realistic stock data for each company
+        stocks = {}
         for ticker, info in oslo_companies.items():
-            # Generate realistic intraday variation
-            seed = abs(hash(ticker + str(current_time.date()))) % 1000
-            price_variation = ((seed % 101) - 50) / 100  # -0.5 to +0.5
-            current_price = round(info['base_price'] * (1 + price_variation * 0.03), 2)
+            hash_seed = abs(hash(ticker)) % 1000
+            price = info['base_price']
+            change = round(((hash_seed % 201) - 100) / 50, 2)  # -2% to +2%
             
-            # Calculate changes
-            change = round(current_price - info['base_price'], 2)
-            change_percent = round((change / info['base_price']) * 100, 2)
-            
-            # Calculate OHLC values
-            day_range = current_price * 0.02  # 2% daily range
-            open_price = round(current_price + ((seed % 21) - 10) / 1000 * current_price, 2)
-            high_price = round(max(current_price, open_price) + (seed % 10) / 1000 * current_price, 2)
-            low_price = round(min(current_price, open_price) - (seed % 8) / 1000 * current_price, 2)
-            
-            # Volume based on price and company size
-            volume_base = max(1, int(1000 / info['base_price']))
-            volume = f"{volume_base + (seed % 3)}.{seed % 10}M"
-            
-            # Market cap calculation
-            shares_outstanding = (seed % 500 + 100) * 1000000  # 100M to 600M shares
-            market_cap_nok = int(current_price * shares_outstanding)
-            market_cap = f"{market_cap_nok:,} NOK" if market_cap_nok < 1e9 else f"{market_cap_nok/1e9:.1f}B NOK"
-            
-            result[ticker] = {
+            stocks[ticker] = {
                 'name': info['name'],
-                'last_price': current_price,
+                'last_price': price,
                 'change': change,
-                'change_percent': change_percent,
-                'open': open_price,
-                'high': high_price,
-                'low': low_price,
-                'volume': volume,
-                'market_cap': market_cap,
+                'change_percent': round((change / price) * 100, 2),
+                'open': round(price * (0.995 + (hash_seed % 10) / 1000), 2),
+                'high': round(price * (1.005 + (hash_seed % 25) / 1000), 2),
+                'low': round(price * (0.985 + (hash_seed % 15) / 1000), 2),
+                'volume': f'{1 + (hash_seed % 5)}.{hash_seed % 10}M',
+                'market_cap': f'{int(price * (100000 + hash_seed * 10000)):,} NOK',
+                'pe_ratio': round(10 + (hash_seed % 25), 1),
+                'dividend_yield': round((hash_seed % 60) / 10, 1),
+                'beta': round(0.5 + (hash_seed % 30) / 10, 2),
                 'sector': info['sector'],
-                'pe_ratio': round(12 + (seed % 20), 1),
-                'dividend_yield': round((seed % 50) / 10, 1),
-                'beta': round(0.7 + (seed % 15) / 10, 2),
-                'signal': ['BUY', 'HOLD', 'SELL', 'STRONG_BUY', 'STRONG_SELL'][seed % 5],
-                'source': 'Enhanced Market Data'
+                'source': 'GUARANTEED DATA'
             }
         
-        return result
+        return stocks
+    
+    @staticmethod
+    def _create_guaranteed_stock_data(ticker, info):
+        """Create stock data entry from guaranteed data info"""
+        hash_seed = abs(hash(ticker)) % 1000
+        price = info['base_price']
+        change = round(((hash_seed % 201) - 100) / 50, 2)
+        
+        return {
+            'name': info['name'],
+            'last_price': price,
+            'change': change,
+            'change_percent': round((change / price) * 100, 2),
+            'open': round(price * (0.995 + (hash_seed % 10) / 1000), 2),
+            'high': round(price * (1.005 + (hash_seed % 25) / 1000), 2),
+            'low': round(price * (0.985 + (hash_seed % 15) / 1000), 2),
+            'volume': f'{1 + (hash_seed % 5)}.{hash_seed % 10}M',
+            'market_cap': f'{int(price * (100000 + hash_seed * 10000)):,} NOK',
+            'source': 'GUARANTEED DATA'
+        }
 
     @staticmethod
     def _get_enhanced_fallback_global():
