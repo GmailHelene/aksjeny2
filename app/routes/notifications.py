@@ -170,10 +170,39 @@ def api_unread_count():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @notifications_bp.route('/settings', methods=['GET', 'POST'])
-@login_required
+@demo_access
 def settings():
     """Notification settings page"""
     try:
+        # For demo users, provide a simulated experience
+        if not current_user.is_authenticated:
+            if request.method == 'POST':
+                if request.is_json:
+                    return jsonify({'success': True, 'message': 'Demo: Settings updated'})
+                else:
+                    flash('Demo: Notification settings updated!', 'success')
+                    return redirect(url_for('notifications.settings'))
+            
+            # Return demo settings for unauthenticated users
+            demo_preferences = {
+                'email_enabled': True,
+                'push_enabled': False,
+                'email_price_alerts': True,
+                'email_ai_predictions': False,
+                'email_portfolio_updates': True,
+                'email_news_alerts': False,
+                'email_market_alerts': True,
+                'push_price_alerts': False,
+                'push_ai_predictions': False,
+                'push_portfolio_updates': False,
+                'push_news_alerts': False,
+                'push_market_alerts': False,
+                'quiet_hours_enabled': True,
+                'quiet_hours_start': '22:00',
+                'quiet_hours_end': '08:00'
+            }
+            return render_template('notifications/settings.html', preferences=demo_preferences)
+        
         if request.method == 'POST':
             # Handle both form and JSON data submission
             if request.is_json:

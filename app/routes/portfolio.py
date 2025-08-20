@@ -8,7 +8,7 @@ import os
 
 from ..models import Portfolio, PortfolioStock, StockTip, Watchlist, WatchlistStock
 from ..extensions import db
-from ..utils.access_control import access_required
+from ..utils.access_control import access_required, demo_access
 from ..utils.error_handler import (
     handle_api_error, format_number_norwegian, format_currency_norwegian,
     format_percentage_norwegian, safe_api_call, validate_stock_symbol,
@@ -627,9 +627,19 @@ def view_portfolio(id):
         return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/portfolio/<int:id>/add', methods=['GET', 'POST'])
-@access_required
+@demo_access
 def add_stock_to_portfolio(id):
     """Add a stock to a specific portfolio"""
+    # For demo users, provide a simulated experience
+    if not current_user.is_authenticated:
+        if request.method == 'POST':
+            return jsonify({
+                'success': True,
+                'message': 'Demo: Stock addition simulated'
+            })
+        # Return a demo template or redirect
+        return render_template('portfolio/add_stock_demo.html', portfolio_id=id)
+    
     portfolio = Portfolio.query.get_or_404(id)
 
     # Sjekk eierskap

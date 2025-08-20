@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from ..models.user import User
 from ..models.watchlist import Watchlist, WatchlistItem
 from ..extensions import db, mail
+from ..utils.access_control import demo_access
 from flask_mailman import EmailMessage
 from datetime import datetime, timedelta
 try:
@@ -768,10 +769,17 @@ def send_weekly_email(user, report_data):
         current_app.logger.error(f"Feil ved sending av e-post til {user.email}: {e}")
 
 @watchlist_bp.route('/delete/<int:id>', methods=['POST'])
-@login_required
+@demo_access
 def delete_watchlist(id):
     """Slett en watchlist"""
     try:
+        # For demo users, just return success without actual deletion
+        if not current_user.is_authenticated:
+            return jsonify({
+                'success': True,
+                'message': 'Demo: Watchlist deletion simulated'
+            })
+        
         watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first_or_404()
         
         # Slett alle items først
