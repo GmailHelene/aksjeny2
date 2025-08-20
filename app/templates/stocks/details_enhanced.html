@@ -309,13 +309,13 @@
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>RSI (14)</span>
-                                            <span class="badge {% if technical_data.rsi > 70 %}bg-danger{% elif technical_data.rsi < 30 %}bg-success{% else %}bg-secondary{% endif %}">
-                                                {{ "%.1f"|format(technical_data.rsi) }}
+                                            <span class="badge {% if technical_data.rsi|default(50) > 70 %}bg-danger{% elif technical_data.rsi|default(50) < 30 %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ "%.1f"|format(technical_data.rsi|default(50)) }}
                                             </span>
                                         </div>
                                         <div class="progress mt-1" style="height: 5px;">
-                                            <div class="progress-bar {% if technical_data.rsi > 70 %}bg-danger{% elif technical_data.rsi < 30 %}bg-success{% else %}bg-secondary{% endif %}" 
-                                                 style="width: {{ technical_data.rsi }}%"></div>
+                                            <div class="progress-bar {% if technical_data.rsi|default(50) > 70 %}bg-danger{% elif technical_data.rsi|default(50) < 30 %}bg-success{% else %}bg-secondary{% endif %}" 
+                                                 style="width: {{ technical_data.rsi|default(50) }}%"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -325,11 +325,11 @@
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>MACD</span>
-                                            <span class="badge {% if technical_data.macd > 0 %}bg-success{% else %}bg-danger{% endif %}">
-                                                {{ "%.3f"|format(technical_data.macd) }}
+                                            <span class="badge {% if technical_data.macd|default(0) > 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ "%.3f"|format(technical_data.macd|default(0)) }}
                                             </span>
                                         </div>
-                                        <div class="small text-muted">Signal: {{ "%.3f"|format(technical_data.macd_signal) }}</div>
+                                        <div class="small text-muted">Signal: {{ "%.3f"|format(technical_data.macd_signal|default(0)) }}</div>
                                     </div>
                                 </div>
                                 
@@ -338,11 +338,11 @@
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>SMA 20</span>
-                                            <span class="badge bg-info">{{ "%.2f"|format(technical_data.sma_20) }}</span>
+                                            <span class="badge bg-info">{{ "%.2f"|format(technical_data.sma_20|default(100)) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between mt-1">
                                             <span>SMA 50</span>
-                                            <span class="badge bg-info">{{ "%.2f"|format(technical_data.sma_50) }}</span>
+                                            <span class="badge bg-info">{{ "%.2f"|format(technical_data.sma_50|default(100)) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -352,11 +352,11 @@
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>Bollinger Upper</span>
-                                            <span class="badge bg-warning">{{ "%.2f"|format(technical_data.bollinger_upper) }}</span>
+                                            <span class="badge bg-warning">{{ "%.2f"|format(technical_data.bollinger_upper|default(105)) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between mt-1">
                                             <span>Bollinger Lower</span>
-                                            <span class="badge bg-warning">{{ "%.2f"|format(technical_data.bollinger_lower) }}</span>
+                                            <span class="badge bg-warning">{{ "%.2f"|format(technical_data.bollinger_lower|default(95)) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -364,10 +364,10 @@
                                 <!-- Signal -->
                                 <div class="col-12">
                                     <div class="alert text-center border-0
-                                        {% if technical_data.signal == 'BUY' %}bg-dark-green text-white{% elif technical_data.signal == 'SELL' %}alert-danger{% else %}alert-warning{% endif %}"
-                                        style="{% if technical_data.signal == 'BUY' %}background-color: #14532d; color: #fff;{% endif %}">
-                                        <strong>Signal: {{ technical_data.signal }}</strong>
-                                        <br><small>{{ technical_data.signal_strength }} - {{ technical_data.signal_reason }}</small>
+                                        {% if technical_data.signal|default('HOLD') == 'BUY' %}bg-dark-green text-white{% elif technical_data.signal|default('HOLD') == 'SELL' %}alert-danger{% else %}alert-warning{% endif %}"
+                                        style="{% if technical_data.signal|default('HOLD') == 'BUY' %}background-color: #14532d; color: #fff;{% endif %}">
+                                        <strong>Signal: {{ technical_data.signal|default('HOLD') }}</strong>
+                                        <br><small>{{ technical_data.signal_strength|default('Medium') }} - {{ technical_data.signal_reason|default('Demo data') }}</small>
                                     </div>
                                 </div>
                                 {% else %}

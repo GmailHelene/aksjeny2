@@ -329,6 +329,15 @@ def details(symbol):
                 technical_data = {
                     'rsi': 30.0 + (base_hash % 40),
                     'macd': -2.0 + (base_hash % 40) / 10,
+                    'macd_signal': -1.5 + (base_hash % 30) / 10,
+                    'bollinger_upper': current_price * (1.05 + (base_hash % 5) / 100),
+                    'bollinger_middle': current_price,
+                    'bollinger_lower': current_price * (0.95 - (base_hash % 5) / 100),
+                    'sma_20': current_price * (0.98 + (base_hash % 6) / 100),
+                    'sma_50': current_price * (0.95 + (base_hash % 8) / 100),
+                    'ema_12': current_price * (0.99 + (base_hash % 4) / 100),
+                    'stochastic_k': 20.0 + (base_hash % 60),
+                    'stochastic_d': 25.0 + (base_hash % 50),
                     'signal': stock_info.get('signal', 'HOLD'),
                     'signal_strength': 'Medium',
                     'signal_reason': 'Demo data - historical data unavailable'
@@ -338,6 +347,15 @@ def details(symbol):
             technical_data = {
                 'rsi': 30.0 + (base_hash % 40),
                 'macd': -2.0 + (base_hash % 40) / 10,
+                'macd_signal': -1.5 + (base_hash % 30) / 10,
+                'bollinger_upper': current_price * (1.05 + (base_hash % 5) / 100),
+                'bollinger_middle': current_price,
+                'bollinger_lower': current_price * (0.95 - (base_hash % 5) / 100),
+                'sma_20': current_price * (0.98 + (base_hash % 6) / 100),
+                'sma_50': current_price * (0.95 + (base_hash % 8) / 100),
+                'ema_12': current_price * (0.99 + (base_hash % 4) / 100),
+                'stochastic_k': 20.0 + (base_hash % 60),
+                'stochastic_d': 25.0 + (base_hash % 50),
                 'signal': stock_info.get('signal', 'HOLD'),
                 'signal_strength': 'Medium',
                 'signal_reason': 'Demo data - historical data unavailable'
