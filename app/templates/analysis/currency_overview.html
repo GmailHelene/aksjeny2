@@ -50,7 +50,7 @@
                     <div class="col-md-3">
                         <div class="text-center">
                             <h6 class="text-muted">Markedsstatus</h6>
-                            <h6 class="text-warning">Åpen</h6>
+                            <h6 id="currency-market-status"></h6>
                         </div>
                     </div>
                 </div>
@@ -201,6 +201,35 @@
             </div>
         </div>
     </div>
+
+    <script>
+    // Market status logic for currency markets (24/5)
+    function updateCurrencyMarketStatus() {
+        const marketStatus = document.getElementById('currency-market-status');
+        if (!marketStatus) return;
+
+        const now = new Date();
+        const weekday = now.getDay(); // 0=Sunday, 1=Monday, ..., 5=Friday, 6=Saturday
+        
+        // Forex markets are generally open 24/5 (Monday-Friday)
+        const isOpen = weekday >= 1 && weekday <= 5;
+        
+        if (isOpen) {
+            marketStatus.innerHTML = '<span class="badge bg-success">ÅPEN</span><small class="d-block text-muted">24/7 handel</small>';
+            marketStatus.className = 'text-success';
+        } else {
+            marketStatus.innerHTML = '<span class="badge bg-danger">STENGT</span><small class="d-block text-muted">Åpner mandag</small>';
+            marketStatus.className = 'text-danger';
+        }
+    }
+
+    // Update market status when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCurrencyMarketStatus();
+        // Update every minute
+        setInterval(updateCurrencyMarketStatus, 60000);
+    });
+    </script>
 
     <style>
         .flag-icon {
