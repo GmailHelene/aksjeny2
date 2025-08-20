@@ -178,3 +178,28 @@ Ensures white text on all dark/colored backgrounds across the entire site
 [style*="color: #333"][class*="bg-"] {
     color: #ffffff !important;
 }
+
+/* SPECIFIC FIX FOR HURTIGTILGANG LIVE DASHBOARD SECTION */
+.card-header.bg-gradient,
+.card-header.bg-gradient *,
+.card-header.bg-gradient h5,
+.card-header.bg-gradient .fw-bold,
+.card-header.bg-gradient small,
+.card-header.bg-gradient .opacity-90 {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+/* Ensure gradients with custom styles maintain white text */
+[style*="background: linear-gradient"] *,
+[style*="background: linear-gradient"] h1,
+[style*="background: linear-gradient"] h2,
+[style*="background: linear-gradient"] h3,
+[style*="background: linear-gradient"] h4,
+[style*="background: linear-gradient"] h5,
+[style*="background: linear-gradient"] h6,
+[style*="background: linear-gradient"] span,
+[style*="background: linear-gradient"] small {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
