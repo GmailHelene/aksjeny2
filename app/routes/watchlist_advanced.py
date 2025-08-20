@@ -822,8 +822,56 @@ def delete_watchlist(id):
             'error': 'Kunne ikke slette watchlist'
         }), 500
 
-@watchlist_bp.route('/settings')
+@watchlist_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def notification_settings():
     """Varslingsinnstillinger"""
-    return render_template('watchlist/settings.html', user=current_user)
+    if request.method == 'POST':
+        try:
+            # Get form data
+            form_data = request.form.to_dict()
+            
+            # Convert checkboxes to booleans (unchecked checkboxes don't send data)
+            settings = {
+                'price_alerts': 'price_alerts' in form_data,
+                'price_change_alerts': 'price_change_alerts' in form_data,
+                'news_alerts': 'news_alerts' in form_data,
+                'earnings_alerts': 'earnings_alerts' in form_data,
+                'analyst_alerts': 'analyst_alerts' in form_data,
+                'notification_frequency': form_data.get('notification_frequency', 'instant'),
+                'email_notifications': 'email_notifications' in form_data,
+                'push_notifications': 'push_notifications' in form_data
+            }
+            
+            # Update user notification settings
+            success = current_user.update_notification_settings(settings)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': 'Varslingsinnstillinger oppdatert!'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Kunne ikke oppdatere innstillinger'
+                }), 500
+                
+        except Exception as e:
+            current_app.logger.error(f"Error updating notification settings: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': 'Feil ved oppdatering av varselinnstillinger'
+            }), 500
+    
+    # GET request - load current settings
+    try:
+        user_settings = current_user.get_notification_settings()
+        return render_template('watchlist/settings.html', 
+                             user=current_user, 
+                             settings=user_settings)
+    except Exception as e:
+        current_app.logger.error(f"Error loading notification settings: {str(e)}")
+        return render_template('watchlist/settings.html', 
+                             user=current_user, 
+                             settings={})

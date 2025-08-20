@@ -81,6 +81,7 @@
                             <th>Anbefaling</th>
                             <th>Rating</th>
                             <th>Utbytte</th>
+                            <th>Handlinger</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,6 +117,19 @@
                                 </div>
                             </td>
                             <td>{{ "%.1f"|format(stock.dividend_yield) }}%</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/stocks/details/{{ stock.ticker }}" class="btn btn-outline-primary btn-sm" title="Se detaljer">
+                                        <i class="bi bi-info-circle"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="addToWatchlist('{{ stock.ticker }}')" title="Legg til i watchlist">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="createPriceAlert('{{ stock.ticker }}')" title="Opprett prisvarsel">
+                                        <i class="bi bi-bell"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -144,6 +158,7 @@
                             <th>Anbefaling</th>
                             <th>Rating</th>
                             <th>P/E</th>
+                            <th>Handlinger</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -179,6 +194,19 @@
                                 </div>
                             </td>
                             <td>{{ "%.1f"|format(stock.pe_ratio) if stock.pe_ratio else 'N/A' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/stocks/details/{{ stock.ticker }}" class="btn btn-outline-primary btn-sm" title="Se detaljer">
+                                        <i class="bi bi-info-circle"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="addToWatchlist('{{ stock.ticker }}')" title="Legg til i watchlist">
+                                        <i class="bi bi-star"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm" onclick="createPriceAlert('{{ stock.ticker }}')" title="Opprett prisvarsel">
+                                        <i class="bi bi-bell"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -363,5 +391,92 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addToWatchlist(symbol) {
+    if (!symbol) return;
+    
+    fetch('/watchlist/api/watchlist/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            symbol: symbol.toUpperCase()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`${symbol} lagt til i watchlist!`, 'success');
+        } else {
+            showToast(data.error || 'Kunne ikke legge til i watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Feil ved å legge til i watchlist', 'error');
+    });
+}
+
+function createPriceAlert(symbol) {
+    if (!symbol) return;
+    
+    const price = prompt(`Opprett prisvarsel for ${symbol}. Angi målpris:`);
+    if (price && !isNaN(price) && parseFloat(price) > 0) {
+        fetch('/price-alerts/api/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                symbol: symbol.toUpperCase(),
+                target_price: parseFloat(price),
+                alert_type: 'above'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Prisvarsel opprettet for ${symbol} ved ${price}!`, 'success');
+            } else {
+                showToast(data.error || 'Kunne ikke opprette prisvarsel', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Feil ved opprettelse av prisvarsel', 'error');
+        });
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') ||
+           document.querySelector('input[name=csrf_token]')?.value ||
+           '';
+}
+</script>
 {% endblock %}
 

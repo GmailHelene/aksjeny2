@@ -99,9 +99,7 @@ Kan du fikse dette?
 https://aksjeradar.trade/stocks/compare?tickers=TSLA&tickers=DNB.OL&tickers=&tickers=&period=6mo&interval=1d&normalize=1
 Her, så mangler det visning / visualisering, det er bare en tom hvit seksjon under "Sammenligning av TSLA, DNB.OL" hvor det egentlig skal være en visualisering/graf e.l. Dette må fikses.
 
---------
-Flere feil/ikke fikset ved stocks/Details sidene:
-
+-
 
 https://aksjeradar.trade/stocks/details/AKER.OL
 Knappene på disse sidene for Favoritt, Portefølje, og Kjøp fungerer ikke (har ikke lenker heller ser det ut som)
@@ -111,9 +109,26 @@ Innsidehandel tabben viser ingenting, forsøk å hent inn data, der det er mulig
 På samme side,så fungerer ikke "Kjøp" knappen
 Og Portefølje knappen, når jeg trykker på den,så står det bare "Legger til..:" i evigheten.
 
-(Sjekk at dette er i orden:)
 https://aksjeradar.trade/stocks/details/TSLA
 Under tabben Teknisk analyse: Knappen under "Hurtighandlinger" her, som  er "Full teknisk analyse" tar oss inn på generell teknisk analyse hvor man kan søke opp tikcer, dette er feil, når man allerede er inne på en ticker, som her (TSLA) og trykker på full teknisk analyse,så må det komme opp ved trykk 'på denne knappen full teknisk analyse for tickeren man er ikke på, her TSLA.'
+
+---
+- [x] Add Predictions and Short Analysis cards to analysis overview page 
+- [ ] Debug watchlist deletion functionality - verify if "Det må være mulig å slette watchlist" issue persists
+- [ ] Fix notification settings errors - "Når jeg slår på varslinger,så fungerer det ikke"  
+- [ ] Resolve price alert creation failures - "prisvarsel,får jeg: Kunne ikke opprette prisvarsel"
+- [ ] Fix TradingView chart loading issues in stock details pages
+- [ ] Add missing buy/interaction buttons to recommendation page tables
+- [ ] Fix comparison page visualization display issues  
+- [ ] Enhance stock details page functionality (favorite, portfolio, buy buttons)
+- [ ] Fix technical analysis indicators (RSI, MACD) display in stock details
+- [ ] Restore insider trading data display in stock details
+- [ ] Fix "Full teknisk analyse" button functionality for ticker-specific analysis
+- [ ] Test and verify all implemented Norwegian market intelligence features
+- [ ] Verify ROI calculator accessibility and functionality
+- [ ] Test oil price correlation analysis functionality
+- [ ] Create comprehensive platform testing and validation
+
 
 
 ---

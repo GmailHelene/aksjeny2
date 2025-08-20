@@ -39,7 +39,7 @@
     <!-- Search Bar -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <form method="GET" action="{{ url_for('forum.category', category=category) }}">
+            <form method="GET" action="{{ url_for('forum.category', category_name=category) }}">
                 <div class="input-group">
                     <input type="text" name="search" class="form-control" 
                            placeholder="Søk i {{ category_info.display_name }}..." 
@@ -169,7 +169,7 @@
                     <ul class="pagination justify-content-center">
                         {% if topics.has_prev %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('forum.category', category=category, page=topics.prev_num, **request.args) }}">
+                            <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=topics.prev_num, **request.args) }}">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
                         </li>
@@ -179,7 +179,7 @@
                             {% if page_num %}
                                 {% if page_num != topics.page %}
                                 <li class="page-item">
-                                    <a class="page-link" href="{{ url_for('forum.category', category=category, page=page_num, **request.args) }}">
+                                    <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=page_num, **request.args) }}">
                                         {{ page_num }}
                                     </a>
                                 </li>
@@ -197,7 +197,7 @@
                         
                         {% if topics.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('forum.category', category=category, page=topics.next_num, **request.args) }}">
+                            <a class="page-link" href="{{ url_for('forum.category', category_name=category, page=topics.next_num, **request.args) }}">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>

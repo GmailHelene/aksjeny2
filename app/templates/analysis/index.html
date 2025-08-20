@@ -64,6 +64,30 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">
+                        <i class="bi bi-graph-up-arrow text-success"></i> Predictions
+                    </h5>
+                    <p class="card-text">AI-baserte kursprediksjoner for enkeltaksjer.</p>
+                    <a href="{{ url_for('analysis.prediction') }}" class="btn btn-success">Se prediksjoner</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-down-arrow text-danger"></i> Short Analyse
+                    </h5>
+                    <p class="card-text">Analyser aksjer for short-selging muligheter.</p>
+                    <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-danger">Short analyse</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
                         <i class="bi bi-search text-secondary"></i> Aksje-screener
                     </h5>
                     <p class="card-text">Finn aksjer basert på dine kriterier.</p>

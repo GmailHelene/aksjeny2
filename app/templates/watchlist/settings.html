@@ -77,7 +77,7 @@
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="price-alerts" name="price_alerts" 
-                                       {{ 'checked' if user.price_alerts_enabled else '' }}>
+                                       {{ 'checked' if settings.get('price_alerts', True) else '' }}>
                                 <label class="form-check-label" for="price-alerts">
                                     <strong>Enable Price Alerts</strong><br>
                                     <small class="text-muted">Get notified when stock prices hit your target levels</small>
@@ -88,6 +88,7 @@
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="price-change-alerts" name="price_change_alerts"
+                                       {{ 'checked' if settings.get('price_change_alerts', True) else '' }}>
                                        {{ 'checked' if user.price_change_alerts_enabled else '' }}>
                                 <label class="form-check-label" for="price-change-alerts">
                                     <strong>Significant Price Changes</strong><br>
@@ -102,7 +103,7 @@
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="news-alerts" name="news_alerts"
-                                       {{ 'checked' if user.news_alerts_enabled else '' }}>
+                                       {{ 'checked' if settings.get('news_alerts', True) else '' }}>
                                 <label class="form-check-label" for="news-alerts">
                                     <strong>Breaking News</strong><br>
                                     <small class="text-muted">Important news about companies in your watchlists</small>
@@ -113,7 +114,7 @@
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="earnings-alerts" name="earnings_alerts"
-                                       {{ 'checked' if user.earnings_alerts_enabled else '' }}>
+                                       {{ 'checked' if settings.get('earnings_alerts', True) else '' }}>
                                 <label class="form-check-label" for="earnings-alerts">
                                     <strong>Earnings Reports</strong><br>
                                     <small class="text-muted">Notify before and after earnings announcements</small>
@@ -124,7 +125,7 @@
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="analyst-alerts" name="analyst_alerts"
-                                       {{ 'checked' if user.analyst_alerts_enabled else '' }}>
+                                       {{ 'checked' if settings.get('analyst_alerts', True) else '' }}>
                                 <label class="form-check-label" for="analyst-alerts">
                                     <strong>Analyst Recommendations</strong><br>
                                     <small class="text-muted">Updates on analyst ratings and price targets</small>
@@ -302,22 +303,74 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('settings-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Show success message
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-success alert-dismissible fade show';
-        alert.innerHTML = `
-            <i class="fas fa-check-circle me-2"></i>
-            Settings saved successfully!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
+        const formData = new FormData(this);
         
-        this.insertBefore(alert, this.firstChild);
-        
-        // In a real application, this would submit the form via AJAX
-        setTimeout(() => {
-            alert.remove();
-        }, 3000);
+        fetch(this.action || window.location.pathname, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                this.insertBefore(alert, this.firstChild);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            } else {
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${data.error || 'Feil ved oppdatering av varselinnstillinger'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                
+                this.insertBefore(alert, this.firstChild);
+                
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Feil ved oppdatering av varselinnstillinger
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            this.insertBefore(alert, this.firstChild);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+        });
     });
 });
+
+function getCSRFToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') ||
+           document.querySelector('input[name=csrf_token]')?.value ||
+           '';
+}
 </script>
 {% endblock %}
