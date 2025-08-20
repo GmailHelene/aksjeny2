@@ -358,13 +358,22 @@ def market_overview():
             'currency': {'usd_nok': 10.25, 'usd_nok_change': 0.5}
         }
         
+        # Create market summary for statistics display
+        market_summary = {
+            'oslo_stocks_count': len(oslo_data) if oslo_data else 250,
+            'global_stocks_count': len(global_data) if global_data else 500,
+            'crypto_count': len(crypto_data) if crypto_data else 150,
+            'currency_count': 25
+        }
+        
         return render_template('analysis/market_overview.html',
                              oslo_stocks=oslo_data,
                              global_stocks=global_data,
                              crypto_data=crypto_data,
                              currency=currency_data,
                              currency_data=currency_data,
-                             market_summaries=market_summaries)
+                             market_summaries=market_summaries,
+                             market_summary=market_summary)
                              
     except Exception as e:
         logger.error(f"Critical error in market overview: {e}", exc_info=True)
@@ -2019,3 +2028,15 @@ def tradingview():
                              title='TradingView Charts',
                              symbol=symbol,
                              error=True)
+
+@analysis.route('/backtest')
+@access_required
+def backtest():
+    """Backtesting functionality"""
+    return render_template('analysis/backtest.html', title='Backtest Strategier')
+
+@analysis.route('/strategy-builder')
+@access_required
+def strategy_builder():
+    """Strategy builder functionality"""
+    return render_template('analysis/strategy_builder.html', title='Strategibygger')

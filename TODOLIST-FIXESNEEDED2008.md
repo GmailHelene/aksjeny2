@@ -1,4 +1,5 @@
-Noen flere nødvendige fixes: Fortsett til du  er ferdig, og test alle punkter,at det fungerer som ønsket, bruk testbruker om nødvendig for å vertifisere
+
+Noen flere nødvendige fixes: Fortsett til du  er ferdig, og test alle punkter, at det fungerer som ønsket, bruk testbruker om nødvendig for å vertifisere
 
 Styling-kontrastproblemer!
 på /demo (og andre steder) det popper opp et grønt banner med hvit tekst over, så
@@ -16,8 +17,6 @@ Denne siden som det lilla banneret skal lenke til, ROI kalkulatoren, fungerer ik
 Jeg fikk forresten tilgang til flere sider jeg IKKE skal ha tilgang til når jeg tester som ikke innlogget bruker, som f.eks Stocks list sidene, disse må redirecte til /demo for ikke innlogget bruker.
 -
 
-Følgende gjelder innlogget bruker og må også fikses:
-Builderror på /Watchlist!
 -
 Nå får jeg feilmelding på ALLE tickers på ruten Stocks/details! Kommer ikke inn på noen av de, får "feil ved lasting av..:"
 -
@@ -25,16 +24,6 @@ Ser det står Markedsstatus: Åpen minst et sted (kanskje flere?) det er da FEIL
 Dette må fikses til å stemme med virkeligheten.
 -
 Får fortsatt Teknisk feil under analyse på /sentiment siden vår når jeg tester funksjonen der..
--
-
-Det er fortsatt ikke "Kjøp" knapp på tickersene på Stocks list sidene Oslo børs, eller Globale aksjer
-
-https://aksjeradar.trade/stocks/list/global, og https://aksjeradar.trade/stocks/list/oslo
-Det skjer fortsatt ingenting når jeg trykker på stjerne knappen for å legge tickers til favoritt
-Det må fikses på disse sidene https://aksjeradar.trade/stocks/list/ , altså alle sidene for oslo børs, globaleaksjner, crhypto og valuta, de to første der skjer det ingenting når jeg trykker på stjernreknappen,og på de 2 siste, så får jeg feilmelding om at "kunne ikke legge til i favoritter"
-https://aksjeradar.trade/analysis/market_overview HER FUNGERER legg til favoritt stjerneknappen,så du kan jo
-Herme etter hvordan det er gjort her,for å få dette til å fungere på alle sider som har stjerneknapp/favoritt funksjon.
-
 -
 
 Fiks at alle steder det er "Analyse" knapp, så lenker den til /analyse: https://aksjeradar.trade/analysis/ai?ticker=EQNR.OL (eksempel) og IKKE Warren buffet.
@@ -46,22 +35,13 @@ Alt dette må fikses, og husk,ekte data ønskes alltid!
 -
 Hvis vi ikke får EN/NO språkfunksjonen i footer til å fungere som Language switcher,så må vi heller fjerne dette fra footer
 -
-Vi har jo en flott side med funksjoner; Backstest & Strategibygger, men som er veldig vanskelig å finne! Kan vi lage lenke til demme
-Siden et logisk sted i hovednavigasjonen?
+
 --
 på /analysis/ai tickers rutene, f.eks analysis/ai/tesla, så er det knapper nederst, under "Mer analyse", og der må funksjonen/lenkingen på knappen "Anbefaling" fikses, for når jeg trykker her,forventer jeg å få anbefaling angående tickeren jeg er inne på (her Tesla), men kommer bare til den generellle anbefalingssiden.
 eksempel: https://aksjeradar.trade/analysis/recommendations/NHY.OL denne lenken må da vise eksakt anbefalingsinfo for NHY.OL, osv
 
---
-https://aksjeradar.trade/analysis/ai-predictions?ticker=aapl
-På disse sidene så  savner jeg analyse-menyen som er på de andre sidene"! (Sjekk at analyse menyen finnes på -alle- analysesider, undersider, analyse tickers sider)
---
-https://aksjeradar.trade/analysis/
-Her i den "Blå" undermenyen som skal være på alle analysesidene, så savner jeg i denne analyse undermenyen, lenke til Predictions siden. Det samme gjelder i selve contentet på denne siden, legg til en rubruikk for predictions, og en for short
 
 
-https://aksjeradar.trade/analysis/ai-predictions hovedsiden
-Her ønsker jeg at det også er lenker/knapper som er relevante ved de tickers man ser på denne siden
 
 (Dobbeltsjekk at dette er fikset!)
 Oslo stocks count: 10
@@ -70,7 +50,9 @@ Tall, men ser ikke ut som det ble helt ordnet?
 
 ----
 
+
 IKKE FIKSET???
+
 
 Det må være mulig å slette watchlist man har laget her
 https://aksjeradar.trade/portfolio/watchlist
@@ -89,15 +71,9 @@ På disse sidene, må vi fikse så diagram/visualisering synes under både "Grun
 (! Trading view chart fungerer her: https://aksjeradar.trade/analysis/technical/?symbol=aapl, så kanskje du kan herme etter hvordan det er gjort her)
 
 
-
-https://aksjeradar.trade/analysis/recommendations
-Her på de forskjellige tickers som vises i tabellene, savner jeg knapper/lenker på den enkelte tickeren,
-som f.eks knapper som lenker til: /details, /analysis , /recommendation /kjøp (ekstern side) osv
-Kan du fikse dette?
-
-
 https://aksjeradar.trade/stocks/compare?tickers=TSLA&tickers=DNB.OL&tickers=&tickers=&period=6mo&interval=1d&normalize=1
 Her, så mangler det visning / visualisering, det er bare en tom hvit seksjon under "Sammenligning av TSLA, DNB.OL" hvor det egentlig skal være en visualisering/graf e.l. Dette må fikses.
+
 
 -
 
@@ -109,31 +85,16 @@ Innsidehandel tabben viser ingenting, forsøk å hent inn data, der det er mulig
 På samme side,så fungerer ikke "Kjøp" knappen
 Og Portefølje knappen, når jeg trykker på den,så står det bare "Legger til..:" i evigheten.
 
+
 https://aksjeradar.trade/stocks/details/TSLA
-Under tabben Teknisk analyse: Knappen under "Hurtighandlinger" her, som  er "Full teknisk analyse" tar oss inn på generell teknisk analyse hvor man kan søke opp tikcer, dette er feil, når man allerede er inne på en ticker, som her (TSLA) og trykker på full teknisk analyse,så må det komme opp ved trykk 'på denne knappen full teknisk analyse for tickeren man er ikke på, her TSLA.'
-
----
-- [x] Add Predictions and Short Analysis cards to analysis overview page 
-- [ ] Debug watchlist deletion functionality - verify if "Det må være mulig å slette watchlist" issue persists
-- [ ] Fix notification settings errors - "Når jeg slår på varslinger,så fungerer det ikke"  
-- [ ] Resolve price alert creation failures - "prisvarsel,får jeg: Kunne ikke opprette prisvarsel"
-- [ ] Fix TradingView chart loading issues in stock details pages
-- [ ] Add missing buy/interaction buttons to recommendation page tables
-- [ ] Fix comparison page visualization display issues  
-- [ ] Enhance stock details page functionality (favorite, portfolio, buy buttons)
-- [ ] Fix technical analysis indicators (RSI, MACD) display in stock details
-- [ ] Restore insider trading data display in stock details
-- [ ] Fix "Full teknisk analyse" button functionality for ticker-specific analysis
-- [ ] Test and verify all implemented Norwegian market intelligence features
-- [ ] Verify ROI calculator accessibility and functionality
-- [ ] Test oil price correlation analysis functionality
-- [ ] Create comprehensive platform testing and validation
+Under tabben på details sidene, tabben som heter: Teknisk analyse: Der er det en  knapp under overskriften "Hurtighandlinger" her, som  heter "Full teknisk analyse" . Denne knappen tar oss inn på generell teknisk analyse hvor man kan søke opp tikcer, dette er feil, når man allerede er inne på en ticker, som her (TSLA) og trykker på full teknisk analyse,så må det komme opp ved trykk 'på denne knappen full teknisk analyse for tickeren man er ikke på, her TSLA.'
 
 
 
----
+----------------------------------------
 Sjekk ellers at hele appen ikke har noe "N/A", "Ingen informasjon tilgjengelig" og lignende,
 Sjekk at ingen sider gir 500 eller andre error, og at ingen sider laster veldig tregt
+Sjekk at det går å registrere seg som ny bruker, få glemt passord osv,uten problemer, at bruker får de epost bruker skal motta i forhold til dette osv
 Sjekk at alle sider og innhold er responsivt, og at hele appen er SEO optimalisert for Google Norge,
 På relevante søkeord, og at vi møter kravene når det gjelder cookies og GDPR.
 ---

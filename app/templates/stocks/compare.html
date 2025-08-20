@@ -258,6 +258,10 @@
         });
         
         {% if tickers and tickers|length > 0 and chart_data %}
+        console.log('Chart rendering conditions met');
+        console.log('Tickers:', {{ tickers|tojson }});
+        console.log('Chart data:', {{ chart_data|tojson }});
+        
         // Create price chart
         const priceCtx = document.getElementById('priceChart').getContext('2d');
         const volumeCtx = document.getElementById('volumeChart').getContext('2d');
@@ -417,6 +421,13 @@
             document.getElementById('volumeChart').style.display = 'none';
             document.querySelector('.chart-container:nth-of-type(2)').innerHTML = '<div class="alert alert-warning">Ingen volum data tilgjengelig</div>';
         }
+        {% endif %}
+        {% else %}
+        console.log('Chart rendering conditions NOT met');
+        console.log('Tickers:', {{ tickers|tojson }});
+        console.log('Chart data:', {{ chart_data|tojson }});
+        console.log('Tickers length:', {{ (tickers|length) if tickers else 0 }});
+        console.log('Chart data exists:', {{ chart_data is defined and chart_data }});
         {% endif %}
         
         // Handle favorite buttons

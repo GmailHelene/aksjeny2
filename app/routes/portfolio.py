@@ -61,6 +61,9 @@ def delete_portfolio(id):
         portfolio_obj = Portfolio.query.filter_by(id=id, user_id=current_user.id).first()
         if not portfolio_obj:
             flash('Portefølje ikke funnet eller du har ikke tilgang.', 'danger')
+            # Check if this is an AJAX request by checking headers
+            if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'success': False, 'error': 'Portefølje ikke funnet eller du har ikke tilgang.'}), 404
             return redirect(url_for('portfolio.overview'))
 
         # Delete all stocks in the portfolio
@@ -73,11 +76,19 @@ def delete_portfolio(id):
         db.session.delete(portfolio_obj)
         db.session.commit()
         flash('Porteføljen ble slettet.', 'success')
+        
+        # Check if this is an AJAX request by checking headers
+        if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': True, 'message': 'Porteføljen ble slettet.'})
         return redirect(url_for('portfolio.overview'))
     except Exception as e:
         current_app.logger.error(f"Error deleting portfolio {id}: {e}")
         db.session.rollback()
         flash('Kunne ikke slette porteføljen. Prøv igjen senere.', 'danger')
+        
+        # Check if this is an AJAX request by checking headers
+        if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': 'Kunne ikke slette porteføljen. Prøv igjen senere.'}), 500
         return redirect(url_for('portfolio.overview'))
 
 @portfolio.route('/overview')

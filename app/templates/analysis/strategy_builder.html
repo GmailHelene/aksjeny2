@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="bi bi-tools"></i> Strategibygger
+            </h1>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                Bygg og test dine egne handelsstrategier ved å kombinere tekniske indikatorer og regler.
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-gear"></i> Bygg Din Strategi</h3>
+                </div>
+                <div class="card-body">
+                    <form id="strategyForm">
+                        <div class="mb-4">
+                            <label for="strategyName" class="form-label">Strategi Navn</label>
+                            <input type="text" class="form-control" id="strategyName" name="strategyName" placeholder="Min Strategi">
+                        </div>
+                        
+                        <h4><i class="bi bi-arrow-up-circle"></i> Kjøp Regler</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="buyIndicator1" class="form-label">Indikator</label>
+                                        <select class="form-control" id="buyIndicator1" name="buyIndicator1">
+                                            <option value="sma">Simple Moving Average</option>
+                                            <option value="ema">Exponential Moving Average</option>
+                                            <option value="rsi">RSI</option>
+                                            <option value="macd">MACD</option>
+                                            <option value="price">Pris</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="buyCondition1" class="form-label">Betingelse</label>
+                                        <select class="form-control" id="buyCondition1" name="buyCondition1">
+                                            <option value="above">Over</option>
+                                            <option value="below">Under</option>
+                                            <option value="crosses_above">Krysser over</option>
+                                            <option value="crosses_below">Krysser under</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="buyValue1" class="form-label">Verdi</label>
+                                        <input type="number" class="form-control" id="buyValue1" name="buyValue1" placeholder="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="bi bi-arrow-down-circle"></i> Salg Regler</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="sellIndicator1" class="form-label">Indikator</label>
+                                        <select class="form-control" id="sellIndicator1" name="sellIndicator1">
+                                            <option value="sma">Simple Moving Average</option>
+                                            <option value="ema">Exponential Moving Average</option>
+                                            <option value="rsi">RSI</option>
+                                            <option value="macd">MACD</option>
+                                            <option value="price">Pris</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="sellCondition1" class="form-label">Betingelse</label>
+                                        <select class="form-control" id="sellCondition1" name="sellCondition1">
+                                            <option value="above">Over</option>
+                                            <option value="below">Under</option>
+                                            <option value="crosses_above">Krysser over</option>
+                                            <option value="crosses_below">Krysser under</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="sellValue1" class="form-label">Verdi</label>
+                                        <input type="number" class="form-control" id="sellValue1" name="sellValue1" placeholder="70">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4><i class="bi bi-shield-check"></i> Risikostyring</h4>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="stopLoss" class="form-label">Stop Loss (%)</label>
+                                        <input type="number" class="form-control" id="stopLoss" name="stopLoss" value="5" step="0.1">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="takeProfit" class="form-label">Take Profit (%)</label>
+                                        <input type="number" class="form-control" id="takeProfit" name="takeProfit" value="10" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Lagre Strategi
+                            </button>
+                            <button type="button" class="btn btn-success" id="testStrategy">
+                                <i class="bi bi-play-circle"></i> Test Strategi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3><i class="bi bi-list"></i> Mine Strategier</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Navn</th>
+                                    <th>Opprettet</th>
+                                    <th>Siste Test</th>
+                                    <th>Avkastning</th>
+                                    <th>Handlinger</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>RSI Oversold/Overbought</td>
+                                    <td>2024-01-15</td>
+                                    <td>2024-01-20</td>
+                                    <td><span class="text-success">+12.3%</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Rediger
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-play"></i> Test
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Moving Average Crossover</td>
+                                    <td>2024-01-10</td>
+                                    <td>2024-01-18</td>
+                                    <td><span class="text-danger">-3.1%</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Rediger
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-play"></i> Test
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('strategyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const strategyName = document.getElementById('strategyName').value;
+    if (!strategyName) {
+        alert('Vennligst skriv inn et navn for strategien.');
+        return;
+    }
+    
+    alert('Strategien "' + strategyName + '" er lagret!');
+});
+
+document.getElementById('testStrategy').addEventListener('click', function() {
+    const strategyName = document.getElementById('strategyName').value;
+    if (!strategyName) {
+        alert('Vennligst skriv inn et navn for strategien før testing.');
+        return;
+    }
+    
+    // Simulate strategy test
+    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tester...';
+    this.disabled = true;
+    
+    setTimeout(() => {
+        alert('Strategi test fullført! Forventet avkastning: +8.5%');
+        this.innerHTML = '<i class="bi bi-play-circle"></i> Test Strategi';
+        this.disabled = false;
+    }, 2000);
+});
+</script>
+{% endblock %}

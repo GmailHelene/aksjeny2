@@ -590,9 +590,11 @@ def register_template_filters(app):
     @app.context_processor
     def inject_utils():
         """Make utility functions available in templates"""
+        from flask_wtf.csrf import generate_csrf
         return dict(
             now=datetime.utcnow,
-            datetime=datetime
+            datetime=datetime,
+            csrf_token=generate_csrf
         )
     
     @app.template_filter('nn')

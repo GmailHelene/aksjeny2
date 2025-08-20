@@ -975,6 +975,22 @@ def compare():
     """Stock comparison page - Enhanced with better error handling"""
 
     try:
+        # Initialize all required dicts first
+        ticker_names = {}
+        current_prices = {}
+        price_changes = {}
+        volatility = {}
+        volumes = {}
+        correlations = {}
+        betas = {}
+        rsi = {}
+        macd = {}
+        bb = {}
+        sma200 = {}
+        sma50 = {}
+        signals = {}
+        chart_data = {}
+
         # Support both 'symbols' and 'tickers' parameters for backward compatibility
         symbols_param = request.args.get('symbols') or request.args.get('tickers')
         symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
@@ -1110,22 +1126,6 @@ def compare():
                                  period=period,
                                  interval=interval,
                                  normalize=normalize)
-
-        # Initialize all required dicts
-        ticker_names = {}
-        current_prices = {}
-        price_changes = {}
-        volatility = {}
-        volumes = {}
-        correlations = {}
-        betas = {}
-        rsi = {}
-        macd = {}
-        bb = {}
-        sma200 = {}
-        sma50 = {}
-        signals = {}
-        chart_data = {}
 
         # Helper for correlation matrix
         price_matrix = {}

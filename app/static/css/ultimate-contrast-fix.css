@@ -1,0 +1,180 @@
+/*
+ULTIMATE TEXT CONTRAST FIXES
+Ensures white text on all dark/colored backgrounds across the entire site
+*/
+
+/* FORCE WHITE TEXT ON ALL DARK/COLORED BACKGROUNDS */
+.bg-primary, .bg-primary *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-info, .bg-info *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-success, .bg-success *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-danger, .bg-danger *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-warning, .bg-warning *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-dark, .bg-dark *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item),
+.bg-secondary, .bg-secondary *:not(.btn):not(.badge):not(.dropdown-menu):not(.dropdown-item) {
+    color: #ffffff !important;
+}
+
+/* SPECIFIC FIXES FOR FORUM AND PAGE HEADERS */
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-success,
+.card-header.bg-danger,
+.card-header.bg-warning,
+.card-header.bg-dark,
+.card-header.bg-secondary {
+    color: #ffffff !important;
+}
+
+.card-header.bg-primary *,
+.card-header.bg-info *,
+.card-header.bg-success *,
+.card-header.bg-danger *,
+.card-header.bg-warning *,
+.card-header.bg-dark *,
+.card-header.bg-secondary * {
+    color: #ffffff !important;
+}
+
+/* ALERT COMPONENTS */
+.alert-primary, .alert-primary *,
+.alert-info, .alert-info *,
+.alert-success, .alert-success *,
+.alert-danger, .alert-danger *,
+.alert-warning, .alert-warning *,
+.alert-dark, .alert-dark *,
+.alert-secondary, .alert-secondary * {
+    color: #ffffff !important;
+}
+
+/* BOOTSTRAP TABLE VARIANTS */
+.table-primary, .table-primary *,
+.table-info, .table-info *,
+.table-success, .table-success *,
+.table-danger, .table-danger *,
+.table-warning, .table-warning *,
+.table-dark, .table-dark *,
+.table-secondary, .table-secondary * {
+    color: #ffffff !important;
+}
+
+/* BADGE COMPONENTS */
+.badge.bg-primary, .badge.bg-primary *,
+.badge.bg-info, .badge.bg-info *,
+.badge.bg-success, .badge.bg-success *,
+.badge.bg-danger, .badge.bg-danger *,
+.badge.bg-warning, .badge.bg-warning *,
+.badge.bg-dark, .badge.bg-dark *,
+.badge.bg-secondary, .badge.bg-secondary * {
+    color: #ffffff !important;
+}
+
+/* NAVIGATION MENU FIXES - Dark theme for all dropdowns */
+.navbar .dropdown-menu {
+    background-color: #212529 !important;
+    border: 1px solid #495057 !important;
+}
+
+.navbar .dropdown-menu .dropdown-item {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    background-color: #495057 !important;
+    color: #ffffff !important;
+}
+
+.navbar .dropdown-menu .dropdown-item:active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+/* SPECIAL FORUM PAGE FIXES */
+.forum-category .card-header,
+.forum-topic .card-header,
+.forum-post .card-header {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+.forum-category .card-header *,
+.forum-topic .card-header *,
+.forum-post .card-header * {
+    color: #ffffff !important;
+}
+
+/* COMPREHENSIVE HEADING FIXES */
+.bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+.bg-info h1, .bg-info h2, .bg-info h3, .bg-info h4, .bg-info h5, .bg-info h6,
+.bg-success h1, .bg-success h2, .bg-success h3, .bg-success h4, .bg-success h5, .bg-success h6,
+.bg-danger h1, .bg-danger h2, .bg-danger h3, .bg-danger h4, .bg-danger h5, .bg-danger h6,
+.bg-warning h1, .bg-warning h2, .bg-warning h3, .bg-warning h4, .bg-warning h5, .bg-warning h6,
+.bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+.bg-secondary h1, .bg-secondary h2, .bg-secondary h3, .bg-secondary h4, .bg-secondary h5, .bg-secondary h6 {
+    color: #ffffff !important;
+}
+
+/* TEXT UTILITY OVERRIDES */
+.bg-primary .text-dark, .bg-primary .text-black, .bg-primary .text-body,
+.bg-info .text-dark, .bg-info .text-black, .bg-info .text-body,
+.bg-success .text-dark, .bg-success .text-black, .bg-success .text-body,
+.bg-danger .text-dark, .bg-danger .text-black, .bg-danger .text-body,
+.bg-warning .text-dark, .bg-warning .text-black, .bg-warning .text-body,
+.bg-dark .text-dark, .bg-dark .text-black, .bg-dark .text-body,
+.bg-secondary .text-dark, .bg-secondary .text-black, .bg-secondary .text-body {
+    color: #ffffff !important;
+}
+
+/* ICON FIXES */
+.bg-primary .bi, .bg-primary i,
+.bg-info .bi, .bg-info i,
+.bg-success .bi, .bg-success i,
+.bg-danger .bi, .bg-danger i,
+.bg-warning .bi, .bg-warning i,
+.bg-dark .bi, .bg-dark i,
+.bg-secondary .bi, .bg-secondary i {
+    color: #ffffff !important;
+}
+
+/* LINK FIXES */
+.bg-primary a:not(.btn):not(.dropdown-item),
+.bg-info a:not(.btn):not(.dropdown-item),
+.bg-success a:not(.btn):not(.dropdown-item),
+.bg-danger a:not(.btn):not(.dropdown-item),
+.bg-warning a:not(.btn):not(.dropdown-item),
+.bg-dark a:not(.btn):not(.dropdown-item),
+.bg-secondary a:not(.btn):not(.dropdown-item) {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
+/* UTILITY CLASS FOR MANUAL FIXES */
+.force-white-text,
+.force-white-text * {
+    color: #ffffff !important;
+}
+
+.force-dark-text,
+.force-dark-text * {
+    color: #212529 !important;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+    .bg-primary, .bg-info, .bg-success, .bg-danger, .bg-warning, .bg-dark, .bg-secondary {
+        color: #ffffff !important;
+    }
+    
+    .bg-primary *, .bg-info *, .bg-success *, .bg-danger *, .bg-warning *, .bg-dark *, .bg-secondary * {
+        color: #ffffff !important;
+    }
+}
+
+/* OVERRIDE ANY INLINE STYLES WITH CONTRAST ISSUES */
+[style*="color: #000"][class*="bg-"],
+[style*="color: black"][class*="bg-"],
+[style*="color: #212529"][class*="bg-"],
+[style*="color: #333"][class*="bg-"] {
+    color: #ffffff !important;
+}

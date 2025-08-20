@@ -122,8 +122,17 @@ def category(category_name):
     # Filter topics by category
     category_topics = [t for t in FORUM_TOPICS if t['category'] == category_name]
     
+    # Create category info object
+    category_info = {
+        'name': category_name,
+        'description': f'Diskusjon om {category_name.lower()}',
+        'topics': len(category_topics),
+        'posts': sum(t.get('replies', 0) for t in category_topics)
+    }
+    
     return render_template('forum/category.html',
                          category_name=category_name,
+                         category_info=category_info,
                          topics=category_topics)
 
 @forum.route('/topic/<int:topic_id>')
@@ -146,6 +155,20 @@ def topic(topic_id):
 @login_required
 def create_topic():
     """Create a new forum topic"""
+    
+    # Define forum categories
+    forum_categories = {
+        'enkeltaksjer': {'display_name': 'Enkeltaksjer'},
+        'investeringsstrategier': {'display_name': 'Investeringsstrategier'},
+        'teknisk_analyse': {'display_name': 'Teknisk Analyse'},
+        'markedsnyheter': {'display_name': 'Markedsnyheter'},
+        'begynnerhjornet': {'display_name': 'Begynnerhjørnet'}
+    }
+    
+    # Get category from URL parameter if provided
+    category = request.args.get('category')
+    category_info = forum_categories.get(category) if category else None
+    
     if request.method == 'POST':
         title = request.form.get('title')
         category = request.form.get('category')
@@ -175,9 +198,10 @@ def create_topic():
         flash('Topic opprettet!', 'success')
         return redirect(url_for('forum.topic', topic_id=new_topic['id']))
     
-    categories = ['Enkeltaksjer', 'Investeringsstrategier', 'Teknisk Analyse', 'Markedsnyheter', 'Begynnerhjørnet']
-    
-    return render_template('forum/create_topic.html', categories=categories)
+    return render_template('forum/create_topic.html', 
+                         forum_categories=forum_categories,
+                         category=category,
+                         category_info=category_info)
 
 @forum.route('/post-reply/<int:topic_id>', methods=['POST'])
 @login_required  

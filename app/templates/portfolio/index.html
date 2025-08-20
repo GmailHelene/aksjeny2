@@ -209,7 +209,7 @@
 <script>
 function deletePortfolio(portfolioId) {
     if (confirm('Er du sikker på at du vil slette denne porteføljen? Alle aksjer i porteføljen vil også bli slettet.')) {
-        fetch(`/portfolio/${portfolioId}/delete`, {
+        fetch(`/portfolio/delete/${portfolioId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
