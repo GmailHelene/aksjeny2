@@ -700,24 +700,43 @@ def add_stock_to_portfolio(id):
 @access_required
 def remove_stock_from_portfolio(id, stock_id):
     """Remove a stock from a specific portfolio"""
-    portfolio = Portfolio.query.get_or_404(id)
+    try:
+        portfolio = Portfolio.query.get_or_404(id)
 
-    # Sjekk eierskap
-    if portfolio.user_id != current_user.id:
-        flash('Du har ikke tilgang til denne porteføljen', 'danger')
-        return redirect(url_for('portfolio.index'))
+        # Sjekk eierskap
+        if portfolio.user_id != current_user.id:
+            error_msg = 'Du har ikke tilgang til denne porteføljen'
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': False, 'error': error_msg}), 403
+            flash(error_msg, 'danger')
+            return redirect(url_for('portfolio.index'))
 
-    stock = PortfolioStock.query.get_or_404(stock_id)
+        stock = PortfolioStock.query.get_or_404(stock_id)
 
-    if stock.portfolio_id != id:
-        flash('Aksjen tilhører ikke denne porteføljen', 'danger')
+        if stock.portfolio_id != id:
+            error_msg = 'Aksjen tilhører ikke denne porteføljen'
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': False, 'error': error_msg}), 400
+            flash(error_msg, 'danger')
+            return redirect(url_for('portfolio.view_portfolio', id=id))
+
+        db.session.delete(stock)
+        db.session.commit()
+
+        success_msg = 'Aksje fjernet fra porteføljen'
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({'success': True, 'message': success_msg})
+        flash(success_msg, 'success')
         return redirect(url_for('portfolio.view_portfolio', id=id))
-
-    db.session.delete(stock)
-    db.session.commit()
-
-    flash('Aksje fjernet fra porteføljen', 'success')
-    return redirect(url_for('portfolio.view_portfolio', id=id))
+        
+    except Exception as e:
+        current_app.logger.error(f"Error removing stock {stock_id} from portfolio {id}: {e}")
+        db.session.rollback()
+        error_msg = 'Kunne ikke fjerne aksjen. Prøv igjen senere.'
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({'success': False, 'error': error_msg}), 500
+        flash(error_msg, 'danger')
+        return redirect(url_for('portfolio.view_portfolio', id=id))
 
 @portfolio.route('/watchlist/create', methods=['GET', 'POST'])
 @access_required
