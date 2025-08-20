@@ -2053,19 +2053,30 @@ def global_overview():
     return render_template('analysis/global_overview.html', title='Global Markeds Oversikt')
 
 @analysis.route('/tradingview')
-@access_required
+@demo_access
 def tradingview():
-    """TradingView Charts Analysis"""
+    """TradingView Charts Analysis - Enhanced with demo support"""
     symbol = request.args.get('symbol', 'AAPL')
+    
+    # Get stock info for the symbol if available
+    stock_info = {}
+    try:
+        from app.services.data_service import DataService
+        stock_info = DataService.get_stock_info(symbol) or {}
+    except Exception as e:
+        logger.warning(f"Could not fetch stock info for {symbol}: {e}")
+    
     try:
         return render_template('analysis/tradingview.html', 
                              title='TradingView Charts',
-                             symbol=symbol)
+                             symbol=symbol,
+                             stock_info=stock_info)
     except Exception as e:
         logger.error(f"Error loading TradingView page: {e}")
         return render_template('analysis/tradingview.html', 
                              title='TradingView Charts',
                              symbol=symbol,
+                             stock_info={},
                              error=True)
 
 @analysis.route('/backtest')

@@ -39,6 +39,7 @@
           </td>
           <td>
             <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-info">Detaljer</a>
+              <button class="btn btn-sm btn-danger ms-2" onclick="deleteWatchlistItem('{{ stock.id }}', this)">Slett</button>
           </td>
         </tr>
         {% endfor %}
@@ -49,3 +50,26 @@
   {% endif %}
 </div>
 {% endblock %}
+<script>
+function deleteWatchlistItem(stockId, btn) {
+  if (confirm('Er du sikker på at du vil slette denne aksjen fra watchlisten?')) {
+    fetch(`/watchlist/remove/${stockId}`, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+      }
+    })
+    .then(response => response.text())
+    .then(data => {
+      // Remove row from table
+      const row = btn.closest('tr');
+      if (row) row.remove();
+      alert('Aksje slettet fra watchlist!');
+    })
+    .catch(error => {
+      alert('Feil ved sletting: ' + error);
+    });
+  }
+}
+</script>

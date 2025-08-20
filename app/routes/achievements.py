@@ -14,6 +14,15 @@ achievements_bp = Blueprint('achievements', __name__, url_prefix='/achievements'
 @demo_access
 def index():
     """Show user achievements page"""
+    # Check if user is authenticated
+    if not current_user.is_authenticated:
+        # Show demo achievements page for non-authenticated users
+        return render_template('achievements/index.html',
+                             user_achievements=[],
+                             available_achievements=[],
+                             user_stats=None,
+                             demo_mode=True)
+    
     # Get user's earned achievements
     user_achievements = db.session.query(UserAchievement, Achievement).join(
         Achievement, UserAchievement.achievement_id == Achievement.id
@@ -36,12 +45,19 @@ def index():
     return render_template('achievements/index.html',
                          user_achievements=user_achievements,
                          available_achievements=available_achievements,
-                         user_stats=user_stats)
+                         user_stats=user_stats,
+                         demo_mode=False)
 
 @achievements_bp.route('/api/progress')
 @demo_access
 def get_progress():
     """Get user's current progress for AJAX updates"""
+    if not current_user.is_authenticated:
+        return jsonify({
+            'status': 'demo',
+            'message': 'Please log in to track achievements'
+        })
+        
     user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
     if not user_stats:
         user_stats = UserStats(user_id=current_user.id)

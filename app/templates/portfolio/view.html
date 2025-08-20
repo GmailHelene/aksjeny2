@@ -12,12 +12,15 @@
                     <p class="text-muted">{{ portfolio.description or 'Ingen beskrivelse' }}</p>
                 </div>
                 <div>
-                    <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-secondary me-2">
-                        <i class="fas fa-arrow-left"></i> Tilbake
-                    </a>
-                    <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-outline-primary">
-                        <i class="fas fa-plus"></i> Legg til aksje
-                    </a>
+                        <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> Tilbake
+                        </a>
+                        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolio.id) }}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-plus"></i> Legg til aksje
+                        </a>
+                        <button class="btn btn-outline-danger" onclick="deletePortfolio({{ portfolio.id }})">
+                            <i class="fas fa-trash"></i> Slett portefølje
+                        </button>
                 </div>
             </div>
         </div>
@@ -176,6 +179,29 @@
 </div>
 
 <script>
+function deletePortfolio(portfolioId) {
+    if (confirm('Er du sikker på at du vil slette hele porteføljen? Dette kan ikke angres!')) {
+        fetch(`/portfolio/delete/${portfolioId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Porteføljen ble slettet!');
+                window.location.href = '/portfolio/overview';
+            } else {
+                alert('Feil ved sletting: ' + (data.error || 'Ukjent feil'));
+            }
+        })
+        .catch(error => {
+            alert('Feil ved sletting: ' + error);
+        });
+    }
+}
 function submitHolding() {
     alert('Funksjonalitet kommer snart!');
 }
@@ -186,7 +212,25 @@ function editHolding(holdingId) {
 
 function deleteHolding(holdingId) {
     if (confirm('Er du sikker på at du vil slette denne beholdningen?')) {
-        alert('Sletting kommer snart!');
+        // Send POST request to backend to delete holding
+        fetch(`/portfolio/${portfolio.id}/remove/${holdingId}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': (window.csrfHelper ? window.csrfHelper.getToken() : '')
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Remove row from table
+            const row = document.querySelector(`button[onclick="deleteHolding('${holdingId}')"]`).closest('tr');
+            if (row) row.remove();
+            // Optionally show notification
+            alert('Beholdning slettet!');
+        })
+        .catch(error => {
+            alert('Feil ved sletting: ' + error);
+        });
     }
 }
 </script>

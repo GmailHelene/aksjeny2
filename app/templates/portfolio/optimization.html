@@ -5,49 +5,158 @@
 {% block head %}
 <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
 <style>
+    /* Professional portfolio optimization styling */
     .optimization-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #f8f9fc; /* Light professional background */
         min-height: 100vh;
         padding: 2rem 0;
     }
     
     .optimization-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #ffffff;
+        border-radius: 8px; /* Less rounded for professional look */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* Subtle shadow */
+        border: 1px solid #e9ecef;
     }
     
     .optimization-header {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Professional gradient */
         color: white;
-        border-radius: 20px 20px 0 0;
-        padding: 2rem;
+        border-radius: 8px 8px 0 0;
+        padding: 1.5rem; /* Less padding */
         text-align: center;
     }
     
     .metric-card {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
+        border-radius: 6px; /* Subtle rounding */
+        padding: 1.2rem;
         margin-bottom: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-left: 4px solid #4facfe;
-        transition: transform 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06); /* Very subtle shadow */
+        border-left: 3px solid #3498db; /* Professional blue accent */
+        transition: transform 0.2s ease;
     }
     
     .metric-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-1px); /* Subtle hover effect */
     }
     
     .risk-badge {
         display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px; /* Less rounded */
+        font-weight: 500; /* Less bold */
         text-transform: uppercase;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Professional risk colors */
+    .risk-low { 
+        background: #d5f4e6; 
+        color: #0f5132; 
+        border: 1px solid #a3cfbb;
+    }
+    .risk-moderate { 
+        background: #fff8e1; 
+        color: #8a6d00; 
+        border: 1px solid #e6cc80;
+    }
+    .risk-high { 
+        background: #f8e1e4; 
+        color: #58151c; 
+        border: 1px solid #d1a7ac;
+    }
+    
+    .allocation-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem; /* Less padding */
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px; /* Less rounded */
+        border-left: 3px solid #27ae60; /* Professional green */
+    }
+    
+    .allocation-change {
+        font-weight: 500; /* Less bold */
+    }
+    
+    .allocation-increase { color: #27ae60; } /* Professional green */
+    .allocation-decrease { color: #e74c3c; } /* Professional red */
+    
+    .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .scenario-card {
+        background: white;
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        border: 1px solid #e9ecef;
+    }
+    
+    .btn-optimization {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* Professional gradient */
+        border: none;
+        color: white;
+        padding: 0.6rem 1.5rem; /* Less padding */
+        border-radius: 4px; /* Less rounded */
+        font-weight: 500; /* Less bold */
+        transition: all 0.2s ease;
+    }
+    
+    .btn-optimization:hover {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        transform: translateY(-1px);
+    }
+    
+    /* Typography improvements */
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 500; /* Less bold */
+        color: #2c3e50;
+    }
+    
+    .metric-value {
+        font-size: 1.8rem; /* Smaller for elegance */
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .metric-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Professional table styling */
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 500;
+        color: #2c3e50;
+        background-color: #f8f9fa;
+    }
+    
+    /* Card header improvements */
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+</style>
+{% endblock %}
     }
     
     .risk-low { background: #d4edda; color: #155724; }

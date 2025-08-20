@@ -1,6 +1,6 @@
 ## Aksjeradar Platform Fixes - Comprehensive Todo List
 
-### ✅ Completed (August 20, 2025)
+### (August 20, 2025)
 - [x] Navigation reorganization - moved Dashboard, Insider Trading, News, and Norge items into appropriate submenus
 - [x] Fix stock details pages redirecting to homepage instead of showing stock information - **FIXED**: Modified app/routes/stocks.py to provide fallback data instead of redirecting
 - [x] Resolve 500 errors on Norwegian Intelligence pages - **FIXED**: Replaced moment() template errors with proper Python datetime formatting in all templates
@@ -50,6 +50,79 @@
 - [ ] Ensure all pages load without 500 errors
 - [ ] Validate all forms and calculators work
 - [ ] Confirm real data displays instead of mock data
+https://aksjeradar.trade/analysis/
+I den blå undermenyen / analysemenyen som er på alle analysesidene bla.,må du fjerne menyelementet "Dashboard" da denne ikke finnes lenger
+-
+Fortsatt problem med alle disse sidene, https://aksjeradar.trade/stocks/details/AAPL,
+(og alle andre tickers) n å blir jeg videresendt til forsiden på disse lenkene....
+-
+/notifications (Varslinger under Konton i menyen) fungerer ikke.. Error loading notifications. "Please try again later." FIks dette? Regner med det her skal komme varslinger i forhold til på det brukeren har satt opp ønsket varslinger på?= Fikser du dennesiden og funksjonen e for dette komplett?!
+-
+Fjern det nederste menyelementet under Analyse: "Prediksjoner" og endre lenken på AI-Prediksjoner til denne:; https://aksjeradar.trade/analysis/prediction
+Og på denne siden, er det 2 lyseblå bannere med hvit tekst over, endre begge disse 2 lyseblå bannerne til å ha mørkblå bakgrunn i stedet for lysblå bakgrunn
+Det samme gjelder de lyseblå bannerernr / bakgrunnene, om er på disse sidene også: https://aksjeradar.trade/analysis/warren-buffett, https://aksjeradar.trade/analysis/backtest, https://aksjeradar.trade/analysis/strategy-builder, https://aksjeradar.trade/analysis/recommendations , https://aksjeradar.trade/profile, https://aksjeradar.trade/analysis/ai-predictions  endre disse fra lysblå til mørkblå
+-
+Denne siden ser litt rotete ut? https://aksjeradar.trade/advanced/crypto-dashboard Kan du style den litt mer "ryddig"
+-
+Under Aksjer i hovednavgiasjonen, du må enten fikse disse 2 sidene,eller fjerne dde fra menyen: Crypto data, og Trending Crypto
+Disse 2 sidene har bare masser rare form,ateringsfeil
+-
+https://aksjeradar.trade/analysis/tradingview
+Denne siden må fikses Ingen diagrammer/chart/visualiseringer som faktisk vises her!
+
+-
+https://aksjeradar.trade/stocks/compare Denne sioden fungerer fortsatt ikke,det MÅ fikses
+
+
+https://aksjeradar.trade/portfolio/
+Det gåtr fortsatt ikke an å slette portfeføljer man har her,..
+
+Og det går ikke an å slette watchlist man har lagret her...
+https://aksjeradar.trade/portfolio/watchlist
+
+Dette må fikses på begge steder!
+
+-
+Prisaarmer menyelement/link ligger fortsatt i 2 submenyer, 1 må slettes, 1 beholdes, og sjekk at den fungerer også!
+-
+https://aksjeradar.trade/achievements/
+Fortsatt 500 error! ENTEN FIKS, eller fjern fra navigasjonen..
+-
+Fjerne fra hovednavigasjon:
+"Realtime Dashboard" må også fjernes fra hovednavigasjonen (ligger under Pro Tools)
+"Regjeringsinnvirkning" menyelementet kan fjernes fra hovednav. (ligger under Market Intel menyen)
+Og menyelementet "Transaksjoner" skal fjernes fra  hovednavigasjonen (Portfolio )menyen...
+
+-
+Premium Markedsoversikt banneret øvderst på index, kan du gjøre det litt mer voksent i fargevalget, f.eks sort og hvitt i stedet?
+
+-
+Og disse sidene ser VELDIG AI /dårlig designet ut,mtp design,font,farger...Fiks det?https://aksjeradar.trade/market-intel/economic-indicators
+https://aksjeradar.trade/portfolio/optimization   gi de litt mer diskre proffe farger f.eks.
+
+--
+https://aksjeradar.trade/market-intel/earnings-calendar
+Her OG Andrte steder er det sort tekst PÅ mørkblå bakgrunn,fiks det! ALLTISD hvit tekst på MØRKGBLÅP bakrunn.... Eksempel ser du f.eks i: "Onsdag 21. August" Teksten er sort,men må være hvit ettersom bakgrunnen er mørkblå!  Fiks dette på andre sider det er et problem  også
+
+
+https://aksjeradar.trade/portfolio/
+Det gåtr fortsatt ikke an å slette portfeføljer man har her,..
+
+Og det går ikke an å slette watchlist man har lagret her...
+https://aksjeradar.trade/portfolio/watchlist
+
+Dette må fikses på begge steder!
+
+-
+Prisaarmer ligger fortsatt i 2 submenyer, 1 må slettes, 1 beholdes, og sjekk at den fungerer også!
+-
+https://aksjeradar.trade/achievements/
+Fortsatt 500 error! ENTEN FIKS, eller fjern fra navigasjonen..
+-
+Fjerne fra hovednavigasjon:
+"Realtime Dashboard" må også fjernes fra hovednavigasjonen (ligger under Pro Tools)
+"Regjeringsinnvirkning" menyelementet kan fjernes fra hovednav. (ligger under Market Intel menyen)
+Og menyelementet "Transaksjoner" skal fjernes fra  hovednavigasjonen (Portfolio )menyen...
 
 
 dobbeltsjekk at alle lenker som er under hovendavigasjonen. for innlogget bet. bruker (utenom konto submenyen og elementene der, REDIRECTER til /demo for brukere som ikke er innlogget, dersom de havner inn pån noen av disse siden by mistake f.eks)

@@ -1,3 +1,15 @@
+/* Enhanced card header contrast for primary and danger backgrounds */
+.card-header.bg-primary {
+    background-color: #002147 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+}
+
+.card-header.bg-danger {
+    background-color: #8B0000 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+}
 /* 
 COMPREHENSIVE TEXT CONTRAST FIXES 
 Fixes dark text on dark backgrounds across the site
@@ -51,17 +63,12 @@ Fixes dark text on dark backgrounds across the site
 }
 
 .bg-success, .badge-success, .btn-success {
-    background-color: #1b5e20 !important; /* Very dark green for white text */
     border-color: #1b5e20 !important;
 }
 
-/* IMAGE SIZE CONSTRAINTS FOR NEWS ARTICLES */
-.news-article img,
 .article-content img,
 .prose img,
 img[src*="news"],
-img[src*="article"],
-.news-image,
 .article-image {
     max-height: 200px !important; /* Reduced from 250px */
     max-width: 100% !important;
@@ -90,6 +97,24 @@ img[src*="article"],
     font-size: 1rem !important; /* Ensure icons aren't too large */
     max-width: 24px !important;
     max-height: 24px !important;
+}
+/* HIGH CONTRAST INFO ALERTS */
+.alert-info, .bg-info, .badge-info, .btn-info {
+    background-color: #01579b !important; /* Very dark blue for info */
+    color: #ffffff !important;
+    border-color: #01579b !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15) !important;
+}
+
+.alert-info .alert-link, .alert-info a {
+    color: #ffffff !important;
+    text-decoration: underline;
+    font-weight: 700 !important;
+}
+
+.alert-info hr {
+    border-top: 1px solid #ffffff !important;
 }
 
 /* Large icons in specific contexts */
@@ -170,14 +195,11 @@ img[src*="article"],
 }
 
 /* Fix specific problematic headers by content */
-.card-header:contains("Sentiment Indikatorer"),
-.card-header:contains("Velg aksje for sentiment analyse"),
-.card-header:contains("Markedssentiment"),
 .card-header:contains("Tekniske Indikatorer") {
     color: #ffffff !important;
-}
-
-/* Fix all headings on colored backgrounds */
+    background-color: #8B0000 !important;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
 .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
 .bg-info h1, .bg-info h2, .bg-info h3, .bg-info h4, .bg-info h5, .bg-info h6,
 .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,

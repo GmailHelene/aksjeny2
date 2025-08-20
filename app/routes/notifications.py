@@ -422,9 +422,47 @@ def api_clear_read():
 notifications_web_bp = Blueprint('notifications_web', __name__, url_prefix='/notifications')
 
 @notifications_web_bp.route('/')
-@login_required
+@demo_access
 def notifications_page():
     """Notifications page"""
+    if not current_user.is_authenticated:
+        # Demo mode - show sample notifications
+        demo_notifications = [
+            {
+                'id': 1,
+                'title': 'Demo Prisalarm',
+                'message': 'AAPL har nådd ditt målpris på $150',
+                'type': 'price_alert',
+                'priority': 'high',
+                'created_at': datetime.utcnow() - timedelta(hours=2),
+                'read': False
+            },
+            {
+                'id': 2,
+                'title': 'Demo Markedsoppdatering',
+                'message': 'Oslo Børs har økt med 2.3% i dag',
+                'type': 'market_update',
+                'priority': 'medium',
+                'created_at': datetime.utcnow() - timedelta(hours=5),
+                'read': True
+            }
+        ]
+        
+        demo_summary = {
+            'total': 2,
+            'unread': 1,
+            'types': {'price_alert': 1, 'market_update': 1},
+            'recent_activity': 2,
+            'priority_breakdown': {'high': 1, 'medium': 1, 'low': 0}
+        }
+        
+        return render_template('notifications/index.html',
+                             notifications=demo_notifications,
+                             pagination=None,
+                             unread_only=False,
+                             summary=demo_summary,
+                             demo_mode=True)
+    
     return render_template('notifications/index.html')
 
 @notifications_web_bp.route('/settings')

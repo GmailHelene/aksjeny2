@@ -6,9 +6,6 @@
                 <a href="{{ url_for('analysis.index') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
                     <i class="bi bi-house me-1"></i>Oversikt
                 </a>
-                <a href="/financial-dashboard" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'dashboard.financial_dashboard' else 'btn-outline-primary' }}">
-                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                </a>
                 <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
                     <i class="bi bi-graph-up me-1"></i>Teknisk
                 </a>
@@ -34,7 +31,7 @@
                 <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
                     <i class="bi bi-emoji-smile me-1"></i>Sentiment
                 </a>
-                <a href="{{ url_for('analysis.ai_predictions') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai_predictions' else 'btn-outline-primary' }}">
+                <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
                     <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
                 </a>
                 <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
@@ -61,8 +58,8 @@
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="/financial-dashboard" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'dashboard.financial_dashboard' else 'btn-outline-primary' }}">
-                            <i class="bi bi-speedometer2"></i><br><small>Dashboard</small>
+                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
+                            <i class="bi bi-graph-up"></i><br><small>Teknisk</small>
                         </a>
                     </div>
                 </div>
