@@ -8,7 +8,7 @@
         <div class="col-12">
             <h1 class="mb-4">
                 <i class="fas fa-chart-line me-2"></i>Finansiell Dashboard
-                <span class="badge bg-success ms-2" id="market-status">ÅPEN</span>
+                <span class="badge ms-2" id="market-status"></span>
             </h1>
             
             <!-- Quick Stats Row -->
@@ -1857,6 +1857,31 @@ class FinancialDashboard {
 let dashboard;
 document.addEventListener('DOMContentLoaded', function() {
     dashboard = new FinancialDashboard();
+
+    // Market status logic for Oslo Børs
+    function updateMarketStatus() {
+        const marketStatus = document.getElementById('market-status');
+        if (!marketStatus) return;
+
+        const now = new Date();
+        // Oslo Børs: open 09:00 - 16:30, Monday-Friday
+        const openHour = 9, openMinute = 0, closeHour = 16, closeMinute = 30;
+        const weekday = now.getDay(); // 0=Sunday, 1=Monday, ..., 5=Friday, 6=Saturday
+        let isOpen = false;
+        if (weekday >= 1 && weekday <= 5) {
+            const minutes = now.getHours() * 60 + now.getMinutes();
+            const openMinutes = openHour * 60 + openMinute;
+            const closeMinutes = closeHour * 60 + closeMinute;
+            isOpen = minutes >= openMinutes && minutes < closeMinutes;
+        }
+        if (isOpen) {
+            marketStatus.innerHTML = '<span class="badge bg-success">ÅPEN</span><small class="ms-1">09:00 - 16:30</small>';
+        } else {
+            marketStatus.innerHTML = '<span class="badge bg-danger">STENGT</span><small class="ms-1">09:00 - 16:30</small>';
+        }
+    }
+    updateMarketStatus();
+    setInterval(updateMarketStatus, 60000); // update every minute
 });
 </script>
 {% endblock %}
