@@ -151,7 +151,7 @@ def pricing():
         'plans': [
             {
                 'name': 'Basic',
-                'price': '199 kr/mnd',
+                'price': '249 kr/mnd',
                 'features': ['Grunnleggende analyse', 'Portefølje tracking']
             },
             {

@@ -1259,6 +1259,21 @@ def subscription_plans():
         flash('Kunne ikke laste prissiden.', 'error')
         return redirect(url_for('main.index'))
 
+@main.route('/roi-kalkulator')
+@main.route('/roi')
+@main.route('/fa-mer-igjen-for-pengene')
+def roi_kalkulator():
+    """ROI Calculator page - SEO optimized for Norwegian market"""
+    try:
+        # SEO-friendly page for calculating ROI with Aksjeradar.trade
+        return render_template('roi_kalkulator.html',
+                             title="Få mer igjen for pengene med Aksjeradar.trade - ROI Kalkulator",
+                             meta_description="Beregn avkastningen på din investering i Aksjeradar.trade. Sanntidsdata, AI-analyse og porteføljeoptimalisering gir ROI på over 140%. Test gratis nå!")
+    except Exception as e:
+        current_app.logger.error(f"Error loading ROI calculator: {e}")
+        flash('Kunne ikke laste ROI-kalkulatoren.', 'error')
+        return redirect(url_for('main.index'))
+
 @main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     """Password reset request"""
@@ -1626,7 +1641,7 @@ def my_subscription():
                 },
                 {
                     'name': 'Premium',
-                    'price': 2999,
+                    'price': 2499,
                     'billing': 'yearly',
                     'features': [
                         'Alt i månedspakken',
@@ -1678,7 +1693,7 @@ def my_subscription():
                     'start_date': getattr(subscription, 'start_date', None),
                     'end_date': getattr(subscription, 'end_date', None),
                     'next_billing': getattr(subscription, 'next_billing_date', None),
-                    'price': getattr(subscription, 'price', 299),
+                    'price': getattr(subscription, 'price', 249),
                     'features': [
                         'Ubegrenset tilgang til alle aksjer',
                         'Avanserte analyser',

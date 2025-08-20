@@ -87,7 +87,7 @@ def pricing_page():
         plans = [
             {
                 'name': 'Månedlig',
-                'price': '399 kr/mnd',
+                'price': '249 kr/mnd',
                 'price_yearly': None,
                 'features': [
                     'Ubegrensede AI-analyser',
@@ -102,15 +102,15 @@ def pricing_page():
             },
             {
                 'name': 'Årlig',
-                'price': '2999 kr/år', 
-                'price_yearly': 'Spar 789 kr (249 kr/mnd)',
+                'price': '2499 kr/år', 
+                'price_yearly': 'Spar 489 kr (208 kr/mnd)',
                 'features': [
                     'Alt i månedlig plan +',
-                    'Spar 25% sammenlignet med månedlig',
+                    'Spar 17% sammenlignet med månedlig',
                     'Prioritert kundesupport',
                     'Eksklusive markedsrapporter',
                     'Beta-tilgang til nye funksjoner',
-                    'Kun 249 kr/måned i gjennomsnitt',
+                    'Kun 208 kr/måned i gjennomsnitt',
                     'Porteføljeoptimalisering',
                     'Prioritert support'
                 ],
@@ -183,7 +183,7 @@ def api_pricing_plans():
                 'id': 'yearly',
                 'name': 'Årlig',
                 'price_monthly': None,
-                'price_yearly': 2999,
+                'price_yearly': 2499,
                 'currency': 'NOK'
             },
             {
@@ -329,7 +329,7 @@ def buy_report():
                         'name': f'AI Konsulent-rapport ({len(symbols)} aksjer)',
                         'description': f'Omfattende AI-analyse av: {", ".join(symbols[:3])}{"..." if len(symbols) > 3 else ""}',
                     },
-                    'unit_amount': 199 * 100,  # 199 NOK in øre
+                    'unit_amount': 249 * 100,  # 249 NOK in øre
                 },
                 'quantity': 1,
             }],

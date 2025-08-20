@@ -169,7 +169,7 @@ def analysis_tools():
             'url': 'https://aksje.io',
             'description': 'Norsk aksjeanalyse med fokus på Oslo Børs og teknisk analyse',
             'features': ['Oslo Børs focus', 'Norwegian market data', 'Technical indicators', 'Sector analysis'],
-            'pricing': 'Gratis basis, Premium fra 199 NOK/mnd',
+            'pricing': 'Gratis basis, Premium fra 249 NOK/mnd',
             'category': 'norwegian',
             'rating': 4.2,
             'logo': '/static/images/aksje-io-logo.png'
@@ -189,7 +189,7 @@ def analysis_tools():
             'url': 'https://investorkurs.no',
             'description': 'Norsk investeringsutdanning og analyse-ressurser',
             'features': ['Educational content', 'Market analysis', 'Investment courses', 'Norwegian focus'],
-            'pricing': 'Kurs fra 1999 NOK',
+            'pricing': 'Kurs fra 2499 NOK',
             'category': 'education',
             'rating': 4.1,
             'logo': '/static/images/investorkurs-logo.png'

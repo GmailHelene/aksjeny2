@@ -419,7 +419,7 @@ def pricing():
         'plans': [
             {
                 'name': 'Basic',
-                'price': '199 kr/mnd',
+                'price': '249 kr/mnd',
                 'features': ['Grunnleggende analyse', 'Portefølje tracking']
             },
             {
@@ -1035,7 +1035,7 @@ def subscription_status():
                 
                 payment_info = {
                     'id': f'pi_{uuid.uuid4().hex[:24]}',
-                    'amount': 199 if current_user.subscription_type == 'monthly' else 1990,
+                    'amount': 249 if current_user.subscription_type == 'monthly' else 2499,
                     'currency': 'NOK',
                     'status': 'succeeded',
                     'date': payment_date.isoformat(),
@@ -1501,7 +1501,7 @@ def subscription():
         'plans': [
             {
                 'name': 'Basic',
-                'price': '199 kr/mnd',
+                'price': '249 kr/mnd',
                 'description': 'Perfekt for nybegynnere',
                 'features': [
                     'Grunnleggende teknisk analyse',
