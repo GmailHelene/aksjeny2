@@ -410,7 +410,22 @@ def details(symbol):
                              ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock={'symbol': symbol, 'name': symbol},
                              stock_info={'symbol': symbol, 'longName': symbol},
-                             technical_data={},
+                             technical_data={
+                                 'rsi': 50.0,
+                                 'macd': 0.0,
+                                 'macd_signal': 0.0,
+                                 'bollinger_upper': 105.0,
+                                 'bollinger_middle': 100.0,
+                                 'bollinger_lower': 95.0,
+                                 'sma_20': 100.0,
+                                 'sma_50': 100.0,
+                                 'ema_12': 100.0,
+                                 'stochastic_k': 50.0,
+                                 'stochastic_d': 50.0,
+                                 'signal': 'ERROR',
+                                 'signal_strength': 'N/A',
+                                 'signal_reason': 'Error loading data'
+                             },
                              news=[],
                              earnings=[],
                              competitors=[],
