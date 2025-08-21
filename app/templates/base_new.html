@@ -238,10 +238,17 @@
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}" rel="stylesheet">
-    <!-- Ultimate Contrast Fix - Final Override -->
-    <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}" rel="stylesheet">
+        <!-- Ultimate Contrast Fix - Final Override (fjernet, fil mangler) -->
     <!-- Responsive Images -->
     <link href="{{ url_for('static', filename='css/responsive-images.css') }}" rel="stylesheet">
+        <!-- Fix for icon color on quick-action-btn hover -->
+        <style>
+        .quick-action-btn:hover i {
+            color: inherit !important;
+            filter: none !important;
+            opacity: 1 !important;
+        }
+        </style>
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     
