@@ -8,6 +8,55 @@
     
     <!-- Simple navbar styling -->
     <style>
+    /* GLOBAL COLOR CONTRAST FIXES - Ensure dark backgrounds for white text */
+    .bg-danger, .badge-danger, .btn-danger, .alert-danger {
+        background-color: #b71c1c !important; /* Very dark red for white text */
+        border-color: #b71c1c !important;
+    }
+    
+    .bg-primary, .badge-primary, .btn-primary {
+        background-color: #0d47a1 !important; /* Very dark blue for white text */
+        border-color: #0d47a1 !important;
+    }
+    
+    .bg-warning, .badge-warning, .btn-warning {
+        background-color: #e65100 !important; /* Dark orange instead of light yellow */
+        color: white !important;
+        border-color: #e65100 !important;
+    }
+    
+    .bg-info, .badge-info, .btn-info {
+        background-color: #01579b !important; /* Very dark cyan for white text */
+        border-color: #01579b !important;
+    }
+    
+    .bg-success, .badge-success, .btn-success {
+        background-color: #1b5e20 !important; /* Very dark green for white text */
+        border-color: #1b5e20 !important;
+    }
+    
+    /* Alert overrides for better contrast */
+    .alert-danger {
+        background-color: #721c24 !important;
+        color: #f8d7da !important;
+    }
+    
+    .alert-warning {
+        background-color: #664d03 !important;
+        color: #fff3cd !important;
+    }
+    
+    /* Card header overrides */
+    .card-header.bg-primary {
+        background-color: #0d47a1 !important;
+        color: white !important;
+    }
+    
+    .card-header.bg-danger {
+        background-color: #b71c1c !important;
+        color: white !important;
+    }
+    
     .navbar {
         background-color: #1a1a1a !important;
         border-bottom: 1px solid #333;
@@ -66,6 +115,21 @@
     .dropdown-divider {
         margin: 0.5rem 0;
         opacity: 0.1;
+    }
+
+    /* Achievement toast styling */
+    .achievement-toast {
+        position: fixed !important;
+        top: 20px;
+        right: 20px;
+        z-index: 1055;
+        min-width: 300px;
+        max-width: 400px;
+    }
+    
+    .achievement-toast .toast-body {
+        background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+        color: #000;
     }
 
     /* Mobile navigation enhancements */
@@ -174,10 +238,21 @@
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}" rel="stylesheet">
+    <!-- Ultimate Contrast Fix - Final Override -->
+    <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}" rel="stylesheet">
     <!-- Responsive Images -->
     <link href="{{ url_for('static', filename='css/responsive-images.css') }}" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Aksjeradar">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo-192.png') }}">
+    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -272,6 +347,10 @@
         }
     }
     </script>
+    
+    <!-- ConveyThis Script Start -->
+    <script src="//cdn.conveythis.com/javascript/conveythis.js?api_key=pub_85496d2f253bff365fbf0fa9429277e3"></script>
+    <!-- ConveyThis Script End -->
 </head>
 <body>
     <!-- Simple Bootstrap Navigation -->
@@ -289,187 +368,205 @@
             
             <!-- Navigation -->
             <div class="collapse navbar-collapse" id="navbarNav">
+                {% if current_user.is_authenticated %}
+                <!-- FULL NAVIGATION FOR AUTHENTICATED USERS -->
                 <ul class="navbar-nav ms-auto">
-                    <!-- Search Form - Hidden on mobile -->
-                    <li class="nav-item d-none d-lg-block me-3">
-                        <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get" style="max-width: 300px;">
-                            <div class="input-group input-group-sm">
-                                <input type="search" name="q" class="form-control" 
-                                       placeholder="Søk aksjer..." aria-label="Søk aksjer"
-                                       style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
-                                <button class="btn btn-outline-secondary" type="submit" 
-                                        style="border-radius: 0 20px 20px 0; border-left: none;">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </li>
-                    
-                    <!-- Search Button for Mobile -->
-                    <li class="nav-item d-lg-none">
-                        <a class="nav-link" href="{{ url_for('stocks.search') }}">
-                            <i class="bi bi-search"></i> Søk
-                        </a>
-                    </li>
-                    
-                    <!-- Analysis Dropdown -->
+                    <!-- Aksjer/Stocks Dropdown - EXPANDED -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-graph-up"></i> Analyse
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
-                                <i class="bi bi-graph-up"></i> Oversikt
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
-                                <i class="bi bi-cpu"></i> AI Prediksjoner
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
-                                <i class="bi bi-funnel"></i> Aksje-screener
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
-                                <i class="bi bi-currency-exchange"></i> Valuta
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
-                                <i class="bi bi-bar-chart-line"></i> Teknisk analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}">
-                                <i class="bi bi-calculator"></i> Fundamental analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
-                                <i class="bi bi-person-check"></i> Warren Buffett analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
-                                <i class="bi bi-mortarboard"></i> Benjamin Graham analyse
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}">
-                                <i class="bi bi-emoji-smile"></i> Sentiment analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
-                                <i class="bi bi-star"></i> Anbefalinger
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Stocks/Prices Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.list_oslo') }}" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-graph-up-arrow"></i> Aksjer
                         </a>
                         <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Markedsoversikt</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}">
                                 <i class="bi bi-pie-chart"></i> Markedsoversikt
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.oslo_overview') }}">
+                                <i class="bi bi-flag"></i> Oslo Børs Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.global_overview') }}">
+                                <i class="bi bi-globe"></i> Global Oversikt
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
+                                <i class="bi bi-currency-exchange"></i> Valuta Oversikt
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}">
-                                <i class="bi bi-currency-dollar"></i> Aksjekurser
+                            <li><h6 class="dropdown-header">Aksjer & Markets</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}">
+                                <i class="bi bi-flag"></i> Oslo Børs
                             </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/oslo">
-                                <i class="bi bi-geo-alt"></i> Oslo Børs
-                            </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/global">
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}">
                                 <i class="bi bi-globe"></i> Globale aksjer
                             </a></li>
-                            <li><a class="dropdown-item" href="/stocks/list/currency">
-                                <i class="bi bi-currency-exchange"></i> Valutakurser
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
-                                <i class="bi bi-currency-bitcoin"></i> Kryptovaluta
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- News -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">
-                            <i class="bi bi-newspaper"></i> Nyheter
-                        </a>
-                    </li>
-                    
-                    <!-- Tools Dropdown - Only for authenticated users -->
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-tools"></i> Verktøy
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
-                                <i class="bi bi-robot"></i> AI Analyse
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
-                                <i class="bi bi-lightning"></i> Hurtiganalyse
-                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}">
-                                <i class="bi bi-arrow-left-right"></i> Valutakonverter
+                            <li><h6 class="dropdown-header">Kryptovaluta</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
+                                <i class="bi bi-currency-bitcoin"></i> Kryptovalutaer
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
-                                <i class="bi bi-eye-fill"></i> Innsidehandel
-                            </a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-                    
-                    <!-- Portfolio Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-briefcase"></i> Portfolio
+                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.crypto_dashboard') }}">
+                                <i class="bi bi-graph-up-arrow"></i> Crypto Dashboard
+                            <!-- Complex Navigation Bar - 6 dropdowns, 60+ items -->
+                            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                                <div class="container-fluid">
+                                    <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                                        <i class="fas fa-chart-line me-2"></i>AksjeRadar
+                                    </a>
+                                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                                        <span class="navbar-toggler-icon"></span>
+                                    </button>
+                                    <div class="collapse navbar-collapse" id="navbarNav">
+                                        <ul class="navbar-nav me-auto">
+                                            <li class="nav-item">
+                                                <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-chart-bar"></i> Aksjer
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><h6 class="dropdown-header">Markedsoversikt</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}"><i class="fas fa-pie-chart"></i> Markedsoversikt</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.oslo_overview') }}"><i class="fas fa-flag"></i> Oslo Børs Oversikt</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.global_overview') }}"><i class="fas fa-globe"></i> Global Oversikt</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta Oversikt</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header">Aksjer & Markets</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}"><i class="fas fa-flag"></i> Oslo Børs</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}"><i class="fas fa-globe"></i> Globale aksjer</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header">Kryptovaluta</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}"><i class="fab fa-bitcoin"></i> Kryptovalutaer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('advanced_features.crypto_dashboard') }}"><i class="fas fa-chart-line"></i> Crypto Dashboard</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.list_currency') }}"><i class="fas fa-dollar-sign"></i> Valuta</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}"><i class="fas fa-dollar-sign"></i> Aksjekurser</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}"><i class="fas fa-search"></i> Søk aksjer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}"><i class="fas fa-arrows-alt"></i> Sammenlign aksjer</a></li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-brain"></i> Analyse
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}"><i class="fas fa-robot"></i> AI Analyser</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}"><i class="fas fa-microchip"></i> AI Prediksjoner</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}"><i class="fas fa-bolt"></i> Short Analysis</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}"><i class="fas fa-chart-line"></i> Teknisk analyse</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}"><i class="fas fa-calculator"></i> Fundamental analyse</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}"><i class="fas fa-smile"></i> Sentiment analyse</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}"><i class="fas fa-user-tie"></i> Warren Buffett</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}"><i class="fas fa-book"></i> Benjamin Graham</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}"><i class="fas fa-filter"></i> Aksje-screener</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.backtest') }}"><i class="fas fa-chart-line"></i> Backtest</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.strategy_builder') }}"><i class="fas fa-tools"></i> Strategibygger</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.tradingview') }}"><i class="fas fa-chart-line"></i> TradingView</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('market_intel.index') }}" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-bolt"></i> Market Intel
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ url_for('market_intel.index') }}"><i class="fas fa-info-circle"></i> Oversikt</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}"><i class="fas fa-user-secret"></i> Insider Trading Analysis</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('market_intel.earnings_calendar') }}"><i class="fas fa-calendar-alt"></i> Resultatkalender</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('market_intel.sector_analysis') }}"><i class="fas fa-project-diagram"></i> Sektoranalyse</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('market_intel.economic_indicators') }}"><i class="fas fa-chart-line"></i> Økonomiske indikatorer</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header">Nyheter & Intelligence</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}"><i class="fas fa-newspaper"></i> Finansnyheter</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('news_intelligence.news_dashboard') }}"><i class="fas fa-bolt"></i> News Intelligence</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('features.market_news_sentiment') }}"><i class="fas fa-smile"></i> Market News Sentiment</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('daily_view.index') }}"><i class="fas fa-calendar-day"></i> Dagens marked</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('sentiment_tracker.sentiment_tracker_page') }}"><i class="fas fa-smile"></i> Sentiment Tracker</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header">Norge</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}"><i class="fas fa-flag"></i> Norge Oversikt</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.social_sentiment') }}"><i class="fas fa-comments"></i> Sosial sentiment</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}"><i class="fas fa-oil-can"></i> Olje-korrelasjon</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}"><i class="fas fa-university"></i> Regjeringsanalyse</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}"><i class="fas fa-ship"></i> Shipping Intelligence</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('external_data.market_intelligence') }}"><i class="fas fa-cloud-download-alt"></i> Ekstern Data</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('external_data.analyst_coverage') }}"><i class="fas fa-users"></i> Analytiker Dekning</a></li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-tools"></i> Pro Tools
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}"><i class="fas fa-bell"></i> Prisalarmer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}"><i class="fas fa-users"></i> Analytiker Anbefalinger</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><h6 class="dropdown-header">Avanserte Verktøy</h6></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}"><i class="fas fa-exchange-alt"></i> Valutakonverter</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}"><i class="fas fa-calculator"></i> Investment Analyzer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('mobile_trading.mobile_dashboard') }}"><i class="fas fa-mobile-alt"></i> Mobile Trading</a></li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-briefcase"></i> Portfolio
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}"><i class="fas fa-eye"></i> Watchlist</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.index') }}"><i class="fas fa-eye"></i> Avansert Watchlist</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}"><i class="fas fa-lightbulb"></i> Aksjetips</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}"><i class="fas fa-cogs"></i> Avansert portfolio</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}"><i class="fas fa-robot"></i> ML Analytics</a></li>
+                                                </ul>
+                                            </li>
+                                            <li class="nav-item dropdown">
+                                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-user"></i> Konto
+                                                </a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </nav>
+                {% else %}
+                <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.demo') }}">
+                            <i class="bi bi-play-circle"></i> Demo
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
-                                <i class="bi bi-briefcase"></i> Mine porteføljer
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
-                                <i class="bi bi-eye"></i> Watchlist
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}">
-                                <i class="bi bi-lightbulb"></i> Aksjetips
-                            </a></li>
-                        </ul>
                     </li>
-                    
-                    <!-- User Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> Konto
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('pricing.pricing_page') }}">
+                            <i class="bi bi-star"></i> Priser
                         </a>
-                        <ul class="dropdown-menu">
-                            {% if current_user.is_authenticated %}
-                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
-                                    <i class="bi bi-person"></i> Profil
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.settings') }}">
-                                    <i class="bi bi-gear"></i> Innstillinger
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('price_alerts.index') }}">
-                                    <i class="bi bi-bell"></i> Prisalarmer
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.logout') }}">
-                                    <i class="bi bi-box-arrow-right"></i> Logg ut
-                                </a></li>
-                            {% else %}
-                                <li><a class="dropdown-item" href="{{ url_for('main.login') }}">
-                                    <i class="bi bi-box-arrow-in-right"></i> Logg inn
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.register') }}">
-                                    <i class="bi bi-person-plus"></i> Registrer
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.demo') }}">
-                                    <i class="bi bi-play-circle"></i> Demo
-                                </a></li>
-                            {% endif %}
-                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Logg inn
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.register') }}">
+                            <i class="bi bi-person-plus"></i> Registrer
+                        </a>
                     </li>
                 </ul>
-                
-                <!-- Language Switcher -->
-                <div class="d-flex align-items-center ms-3">
-                    {% include 'language_switcher.html' %}
-                </div>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -495,21 +592,16 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
-                    <h6>Språk / Language</h6>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="footerLanguageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-globe"></i>
-                            <span id="footer-current-language">NO</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
-                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('no')">
-                                <i class="bi bi-flag"></i> Norsk
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('en')">
-                                <i class="bi bi-flag-fill"></i> English
-                            </a></li>
-                        </ul>
-                    </div>
+                    <h6>Søk aksjer</h6>
+                    <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control" 
+                                   placeholder="Søk aksjer..." aria-label="Søk aksjer">
+                            <button class="btn btn-outline-light" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
                 <div class="col-md-3">
                     <h6>Læring & Guider</h6>
@@ -723,6 +815,90 @@
         
         console.log('✅ Global error suppression system initialized');
     });
+    </script>
+    
+    <!-- Achievement Tracking System -->
+    {% if current_user.is_authenticated %}
+    <script>
+    // Global achievement tracking function
+    window.trackAchievement = function(type, increment = 1) {
+        fetch('/achievements/api/update_stat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                type: type,
+                increment: increment
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.new_achievements.length > 0) {
+                // Show achievement notifications
+                data.new_achievements.forEach(achievement => {
+                    showAchievementNotification(achievement);
+                });
+            }
+        })
+        .catch(error => console.error('Achievement tracking error:', error));
+    };
+    
+    // Achievement notification function
+    function showAchievementNotification(achievement) {
+        // Create toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast achievement-toast';
+        toast.innerHTML = `
+            <div class="toast-header bg-warning">
+                <i class="bi bi-trophy-fill text-dark me-2"></i>
+                <strong class="me-auto">Ny oppnåelse!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi ${achievement.icon} text-${achievement.badge_color} me-2" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>${achievement.name}</strong><br>
+                        <small>${achievement.description}</small><br>
+                        <span class="badge bg-${achievement.badge_color}">+${achievement.points} poeng</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add to page and show
+        document.body.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove after shown
+        toast.addEventListener('hidden.bs.toast', () => {
+            toast.remove();
+        });
+    }
+    
+    // Track page visits for analytics
+    if (window.location.pathname.includes('/analysis/')) {
+        trackAchievement('page_visits');
+    }
+    </script>
+    {% endif %}
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(function(registration) {
+                    console.log('ServiceWorker registered: ', registration);
+                })
+                .catch(function(error) {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        });
+    }
     </script>
     
     <!-- Portfolio and Favorites JavaScript -->
