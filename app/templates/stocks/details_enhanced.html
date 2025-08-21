@@ -1523,6 +1523,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // Remove after hidden
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
+
+// Button functionality for stock details
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to Watchlist/Favorites functionality
+    document.getElementById('add-to-watchlist')?.addEventListener('click', async function() {
+        const ticker = this.dataset.ticker;
+        try {
+            const response = await fetch('/api/favorites/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ symbol: ticker })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                this.innerHTML = data.is_favorite ? 
+                    '<i class="bi bi-star-fill"></i> I favoritter' : 
+                    '<i class="bi bi-star"></i> Favoritt';
+                this.className = data.is_favorite ? 
+                    'btn btn-warning' : 
+                    'btn btn-outline-warning';
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.error || 'Kunne ikke oppdatere favoritt', 'error');
+            }
+        } catch (error) {
+            console.error('Favorite error:', error);
+            showToast('Teknisk feil ved favoritt', 'error');
+        }
+    });
+    
+    // Add to Portfolio functionality
+    document.getElementById('add-to-portfolio')?.addEventListener('click', function() {
+        const ticker = this.dataset.ticker;
+        // Redirect to portfolio add page
+        window.location.href = `/portfolio/add?symbol=${ticker}`;
+    });
+    
+    // External Buy functionality
+    document.querySelectorAll('.external-buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const ticker = this.dataset.ticker;
+            // External broker integration - example with DNB
+            let brokerUrl = '';
+            
+            if (ticker.endsWith('.OL')) {
+                // Oslo Børs stocks - DNB Markets
+                brokerUrl = `https://www.dnb.no/markets/markeder?symbol=${ticker}`;
+            } else {
+                // International stocks - general broker
+                brokerUrl = `https://www.nordnet.no/sok?query=${ticker}`;
+            }
+            
+            window.open(brokerUrl, '_blank');
+            showToast(`Åpner ${ticker} hos ekstern megler...`, 'info');
+        });
+    });
+});
 </script>
 
 <!-- Chart.js -->

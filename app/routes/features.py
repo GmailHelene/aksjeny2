@@ -1,7 +1,7 @@
 """
 New features routes for analyst recommendations and AI predictions
 """
-from flask import Blueprint, render_template, request, jsonify, current_app
+from flask import Blueprint, render_template, request, jsonify, current_app, redirect, url_for
 from flask_login import login_required
 from ..utils.access_control import access_required, demo_access
 from ..models.user import User
@@ -34,8 +34,8 @@ def market_news_sentiment():
 @features.route('/notifications')
 @access_required
 def notifications():
-    """Notifications feature page"""
-    return render_template('features/notifications.html', title='Varsler')
+    """Redirect to real notifications page"""
+    return redirect(url_for('notifications.index'))
 
 @features.route('/ai-predictions')
 @demo_access

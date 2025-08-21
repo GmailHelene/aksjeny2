@@ -15,13 +15,16 @@ def index():
     """Pro-verktøy oversikt"""
     return render_template('main/coming_soon.html', message="Kommer senere")
 
-@pro_tools.route('/screener')
+@pro_tools.route('/screener', methods=['GET', 'POST'])
 @access_required
 def advanced_screener():
     """Avansert aksje-screener"""
     try:
         # Hent screening kriterier
-        criteria = request.args.to_dict()
+        if request.method == 'POST':
+            criteria = request.form.to_dict()
+        else:
+            criteria = request.args.to_dict()
         
         # Standard screening
         results = []
