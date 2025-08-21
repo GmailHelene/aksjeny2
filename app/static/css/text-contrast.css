@@ -205,7 +205,7 @@
 }
 
 .card-header.bg-gradient {
-    color: #ffffff !important;
+    background-color: #1e5ed0!important;
 }
 
 /* Override text-white in card headers specifically */
