@@ -913,41 +913,6 @@ def compare():
                              period='6mo',
                              interval='1d',
                              normalize=True)
-                    open_price = price + random.uniform(-day_volatility, day_volatility)
-                    close_price = price
-                    high_price = max(open_price, close_price) + random.uniform(0, day_volatility)
-                    low_price = min(open_price, close_price) - random.uniform(0, day_volatility)
-                    
-                    demo_data.append({
-                        'date': current_date.strftime('%Y-%m-%d'),
-                        'open': round(open_price, 2),
-                        'high': round(high_price, 2),
-                        'low': round(low_price, 2),
-                        'close': round(close_price, 2),
-                        'volume': random.randint(100000, 5000000)  # Realistic volume range
-                    })
-                    current_date += timedelta(days=1)
-                
-                chart_data[symbol] = demo_data
-                current_prices[symbol] = price
-                price_changes[symbol] = ((price - base_price) / base_price) * 100
-                volatility[symbol] = 15.0 + (abs(hash(symbol)) % 20)  # Demo volatility 15-35%
-                volumes[symbol] = 500000 + (abs(hash(symbol)) % 2000000)  # Volume 0.5M-2.5M
-                betas[symbol] = 0.8 + (abs(hash(symbol)) % 8) / 10  # Beta 0.8-1.6
-                rsi[symbol] = 30 + (abs(hash(symbol)) % 40)  # RSI 30-70
-                macd[symbol] = {
-                    'macd': random.uniform(-2, 2), 
-                    'signal': random.uniform(-1.5, 1.5),
-                    'histogram': random.uniform(-1, 1)
-                }
-                bb[symbol] = {
-                    'upper': round(price * 1.1, 2), 
-                    'lower': round(price * 0.9, 2), 
-                    'middle': round(price, 2), 
-                    'position': random.choice(['upper', 'middle', 'lower'])
-                }
-                sma200[symbol] = random.uniform(-10, 10)  # % above/below 200 SMA
-                sma50[symbol] = random.uniform(-5, 8)     # % above/below 50 SMA
                 signals[symbol] = random.choice(['BUY', 'HOLD', 'SELL'])
             
             logger.info(f"Generated demo chart data for {len(symbols)} symbols with {days} days each")
