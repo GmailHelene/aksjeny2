@@ -220,8 +220,3 @@
 .card-header .bi {
     color: inherit !important;
 }
-
-/* Set card background to black */
-.card {
-    --bs-card-bg: #000000;
-}
