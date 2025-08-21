@@ -25,6 +25,36 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# Retry decorator - moved outside class  
+def retry_with_exponential_backoff(max_retries=3):
+    """Decorator for retry logic with exponential backoff"""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    result = func(self, *args, **kwargs)
+                    # Record success if we had failures before
+                    if hasattr(self, '_record_success'):
+                        self._record_success()
+                    return result
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        # Last attempt failed
+                        if hasattr(self, '_record_failure'):
+                            self._record_failure()
+                        logger.error(f"All {max_retries} attempts failed for {func.__name__}: {e}")
+                        raise
+                    
+                    # Exponential backoff with jitter
+                    backoff_time = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning(f"Attempt {attempt + 1} failed, retrying in {backoff_time:.2f}s: {e}")
+                    time.sleep(backoff_time)
+            
+            return None
+        return wrapper
+    return decorator
+
 # Safe imports
 try:
     import yfinance as yf
@@ -153,29 +183,6 @@ class EnhancedYFinanceService:
         """Store data in cache with timestamp"""
         self.cache[cache_key] = (data, time.time())
         logger.debug(f"Cached data for {cache_key}")
-    
-    def retry_with_exponential_backoff(self, max_retries=3):
-        """Decorator for retry logic with exponential backoff"""
-        def decorator(func):
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                for attempt in range(max_retries):
-                    try:
-                        return func(*args, **kwargs)
-                    except Exception as e:
-                        if attempt == max_retries - 1:
-                            # Last attempt failed
-                            self._record_failure()
-                            raise
-                        
-                        # Exponential backoff with jitter
-                        backoff_time = (2 ** attempt) + random.uniform(0, 1)
-                        logger.warning(f"Attempt {attempt + 1} failed, retrying in {backoff_time:.2f}s: {e}")
-                        time.sleep(backoff_time)
-                
-                return None
-            return wrapper
-        return decorator
     
     @retry_with_exponential_backoff(max_retries=3)
     def get_ticker_history(self, symbol, period='1mo', interval='1d'):
