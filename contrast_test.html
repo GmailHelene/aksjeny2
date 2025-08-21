@@ -20,10 +20,57 @@
             border-color: #555 !important;
         }
         
-        .card-header {
-            background-color: #3a3a3a !important;
+        /* CRITICAL FIX: Normal Bootstrap buttons should have VISIBLE colors */
+        .btn-danger {
+            background-color: #dc3545 !important; /* Bright red - clearly visible */
+            border-color: #dc3545 !important;
             color: #ffffff !important;
-            border-bottom-color: #555 !important;
+        }
+        
+        .btn-primary {
+            background-color: #007bff !important; /* Bright blue - clearly visible */
+            border-color: #007bff !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107 !important; /* Bright yellow - clearly visible */
+            color: #000000 !important; /* Black text on yellow */
+            border-color: #ffc107 !important;
+        }
+        
+        .btn-info {
+            background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
+            border-color: #17a2b8 !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-success {
+            background-color: #28a745 !important; /* Bright green - clearly visible */
+            border-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d !important; /* Standard gray - clearly visible */
+            border-color: #6c757d !important;
+            color: #ffffff !important;
+        }
+        
+        /* Card headers with background colors */
+        .card-header.bg-primary {
+            background-color: #007bff !important;
+            color: #ffffff !important;
+        }
+        
+        .card-header.bg-success {
+            background-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+        
+        .card-header.bg-warning {
+            background-color: #ffc107 !important;
+            color: #000000 !important;
         }
         
         /* CRITICAL FIX: Bootstrap outline buttons for quick actions */
@@ -175,6 +222,82 @@
                         
                         <hr class="my-4">
                         
+                        <h5>🎯 Normal Bootstrap Buttons (Skal ha KLARE farger)</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100">
+                                    <i class="bi bi-star"></i>
+                                    Primary
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-success w-100">
+                                    <i class="bi bi-check"></i>
+                                    Success
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-info w-100">
+                                    <i class="bi bi-info"></i>
+                                    Info
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-warning w-100">
+                                    <i class="bi bi-exclamation"></i>
+                                    Warning
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-danger w-100">
+                                    <i class="bi bi-x"></i>
+                                    Danger
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-secondary w-100">
+                                    <i class="bi bi-gear"></i>
+                                    Secondary
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <h5>🎯 Outline Buttons (Skal ha MØRKE bakgrunner)</h5>
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100">
+                                    Outline Primary
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-success w-100">
+                                    Outline Success
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-info w-100">
+                                    Outline Info
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-warning w-100">
+                                    Outline Warning
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-danger w-100">
+                                    Outline Danger
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary w-100">
+                                    Outline Secondary
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <button class="btn btn-outline-warning w-100">
@@ -227,6 +350,54 @@
                             <li><code>.text-muted</code> - Lys grå tekst (#adb5bd)</li>
                             <li><code>.text-dark</code> - Hvit tekst for mørkt tema (#ffffff)</li>
                         </ul>
+                        
+                        <h6>Normal Bootstrap buttons (FIKSET):</h6>
+                        <ul>
+                            <li><code>.btn-primary</code> - Klar blå bakgrunn (#007bff)</li>
+                            <li><code>.btn-success</code> - Klar grønn bakgrunn (#28a745)</li>
+                            <li><code>.btn-info</code> - Klar cyan bakgrunn (#17a2b8)</li>
+                            <li><code>.btn-warning</code> - Klar gul bakgrunn (#ffc107) med mørk tekst</li>
+                            <li><code>.btn-danger</code> - Klar rød bakgrunn (#dc3545)</li>
+                            <li><code>.btn-secondary</code> - Klar grå bakgrunn (#6c757d)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <h3>🎨 Card Headers med Fargede Bakgrunner (Skal være synlige)</h3>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-star me-2"></i>Primary Header</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Dette card-header skal ha klar blå bakgrunn</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-check me-2"></i>Success Header</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Dette card-header skal ha klar grønn bakgrunn</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="bi bi-exclamation me-2"></i>Warning Header</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Dette card-header skal ha klar gul bakgrunn med mørk tekst</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Test - Styling Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    /* GLOBAL COLOR CONTRAST FIXES - Proper button colors for dark theme */
+    .bg-danger, .badge-danger, .alert-danger {
+        background-color: #dc3545 !important; /* Standard Bootstrap red */
+        border-color: #dc3545 !important;
+    }
+    
+    /* CRITICAL FIX: Normal Bootstrap buttons should have VISIBLE colors */
+    .btn-danger {
+        background-color: #dc3545 !important; /* Bright red - clearly visible */
+        border-color: #dc3545 !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-primary, .badge-primary {
+        background-color: #0d47a1 !important; /* Very dark blue for badges */
+        border-color: #0d47a1 !important;
+    }
+    
+    .btn-primary {
+        background-color: #007bff !important; /* Bright blue - clearly visible */
+        border-color: #007bff !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-warning, .badge-warning {
+        background-color: #e65100 !important; /* Dark orange for badges */
+        color: white !important;
+        border-color: #e65100 !important;
+    }
+    
+    .btn-warning {
+        background-color: #ffc107 !important; /* Bright yellow - clearly visible */
+        color: #000000 !important; /* Black text on yellow */
+        border-color: #ffc107 !important;
+    }
+    
+    .bg-info, .badge-info {
+        background-color: #01579b !important; /* Very dark cyan for badges */
+        border-color: #01579b !important;
+    }
+    
+    .btn-info {
+        background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
+        border-color: #17a2b8 !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-success, .badge-success {
+        background-color: #1b5e20 !important; /* Very dark green for badges */
+        border-color: #1b5e20 !important;
+    }
+    
+    .btn-success {
+        background-color: #28a745 !important; /* Bright green - clearly visible */
+        border-color: #28a745 !important;
+        color: #ffffff !important;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d !important; /* Standard gray - clearly visible */
+        border-color: #6c757d !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Bootstrap table and background classes must have proper colors */
+    .table-light {
+        background-color: #f8f9fa !important; /* Light gray background for table headers */
+        color: #212529 !important; /* Dark text on light background */
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important; /* Light gray background */
+        color: #212529 !important; /* Dark text on light background */
+    }
+    
+    .bg-secondary {
+        background-color: #6c757d !important; /* Gray background */
+        color: #ffffff !important; /* White text on gray background */
+    }
+    
+    /* Fix for badges with light backgrounds */
+    .badge.bg-light {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #dee2e6 !important; /* Light border for definition */
+    }
+    
+    .badge.bg-secondary {
+        background-color: #6c757d !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Badge classes for all color schemes */
+    .badge.bg-primary {
+        background-color: #007bff !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-success {
+        background-color: #28a745 !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-warning {
+        background-color: #ffc107 !important;
+        color: #000000 !important;
+    }
+    
+    .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Navbar classes */
+    .navbar-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    .navbar-light .navbar-brand,
+    .navbar-light .navbar-nav .nav-link {
+        color: #212529 !important;
+    }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1>Styling Test - Alle Bootstrap Elementer</h1>
+        
+        <!-- Button tests -->
+        <div class="mb-4">
+            <h3>Knapper</h3>
+            <button class="btn btn-primary me-2">Primary Button</button>
+            <button class="btn btn-success me-2">Success Button</button>
+            <button class="btn btn-warning me-2">Warning Button</button>
+            <button class="btn btn-danger me-2">Danger Button</button>
+            <button class="btn btn-info me-2">Info Button</button>
+            <button class="btn btn-secondary me-2">Secondary Button</button>
+        </div>
+        
+        <!-- Badge tests -->
+        <div class="mb-4">
+            <h3>Badges</h3>
+            <span class="badge bg-primary me-2">Primary Badge</span>
+            <span class="badge bg-success me-2">Success Badge</span>
+            <span class="badge bg-warning me-2">Warning Badge</span>
+            <span class="badge bg-danger me-2">Danger Badge</span>
+            <span class="badge bg-info me-2">Info Badge</span>
+            <span class="badge bg-secondary me-2">Secondary Badge</span>
+            <span class="badge bg-light me-2">Light Badge</span>
+        </div>
+        
+        <!-- Card tests -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        Primary Header
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Card with primary header.</p>
+                    </div>
+                    <div class="card-footer bg-light">
+                        Light Footer
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Success Header
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Card with success header.</p>
+                    </div>
+                    <div class="card-footer bg-secondary text-white">
+                        Secondary Footer
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table tests -->
+        <div class="mb-4">
+            <h3>Tabeller</h3>
+            <table class="table table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                        <th>Header 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                        <td><span class="badge bg-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td>Data 4</td>
+                        <td>Data 5</td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>Data 7</td>
+                        <td>Data 8</td>
+                        <td><span class="badge bg-danger">Error</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Navbar test -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="#">Brand</a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="#">Home</a>
+                    <a class="nav-link" href="#">About</a>
+                    <a class="nav-link" href="#">Contact</a>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Background sections -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="p-3 bg-light rounded">
+                    <h5>Light Background</h5>
+                    <p>Dette er en seksjon med lys bakgrunn.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-secondary rounded text-white">
+                    <h5>Secondary Background</h5>
+                    <p>Dette er en seksjon med secondary bakgrunn.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-primary rounded text-white">
+                    <h5>Primary Background</h5>
+                    <p>Dette er en seksjon med primary bakgrunn.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stock cards like on real site -->
+        <div class="mb-4">
+            <h3>Stock Card Example</h3>
+            <div class="stock-card mb-3 p-3 bg-light rounded-3">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h6 class="mb-1">AAPL</h6>
+                        <small class="text-muted">Apple Inc.</small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-success">+2.4%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

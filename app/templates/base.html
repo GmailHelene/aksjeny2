@@ -4,35 +4,215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="cache-bust" content="20250821_color_fix">
+    <meta name="cache-bust" content="20250821_complete_styling_fix">
     
     <!-- Simple navbar styling -->
     <style>
-    /* GLOBAL COLOR CONTRAST FIXES - Ensure dark backgrounds for white text */
-    .bg-danger, .badge-danger, .btn-danger, .alert-danger {
-        background-color: #b71c1c !important; /* Very dark red for white text */
-        border-color: #b71c1c !important;
+    /* GLOBAL COLOR CONTRAST FIXES - Proper button colors for dark theme */
+    .bg-danger, .badge-danger, .alert-danger {
+        background-color: #dc3545 !important; /* Standard Bootstrap red */
+        border-color: #dc3545 !important;
     }
     
-    .bg-primary, .badge-primary, .btn-primary {
-        background-color: #0d47a1 !important; /* Very dark blue for white text */
+    /* CRITICAL FIX: Normal Bootstrap buttons should have VISIBLE colors */
+    .btn-danger {
+        background-color: #dc3545 !important; /* Bright red - clearly visible */
+        border-color: #dc3545 !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-primary, .badge-primary {
+        background-color: #0d47a1 !important; /* Very dark blue for badges */
         border-color: #0d47a1 !important;
     }
     
-    .bg-warning, .badge-warning, .btn-warning {
-        background-color: #e65100 !important; /* Dark orange instead of light yellow */
+    .btn-primary {
+        background-color: #007bff !important; /* Bright blue - clearly visible */
+        border-color: #007bff !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-warning, .badge-warning {
+        background-color: #e65100 !important; /* Dark orange for badges */
         color: white !important;
         border-color: #e65100 !important;
     }
     
-    .bg-info, .badge-info, .btn-info {
-        background-color: #01579b !important; /* Very dark cyan for white text */
+    .btn-warning {
+        background-color: #ffc107 !important; /* Bright yellow - clearly visible */
+        color: #000000 !important; /* Black text on yellow */
+        border-color: #ffc107 !important;
+    }
+    
+    .bg-info, .badge-info {
+        background-color: #01579b !important; /* Very dark cyan for badges */
         border-color: #01579b !important;
     }
     
-    .bg-success, .badge-success, .btn-success {
-        background-color: #1b5e20 !important; /* Very dark green for white text */
+    .btn-info {
+        background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
+        border-color: #17a2b8 !important;
+        color: #ffffff !important;
+    }
+    
+    .bg-success, .badge-success {
+        background-color: #1b5e20 !important; /* Very dark green for badges */
         border-color: #1b5e20 !important;
+    }
+    
+    .btn-success {
+        background-color: #28a745 !important; /* Bright green - clearly visible */
+        border-color: #28a745 !important;
+        color: #ffffff !important;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d !important; /* Standard gray - clearly visible */
+        border-color: #6c757d !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Bootstrap table and background classes must have proper colors */
+    .table-light {
+        background-color: #f8f9fa !important; /* Light gray background for table headers */
+        color: #212529 !important; /* Dark text on light background */
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important; /* Light gray background */
+        color: #212529 !important; /* Dark text on light background */
+    }
+    
+    .bg-secondary {
+        background-color: #6c757d !important; /* Gray background */
+        color: #ffffff !important; /* White text on gray background */
+    }
+    
+    /* Fix for badges with light backgrounds */
+    .badge.bg-light {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border: 1px solid #dee2e6 !important; /* Light border for definition */
+    }
+    
+    .badge.bg-secondary {
+        background-color: #6c757d !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Progress bars and other Bootstrap utility classes */
+    .progress-bar.bg-warning {
+        background-color: #ffc107 !important;
+        color: #000000 !important;
+    }
+    
+    .progress-bar.bg-success {
+        background-color: #28a745 !important;
+    }
+    
+    .progress-bar.bg-primary {
+        background-color: #007bff !important;
+    }
+    
+    .progress-bar.bg-info {
+        background-color: #17a2b8 !important;
+    }
+    
+    .progress-bar.bg-danger {
+        background-color: #dc3545 !important;
+    }
+    
+    /* CRITICAL FIX: Badge classes for all color schemes */
+    .badge.bg-primary {
+        background-color: #007bff !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-success {
+        background-color: #28a745 !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-warning {
+        background-color: #ffc107 !important;
+        color: #000000 !important;
+    }
+    
+    .badge.bg-info {
+        background-color: #17a2b8 !important;
+        color: #ffffff !important;
+    }
+    
+    .badge.bg-danger {
+        background-color: #dc3545 !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Navbar classes */
+    .navbar-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    .navbar-light .navbar-brand,
+    .navbar-light .navbar-nav .nav-link {
+        color: #212529 !important;
+    }
+    
+    /* CRITICAL FIX: Modal headers */
+    .modal-header.bg-warning {
+        background-color: #ffc107 !important;
+        color: #000000 !important;
+    }
+    
+    .modal-header.bg-primary {
+        background-color: #007bff !important;
+        color: #ffffff !important;
+    }
+    
+    .modal-header.bg-success {
+        background-color: #28a745 !important;
+        color: #ffffff !important;
+    }
+    
+    .modal-header.bg-danger {
+        background-color: #dc3545 !important;
+        color: #ffffff !important;
+    }
+    
+    .modal-header.bg-info {
+        background-color: #17a2b8 !important;
+        color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Card headers with background colors should be VISIBLE */
+    .card-header.bg-primary {
+        background-color: #007bff !important; /* Bright blue - clearly visible */
+        color: #ffffff !important;
+        border-color: #007bff !important;
+    }
+    
+    .card-header.bg-success {
+        background-color: #28a745 !important; /* Bright green - clearly visible */
+        color: #ffffff !important;
+        border-color: #28a745 !important;
+    }
+    
+    .card-header.bg-info {
+        background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
+        color: #ffffff !important;
+        border-color: #17a2b8 !important;
+    }
+    
+    .card-header.bg-warning {
+        background-color: #ffc107 !important; /* Bright yellow - clearly visible */
+        color: #000000 !important; /* Black text on yellow */
+        border-color: #ffc107 !important;
+    }
+    
+    .card-header.bg-danger {
+        background-color: #dc3545 !important; /* Bright red - clearly visible */
+        color: #ffffff !important;
+        border-color: #dc3545 !important;
     }
     
     /* CRITICAL FIX: Bootstrap outline buttons for quick actions */
@@ -81,6 +261,37 @@
     .btn-outline-danger:hover {
         opacity: 0.8 !important;
         color: #ffffff !important;
+    }
+    
+    /* CRITICAL FIX: Hover states for normal buttons */
+    .btn-primary:hover {
+        background-color: #0056b3 !important;
+        border-color: #004085 !important;
+    }
+    
+    .btn-success:hover {
+        background-color: #218838 !important;
+        border-color: #1e7e34 !important;
+    }
+    
+    .btn-info:hover {
+        background-color: #138496 !important;
+        border-color: #117a8b !important;
+    }
+    
+    .btn-warning:hover {
+        background-color: #e0a800 !important;
+        border-color: #d39e00 !important;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333 !important;
+        border-color: #bd2130 !important;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268 !important;
+        border-color: #545b62 !important;
     }
     
     /* CRITICAL FIX: Bootstrap text color classes */
