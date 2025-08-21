@@ -1,6 +1,6 @@
 .demo-section {
     color: #000000;  /* Sort tekst */
-    background-color: #ffffff;  /* Hvit bakgrunn */
+    background-color: transparent;  /* Transparent bakgrunn */
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);

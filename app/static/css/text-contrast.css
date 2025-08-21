@@ -41,7 +41,7 @@
 
 /* Navigation and dropdown styles */
 .dropdown-menu {
-    background-color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .dropdown-item {
@@ -83,35 +83,7 @@
     color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Fix card headers */
-.card-header.bg-primary,
-.card-header.bg-secondary,
-.card-header.bg-success,
-.card-header.bg-danger,
-.card-header.bg-info,
-.card-header.bg-dark {
-    color: #ffffff !important;
-}
 
-/* Fix input text in dark backgrounds */
-.bg-primary input,
-.bg-secondary input,
-.bg-success input,
-.bg-danger input,
-.bg-info input,
-.bg-dark input {
-    color: #212529 !important;
-}
-
-/* Fix select text in dark backgrounds */
-.bg-primary select,
-.bg-secondary select,
-.bg-success select,
-.bg-danger select,
-.bg-info select,
-.bg-dark select {
-    color: #212529 !important;
-}
 
 /* Stats boxes */
 .stats-box.bg-primary,
