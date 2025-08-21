@@ -50,6 +50,17 @@ except ImportError as e:
     ALTERNATIVE_DATA_AVAILABLE = False
     alternative_data_service = None
 
+# Import enhanced yfinance service with best practices
+try:
+    from .enhanced_yfinance_service import get_enhanced_yfinance_service
+    enhanced_yfinance = get_enhanced_yfinance_service()
+    logger.info("✅ Enhanced yfinance service loaded with best practices")
+    ENHANCED_YFINANCE_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Enhanced yfinance service not available: {e}")
+    enhanced_yfinance = None
+    ENHANCED_YFINANCE_AVAILABLE = False
+
 try:
     import requests
 except ImportError:
@@ -200,8 +211,22 @@ class SafeYfinance:
     
     @staticmethod
     def get_ticker_history(symbol, period='1mo', interval='1d', max_retries=3):
-        """Get ticker history with rate limiting and retry logic"""
+        """Get ticker history with enhanced yfinance service and fallback"""
+        
+        # Method 1: Try enhanced yfinance service with best practices
+        if ENHANCED_YFINANCE_AVAILABLE and enhanced_yfinance:
+            try:
+                logger.info(f"Using enhanced yfinance service for {symbol}")
+                hist = enhanced_yfinance.get_ticker_history(symbol, period, interval)
+                if hist is not None and not hist.empty:
+                    logger.info(f"✅ Enhanced yfinance success for {symbol}: {len(hist)} rows")
+                    return hist
+            except Exception as e:
+                logger.warning(f"Enhanced yfinance failed for {symbol}: {e}")
+        
+        # Method 2: Fallback to original yfinance implementation
         if not YFINANCE_AVAILABLE:
+            logger.warning(f"yfinance not available for {symbol}")
             return None
             
         for attempt in range(max_retries):
@@ -222,7 +247,7 @@ class SafeYfinance:
                 hist = ticker.history(period=period, interval=interval, timeout=10)
                 
                 if not hist.empty:
-                    logger.info(f"✅ Got real yfinance history for {symbol}: {len(hist)} rows")
+                    logger.info(f"✅ Fallback yfinance success for {symbol}: {len(hist)} rows")
                     return hist
                 else:
                     logger.warning(f"⚠️ yfinance returned empty history for {symbol}")
@@ -233,7 +258,7 @@ class SafeYfinance:
                     time.sleep(2 ** attempt)
                 continue
                 
-        logger.error(f"❌ yfinance history failed after {max_retries} attempts for {symbol}")
+        logger.error(f"❌ All yfinance attempts failed for {symbol}")
         return None
 
 def retry_with_backoff(retries=3, backoff_in_seconds=1):
@@ -1653,18 +1678,14 @@ class DataService:
             except Exception as e:
                 logger.warning(f"Cache data corrupt for {ticker}: {str(e)}")
         
-        # Method 1: Try yfinance with rate limiting
-        if YFINANCE_AVAILABLE and yf:
+        # Method 1: Try enhanced yfinance service with best practices
+        if ENHANCED_YFINANCE_AVAILABLE and enhanced_yfinance:
             try:
-                logger.info(f"Fetching REAL data for {ticker} from yfinance")
-                rate_limiter.wait_if_needed()  # Remove parameter
+                logger.info(f"Fetching REAL data for {ticker} using enhanced yfinance service")
+                data = enhanced_yfinance.get_ticker_history(ticker, period, interval)
                 
-                with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
-                    stock = yf.Ticker(ticker)
-                    data = stock.history(period=period, interval=interval)
-                
-                if not data.empty:
-                    logger.info(f"✅ Successfully got REAL data for {ticker} ({len(data)} records)")
+                if data is not None and not data.empty:
+                    logger.info(f"✅ Enhanced yfinance success for {ticker} ({len(data)} records)")
                     
                     # Cache successful result
                     try:
@@ -1674,16 +1695,44 @@ class DataService:
                                 cache_data[col] = cache_data[col].dt.strftime('%Y-%m-%d %H:%M:%S%z')
                         simple_cache.set(cache_key, json.dumps(cache_data.to_dict('records'), default=str))
                     except Exception as cache_error:
-                        logger.warning(f"Failed to cache data for {ticker}: {str(cache_error)}")
+                        logger.warning(f"Failed to cache enhanced data for {ticker}: {str(cache_error)}")
+                    
+                    return data
+                
+            except Exception as e:
+                logger.warning(f"Enhanced yfinance failed for {ticker}: {e}")
+        
+        # Method 2: Fallback to original yfinance if enhanced service failed
+        if YFINANCE_AVAILABLE and yf:
+            try:
+                logger.info(f"Fallback: Fetching REAL data for {ticker} from standard yfinance")
+                rate_limiter.wait_if_needed()  # Remove parameter
+                
+                with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                    stock = yf.Ticker(ticker)
+                    data = stock.history(period=period, interval=interval)
+                
+                if not data.empty:
+                    logger.info(f"✅ Fallback yfinance success for {ticker} ({len(data)} records)")
+                    
+                    # Cache successful result
+                    try:
+                        cache_data = data.reset_index().copy()
+                        for col in cache_data.columns:
+                            if cache_data[col].dtype.name.startswith('datetime'):
+                                cache_data[col] = cache_data[col].dt.strftime('%Y-%m-%d %H:%M:%S%z')
+                        simple_cache.set(cache_key, json.dumps(cache_data.to_dict('records'), default=str))
+                    except Exception as cache_error:
+                        logger.warning(f"Failed to cache fallback data for {ticker}: {str(cache_error)}")
                     
                     return data
                 else:
-                    logger.warning(f"❌ No data returned from yfinance for {ticker}")
+                    logger.warning(f"❌ No data returned from fallback yfinance for {ticker}")
                     
             except Exception as e:
-                logger.error(f"❌ yfinance error for {ticker}: {str(e)}")
+                logger.error(f"❌ Fallback yfinance error for {ticker}: {str(e)}")
         
-        # Method 2: Try alternative data sources if enabled
+        # Method 3: Try alternative data sources if enabled
         if ALTERNATIVE_DATA_AVAILABLE:
             try:
                 logger.info(f"Trying alternative data sources for {ticker}")

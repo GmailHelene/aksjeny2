@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="cache-bust" content="20250806_clean">
+    <meta name="cache-bust" content="20250821_color_fix">
     
     <!-- Simple navbar styling -->
     <style>
@@ -240,6 +240,8 @@
     <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}" rel="stylesheet">
     <!-- Ultimate Contrast Fix - Final Override -->
     <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}" rel="stylesheet">
+    <!-- Color Restoration Fix - Restore missing background colors -->
+    <link href="{{ url_for('static', filename='css/color-restoration-fix.css') }}?v=20250821" rel="stylesheet">
     <!-- Responsive Images -->
     <link href="{{ url_for('static', filename='css/responsive-images.css') }}" rel="stylesheet">
     <!-- Favicon -->
