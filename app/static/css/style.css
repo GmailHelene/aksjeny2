@@ -104,6 +104,7 @@ main {
 
 .text-success {
     color: #198754 !important;
+    /* --bs-text-opacity: 1; */ /* Disabled Bootstrap text opacity */
 }
 
 .text-danger {
@@ -116,6 +117,11 @@ main {
 
 .text-info {
     color: #0dcaf0 !important;
+}
+
+.text-dark {
+    color: #212529 !important;
+    /* --bs-text-opacity: 1; */ /* Disabled Bootstrap text opacity */
 }
 
 .text-primary {
