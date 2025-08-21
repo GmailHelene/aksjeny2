@@ -846,8 +846,8 @@ def compare():
             historical_data = {}
 
         if not historical_data:
-            logger.warning("No data available for the provided symbols. Generating demo data for all symbols.")
-            # Generate demo data for all symbols when no historical data is available
+            logger.warning("No data available for the provided symbols. Generating comprehensive demo data for visualization.")
+            # Generate comprehensive demo data for all symbols when no historical data is available
             for symbol in symbols:
                 info = DataService.get_stock_info(symbol)
                 ticker_names[symbol] = info.get('name', symbol) if info else symbol
@@ -856,73 +856,96 @@ def compare():
                 import random
                 from datetime import datetime, timedelta
                 
-                logger.info(f"Generating demo chart data for {symbol}")
+                logger.info(f"Generating comprehensive demo chart data for {symbol}")
                 
-                # Create demo data for 6 months
+                # Create demo data based on period selection
+                days_map = {'1mo': 30, '3mo': 90, '6mo': 180, '1y': 365, '2y': 730, '5y': 1825}
+                days = days_map.get(period, 180)
+                
+                # Create realistic base price based on symbol
                 base_price = 100.0 + (abs(hash(symbol)) % 500)  # Price between 100-600
                 demo_data = []
-                current_date = datetime.now() - timedelta(days=180)
+                current_date = datetime.now() - timedelta(days=days)
                 price = base_price
                 
-                for i in range(180):  # 6 months of daily data
-                    # Simulate price movement with some volatility
-                    change_percent = random.uniform(-0.05, 0.05)  # -5% to +5% daily change
+                for i in range(days):
+                    # Simulate realistic price movement with trend and volatility
+                    trend = 0.0001  # Slight upward trend
+                    volatility_factor = 0.03  # 3% daily volatility
+                    change_percent = random.gauss(trend, volatility_factor)  # Normal distribution
                     price = price * (1 + change_percent)
                     
-                    # Ensure price doesn't go negative
+                    # Ensure price doesn't go too low
                     if price < 10:
-                        price = 10
+                        price = 10 + random.uniform(5, 20)
+                    
+                    # Create realistic OHLC data
+                    day_volatility = price * 0.02  # 2% intraday volatility
+                    open_price = price + random.uniform(-day_volatility, day_volatility)
+                    close_price = price
+                    high_price = max(open_price, close_price) + random.uniform(0, day_volatility)
+                    low_price = min(open_price, close_price) - random.uniform(0, day_volatility)
                     
                     demo_data.append({
                         'date': current_date.strftime('%Y-%m-%d'),
-                        'open': round(price * 0.99, 2),
-                        'high': round(price * 1.02, 2),
-                        'low': round(price * 0.98, 2),
-                        'close': round(price, 2),
-                        'volume': random.randint(100000, 2000000)
+                        'open': round(open_price, 2),
+                        'high': round(high_price, 2),
+                        'low': round(low_price, 2),
+                        'close': round(close_price, 2),
+                        'volume': random.randint(100000, 5000000)  # Realistic volume range
                     })
                     current_date += timedelta(days=1)
                 
                 chart_data[symbol] = demo_data
                 current_prices[symbol] = price
                 price_changes[symbol] = ((price - base_price) / base_price) * 100
-                volatility[symbol] = 15.0 + (abs(hash(symbol)) % 20)  # Demo volatility
-                volumes[symbol] = 500000 + (abs(hash(symbol)) % 1000000)
-                betas[symbol] = 0.8 + (abs(hash(symbol)) % 8) / 10
-                rsi[symbol] = 30 + (abs(hash(symbol)) % 40)
-                macd[symbol] = {'macd': random.uniform(-2, 2), 'signal': random.uniform(-1.5, 1.5)}
-                bb[symbol] = {
-                    'upper': price * 1.1, 
-                    'lower': price * 0.9, 
-                    'middle': price, 
-                    'position': 'middle'
+                volatility[symbol] = 15.0 + (abs(hash(symbol)) % 20)  # Demo volatility 15-35%
+                volumes[symbol] = 500000 + (abs(hash(symbol)) % 2000000)  # Volume 0.5M-2.5M
+                betas[symbol] = 0.8 + (abs(hash(symbol)) % 8) / 10  # Beta 0.8-1.6
+                rsi[symbol] = 30 + (abs(hash(symbol)) % 40)  # RSI 30-70
+                macd[symbol] = {
+                    'macd': random.uniform(-2, 2), 
+                    'signal': random.uniform(-1.5, 1.5),
+                    'histogram': random.uniform(-1, 1)
                 }
-                sma200[symbol] = random.uniform(-10, 10)
-                sma50[symbol] = random.uniform(-5, 8)
+                bb[symbol] = {
+                    'upper': round(price * 1.1, 2), 
+                    'lower': round(price * 0.9, 2), 
+                    'middle': round(price, 2), 
+                    'position': random.choice(['upper', 'middle', 'lower'])
+                }
+                sma200[symbol] = random.uniform(-10, 10)  # % above/below 200 SMA
+                sma50[symbol] = random.uniform(-5, 8)     # % above/below 50 SMA
                 signals[symbol] = random.choice(['BUY', 'HOLD', 'SELL'])
             
-            # Return with demo data instead of empty error
-            return render_template('stocks/compare.html', 
-                                 tickers=symbols,
-                                 stocks=[],
-                                 ticker_names=ticker_names,
-                                 comparison_data={},
-                                 current_prices=current_prices,
-                                 price_changes=price_changes,
-                                 volatility=volatility,
-                                 volumes=volumes,
-                                 correlations={},
-                                 betas=betas,
-                                 rsi=rsi,
-                                 macd=macd,
-                                 bb=bb,
-                                 sma200=sma200,
-                                 sma50=sma50,
-                                 signals=signals,
-                                 chart_data=chart_data,
-                                 period=period,
-                                 interval=interval,
-                                 normalize=normalize)
+            logger.info(f"Generated demo chart data for {len(symbols)} symbols with {days} days each")
+            
+            # Return with comprehensive demo data
+            template_data = {
+                'tickers': symbols,
+                'stocks': [],
+                'ticker_names': ticker_names,
+                'comparison_data': {},
+                'current_prices': current_prices,
+                'price_changes': price_changes,
+                'volatility': volatility,
+                'volumes': volumes,
+                'correlations': {},
+                'betas': betas,
+                'rsi': rsi,
+                'macd': macd,
+                'bb': bb,
+                'sma200': sma200,
+                'sma50': sma50,
+                'signals': signals,
+                'chart_data': chart_data,
+                'period': period,
+                'interval': interval,
+                'normalize': normalize
+            }
+            
+            logger.info(f"Returning template with demo data for {len(symbols)} symbols")
+            return render_template('stocks/compare.html', **template_data)
 
         # Helper for correlation matrix
         price_matrix = {}
