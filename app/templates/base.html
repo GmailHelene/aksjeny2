@@ -159,10 +159,10 @@
                     </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('portfolio.portfolio') }}"><i class="fas fa-briefcase"></i> Portefølje</a>
+                        <a class="nav-link" href="{{ url_for('portfolio.view_portfolio') }}"><i class="fas fa-briefcase"></i> Portefølje</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('forum.forum') }}"><i class="fas fa-comments"></i> Forum</a>
+                        <a class="nav-link" href="{{ url_for('forum.index') }}"><i class="fas fa-comments"></i> Forum</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -175,7 +175,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
                             </ul>
