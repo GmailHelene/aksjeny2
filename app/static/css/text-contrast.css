@@ -40,9 +40,18 @@
 }
 
 /* Navigation and dropdown styles */
+.dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+}
 
+.dropdown-item {
+    color: #212529 !important;
+}
 
-
+.dropdown-item:hover {
+    background-color: #f8f9fa !important;
+    color: #16181b !important;
+}
 
 .nav-link {
     color: #212529 !important;
@@ -130,7 +139,9 @@
     background-color: #198754 !important;
 }
 
-
+.card-header.bg-gradient {
+    color: #ffffff !important;
+}
 
 /* Override text-white in card headers specifically */
 .card-header .text-white {
@@ -145,11 +156,7 @@
     color: inherit !important;
 }
 
-
-/* Card header text color overrides */
-.card-header.bg-white h5, 
-.card-header.bg-white h6, 
-.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h5, 
-.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h6 {
-    color: #ffffff !important;
+/* Set card background to black */
+.card {
+    --bs-card-bg: #000000;
 }
