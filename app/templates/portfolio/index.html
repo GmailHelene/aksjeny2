@@ -208,35 +208,60 @@
 {% block scripts %}
 <script>
 function deletePortfolio(portfolioId) {
-    if (confirm('Er du sikker på at du vil slette denne porteføljen? Alle aksjer i porteføljen vil også bli slettet.')) {
-        fetch(`/portfolio/delete/${portfolioId}`, {
+    if (confirm('Er du sikker på at du vil slette denne porteføljen? Denne handlingen kan ikke angres.')) {
+        // Show loading state
+        const portfolioCard = document.querySelector(`[data-portfolio-id="${portfolioId}"]`);
+        if (portfolioCard) {
+            portfolioCard.style.opacity = '0.5';
+            portfolioCard.style.pointerEvents = 'none';
+        }
+
+        fetch(`/portfolio/${portfolioId}/delete`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Porteføljen ble slettet.');
-                window.location.href = '/portfolio';
+                // Animate removal of the portfolio card
+                if (portfolioCard) {
+                    portfolioCard.style.transition = 'all 0.3s ease';
+                    portfolioCard.style.opacity = '0';
+                    portfolioCard.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        portfolioCard.remove();
+                        
+                        // Show success toast
+                        showToast(data.message || 'Portefølje slettet', 'success');
+                        
+                        // Check if no portfolios remain
+                        const remainingCards = document.querySelectorAll('[data-portfolio-id]');
+                        if (remainingCards.length === 0) {
+                            location.reload(); // Reload to show "no portfolios" message
+                        }
+                    }, 300);
+                }
             } else {
-                alert('Kunne ikke slette porteføljen: ' + (data.error || 'Ukjent feil'));
+                // Reset card state and show error
+                if (portfolioCard) {
+                    portfolioCard.style.opacity = '1';
+                    portfolioCard.style.pointerEvents = 'auto';
+                }
+                showToast(data.error || 'Kunne ikke slette portefølje', 'error');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Det oppstod en feil ved sletting av porteføljen: ' + error.message);
+            console.error('Error deleting portfolio:', error);
+            // Reset card state and show error
+            if (portfolioCard) {
+                portfolioCard.style.opacity = '1';
+                portfolioCard.style.pointerEvents = 'auto';
+            }
+            showToast('Teknisk feil ved sletting av portefølje', 'error');
         });
-    }
-}
 
 function removeStock(stockId) {
     if (confirm('Er du sikker på at du vil fjerne denne aksjen fra porteføljen?')) {

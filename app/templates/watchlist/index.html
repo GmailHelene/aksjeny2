@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Watchlist & Varsler - Aksjeradar{% endblock %}
+{% block title %}Watchlist & Varsler                                <li><a class="dropdown-item" href="{{ url_for('watchlist.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">
+                                    <i class="bi bi-trash"></i> Slett
+                                </a></li>Aksjeradar{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -583,29 +588,60 @@ function editWatchlist(id) {
 
 function deleteWatchlist(id) {
     if (confirm('Er du sikker på at du vil slette denne watchlist? Denne handlingen kan ikke angres.')) {
+        // Show loading state
+        const watchlistCard = document.querySelector(`[data-watchlist-id="${id}"]`);
+        if (watchlistCard) {
+            watchlistCard.style.opacity = '0.5';
+            watchlistCard.style.pointerEvents = 'none';
+        }
+
         fetch(`/watchlist/delete/${id}`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': getCSRFToken(),
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 'Content-Type': 'application/json'
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Remove the watchlist card from DOM
-                const watchlistCard = document.querySelector(`[data-watchlist-id="${id}"]`);
+                // Animate removal of the watchlist card
                 if (watchlistCard) {
                     watchlistCard.style.transition = 'all 0.3s ease';
                     watchlistCard.style.opacity = '0';
                     watchlistCard.style.transform = 'scale(0.9)';
                     setTimeout(() => {
                         watchlistCard.remove();
+                        
+                        // Show success toast
+                        showToast(data.message || 'Watchlist slettet', 'success');
+                        
                         // Check if no watchlists remain
                         const remainingCards = document.querySelectorAll('[data-watchlist-id]');
                         if (remainingCards.length === 0) {
                             location.reload(); // Reload to show "no watchlists" message
                         }
+                    }, 300);
+                }
+            } else {
+                // Reset card state and show error
+                if (watchlistCard) {
+                    watchlistCard.style.opacity = '1';
+                    watchlistCard.style.pointerEvents = 'auto';
+                }
+                showToast(data.error || 'Kunne ikke slette watchlist', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting watchlist:', error);
+            // Reset card state and show error
+            if (watchlistCard) {
+                watchlistCard.style.opacity = '1';
+                watchlistCard.style.pointerEvents = 'auto';
+            }
+            showToast('Teknisk feil ved sletting av watchlist', 'error');
+        });
+    }
                     }, 300);
                 }
                 
