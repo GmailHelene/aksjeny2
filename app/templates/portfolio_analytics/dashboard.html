@@ -5,7 +5,7 @@
 {% block extra_css %}
 <style>
     .analytics-dashboard {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
         min-height: 100vh;
         padding: 20px 0;
     }
@@ -76,7 +76,7 @@
     }
     
     .analytics-tab.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #000000 100%);
         color: white;
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
@@ -375,7 +375,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <button id="analyzeBtn" class="btn btn-primary btn-lg" 
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 25px; padding: 12px 30px;">
+                            style="background: linear-gradient(135deg, #667eea 0%, #000000 100%); border: none; border-radius: 25px; padding: 12px 30px;">
                         <i class="fas fa-chart-line me-2"></i>Start Analyse
                     </button>
                 </div>
@@ -822,7 +822,7 @@ class AdvancedPortfolioAnalytics {
                 datasets: [{
                     data: Object.values(sectorRisk),
                     backgroundColor: [
-                        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+                        '#667eea', '#000000', '#f093fb', '#f5576c',
                         '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
                     ]
                 }]
@@ -858,7 +858,7 @@ class AdvancedPortfolioAnalytics {
                         riskData.idiosyncratic_risk,
                         riskData.concentration_risk
                     ],
-                    backgroundColor: ['#667eea', '#764ba2', '#f5576c']
+                    backgroundColor: ['#667eea', '#000000', '#f5576c']
                 }]
             },
             options: {

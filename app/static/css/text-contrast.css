@@ -103,3 +103,60 @@
 .stats-box.bg-dark .stats-number {
     color: #ffffff !important;
 }
+
+/* Override Bootstrap utilities to prevent white colors */
+.bg-gradient {
+    /* Override Bootstrap gradient - keep empty to disable default gradient */
+    background-image: none !important;
+}
+
+.text-white {
+    /* Disable Bootstrap text-white utility when not wanted */
+    color: inherit !important;
+}
+
+.border-0 {
+    border: 0 !important;
+}
+
+.card-header {
+    padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
+    margin-bottom: 0;
+    /* Remove Bootstrap's default card header color */
+    color: inherit !important;
+    background-color: var(--bs-card-cap-bg);
+    border-bottom: var(--bs-card-border-width) solid rgb(105 48 48 / 18%);
+}
+
+/* Specific overrides for card headers with colored backgrounds */
+.card-header.bg-primary {
+    color: #ffffff !important;
+    background-color: #0d47a1 !important;
+}
+
+.card-header.bg-dark {
+    color: #ffffff !important;
+    background-color: #343a40 !important;
+}
+
+.card-header.bg-success {
+    color: #ffffff !important;
+    background-color: #198754 !important;
+}
+
+.card-header.bg-gradient {
+    color: #ffffff !important;
+}
+
+/* Override text-white in card headers specifically */
+.card-header .text-white {
+    color: inherit !important;
+}
+
+/* Override for any h5, span, i elements in card headers */
+.card-header h5,
+.card-header span,
+.card-header i,
+.card-header .bi {
+    color: inherit !important;
+}
