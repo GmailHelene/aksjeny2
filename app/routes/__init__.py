@@ -29,6 +29,7 @@ from .stocks import stocks
 from .analysis import analysis
 from .portfolio import portfolio
 from .advanced_features import advanced_features
+from .norwegian_intel import norwegian_intel
 # from .news import news_bp as news  # Removed - file not found
 from .pricing import pricing
 from .insider_trading import insider_trading

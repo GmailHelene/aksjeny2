@@ -3,6 +3,8 @@
 Dette gjenstår som ikke fikset/evt vertifisere om fikset, fiks om ikke fikset, og fortsett til alt er fiksetxD
 Innlogget bruker
 
+NY: /forum, er alt rundt dette,helt i orden? og implementert som et menyelement et logisk sted i hovednavigasjonen?
+
 - [ ] 6. /price-alerts/create - "Kunne ikke opprette prisvarsel"
 - [ ] 7. TradingView charts laster ikke på /stocks/details/TSLA--og andre tickers
 - [ ] 8. Knapper fungerer ikke på stock details (Favoritt, Portefølje, Kjøp)
@@ -21,7 +23,7 @@ Innlogget bruker
 - [ ] 16. "Full teknisk analyse" knapp går til feil side
 - [ ] 17. Anbefaling knapper går til generell side i stedet for ticker-spesifikk
 - [ ] 19. /portfolio/performance-analytics - "beklagr en feil oppstod"
-- [ ] 20. /analysis/sentiment?symbol=AFG.OL - teknisk feil
+- [ ] 20. /analysis/sentiment?symbol=AFG.OL - "teknisk feil under analyse" (uansett hvilkent tickerman tester altså)
 - [ ] 21. /norwegian-intel/social-sentiment - legg til ticker-knapper
 - [ ] 22. /portfolio/advanced/ - "selectedStocks is not defined"
 - [ ] 25. /analysis/market_overview - laster tregt
