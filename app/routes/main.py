@@ -1500,14 +1500,13 @@ def internal_error(error):
     return render_template('errors/500.html'), 500
 
 @main.route('/profile')
-@access_required
+@login_required
 def profile():
     """User profile page with proper error handling"""
     try:
-        # @access_required guarantees authenticated user with subscription
-        # Since access_required only allows premium users, set appropriate defaults
+        # Allow all authenticated users to access profile page
         subscription = None
-        subscription_status = 'active'  # Users here have active subscription
+        subscription_status = getattr(current_user, 'subscription_status', 'free')
         
         # Ensure user has subscription properties set correctly
         if not hasattr(current_user, 'subscription_type') or not current_user.subscription_type:
