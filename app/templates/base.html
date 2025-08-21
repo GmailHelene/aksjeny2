@@ -4,389 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="cache-bust" content="20250821_minimal_styling_fix">
+    <meta name="cache-bust" content="20250806_clean">
     
-    <!-- Minimal targeted contrast fixes -->
+    <!-- Simple navbar styling -->
     <style>
-    /* Targeted contrast fixes for readability */
-    
-    /* Fix for text on dark backgrounds - should be white */
-    .bg-primary, .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
-    .bg-primary .card-title, .bg-primary .text-muted {
-        color: white !important;
-    }
-    
-    .bg-dark, .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
-    .bg-dark .card-title, .bg-dark .text-muted {
-        color: white !important;
-    }
-    
-    /* Fix for purple backgrounds - change to dark green */
-    .bg-purple, [style*="background-color: purple"], [style*="background: purple"],
-    [style*="background-color: #800080"], [style*="background: #800080"] {
-        background-color: #2d5016 !important;
-        color: white !important;
-    }
-    
-    /* Fix light backgrounds that should be darker */
-    .bg-light-yellow, [style*="background-color: #ffffe0"], [style*="background: #ffffe0"] {
-        background-color: #b8860b !important; /* Dark goldenrod */
-        color: white !important;
-    }
-    
-    .bg-light-green, [style*="background-color: #90ee90"], [style*="background: #90ee90"] {
-        background-color: #2d5016 !important; /* Dark green */
-        color: white !important;
-    }
-    
-    .bg-light-red, [style*="background-color: #ffb3ba"], [style*="background: #ffb3ba"] {
-        background-color: #8b0000 !important; /* Dark red */
-        color: white !important;
-    }
-    
-    /* Fix buttons that changed from black to brown - revert to black */
-    .btn-warning {
-        background-color: #343a40 !important; /* Dark gray (almost black) */
-        border-color: #343a40 !important;
-        color: white !important;
-    }
-    
-    .btn-warning:hover, .btn-warning:focus, .btn-warning:active {
-        background-color: #23272b !important; /* Even darker on hover */
-        border-color: #23272b !important;
-        color: white !important;
-    }
-    
-    /* Fix warning backgrounds that appear brown */
-    .bg-warning {
-        background-color: #b8860b !important; /* Dark goldenrod instead of orange */
-        color: white !important;
-    }
-    
-    /* Mobile footer search field spacing fix */
-    @media (max-width: 768px) {
-        footer .col-md-3:first-child {
-            margin-bottom: 2rem;
-        }
-        
-        footer .input-group {
-            margin-top: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        footer h6 {
-            margin-bottom: 1rem;
-        }
-    }
-    
-    /* Fix card headers - ensure white text on DARK backgrounds as requested */
-    .card-header, .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
-        background-color: #343a40 !important; /* Dark gray background */
-        color: white !important; /* White text */
-    }
-    
-    /* Fix Bootstrap background colors for better contrast */
-    .bg-success {
-        background-color: #1e4620 !important; /* Dark green instead of bright green */
-        color: white !important;
-    }
-    
-    .bg-info {
-        background-color: #17a2b8 !important; /* Keep cyan but ensure proper styling */
-        color: white !important;
-    }
-    
-    /* Fix badges and buttons */
-    .badge.bg-warning {
-        background-color: #856404 !important; /* Dark gold instead of bright yellow */
-        color: white !important;
-    }
-    
-    /* Fix problematic light/bright colors to darker versions */
-    .bg-light-green, .bg-success.text-white {
-        background-color: #1e4620 !important; /* Dark green */
-        color: white !important;
-    }
-    
-    /* Fix explicit dark text classes */
-    .text-dark {
-        color: #212529 !important; /* Keep dark text for light backgrounds */
-    }
-    
-    /* Special case: dark text on card headers should be white */
-    .card-header .text-dark, .card-header.bg-primary .text-dark, .card-header.bg-dark .text-dark {
-        color: white !important;
-    }
-    </style>
-    
-    <title>AksjeRadar{% if title %} - {{ title }}{% endif %}</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css" rel="stylesheet">
-    {% if config.ENVIRONMENT == 'development' %}
-    <link href="/static/css/app.css?v={{ cache_buster }}" rel="stylesheet">
-    {% else %}
-    <link href="/static/css/app.css" rel="stylesheet">
-    {% endif %}
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-chart-line me-2"></i>AksjeRadar
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('stocks.index') }}"><i class="fas fa-chart-bar"></i> Aksjer</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('stocks.list_crypto') }}"><i class="fab fa-bitcoin"></i> Crypto</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analysis.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('analysis.index') }}"><i class="fas fa-brain"></i> Analyse</a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Portefølje</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('forum.index') }}"><i class="fas fa-comments"></i> Forum</a>
-                    </li>
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> Konto
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Logg inn</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Registrer</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <main class="container-fluid mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="bg-dark text-light mt-5 py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>AksjeRadar</h5>
-                    <p>Din komplette plattform for finansielle investeringer og analyse.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p>&copy; 2024 AksjeRadar. Alle rettigheter forbeholdt.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
-    
-    <!-- CSRF Token for AJAX -->
-    <script>
-        window.csrfToken = '{{ csrf_token() }}';
-    </script>
-    
-    {% block scripts %}{% endblock %}
-</body>
-</html>
-    
-    <!-- Minimal targeted contrast fixes -->
-    <style>
-    /* Targeted contrast fixes for readability */
-    
-    /* Fix for text on dark backgrounds - should be white */
-    .bg-primary, .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
-    .bg-primary .card-title, .bg-primary .text-muted {
-        color: white !important;
-    }
-    
-    .bg-dark, .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
-    .bg-dark .card-title, .bg-dark .text-muted {
-        color: white !important;
-    }
-    
-    /* Fix for purple backgrounds - change to dark green */
-    .bg-purple, [style*="background-color: purple"], [style*="background: purple"],
-    [style*="background-color: #800080"], [style*="background: #800080"] {
-        background-color: #2d5016 !important;
-        color: white !important;
-    }
-    
-    /* Fix light backgrounds that should be darker */
-    .bg-light-yellow, [style*="background-color: #ffffe0"], [style*="background: #ffffe0"] {
-        background-color: #b8860b !important; /* Dark goldenrod */
-        color: white !important;
-    }
-    
-    .bg-light-green, [style*="background-color: #90ee90"], [style*="background: #90ee90"] {
-        background-color: #2d5016 !important; /* Dark green */
-        color: white !important;
-    }
-    
-    .bg-light-red, [style*="background-color: #ffb3ba"], [style*="background: #ffb3ba"] {
-        background-color: #8b0000 !important; /* Dark red */
-        color: white !important;
-    </style>
-    
-    .table thead th {
-        color: #333333 !important; /* Ensure header text is visible */
-        background-color: #f8f9fa !important; /* Light background for headers */
-    }
-    
-    .table tbody td {
-        color: #333333 !important; /* Dark text for table body */
-    }
-    
-    /* CRITICAL: Force proper contrast on all colored backgrounds */
-    .bg-light, .bg-white, [style*="background-color: #f"], [style*="background: #f"],
-    [style*="background-color: #e"], [style*="background: #e"],
-    [style*="background-color: #d"], [style*="background: #d"],
-    [style*="background-color: #c"], [style*="background: #c"] {
-        color: #333333 !important; /* Dark text on light backgrounds */
-    }
-    
-    /* ULTRA AGGRESSIVE TABLE FIXES - FORCE DARK TEXT ON LIGHT BACKGROUNDS */
-    .table, .table th, .table td, 
-    .table thead th, .table tbody td, .table tfoot td,
-    table, table th, table td,
-    table thead th, table tbody td, table tfoot td {
-        color: #212529 !important; /* Force dark text */
-        background-color: #ffffff !important; /* Force white background */
-    }
-    
-    /* SPECIFIC FIXES FOR TABLE HEADERS */
-    .table thead th, table thead th,
-    .table thead, table thead {
-        background-color: #007bff !important; /* Blue header background */
-        color: #ffffff !important; /* White text on blue */
-        border-color: #0056b3 !important;
-    }
-    
-    /* SPECIFIC FIXES FOR TABLE ROWS */
-    .table tbody tr, table tbody tr,
-    .table tbody td, table tbody td {
-        background-color: #ffffff !important; /* Force white background */
-        color: #212529 !important; /* Force dark text */
-    }
-    
-    .table tbody tr:hover, table tbody tr:hover {
-        background-color: #f8f9fa !important; /* Light gray on hover */
-        color: #212529 !important; /* Keep dark text */
-    }
-    
-    /* EMERGENCY OVERRIDE FOR ANY ELEMENT WITH WHITE TEXT ON LIGHT BACKGROUND */
-    .text-white, .text-light {
-        color: #212529 !important; /* Force dark text instead of white */
-    }
-    
-    /* BUT KEEP WHITE TEXT ON ACTUALLY DARK BACKGROUNDS */
-    .bg-dark .text-white, .bg-primary .text-white, .bg-success .text-white,
-    .bg-info .text-white, .bg-danger .text-white, .bg-secondary .text-white,
-    [style*="background-color: #0"] .text-white,
-    [style*="background-color: #1"] .text-white,
-    [style*="background-color: #2"] .text-white,
-    [style*="background-color: #3"] .text-white,
-    [style*="background: linear-gradient"][style*="#0"] .text-white,
-    [style*="background: linear-gradient"][style*="#1"] .text-white,
-    [style*="background: linear-gradient"][style*="#2"] .text-white,
-    [style*="background: linear-gradient"][style*="#3"] .text-white {
-        color: #ffffff !important; /* Actually white text on dark backgrounds */
-    }
-    
-    /* PRICING CARDS - FORCE PROPER COLORS */
-    .card-header {
-        background-color: #007bff !important; /* Blue background */
-        color: #ffffff !important; /* White text */
-        border-bottom: 1px solid #0056b3 !important;
-    }
-    
-    .card-header.bg-success {
-        background-color: #155724 !important; /* Dark green */
-        color: #ffffff !important;
-    }
-    
-    .card-header[style*="background-color"] {
-        color: #ffffff !important; /* Force white text on colored headers */
-    }
-    
-    /* CRITICAL FIX: btn-outline-secondary missing */
-    .btn-outline-secondary {
-        background-color: #424242 !important; /* Dark gray background */
-        border-color: #6c757d !important;
-        color: #ffffff !important;
-    }
-    
-    /* Alert overrides for better contrast */
-    .alert-danger {
-        background-color: #721c24 !important;
-        color: #f8d7da !important;
-    }
-    
-    .alert-warning {
-        background-color: #664d03 !important;
-        color: #fff3cd !important;
-    }
-    
-    /* Card header overrides */
-    .card-header.bg-primary {
-        background-color: #0d47a1 !important;
-        color: white !important;
-    }
-    
-    .card-header.bg-danger {
-        background-color: #b71c1c !important;
-        color: white !important;
-    }
-    
     .navbar {
         background-color: #1a1a1a !important;
         border-bottom: 1px solid #333;
-        padding-left: 2rem !important; /* Move navigation to the left for PC screens */
     }
     
     .navbar-brand {
@@ -412,22 +36,87 @@
     .navbar-nav .nav-link i {
         margin-right: 0.5rem;
     }
-
-    /* Achievement toast styling */
-    .achievement-toast {
-        position: fixed !important;
-        top: 20px;
-        right: 20px;
-        z-index: 1055;
-        min-width: 300px;
-        max-width: 400px;
+    
+    .dropdown-menu {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 250px;
     }
     
-    .achievement-toast .toast-body {
-        background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
-        color: #000;
+    .dropdown-item {
+        color: #212529;
+        padding: 0.75rem 1.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+        color: #007bff;
+    }
+    
+    .dropdown-item i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+        width: 1.2rem;
+        text-align: center;
+    }
+    
+    .dropdown-divider {
+        margin: 0.5rem 0;
+        opacity: 0.1;
     }
 
+    /* Mobile navigation enhancements */
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background-color: rgba(26, 26, 26, 0.98);
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar-nav .nav-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.25rem;
+        }
+        
+        .navbar-nav .nav-item:last-child {
+            border-bottom: none;
+        }
+        
+        .navbar-nav .dropdown-menu {
+            background-color: rgba(52, 58, 64, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-left: 1rem;
+            margin-top: 0.25rem;
+            position: static;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-nav .dropdown-item {
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .navbar-nav .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff !important;
+        }
+        
+        .navbar-nav .dropdown-item i {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .navbar-nav .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+    
     /* Enhanced text contrast fixes */
     .card-header h5,
     .card-header .bi {
@@ -485,23 +174,10 @@
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}" rel="stylesheet">
-    <!-- Ultimate Contrast Fix - Final Override -->
-    <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}" rel="stylesheet">
-    <!-- Color Restoration Fix - Restore missing background colors -->
-    <link href="{{ url_for('static', filename='css/color-restoration-fix.css') }}?v=20250821" rel="stylesheet">
     <!-- Responsive Images -->
     <link href="{{ url_for('static', filename='css/responsive-images.css') }}" rel="stylesheet">
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Aksjeradar">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo-192.png') }}">
-    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -596,107 +272,165 @@
         }
     }
     </script>
-    
-    <!-- ConveyThis Script Start -->
-    <script src="//cdn.conveythis.com/javascript/conveythis.js?api_key=pub_85496d2f253bff365fbf0fa9429277e3"></script>
-    <!-- ConveyThis Script End -->
 </head>
 <body>
+    <!-- Simple Bootstrap Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-graph-up"></i> Aksjeradar
+            </a>
+            
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navigation -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- Search Form - Hidden on mobile -->
+                    <li class="nav-item d-none d-lg-block me-3">
+                        <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get" style="max-width: 300px;">
+                            <div class="input-group input-group-sm">
+                                <input type="search" name="q" class="form-control" 
+                                       placeholder="Søk aksjer..." aria-label="Søk aksjer"
+                                       style="border-radius: 20px 0 0 20px; font-size: 0.9rem;">
+                                <button class="btn btn-outline-secondary" type="submit" 
+                                        style="border-radius: 0 20px 20px 0; border-left: none;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </li>
+                    
+                    <!-- Search Button for Mobile -->
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="{{ url_for('stocks.search') }}">
+                            <i class="bi bi-search"></i> Søk
+                        </a>
+                    </li>
+                    
+                    <!-- Analysis Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-graph-up"></i> Analyse
                         </a>
                         <ul class="dropdown-menu">
-                            <!-- Dashboard removed - was just linking to / -->
-                            <!-- Screener removed - duplicate of analysis.screener which is more comprehensive -->
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}">
-                                <i class="bi bi-bell-fill"></i> Prisalarmer
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.index') }}">
+                                <i class="bi bi-graph-up"></i> Oversikt
                             </a></li>
-                            
-                            <!-- Analyst recommendations moved here -->
-                            <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}">
-                                <i class="bi bi-people-fill"></i> Analytiker Anbefalinger
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai_predictions') }}">
+                                <i class="bi bi-cpu"></i> AI Prediksjoner
                             </a></li>
-                            
-                            <!-- Advanced Features moved from separate dropdown -->
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
+                                <i class="bi bi-funnel"></i> Aksje-screener
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}">
+                                <i class="bi bi-currency-exchange"></i> Valuta
+                            </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Avanserte Verktøy</h6></li>
-                            <!-- Crypto Dashboard removed as requested -->
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}">
-                                <i class="bi bi-arrow-left-right"></i> Valutakonverter
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-bar-chart-line"></i> Teknisk analyse
                             </a></li>
-                            <!-- Økonomisk kalender and Konkurranseanalyse removed completely as requested -->
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}">
-                                <i class="bi bi-calculator-fill"></i> Investment Analyzer
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}">
+                                <i class="bi bi-calculator"></i> Fundamental analyse
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('mobile_trading.mobile_dashboard') }}">
-                                <i class="bi bi-phone"></i> Mobile Trading
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
+                                <i class="bi bi-person-check"></i> Warren Buffett analyse
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
+                                <i class="bi bi-mortarboard"></i> Benjamin Graham analyse
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}">
+                                <i class="bi bi-emoji-smile"></i> Sentiment analyse
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}">
+                                <i class="bi bi-star"></i> Anbefalinger
                             </a></li>
                         </ul>
                     </li>
                     
-                    <!-- Portfolio Dropdown - EXPANDED -->
+                    <!-- Stocks/Prices Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.list_oslo') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-graph-up-arrow"></i> Aksjer
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}">
+                                <i class="bi bi-pie-chart"></i> Markedsoversikt
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}">
+                                <i class="bi bi-currency-dollar"></i> Aksjekurser
+                            </a></li>
+                            <li><a class="dropdown-item" href="/stocks/list/oslo">
+                                <i class="bi bi-geo-alt"></i> Oslo Børs
+                            </a></li>
+                            <li><a class="dropdown-item" href="/stocks/list/global">
+                                <i class="bi bi-globe"></i> Globale aksjer
+                            </a></li>
+                            <li><a class="dropdown-item" href="/stocks/list/currency">
+                                <i class="bi bi-currency-exchange"></i> Valutakurser
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}">
+                                <i class="bi bi-currency-bitcoin"></i> Kryptovaluta
+                            </a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- News -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            <i class="bi bi-newspaper"></i> Nyheter
+                        </a>
+                    </li>
+                    
+                    <!-- Tools Dropdown - Only for authenticated users -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-tools"></i> Verktøy
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}">
+                                <i class="bi bi-robot"></i> AI Analyse
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}">
+                                <i class="bi bi-lightning"></i> Hurtiganalyse
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}">
+                                <i class="bi bi-arrow-left-right"></i> Valutakonverter
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}">
+                                <i class="bi bi-eye-fill"></i> Innsidehandel
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Portfolio Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-briefcase"></i> Portfolio
                         </a>
                         <ul class="dropdown-menu">
-                            <!-- Oversikt removed - was causing 500 errors and redundant -->
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
                                 <i class="bi bi-briefcase"></i> Mine porteføljer
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}">
-                                <i class="bi bi-plus-circle"></i> Opprett portefølje
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}">
                                 <i class="bi bi-eye"></i> Watchlist
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.index') }}">
-                                <i class="bi bi-eye-fill"></i> Avansert Watchlist
-                            </a></li>
-                            <!-- Prisalarmer removed from here - kept in Konto dropdown to avoid duplicates -->
-                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}">
                                 <i class="bi bi-lightbulb"></i> Aksjetips
                             </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}">
-                                <i class="bi bi-gear-fill"></i> Avansert portfolio
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}">
-                                <i class="bi bi-robot"></i> ML Analytics
-                            </a></li>
                         </ul>
                     </li>
                     
-                    <!-- Advanced Features Dropdown - MOVED TO PRO TOOLS
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('advanced_features.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear-wide-connected"></i> Avansert
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.crypto_dashboard') }}">
-                                <i class="bi bi-currency-bitcoin"></i> Crypto Dashboard
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}">
-                                <i class="bi bi-arrow-left-right"></i> Valutakonverter
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.economic_calendar') }}">
-                                <i class="bi bi-calendar-week"></i> Økonomisk kalender
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.competitive_analysis') }}">
-                                <i class="bi bi-diagram-2"></i> Konkurranseanalyse
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}">
-                                <i class="bi bi-calculator-fill"></i> Investment Analyzer
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('mobile_trading.mobile_dashboard') }}">
-                                <i class="bi bi-phone"></i> Mobile Trading
-                            </a></li>
-                        </ul>
-                    </li>
-                    -->
-                    
-                    <!-- User Dropdown - EXPANDED -->
+                    <!-- User Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle"></i> Konto
@@ -709,22 +443,10 @@
                                 <li><a class="dropdown-item" href="{{ url_for('main.settings') }}">
                                     <i class="bi bi-gear"></i> Innstillinger
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.my_subscription') }}">
-                                    <i class="bi bi-credit-card"></i> Mitt abonnement
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.subscription') }}">
-                                    <i class="bi bi-star"></i> Oppgrader abonnement
+                                <li><a class="dropdown-item" href="{{ url_for('price_alerts.index') }}">
+                                    <i class="bi bi-bell"></i> Prisalarmer
                                 </a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('notifications.index') }}">
-                                    <i class="bi bi-bell-fill"></i> Varslinger
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.referrals') }}">
-                                    <i class="bi bi-share"></i> Inviter venner
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <!-- Funksjoner and API Dokumentasjon removed as requested -->
                                 <li><a class="dropdown-item" href="{{ url_for('main.logout') }}">
                                     <i class="bi bi-box-arrow-right"></i> Logg ut
                                 </a></li>
@@ -739,41 +461,15 @@
                                 <li><a class="dropdown-item" href="{{ url_for('main.demo') }}">
                                     <i class="bi bi-play-circle"></i> Demo
                                 </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}">
-                                    <i class="bi bi-star"></i> Abonnement
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('main.features') }}">
-                                    <i class="bi bi-lightning"></i> Funksjoner
-                                </a></li>
                             {% endif %}
                         </ul>
                     </li>
                 </ul>
-                {% else %}
-                <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.demo') }}">
-                            <i class="bi bi-play-circle"></i> Demo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('pricing.pricing_page') }}">
-                            <i class="bi bi-star"></i> Priser
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.login') }}">
-                            <i class="bi bi-box-arrow-in-right"></i> Logg inn
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.register') }}">
-                            <i class="bi bi-person-plus"></i> Registrer
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
+                
+                <!-- Language Switcher -->
+                <div class="d-flex align-items-center ms-3">
+                    {% include 'language_switcher.html' %}
+                </div>
             </div>
         </div>
     </nav>
@@ -790,6 +486,8 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+        {% block content %}{% endblock %}
     </div>
 
     <!-- Footer -->
@@ -797,16 +495,21 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-3">
-                    <h6>Søk aksjer</h6>
-                    <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get">
-                        <div class="input-group">
-                            <input type="search" name="q" class="form-control" 
-                                   placeholder="Søk aksjer..." aria-label="Søk aksjer">
-                            <button class="btn btn-outline-light" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </form>
+                    <h6>Språk / Language</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="footerLanguageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i>
+                            <span id="footer-current-language">NO</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="footerLanguageDropdown">
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('no')">
+                                <i class="bi bi-flag"></i> Norsk
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="switchLanguage('en')">
+                                <i class="bi bi-flag-fill"></i> English
+                            </a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <h6>Læring & Guider</h6>
@@ -818,14 +521,6 @@
                     <div class="mb-2">
                         <a href="/resources" class="text-light text-decoration-none">
                             <i class="bi bi-folder me-1"></i>Ressurser
-                        </a>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h6>Community</h6>
-                    <div class="mb-2">
-                        <a href="{{ url_for('forum.index') }}" class="text-light text-decoration-none">
-                            <i class="bi bi-chat-dots me-1"></i>Forum
                         </a>
                     </div>
                 </div>
@@ -1028,90 +723,6 @@
         
         console.log('✅ Global error suppression system initialized');
     });
-    </script>
-    
-    <!-- Achievement Tracking System -->
-    {% if current_user.is_authenticated %}
-    <script>
-    // Global achievement tracking function
-    window.trackAchievement = function(type, increment = 1) {
-        fetch('/achievements/api/update_stat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                type: type,
-                increment: increment
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.new_achievements.length > 0) {
-                // Show achievement notifications
-                data.new_achievements.forEach(achievement => {
-                    showAchievementNotification(achievement);
-                });
-            }
-        })
-        .catch(error => console.error('Achievement tracking error:', error));
-    };
-    
-    // Achievement notification function
-    function showAchievementNotification(achievement) {
-        // Create toast notification
-        const toast = document.createElement('div');
-        toast.className = 'toast achievement-toast';
-        toast.innerHTML = `
-            <div class="toast-header bg-warning">
-                <i class="bi bi-trophy-fill text-dark me-2"></i>
-                <strong class="me-auto">Ny oppnåelse!</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                <div class="d-flex align-items-center">
-                    <i class="bi ${achievement.icon} text-${achievement.badge_color} me-2" style="font-size: 1.5rem;"></i>
-                    <div>
-                        <strong>${achievement.name}</strong><br>
-                        <small>${achievement.description}</small><br>
-                        <span class="badge bg-${achievement.badge_color}">+${achievement.points} poeng</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add to page and show
-        document.body.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        // Remove after shown
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
-    }
-    
-    // Track page visits for analytics
-    if (window.location.pathname.includes('/analysis/')) {
-        trackAchievement('page_visits');
-    }
-    </script>
-    {% endif %}
-    
-    <!-- PWA Service Worker Registration -->
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
-                .then(function(registration) {
-                    console.log('ServiceWorker registered: ', registration);
-                })
-                .catch(function(error) {
-                    console.log('ServiceWorker registration failed: ', error);
-                });
-        });
-    }
     </script>
     
     <!-- Portfolio and Favorites JavaScript -->
