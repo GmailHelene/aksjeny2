@@ -1943,6 +1943,50 @@ def update_preferences():
         flash('Feil ved lagring av preferanser. Prøv igjen.', 'error')
         return redirect(url_for('main.profile'))
 
+@main.route('/update-notification-settings', methods=['POST'])
+@login_required
+def update_notification_settings():
+    """Update user notification preferences"""
+    try:
+        data = request.get_json()
+        setting = data.get('setting')
+        enabled = data.get('enabled', False)
+        
+        # Map frontend setting names to user attributes
+        setting_map = {
+            'emailNotifications': 'email_notifications_enabled',
+            'priceAlerts': 'price_alerts_enabled', 
+            'marketNews': 'market_news_enabled',
+            'portfolioUpdates': 'portfolio_updates_enabled',
+            'aiInsights': 'ai_insights_enabled',
+            'weeklyReports': 'weekly_reports_enabled'
+        }
+        
+        if setting not in setting_map:
+            return jsonify({'success': False, 'error': 'Ugyldig innstilling'})
+        
+        # Set the attribute on current user
+        attr_name = setting_map[setting]
+        setattr(current_user, attr_name, enabled)
+        
+        # Ensure user has the attributes (create them if they don't exist)
+        for attr in setting_map.values():
+            if not hasattr(current_user, attr):
+                setattr(current_user, attr, False)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Varselinnstilling oppdatert',
+            'setting': setting,
+            'enabled': enabled
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating notification settings: {e}")
+        return jsonify({'success': False, 'error': 'Kunne ikke oppdatere innstillinger'})
+
 @main.route('/update-profile', methods=['POST'])
 @login_required
 def update_profile():

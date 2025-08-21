@@ -64,6 +64,15 @@ class User(UserMixin, db.Model):
     email_notifications = db.Column(db.Boolean, default=True, nullable=True)
     price_alerts = db.Column(db.Boolean, default=True, nullable=True)
     market_news = db.Column(db.Boolean, default=True, nullable=True)
+    
+    # Extended notification preferences  
+    email_notifications_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    price_alerts_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    market_news_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    portfolio_updates_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    ai_insights_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    weekly_reports_enabled = db.Column(db.Boolean, default=True, nullable=True)
+    
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
     
@@ -92,6 +101,12 @@ class User(UserMixin, db.Model):
                 'email_notifications': True,
                 'price_alerts': True,
                 'market_news': True,
+                'email_notifications_enabled': True,
+                'price_alerts_enabled': True,
+                'market_news_enabled': True,
+                'portfolio_updates_enabled': True,
+                'ai_insights_enabled': True,
+                'weekly_reports_enabled': True,
                 'first_name': None,
                 'last_name': None,
                 'two_factor_enabled': False,

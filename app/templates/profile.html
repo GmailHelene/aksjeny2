@@ -297,6 +297,77 @@
                 </div>
             </div>
 
+            <!-- Notification Settings Card -->
+            <div class="card mb-4">
+                <div class="card-header" style="background-color: #1b5e20 !important; color: white;">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> Varsler og Notifikasjoner</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" 
+                                       {% if user.email_notifications_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="emailNotifications">
+                                    <i class="bi bi-envelope me-2"></i>E-post varsler
+                                </label>
+                                <small class="form-text text-muted d-block">Få viktige oppdateringer på e-post</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="priceAlerts" 
+                                       {% if user.price_alerts_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="priceAlerts">
+                                    <i class="bi bi-bell me-2"></i>Prisalarmer
+                                </label>
+                                <small class="form-text text-muted d-block">Varsler når aksjer når målpriser</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="marketNews" 
+                                       {% if user.market_news_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="marketNews">
+                                    <i class="bi bi-newspaper me-2"></i>Markedsnyheter
+                                </label>
+                                <small class="form-text text-muted d-block">Viktige markedsoppdateringer</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="portfolioUpdates" 
+                                       {% if user.portfolio_updates_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="portfolioUpdates">
+                                    <i class="bi bi-briefcase me-2"></i>Portefølje oppdateringer
+                                </label>
+                                <small class="form-text text-muted d-block">Daglige portefølje-sammendrag</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="aiInsights" 
+                                       {% if user.ai_insights_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="aiInsights">
+                                    <i class="bi bi-robot me-2"></i>AI Innsikt
+                                </label>
+                                <small class="form-text text-muted d-block">Personlige AI-anbefalinger</small>
+                            </div>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="weeklyReports" 
+                                       {% if user.weekly_reports_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="weeklyReports">
+                                    <i class="bi bi-calendar-week me-2"></i>Ukentlige rapporter
+                                </label>
+                                <small class="form-text text-muted d-block">Sammendrag av uken</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span id="notificationStatus">Endringer lagres automatisk</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Account Actions -->
             <div class="card">
                 <div class="card-header">
@@ -446,6 +517,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Notification Settings Handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all notification toggle switches
+    const notificationSwitches = document.querySelectorAll('#emailNotifications, #priceAlerts, #marketNews, #portfolioUpdates, #aiInsights, #weeklyReports');
+    
+    notificationSwitches.forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            updateNotificationSetting(this.id, this.checked);
+        });
+    });
+});
+
+async function updateNotificationSetting(settingName, isEnabled) {
+    const statusElement = document.getElementById('notificationStatus');
+    statusElement.innerHTML = '<i class="bi bi-clock me-2"></i>Lagrer...';
+    statusElement.className = 'text-info';
+    
+    try {
+        const response = await fetch('/update-notification-settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({
+                setting: settingName,
+                enabled: isEnabled
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            statusElement.innerHTML = '<i class="bi bi-check-circle me-2"></i>Varselinnstilling oppdatert!';
+            statusElement.className = 'text-success';
+            
+            // Reset to default after 3 seconds
+            setTimeout(() => {
+                statusElement.innerHTML = '<i class="bi bi-info-circle me-2"></i>Endringer lagres automatisk';
+                statusElement.className = 'text-info';
+            }, 3000);
+        } else {
+            throw new Error(data.error || 'Kunne ikke oppdatere innstilling');
+        }
+    } catch (error) {
+        console.error('Error updating notification setting:', error);
+        statusElement.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Kunne ikke lagre innstilling';
+        statusElement.className = 'text-danger';
+        
+        // Reset toggle to previous state
+        const toggle = document.getElementById(settingName);
+        if (toggle) {
+            toggle.checked = !isEnabled;
+        }
+    }
+}
 
 function getCsrfToken() {
     // Try to get CSRF token from meta tag or form
