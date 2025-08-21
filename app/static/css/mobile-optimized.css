@@ -250,11 +250,6 @@
         touch-action: manipulation;
     }
     
-    .dropdown-item:hover,
-    .dropdown-item:focus {
-        background-color: #f8f9fa;
-        color: #212529;
-    }
     
     .dropdown-item i {
         width: 20px;

@@ -56,7 +56,8 @@
     }
 
     .dropdown-item {
-        color: rgba(255,255,255,0.8) !important;
+        background-color: #23272b;
+        color: white !important;
         padding: 0.5rem 1.5rem; /* Optimized padding */
         margin: 0;
         border-bottom: 1px solid rgba(255,255,255,0.02);

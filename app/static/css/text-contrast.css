@@ -40,18 +40,9 @@
 }
 
 /* Navigation and dropdown styles */
-.dropdown-menu {
-    background-color: rgba(255, 255, 255, 0.95) !important;
-}
 
-.dropdown-item {
-    color: #212529 !important;
-}
 
-.dropdown-item:hover {
-    background-color: #f8f9fa !important;
-    color: #16181b !important;
-}
+
 
 .nav-link {
     color: #212529 !important;
