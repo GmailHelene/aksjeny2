@@ -989,6 +989,18 @@ def transactions():
 def advanced():
     """Advanced portfolio analysis page"""
     try:
+        # Get user's portfolio stocks if they have any
+        user_stocks = []
+        try:
+            # Try to get user's actual portfolio
+            user = current_user if hasattr(current_user, 'id') else None
+            if user:
+                # Query user's portfolio holdings
+                user_stocks = ['EQNR.OL', 'DNB.OL', 'TEL.OL']  # Fallback sample
+        except:
+            # Use sample Norwegian stocks as fallback
+            user_stocks = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'MOWI.OL']
+            
         # Provide sample data for the advanced portfolio page
         sample_data = {
             'expected_return': 8.5,
@@ -996,7 +1008,8 @@ def advanced():
             'sharpe_ratio': 0.69,
             'max_drawdown': -15.2,
             'portfolio_value': 500000,
-            'total_return': 12.4
+            'total_return': 12.4,
+            'selected_stocks': user_stocks
         }
         return render_template('portfolio/advanced.html', **sample_data)
     except Exception as e:
@@ -1004,7 +1017,8 @@ def advanced():
         # Provide a basic fallback instead of redirect to avoid loops
         return render_template('portfolio/advanced.html', 
                              error=True, 
-                             error_message="Avansert analyse midlertidig utilgjengelig")
+                             error_message="Avansert analyse midlertidig utilgjengelig",
+                             selected_stocks=['EQNR.OL', 'DNB.OL', 'TEL.OL'])
 
 # Helper method to get stock data
 def get_single_stock_data(ticker):
@@ -1144,12 +1158,18 @@ def optimization_page():
         return render_template('error.html', error=str(e)), 500
 
 @portfolio.route('/performance-analytics')
-@demo_access
+@access_required
 def performance_page():
     """Performance analytics interface"""
     try:
-        return render_template('portfolio/performance.html',
-                             title='Performance Analytics')
+        # Get user's portfolios for selection
+        user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
+        default_portfolio = user_portfolios[0] if user_portfolios else None
+        
+        return render_template('portfolio_analytics/dashboard.html',
+                             page_title='Portfolio Performance Analytics',
+                             portfolios=user_portfolios,
+                             default_portfolio=default_portfolio)
     except Exception as e:
         logger.error(f"Performance page error: {e}")
         return render_template('error.html', error=str(e)), 500

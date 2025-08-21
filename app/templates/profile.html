@@ -278,8 +278,18 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="dashboard_widgets" class="form-label">Dashboard-widgets (JSON)</label>
-                            <input type="text" class="form-control" id="dashboard_widgets" name="dashboard_widgets" value="{{ user_dashboard_widgets }}" placeholder='["portfolio","alerts","news"]'>
+                            <label for="dashboard_widgets" class="form-label">Dashboard-widgets</label>
+                            <select class="form-select" id="dashboard_widgets" name="dashboard_widgets" multiple size="5">
+                                <option value="portfolio" {% if 'portfolio' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>📊 Portefølje-oversikt</option>
+                                <option value="alerts" {% if 'alerts' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>🔔 Prisalarmer</option>
+                                <option value="news" {% if 'news' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>📰 Finansnyheter</option>
+                                <option value="watchlist" {% if 'watchlist' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>👀 Overvåkningsliste</option>
+                                <option value="market_overview" {% if 'market_overview' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>🌍 Markedsoversikt</option>
+                                <option value="top_movers" {% if 'top_movers' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>🚀 Dagens toppaksjer</option>
+                                <option value="currency" {% if 'currency' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>💱 Valutakurser</option>
+                                <option value="ai_insights" {% if 'ai_insights' in (user_dashboard_widgets|fromjson|default([])) %}selected{% endif %}>🤖 AI-innsikt</option>
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd for å velge flere widgets. Disse vises på dashboard.</small>
                         </div>
                         <button type="submit" class="btn btn-info">Lagre preferanser</button>
                         <span id="prefStatus" class="ms-3"></span>
@@ -351,6 +361,30 @@ function copyReferralLink() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle dashboard widgets form submission
+    const preferencesForm = document.getElementById('preferencesForm');
+    if (preferencesForm) {
+        preferencesForm.addEventListener('submit', function(e) {
+            // Convert multi-select to JSON array before submission
+            const widgetSelect = document.getElementById('dashboard_widgets');
+            if (widgetSelect) {
+                const selectedOptions = Array.from(widgetSelect.selectedOptions).map(option => option.value);
+                
+                // Create hidden input with JSON array
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'dashboard_widgets';
+                hiddenInput.value = JSON.stringify(selectedOptions);
+                
+                // Remove the original select from form submission
+                widgetSelect.disabled = true;
+                
+                // Add hidden input
+                this.appendChild(hiddenInput);
+            }
+        });
+    }
+    
     // Handle personal message checkbox
     const includeMessageCheckbox = document.getElementById('includeMessage');
     const personalMessageDiv = document.getElementById('personalMessage');

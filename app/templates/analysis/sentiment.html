@@ -177,7 +177,7 @@
                         </div>
                         <div class="col-md-3 text-center mb-3">
                             <h6 class="text-muted">Volum</h6>
-                            <h4>{{ sentiment_data.volume_trend or 'N/A' }}</h4>
+                            <h4>{{ sentiment_data.get('volume_trend', 'N/A') }}</h4>
                         </div>
                     </div>
                     {% else %}
@@ -239,8 +239,8 @@
                     <h5 class="mb-0">Sentiment Indikatorer</h5>
                 </div>
                 <div class="card-body">
-                    {% if sentiment_data.indicators %}
-                    {% for indicator in sentiment_data.indicators %}
+                    {% if sentiment_data.get('indicators') %}
+                    {% for indicator in sentiment_data.get('indicators') %}
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>{{ indicator.name }}</span>
                         <div>
@@ -261,11 +261,11 @@
                     <h5 class="mb-0">Anbefaling</h5>
                 </div>
                 <div class="card-body">
-                    {% if sentiment_data.recommendation %}
-                    <div class="alert alert-{{ 'success' if sentiment_data.recommendation.type == 'buy' else 'danger' if sentiment_data.recommendation.type == 'sell' else 'warning' }}">
-                        <h6 class="fw-bold">{{ sentiment_data.recommendation.action|title }}</h6>
-                        <p>{{ sentiment_data.recommendation.reasoning }}</p>
-                        <small>Konfidensgrad: {{ "{:.0%}".format(sentiment_data.recommendation.confidence) }}</small>
+                    {% if sentiment_data.get('recommendation') %}
+                    <div class="alert alert-{{ 'success' if sentiment_data.get('recommendation').get('type') == 'buy' else 'danger' if sentiment_data.get('recommendation').get('type') == 'sell' else 'warning' }}">
+                        <h6 class="fw-bold">{{ sentiment_data.get('recommendation').get('action', '')|title }}</h6>
+                        <p>{{ sentiment_data.get('recommendation').get('reasoning', '') }}</p>
+                        <small>Konfidensgrad: {{ "{:.0%}".format(sentiment_data.get('recommendation').get('confidence', 0)) }}</small>
                     </div>
                     {% else %}
                     <p class="text-muted">Ingen anbefaling tilgjengelig.</p>
@@ -277,9 +277,9 @@
     {% endif %}
 </div>
 
-{% if sentiment_data and sentiment_data.history %}
+{% if sentiment_data and sentiment_data.get('history') %}
 <script type="application/json" id="sentiment-chart-data">
-{{ sentiment_data.history|tojson }}
+{{ sentiment_data.get('history')|tojson }}
 </script>
 {% endif %}
 
@@ -301,10 +301,10 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.map(d => d.date),
+                labels: data.dates,
                 datasets: [{
                     label: 'Sentiment Score',
-                    data: data.map(d => d.score),
+                    data: data.scores,
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgba(75, 192, 192, 0.1)',
                     tension: 0.3,
@@ -451,26 +451,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     
-                    {% if sentiment_data.key_themes %}
+                    {% if sentiment_data.get('key_themes') %}
                     <hr>
                     <h6>Nøkkeltemaer</h6>
                     <div class="d-flex flex-wrap gap-2">
-                        {% for theme in sentiment_data.key_themes %}
+                        {% for theme in sentiment_data.get('key_themes') %}
                         <span class="badge bg-light text-dark">{{ theme }}</span>
                         {% endfor %}
                     </div>
                     {% endif %}
                     
-                    {% if sentiment_data.summary %}
+                    {% if sentiment_data.get('summary') %}
                     <hr>
                     <h6>Sammendrag</h6>
-                    <p>{{ sentiment_data.summary }}</p>
+                    <p>{{ sentiment_data.get('summary') }}</p>
                     {% endif %}
                 </div>
             </div>
             
             <!-- Sentiment History Chart -->
-            {% if sentiment_data.history %}
+            {% if sentiment_data.get('history') %}
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Sentiment Utvikling (30 dager)</h5>
@@ -484,13 +484,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         <div class="col-lg-4">
             <!-- Recent News -->
-            {% if sentiment_data.recent_news %}
+            {% if sentiment_data.get('recent_news') %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Nylige Nyheter</h5>
                 </div>
                 <div class="card-body">
-                    {% for article in sentiment_data.recent_news[:5] %}
+                    {% for article in sentiment_data.get('recent_news')[:5] %}
                     <div class="mb-3 pb-3 border-bottom">
                         <h6 class="mb-1">
                             <a href="{{ article.url }}" target="_blank" class="text-decoration-none">
@@ -597,12 +597,9 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 </div>
 
-{% if sentiment_data and sentiment_data.history %}
+{% if sentiment_data and sentiment_data.get('history') %}
 <script type="application/json" id="sentiment-chart-data">
-{
-    "dates": {{ sentiment_data.history.dates|tojson }},
-    "scores": {{ sentiment_data.history.scores|tojson }}
-}
+{{ sentiment_data.get('history')|tojson }}
 </script>
 {% endif %}
 

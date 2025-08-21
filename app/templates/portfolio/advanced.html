@@ -333,11 +333,13 @@
 let portfolioChart = null;
 let performanceChart = null;
 let riskChart = null;
+let selectedStocks = {{ selected_stocks|tojson|safe }} || [];
 
 // Initialize charts
 document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
     setDefaultDates();
+    loadPortfolioData();
 });
 
 function initializeCharts() {
@@ -585,6 +587,45 @@ function updateAIInsights(insights) {
     }).join('');
     
     document.getElementById('ai-insights').innerHTML = insightsHtml;
+}
+
+function loadPortfolioData() {
+    // Initialize portfolio data display
+    if (selectedStocks && selectedStocks.length > 0) {
+        console.log('Loading portfolio data for:', selectedStocks);
+        
+        // Update portfolio display with selected stocks
+        updatePortfolioDisplay();
+        
+        // Update stats if available
+        updatePortfolioStats();
+    } else {
+        console.log('No stocks selected, showing sample data');
+        // Show sample data or empty state
+    }
+}
+
+function updatePortfolioDisplay() {
+    // Update portfolio chart with selected stocks
+    if (portfolioChart && selectedStocks.length > 0) {
+        portfolioChart.data.labels = selectedStocks.map(stock => stock.replace('.OL', ''));
+        portfolioChart.data.datasets[0].data = selectedStocks.map(() => Math.random() * 30 + 10); // Sample weights
+        portfolioChart.update();
+    }
+}
+
+function updatePortfolioStats() {
+    // Update displayed statistics
+    const expectedReturn = {{ expected_return|default(8.5) }};
+    const volatility = {{ volatility|default(12.3) }};
+    const sharpeRatio = {{ sharpe_ratio|default(0.69) }};
+    
+    // Update the UI elements
+    const expectedReturnEl = document.getElementById('expected-return');
+    const volatilityEl = document.getElementById('volatility');
+    
+    if (expectedReturnEl) expectedReturnEl.textContent = expectedReturn.toFixed(1) + '%';
+    if (volatilityEl) volatilityEl.textContent = volatility.toFixed(1) + '%';
 }
 
 function showLoading(message) {

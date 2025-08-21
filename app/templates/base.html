@@ -184,6 +184,25 @@
         color: #ffffff !important;
     }
     
+    /* CRITICAL FIX: All dark backgrounds MUST have white text */
+    [style*="background-color: #0"],[style*="background: #0"],
+    [style*="background-color: #1"],[style*="background: #1"], 
+    [style*="background-color: #2"],[style*="background: #2"],
+    [style*="background-color: #3"],[style*="background: #3"],
+    [style*="background-color: #4"],[style*="background: #4"],
+    [style*="background-color: #5"],[style*="background: #5"],
+    [style*="background-color: #6"],[style*="background: #6"],
+    [style*="background-color: #7"],[style*="background: #7"],
+    [style*="background-color: #8"],[style*="background: #8"],
+    [style*="background-color: #9"],[style*="background: #9"],
+    [style*="background-color: #a"],[style*="background: #a"],
+    [style*="background-color: #b"],[style*="background: #b"],
+    .bg-dark, .bg-primary, .bg-success, .bg-info, .bg-danger, 
+    .card-header.bg-primary, .card-header.bg-success, .card-header.bg-info, 
+    .card-header.bg-danger, .card-header.bg-dark {
+        color: #ffffff !important; /* WHITE text on ALL dark backgrounds */
+    }
+    
     /* CRITICAL FIX: Card headers with background colors should be VISIBLE */
     .card-header.bg-primary {
         background-color: #007bff !important; /* Bright blue - clearly visible */
