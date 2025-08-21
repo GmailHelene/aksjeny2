@@ -1575,8 +1575,21 @@ def profile():
 def my_subscription():
     """Dedicated user subscription management page"""
     try:
-        # Check actual user subscription status
-        user_subscription = current_user.subscription_status if current_user.is_authenticated else 'free'
+        # Check actual user subscription status - improved detection
+        user_subscription = 'free'
+        
+        # Check various subscription indicators
+        if current_user.is_authenticated:
+            # Check subscription_status field
+            if hasattr(current_user, 'subscription_status') and current_user.subscription_status == 'active':
+                user_subscription = 'active'
+            # Check subscription_type field
+            elif hasattr(current_user, 'subscription_type') and current_user.subscription_type in ['premium', 'pro', 'yearly', 'lifetime']:
+                user_subscription = 'active'
+            # Check has_subscription boolean
+            elif hasattr(current_user, 'has_subscription') and current_user.has_subscription:
+                user_subscription = 'active'
+                
         is_premium = user_subscription == 'active'
         
         # Get detailed subscription info based on actual status

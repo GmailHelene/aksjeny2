@@ -236,39 +236,45 @@
     
     /* CRITICAL FIX: Bootstrap outline buttons for quick actions */
     .btn-outline-primary {
-        background-color: #003d7a !important; /* Dark blue background */
-        border-color: #0066cc !important;
-        color: #ffffff !important;
+        background-color: #007bff !important; /* Blue background */
+        border-color: #007bff !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     .btn-outline-success {
-        background-color: #0d4f2c !important; /* Dark green background */
-        border-color: #28a745 !important;
-        color: #ffffff !important;
+        background-color: #155724 !important; /* DARK green background */
+        border-color: #155724 !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     .btn-outline-info {
-        background-color: #0c5460 !important; /* Dark cyan background */
-        border-color: #17a2b8 !important;
-        color: #ffffff !important;
+        background-color: #0c5460 !important; /* DARK cyan background */
+        border-color: #0c5460 !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     .btn-outline-dark {
         background-color: #1a1a1a !important; /* Very dark background */
         border-color: #6c757d !important;
-        color: #ffffff !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     .btn-outline-warning {
-        background-color: #664d00 !important; /* Dark yellow/orange background */
-        border-color: #ffc107 !important;
-        color: #ffffff !important;
+        background-color: #664d03 !important; /* DARK yellow/gold background */
+        border-color: #664d03 !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     .btn-outline-danger {
-        background-color: #721c24 !important; /* Dark red background */
-        border-color: #dc3545 !important;
-        color: #ffffff !important;
+        background-color: #721c24 !important; /* DARK red background */
+        border-color: #721c24 !important;
+        color: #ffffff !important; /* WHITE text */
+    }
+    
+    .btn-outline-secondary {
+        background-color: #495057 !important; /* DARK gray background */
+        border-color: #495057 !important;
+        color: #ffffff !important; /* WHITE text */
     }
     
     /* Hover states for outline buttons */
@@ -315,7 +321,7 @@
     
     /* CRITICAL FIX: Bootstrap text color classes */
     .text-muted {
-        color: #adb5bd !important; /* Light gray instead of dark gray */
+        color: #ffffff !important; /* WHITE text for visibility on any background */
     }
     
     .text-primary {
@@ -340,6 +346,49 @@
     
     .text-dark {
         color: #ffffff !important; /* White instead of dark for dark theme */
+    }
+    
+    /* CRITICAL: Table text visibility fixes */
+    .table {
+        color: #333333 !important; /* Dark text for light table backgrounds */
+    }
+    
+    .table thead th {
+        color: #333333 !important; /* Ensure header text is visible */
+        background-color: #f8f9fa !important; /* Light background for headers */
+    }
+    
+    .table tbody td {
+        color: #333333 !important; /* Dark text for table body */
+    }
+    
+    /* CRITICAL: Force proper contrast on all colored backgrounds */
+    .bg-light, .bg-white, [style*="background-color: #f"], [style*="background: #f"],
+    [style*="background-color: #e"], [style*="background: #e"],
+    [style*="background-color: #d"], [style*="background: #d"],
+    [style*="background-color: #c"], [style*="background: #c"] {
+        color: #333333 !important; /* Dark text on light backgrounds */
+    }
+    
+    /* CRITICAL: Dark green/red/yellow backgrounds (as per user preference) */
+    .bg-success {
+        background-color: #155724 !important; /* DARK green */
+        color: #ffffff !important; /* WHITE text */
+    }
+    
+    .bg-danger {
+        background-color: #721c24 !important; /* DARK red */
+        color: #ffffff !important; /* WHITE text */
+    }
+    
+    .bg-warning {
+        background-color: #664d03 !important; /* DARK yellow/gold */
+        color: #ffffff !important; /* WHITE text */
+    }
+    
+    .bg-info {
+        background-color: #0c5460 !important; /* DARK cyan/turquoise */
+        color: #ffffff !important; /* WHITE text */
     }
     
     /* CRITICAL FIX: btn-outline-secondary missing */
@@ -374,6 +423,7 @@
     .navbar {
         background-color: #1a1a1a !important;
         border-bottom: 1px solid #333;
+        padding-left: 2rem !important; /* Move navigation to the left for PC screens */
     }
     
     .navbar-brand {
@@ -398,6 +448,19 @@
     
     .navbar-nav .nav-link i {
         margin-right: 0.5rem;
+    }
+    
+    /* PC Navigation positioning fix */
+    @media (min-width: 992px) {
+        .navbar .container-fluid {
+            padding-left: 1rem !important;
+            max-width: 95% !important;
+        }
+        
+        .navbar-collapse {
+            margin-left: -2rem !important;
+        }
+    }
     }
     
     .dropdown-menu {
