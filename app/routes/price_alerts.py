@@ -60,12 +60,12 @@ def index():
 @price_alerts.route('/create', methods=['GET', 'POST'])
 @access_required
 def create():
-    """Create new price alert"""
+    """Create new price alert with improved error handling"""
     if request.method == 'POST':
         try:
             # Get form data
             symbol = request.form.get('symbol', '').upper().strip()
-            target_price = float(request.form.get('target_price', 0))
+            target_price_str = request.form.get('target_price', '').strip()
             alert_type = request.form.get('alert_type', 'above')
             company_name = request.form.get('company_name', '').strip()
             notes = request.form.get('notes', '').strip()
@@ -73,36 +73,66 @@ def create():
             # Validate input
             if not symbol:
                 flash('Aksjesymbol er påkrevd.', 'error')
-                return redirect(request.url)
+                return render_template('price_alerts/create.html')
             
-            if target_price <= 0:
-                flash('Målpris må være større enn 0.', 'error')
-                return redirect(request.url)
+            # Parse target price
+            try:
+                target_price = float(target_price_str)
+                if target_price <= 0:
+                    raise ValueError("Målpris må være større enn 0")
+            except (ValueError, TypeError):
+                flash('Ugyldig målpris. Vennligst skriv inn et gyldig tall.', 'error')
+                return render_template('price_alerts/create.html')
             
             if alert_type not in ['above', 'below']:
                 flash('Ugyldig varseltype.', 'error')
-                return redirect(request.url)
+                return render_template('price_alerts/create.html')
             
-            # Create the alert
-            alert = price_monitor.create_alert(
-                user_id=current_user.id,
-                symbol=symbol,
-                target_price=target_price,
-                alert_type=alert_type,
-                company_name=company_name or None,
-                notes=notes or None
-            )
+            # Check subscription limits
+            try:
+                if not getattr(current_user, 'has_subscription', False):
+                    from ..models.price_alert import PriceAlert
+                    active_count = PriceAlert.query.filter_by(
+                        user_id=current_user.id, 
+                        is_active=True
+                    ).count()
+                    
+                    if active_count >= 3:
+                        flash('Du har nådd grensen for gratis prisvarsler. Oppgrader til Pro for ubegrenset tilgang.', 'warning')
+                        return render_template('price_alerts/create.html')
+            except Exception as e:
+                logger.warning(f"Could not check subscription limits: {e}")
             
-            flash(f'Prisvarsel opprettet for {symbol}!', 'success')
-            return redirect(url_for('price_alerts.index'))
+            # Create the alert with proper error handling
+            try:
+                alert = price_monitor.create_alert(
+                    user_id=current_user.id,
+                    symbol=symbol,
+                    target_price=target_price,
+                    alert_type=alert_type,
+                    company_name=company_name or None,
+                    notes=notes or None
+                )
+                
+                if alert:
+                    flash(f'Prisvarsel opprettet for {symbol} ved {target_price}!', 'success')
+                    return redirect(url_for('price_alerts.index'))
+                else:
+                    flash('Kunne ikke opprette prisvarsel. Prøv igjen.', 'error')
+                    return render_template('price_alerts/create.html')
+                    
+            except ValueError as ve:
+                flash(str(ve), 'error')
+                return render_template('price_alerts/create.html')
+            except Exception as e:
+                logger.error(f"Error creating price alert: {e}")
+                flash('Teknisk feil ved opprettelse av prisvarsel. Kontakt support hvis problemet vedvarer.', 'error')
+                return render_template('price_alerts/create.html')
             
-        except ValueError as e:
-            flash(str(e), 'error')
-            return redirect(request.url)
         except Exception as e:
-            logger.error(f"Error creating price alert: {e}")
-            flash('Kunne ikke opprette prisvarsel. Prøv igjen.', 'error')
-            return redirect(request.url)
+            logger.error(f"Critical error in price alert creation: {e}")
+            flash('En uventet feil oppsto. Vennligst prøv igjen.', 'error')
+            return render_template('price_alerts/create.html')
     
     # GET request - show create form
     try:
