@@ -845,6 +845,10 @@ def create_admin_users():
         ]
     })
 
+# ===== FORUM =====
+from app.routes.forum import forum
+app.register_blueprint(forum, url_prefix='/forum')
+
 if __name__ == '__main__':
     print("🚀 Starter Aksjeradar Production Server")
     print("======================================")

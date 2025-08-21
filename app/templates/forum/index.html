@@ -1,4 +1,24 @@
 {% extends "base.html" %}
+{% block title %}Forum{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">Forum</h1>
+    <a href="{{ url_for('forum.create') }}" class="btn btn-primary mb-3">Nytt innlegg</a>
+    {% if posts %}
+        <div class="list-group">
+            {% for post in posts %}
+                <a href="{{ url_for('forum.view', post_id=post.id) }}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">{{ post.title }}</h5>
+                    <small class="text-muted">{{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Ingen innlegg enda.</div>
+    {% endif %}
+</div>
+{% endblock %}
+{% extends "base.html" %}
 
 {% block title %}Investment Forum | Aksjeradar Community{% endblock %}
 {% block description %}Diskuter aksjer, investeringsstrategier og markedsanalyse med andre investorer i Aksjeradar Community{% endblock %}
