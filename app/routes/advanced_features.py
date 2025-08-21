@@ -74,67 +74,102 @@ def market_overview():
 @advanced_features.route('/crypto-dashboard')
 @access_required
 def crypto_dashboard():
-    """Cryptocurrency tracking dashboard - simplified version"""
+    """Cryptocurrency tracking dashboard with clean layout"""
     try:
-        # Simple crypto data that should always work
+        # Comprehensive crypto data with proper structure
         crypto_data = {
-            'top_cryptos': [
-                {'symbol': 'BTC', 'name': 'Bitcoin', 'price': '$50000', 'change': '+2.5%', 'market_cap': '$1T'},
-                {'symbol': 'ETH', 'name': 'Ethereum', 'price': '$3000', 'change': '+1.8%', 'market_cap': '$350B'},
-                {'symbol': 'BNB', 'name': 'Binance Coin', 'price': '$300', 'change': '-0.5%', 'market_cap': '$50B'},
-            ],
-            'total_market_cap': '$2.1T',
-            'btc_dominance': '48.5%',
-            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'Bitcoin': {
+                'symbol': 'BTC',
+                'name': 'Bitcoin',
+                'price': 43500.00,
+                'change_percent': 2.45,
+                'change_24h': 1040.50,
+                'volume': 15820000000,
+                'market_cap': 850000000000,
+                'circulating_supply': 19500000
+            },
+            'Ethereum': {
+                'symbol': 'ETH', 
+                'name': 'Ethereum',
+                'price': 2650.00,
+                'change_percent': 1.82,
+                'change_24h': 47.30,
+                'volume': 8920000000,
+                'market_cap': 318000000000,
+                'circulating_supply': 120000000
+            },
+            'Binance Coin': {
+                'symbol': 'BNB',
+                'name': 'Binance Coin', 
+                'price': 285.50,
+                'change_percent': -0.85,
+                'change_24h': -2.45,
+                'volume': 1250000000,
+                'market_cap': 43000000000,
+                'circulating_supply': 150000000
+            },
+            'Cardano': {
+                'symbol': 'ADA',
+                'name': 'Cardano',
+                'price': 0.52,
+                'change_percent': 1.75,
+                'change_24h': 0.009,
+                'volume': 385000000,
+                'market_cap': 18000000000,
+                'circulating_supply': 35000000000
+            },
+            'Polkadot': {
+                'symbol': 'DOT',
+                'name': 'Polkadot',
+                'price': 7.42,
+                'change_percent': 0.95,
+                'change_24h': 0.07,
+                'volume': 145000000,
+                'market_cap': 9500000000,
+                'circulating_supply': 1280000000
+            }
         }
         
-        return render_template('stocks/crypto_list.html', 
-                             crypto_data=crypto_data,
-                             page_title="Crypto Dashboard")
-    except Exception as e:
-        logger.error(f"Error in crypto dashboard: {e}")
-        # Fallback to crypto list page
-        from flask import redirect, url_for
-        return redirect(url_for('stocks.list_crypto'))
-            return redirect(url_for('stocks.list_crypto'))
-
-@advanced_features.route('/api/crypto-dashboard')
-        }
-        
-        # Calculate total market data
+        # Calculate market statistics
         total_market_cap = sum(coin['market_cap'] for coin in crypto_data.values())
+        total_volume = sum(coin['volume'] for coin in crypto_data.values())
+        btc_dominance = (crypto_data['Bitcoin']['market_cap'] / total_market_cap) * 100
         
         market_stats = {
             'total_market_cap': total_market_cap,
-            'total_volume_24h': sum(coin['volume'] for coin in crypto_data.values()),
-            'btc_dominance': (crypto_data['Bitcoin']['market_cap'] / total_market_cap) * 100,
+            'total_volume_24h': total_volume,
+            'btc_dominance': btc_dominance,
             'fear_greed_index': 68,
-            'active_cryptocurrencies': len(crypto_data)
+            'active_cryptocurrencies': len(crypto_data),
+            'market_trend': 'Bullish' if btc_dominance > 45 else 'Bearish'
         }
         
         return render_template('advanced_features/crypto_dashboard.html',
                              crypto_data=crypto_data,
-                             market_stats=market_stats)
+                             market_stats=market_stats,
+                             page_title="Crypto Dashboard")
     
     except Exception as e:
         logger.error(f"Error loading crypto dashboard: {e}")
-        # Still provide fallback data even if there's an error
+        # Provide minimal fallback data
         fallback_data = {
-            'Bitcoin': {'symbol': 'BTC', 'price': 43500.00, 'change_percent': 2.45},
-            'Ethereum': {'symbol': 'ETH', 'price': 2650.00, 'change_percent': 1.82}
+            'Bitcoin': {'symbol': 'BTC', 'name': 'Bitcoin', 'price': 43500.00, 'change_percent': 2.45, 'market_cap': 850000000000},
+            'Ethereum': {'symbol': 'ETH', 'name': 'Ethereum', 'price': 2650.00, 'change_percent': 1.82, 'market_cap': 318000000000}
         }
+        fallback_stats = {'total_market_cap': 1200000000000, 'btc_dominance': 48.5}
+        
         return render_template('advanced_features/crypto_dashboard.html',
                              crypto_data=fallback_data,
-                             market_stats={'total_market_cap': 1200000000000},
-                             error=str(e))
+                             market_stats=fallback_stats,
+                             error=str(e),
+                             page_title="Crypto Dashboard")
 
-# API Endpoints for crypto-dashboard that return JSON with proper HTTP status
 @advanced_features.route('/api/crypto-dashboard')
 @access_required
 def api_crypto_dashboard():
     """API endpoint for crypto dashboard data"""
     try:
-        # Same crypto data as above, but return as JSON
+        # Same crypto data as dashboard, but return as JSON
         crypto_data = {
             'Bitcoin': {
                 'symbol': 'BTC',
@@ -176,54 +211,6 @@ def api_crypto_dashboard():
             'success': False,
             'error': f'Teknisk feil: {str(e)}'
         }), 500
-                'circulating_supply': 35000000000
-            },
-            'Polkadot': {
-                'symbol': 'DOT',
-                'price': 7.42,
-                'change_percent': 0.95,
-                'change_24h': 0.07,
-                'volume': 145000000,
-                'market_cap': 9500000000,
-                'circulating_supply': 1280000000
-            },
-            'Chainlink': {
-                'symbol': 'LINK',
-                'price': 14.85,
-                'change_percent': 3.28,
-                'change_24h': 0.47,
-                'volume': 425000000,
-                'market_cap': 8200000000,
-                'circulating_supply': 552000000
-            }
-        }
-        
-        # Calculate total market data
-        total_market_cap = sum(coin['market_cap'] for coin in crypto_data.values())
-        
-        market_stats = {
-            'total_market_cap': total_market_cap,
-            'total_volume_24h': sum(coin['volume'] for coin in crypto_data.values()),
-            'btc_dominance': (crypto_data['Bitcoin']['market_cap'] / total_market_cap) * 100,
-            'fear_greed_index': 68,
-            'active_cryptocurrencies': len(crypto_data)
-        }
-        
-        return render_template('advanced_features/crypto_dashboard.html',
-                             crypto_data=crypto_data,
-                             market_stats=market_stats)
-    
-    except Exception as e:
-        logger.error(f"Error loading crypto dashboard: {e}")
-        # Still provide fallback data even if there's an error
-        fallback_data = {
-            'Bitcoin': {'symbol': 'BTC', 'price': 43500.00, 'change_percent': 2.45},
-            'Ethereum': {'symbol': 'ETH', 'price': 2650.00, 'change_percent': 1.82}
-        }
-        return render_template('advanced_features/crypto_dashboard.html',
-                             crypto_data=fallback_data,
-                             market_stats={'total_market_cap': 1200000000000},
-                             error=str(e))
 
 @advanced_features.route('/currency-converter')
 @access_required  # SECURITY FIX: Added missing access control
