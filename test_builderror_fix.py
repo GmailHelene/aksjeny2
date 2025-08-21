@@ -1,102 +1,178 @@
 #!/usr/bin/env python3
 """
-Test script to verify the BuildError fix
+Test script to verify that the BuildError for analysis.analysis has been fixed
 
 This script tests:
-1. The advanced_features.crypto_dashboard route works
-2. No more BuildError when loading pages
-3. Templates render without URL errors
+1. analysis.index route works properly  
+2. analysis.analysis route no longer exists
+3. Templates render without BuildError 
+4. Navigation links work correctly
 """
 
 import sys
 import os
-import requests
 import logging
-from urllib.parse import urljoin
+
+# Add the app directory to sys.path
+app_dir = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, app_dir)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def test_route_exists():
-    """Test that the advanced_features route is properly defined"""
-    logger.info("Testing route definition...")
+def test_app_creation():
+    """Test that the Flask app can be created without errors"""
+    logger.info("Testing app creation...")
     
     try:
-        # Import the route to check for syntax errors
-        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from app.routes.advanced_features import advanced_features, crypto_dashboard
+        # Import create_app
+        from app import create_app
         
-        logger.info("✅ advanced_features blueprint imported successfully")
-        logger.info("✅ crypto_dashboard function imported successfully")
+        # Create app instance  
+        app = create_app('development')
         
-        # Check if blueprint has the expected route
-        if hasattr(advanced_features, 'url_map'):
-            logger.info("✅ Blueprint has URL map")
+        logger.info("✅ App created successfully")
+        return app
         
-        return True
-    except ImportError as e:
-        logger.error(f"❌ Import error: {e}")
-        return False
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
-        return False
+        logger.error(f"❌ Error creating app: {e}")
+        import traceback
+        logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+        return None
 
-def test_template_syntax():
-    """Test that templates don't have URL generation errors"""
-    logger.info("Testing template syntax...")
+def test_url_generation(app):
+    """Test URL generation for analysis routes"""
+    logger.info("Testing URL generation...")
     
-    template_files = [
-        'app/templates/base.html',
-        'app/templates/advanced_features/dashboard.html'
-    ]
-    
-    for template_file in template_files:
+    if not app:
+        logger.error("❌ No app available for testing")
+        return False
+        
+    with app.app_context():
+        from flask import url_for
+        
+        # Test analysis.index (should work)
         try:
-            if os.path.exists(template_file):
-                with open(template_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                # Check for the fixed URL references
-                if 'advanced_features.crypto_dashboard' in content:
-                    logger.info(f"✅ {template_file} contains proper url_for reference")
-                else:
-                    logger.warning(f"⚠️ {template_file} doesn't contain expected URL reference")
-                
-                # Check for hardcoded URLs (which could be problematic)
-                if '/advanced/crypto-dashboard' in content and '{{' not in content.split('/advanced/crypto-dashboard')[0].split('\n')[-1]:
-                    logger.warning(f"⚠️ {template_file} contains hardcoded URL")
-                    
-            else:
-                logger.warning(f"⚠️ {template_file} not found")
-                
+            url = url_for('analysis.index')
+            logger.info(f"✅ analysis.index URL built successfully: {url}")
         except Exception as e:
-            logger.error(f"❌ Error reading {template_file}: {e}")
+            logger.error(f"❌ Failed to build analysis.index URL: {e}")
             return False
-    
+            
+        # Test analysis.currency_overview (should work)
+        try:
+            url = url_for('analysis.currency_overview')
+            logger.info(f"✅ analysis.currency_overview URL built successfully: {url}")
+        except Exception as e:
+            logger.error(f"❌ Failed to build analysis.currency_overview URL: {e}")
+            return False
+            
+        # Test the old analysis.analysis route (should fail)
+        try:
+            url = url_for('analysis.analysis')
+            logger.error(f"❌ ERROR: analysis.analysis should not exist but got: {url}")
+            return False
+        except Exception as e:
+            logger.info(f"✅ analysis.analysis correctly fails as expected: {type(e).__name__}")
+            
     return True
 
-def test_no_more_builderrors():
-    """Check that templates compile without BuildError"""
-    logger.info("Testing template compilation...")
+def test_template_rendering(app):
+    """Test that templates render without BuildError"""
+    logger.info("Testing template rendering...")
+    
+    if not app:
+        logger.error("❌ No app available for testing")
+        return False
+        
+    try:
+        from flask import render_template
+        
+        # Test with app context and request context (needed for url_for)
+        with app.test_request_context():
+            # This will fail if there are any BuildErrors in base.html or navigation
+            rendered = render_template('analysis/index.html')
+            logger.info("✅ Template rendering successful - no BuildError in navigation")
+            
+            # Check if the rendered content contains the correct navigation
+            if 'analysis/index' in rendered or '/analysis/' in rendered:
+                logger.info("✅ Navigation contains correct analysis route")
+            else:
+                logger.warning("⚠️ Could not verify correct navigation route in rendered content")
+                
+    except Exception as e:
+        logger.error(f"❌ Template rendering failed: {e}")
+        import traceback
+        logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+        return False
+        
+    return True
+
+def check_base_template():
+    """Check base.html template for correct URL references"""
+    logger.info("Checking base.html template...")
+    
+    template_path = 'app/templates/base.html'
     
     try:
-        # Try to import and create a minimal Flask app to test template rendering
-        from flask import Flask, render_template_string
+        with open(template_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Check that analysis.index is used (correct)
+        if 'analysis.index' in content:
+            logger.info("✅ base.html correctly uses 'analysis.index'")
+        else:
+            logger.error("❌ base.html does not contain 'analysis.index'")
+            return False
+            
+        # Check that analysis.analysis is NOT used (incorrect)
+        if 'analysis.analysis' in content:
+            logger.error("❌ base.html still contains 'analysis.analysis' - fix not applied!")
+            return False
+        else:
+            logger.info("✅ base.html correctly does NOT contain 'analysis.analysis'")
+            
+    except Exception as e:
+        logger.error(f"❌ Error reading {template_path}: {e}")
+        return False
         
-        app = Flask(__name__)
+    return True
+
+def main():
+    """Run all tests"""
+    logger.info("🔍 Starting BuildError fix verification tests...")
+    logger.info("=" * 50)
+    
+    # Test 1: Check base template
+    if not check_base_template():
+        logger.error("❌ Base template check failed!")
+        sys.exit(1)
         
-        # Test the problematic URL generation
-        with app.app_context():
-            try:
-                # Simulate the URL generation that was failing
-                test_template = """
-                <a href="{{ url_for('advanced_features.crypto_dashboard') }}">Test Link</a>
-                """
-                
-                # This would fail if the route doesn't exist
-                # We can't actually render it without the full app context,
-                # but we can at least check that the import works
+    # Test 2: Create app
+    app = test_app_creation()
+    if not app:
+        logger.error("❌ App creation failed!")
+        sys.exit(1)
+        
+    # Test 3: URL generation
+    if not test_url_generation(app):
+        logger.error("❌ URL generation tests failed!")
+        sys.exit(1)
+        
+    # Test 4: Template rendering
+    if not test_template_rendering(app):
+        logger.error("❌ Template rendering tests failed!")
+        sys.exit(1)
+        
+    logger.info("=" * 50)
+    logger.info("🎉 ALL TESTS PASSED!")
+    logger.info("✅ BuildError has been successfully fixed!")
+    logger.info("✅ Navigation now correctly uses 'analysis.index' instead of 'analysis.analysis'")
+    logger.info("✅ Website should now work without navigation errors")
+
+if __name__ == '__main__':
+    main()
                 logger.info("✅ Template syntax check passed")
                 return True
                 
