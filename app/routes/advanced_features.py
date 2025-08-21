@@ -160,9 +160,14 @@ def crypto_dashboard():
                              crypto_data=fallback_data,
                              market_stats={'total_market_cap': 1200000000000},
                              error=str(e))
-    """Cryptocurrency tracking dashboard"""
+
+# API Endpoints for crypto-dashboard that return JSON with proper HTTP status
+@advanced_features.route('/api/crypto-dashboard')
+@access_required
+def api_crypto_dashboard():
+    """API endpoint for crypto dashboard data"""
     try:
-        # Create comprehensive mock crypto data
+        # Same crypto data as above, but return as JSON
         crypto_data = {
             'Bitcoin': {
                 'symbol': 'BTC',
@@ -181,23 +186,29 @@ def crypto_dashboard():
                 'volume': 8920000000,
                 'market_cap': 318000000000,
                 'circulating_supply': 120000000
-            },
-            'Solana': {
-                'symbol': 'SOL',
-                'price': 98.50,
-                'change_percent': 4.12,
-                'change_24h': 3.90,
-                'volume': 1820000000,
-                'market_cap': 44000000000,
-                'circulating_supply': 446000000
-            },
-            'Cardano': {
-                'symbol': 'ADA',
-                'price': 0.485,
-                'change_percent': -1.25,
-                'change_24h': -0.006,
-                'volume': 380000000,
-                'market_cap': 17000000000,
+            }
+        }
+        
+        total_market_cap = sum(coin['market_cap'] for coin in crypto_data.values())
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'crypto_data': crypto_data,
+                'market_stats': {
+                    'total_market_cap': total_market_cap,
+                    'total_volume_24h': sum(coin['volume'] for coin in crypto_data.values()),
+                    'btc_dominance': (crypto_data['Bitcoin']['market_cap'] / total_market_cap) * 100,
+                }
+            }
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in crypto dashboard API: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Teknisk feil: {str(e)}'
+        }), 500
                 'circulating_supply': 35000000000
             },
             'Polkadot': {

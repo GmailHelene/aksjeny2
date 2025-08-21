@@ -484,11 +484,25 @@ def setup_error_handlers(app):
     
     @app.errorhandler(404)
     def not_found_error(error):
+        # Return JSON for API requests
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Endepunkt ikke funnet',
+                'status_code': 404
+            }), 404
         return render_template('errors/404.html'), 404
     
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
+        # Return JSON for API requests
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Intern serverfeil',
+                'status_code': 500
+            }), 500
         return render_template('errors/500.html'), 500
     
     @app.errorhandler(429)
@@ -510,18 +524,36 @@ def setup_error_handlers(app):
     def database_error(error):
         app.logger.error(f'Database error: {error}')
         db.session.rollback()
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Database feil',
+                'status_code': 500
+            }), 500
         return render_template('errors/500.html'), 500
     
     @app.errorhandler(IntegrityError)
     def integrity_error(error):
         app.logger.error(f'Database integrity error: {error}')
         db.session.rollback()
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Database integritets feil',
+                'status_code': 500
+            }), 500
         return render_template('errors/500.html'), 500
     
     @app.errorhandler(OperationalError)
     def operational_error(error):
         app.logger.error(f'Database operational error: {error}')
         db.session.rollback()
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'Database operasjonsfeil',
+                'status_code': 500
+            }), 500
         return render_template('errors/500.html'), 500
     
     # Add TemplateNotFound error handler
@@ -529,6 +561,12 @@ def setup_error_handlers(app):
     @app.errorhandler(TemplateNotFound)
     def template_not_found_error(error):
         app.logger.error(f"Template not found: {error}")
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': f'Template ikke funnet: {error}',
+                'status_code': 500
+            }), 500
         return render_template('errors/500.html', 
                              error_message=f"Template ikke funnet: {error}"), 500
     
@@ -538,6 +576,15 @@ def setup_error_handlers(app):
         from flask import redirect, url_for, flash
         
         app.logger.warning(f'CSRFError: {str(e)}')
+        
+        # Return JSON for API requests
+        if request.path.startswith('/api/'):
+            return jsonify({
+                'success': False,
+                'error': 'CSRF sikkerhetsfeil',
+                'status_code': 400
+            }), 400
+        
         flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'error')
         
         if 'checkout' in request.path:

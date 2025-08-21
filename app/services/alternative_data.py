@@ -424,63 +424,75 @@ class AlternativeDataService:
 
     def get_stock_data(self, symbol):
         """Try multiple data sources in order of preference and reliability"""
-        logger.info(f"🔍 Fetching REAL market data for {symbol}")
+        try:
+            logger.info(f"🔍 Fetching REAL market data for {symbol}")
+            
+            # Check cache first for performance
+            cache_key = f"stock_data_{symbol}"
+            cached_data = self._get_cached_data(cache_key)
+            if cached_data:
+                logger.info(f"📋 Using cached data for {symbol}")
+                return cached_data
+            
+            # Source preference order:
+            # 1. Yahoo Finance Direct API (most reliable, works for all markets)
+            # 2. Oslo Børs for Norwegian stocks (.OL)
+            # 3. Google Finance (good for US stocks)
+            # 4. MarketWatch (US stocks only)
+            # 5. Enhanced fallback (only if all fail)
+            
+            data_sources = []
+            
+            # Always try Yahoo Finance first - it's the most reliable
+            data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
+            
+            # For Norwegian stocks, also try Oslo Børs
+            if symbol.endswith('.OL'):
+                data_sources.append(('Oslo Børs', self.get_oslo_bors_data))
+        except Exception as e:
+            logger.error(f"Critical error in get_stock_data setup for {symbol}: {e}")
+            return self.get_enhanced_fallback_data(symbol)
         
-        # Check cache first for performance
-        cache_key = f"stock_data_{symbol}"
-        cached_data = self._get_cached_data(cache_key)
-        if cached_data:
-            logger.info(f"📋 Using cached data for {symbol}")
-            return cached_data
-        
-        # Source preference order:
-        # 1. Yahoo Finance Direct API (most reliable, works for all markets)
-        # 2. Oslo Børs for Norwegian stocks (.OL)
-        # 3. Google Finance (good for US stocks)
-        # 4. MarketWatch (US stocks only)
-        # 5. Enhanced fallback (only if all fail)
-        
-        data_sources = []
-        
-        # Always try Yahoo Finance first - it's the most reliable
-        data_sources.append(('Yahoo Finance Direct API', self.scrape_yahoo_finance))
-        
-        # For Norwegian stocks, also try Oslo Børs
-        if symbol.endswith('.OL'):
-            data_sources.append(('Oslo Børs', self.get_oslo_bors_data))
-        
-        # For all stocks, try Google Finance
-        data_sources.append(('Google Finance', self.scrape_google_finance))
-        
-        # For US stocks, try MarketWatch
-        if not symbol.endswith('.OL'):
-            data_sources.append(('MarketWatch', self.scrape_marketwatch))
-        
-        # Try each source in order
-        for source_name, source_func in data_sources:
-            try:
-                data = source_func(symbol)
-                if data and data.get('last_price', 0) > 0:
-                    logger.info(f"✅ Got REAL data from {source_name} for {symbol}: ${data['last_price']}")
-                    
-                    # Cache the successful result
-                    self._set_cached_data(cache_key, data)
-                    return data
-                else:
-                    logger.debug(f"❌ {source_name} returned no valid data for {symbol}")
-            except Exception as e:
-                logger.warning(f"❌ {source_name} failed for {symbol}: {e}")
-                continue
+        try:
+            # For all stocks, try Google Finance
+            data_sources.append(('Google Finance', self.scrape_google_finance))
+            
+            # For US stocks, try MarketWatch
+            if not symbol.endswith('.OL'):
+                data_sources.append(('MarketWatch', self.scrape_marketwatch))
+            
+            # Try each source in order with timeout protection
+            for source_name, source_func in data_sources:
+                try:
+                    logger.debug(f"⏳ Trying {source_name} for {symbol}")
+                    data = source_func(symbol)
+                    if data and data.get('last_price', 0) > 0:
+                        logger.info(f"✅ Got REAL data from {source_name} for {symbol}: ${data['last_price']}")
+                        
+                        # Cache the successful result
+                        self._set_cached_data(cache_key, data)
+                        return data
+                    else:
+                        logger.debug(f"❌ {source_name} returned no valid data for {symbol}")
+                except Exception as e:
+                    logger.warning(f"❌ {source_name} failed for {symbol}: {e}")
+                    continue
+        except Exception as e:
+            logger.error(f"Critical error in data source loop for {symbol}: {e}")
         
         # If all real sources fail, use enhanced fallback
         logger.warning(f"⚠️  ALL real data sources failed for {symbol} - using enhanced fallback")
-        fallback_data = self.get_enhanced_fallback_data(symbol)
-        
-        # Cache fallback data with shorter duration
-        cache_key_fallback = f"fallback_data_{symbol}"
-        self._set_cached_data(cache_key_fallback, fallback_data)
-        
-        return fallback_data
+        try:
+            fallback_data = self.get_enhanced_fallback_data(symbol)
+            
+            # Cache fallback data with shorter duration
+            cache_key_fallback = f"fallback_data_{symbol}"
+            self._set_cached_data(cache_key_fallback, fallback_data)
+            
+            return fallback_data
+        except Exception as e:
+            logger.error(f"Even fallback data failed for {symbol}: {e}")
+            return None
     
     def get_enhanced_fallback_data(self, symbol):
         """Generate realistic fallback data based on real market patterns"""

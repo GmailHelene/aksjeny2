@@ -5,6 +5,7 @@ from ..models import User
 from ..models.favorites import Favorites
 from ..extensions import db
 from ..utils.market_open import is_market_open, is_oslo_bors_open
+from ..utils.access_control import access_required
 from ..services.dashboard_service import DashboardService
 import logging
 from datetime import datetime, timedelta
@@ -1251,6 +1252,12 @@ def roi_kalkulator():
         current_app.logger.error(f"Error loading ROI calculator: {e}")
         flash('Kunne ikke laste ROI-kalkulatoren.', 'error')
         return redirect(url_for('main.index'))
+
+@main.route('/dashboard')
+@access_required  
+def dashboard():
+    """Main dashboard redirect to financial dashboard"""
+    return redirect(url_for('dashboard.financial_dashboard'))
 
 @main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

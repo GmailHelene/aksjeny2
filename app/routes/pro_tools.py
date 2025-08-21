@@ -36,7 +36,7 @@ def advanced_screener():
         flash('Feil ved kjøring av screener. Prøv igjen.', 'error')
         return render_template('pro/screener.html', criteria={}, results=[])
 
-@pro_tools.route('/alerts')
+@pro_tools.route('/alerts', methods=['GET'])
 @access_required
 def price_alerts():
     """Pris-varsler og alarmer"""
@@ -47,8 +47,10 @@ def price_alerts():
         return render_template('pro/alerts.html', alerts=user_alerts)
     except Exception as e:
         logger.error(f"Error loading alerts: {e}")
-        flash('Kunne ikke laste varsler.', 'error')
-        return render_template('pro/alerts.html', alerts=[])
+        # Return template with error message instead of crashing
+        return render_template('pro/alerts.html', 
+                             alerts=[], 
+                             error='Kunne ikke laste varsler. Prøv igjen senere.')
 
 @pro_tools.route('/portfolio-analyzer')
 @access_required
@@ -115,17 +117,102 @@ def api_screener():
         logger.error(f"API screener error: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@pro_tools.route('/api/alerts', methods=['GET'])
+@access_required
+def api_get_alerts():
+    """API endpoint for getting user alerts"""
+    try:
+        # TODO: Implement database retrieval
+        mock_alerts = [
+            {
+                'id': 1,
+                'symbol': 'AAPL',
+                'condition': 'above',
+                'price': 150.0,
+                'current_price': 145.50,
+                'created': '2024-01-15',
+                'active': True
+            },
+            {
+                'id': 2,
+                'symbol': 'TSLA',
+                'condition': 'below',
+                'price': 200.0,
+                'current_price': 220.30,
+                'created': '2024-01-10',
+                'active': True
+            }
+        ]
+        return jsonify({
+            'success': True,
+            'alerts': mock_alerts
+        })
+    except Exception as e:
+        logger.error(f"API get alerts error: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Teknisk feil: {str(e)}'
+        }), 500
+
 @pro_tools.route('/api/create-alert', methods=['POST'])
 @access_required
 def create_alert():
     """Opprett nytt pris-varsel"""
     try:
         data = request.get_json()
+        
+        # Validate required fields
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Ingen data mottatt'
+            }), 400
+            
+        required_fields = ['symbol', 'condition', 'price']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    'success': False,
+                    'error': f'Mangler påkrevd felt: {field}'
+                }), 400
+        
         # TODO: Implementer database lagring
-        return jsonify({'success': True, 'alert_id': 'mock_id'})
+        alert_id = f"alert_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        return jsonify({
+            'success': True,
+            'alert_id': alert_id,
+            'message': f'Varsel opprettet for {data["symbol"]}'
+        })
     except Exception as e:
         logger.error(f"Create alert error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'error': f'Teknisk feil: {str(e)}'
+        }), 500
+
+@pro_tools.route('/api/delete-alert/<alert_id>', methods=['DELETE'])
+@access_required
+def delete_alert(alert_id):
+    """Delete an alert"""
+    try:
+        if not alert_id:
+            return jsonify({
+                'success': False,
+                'error': 'Ugyldig varsel ID'
+            }), 400
+            
+        # TODO: Implement database deletion
+        return jsonify({
+            'success': True,
+            'message': f'Varsel {alert_id} slettet'
+        })
+    except Exception as e:
+        logger.error(f"Delete alert error: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'Teknisk feil: {str(e)}'
+        }), 500
 
 @pro_tools.route('/export-portfolio', methods=['POST'])
 @access_required

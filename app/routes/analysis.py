@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_from_directory, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_from_directory, session, make_response
 from flask_login import current_user, login_required
 from ..utils.access_control import access_required, demo_access, premium_required
 from ..models.user import User
 from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
 from datetime import datetime, timedelta
+import logging
 import logging
 import requests
 
@@ -34,7 +35,60 @@ except ImportError:
 # Set up logger
 logger = logging.getLogger(__name__)
 
+# Create analysis blueprint
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
+
+@analysis.route('/api/sentiment')
+@access_required
+def api_sentiment():
+    """API endpoint for market sentiment analysis"""
+    try:
+        selected_symbol = (request.args.get('symbol') or request.args.get('ticker', '')).strip().upper()
+        if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
+            return make_response(jsonify({
+                'success': False,
+                'error': 'Ugyldig aksjesymbol.'
+            }), 400)
+
+        from ..services.api_service import FinnhubAPI
+        finnhub_api = FinnhubAPI()
+        sentiment_data = None
+        if selected_symbol:
+            try:
+                sentiment_data = finnhub_api.get_sentiment(selected_symbol)
+                if not sentiment_data:
+                    from ..services.analysis_service import AnalysisService
+                    raw_sentiment = AnalysisService.get_sentiment_analysis(selected_symbol)
+                    if raw_sentiment:
+                        sentiment_data = raw_sentiment
+                    else:
+                        sentiment_data = {
+                            'overall_score': 60,
+                            'sentiment_label': 'Nøytral',
+                            'error': 'Ingen sentimentdata tilgjengelig.'
+                        }
+            except Exception as symbol_error:
+                current_app.logger.error(f"Error processing sentiment for {selected_symbol}: {symbol_error}")
+                return make_response(jsonify({
+                    'success': False,
+                    'error': f'Teknisk feil: {str(symbol_error)}'
+                }), 500)
+        else:
+            return make_response(jsonify({
+                'success': False,
+                'error': 'Ingen symbol valgt.'
+            }), 400)
+
+        return jsonify({
+            'success': True,
+            'data': sentiment_data
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error in API sentiment analysis: {e}")
+        return make_response(jsonify({
+            'success': False,
+            'error': f'Teknisk feil: {str(e)}'
+        }), 500)
 
 @analysis.route('/')
 @access_required

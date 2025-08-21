@@ -1,18 +1,7 @@
-from app.extensions import db
-from datetime import datetime
+# This file is deprecated - ForumPost is now defined in app/models/forum.py
+# Import from there instead to avoid SQLAlchemy mapping conflicts
 
-class ForumPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(128), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+from .forum import ForumPost
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'title': self.title,
-            'content': self.content,
-            'user_id': self.user_id,
-            'created_at': self.created_at.isoformat()
-        }
+# Re-export for backwards compatibility
+__all__ = ['ForumPost']
