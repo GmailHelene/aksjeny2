@@ -160,3 +160,16 @@
 .card-header .bi {
     color: inherit !important;
 }
+
+/* Set card background to black */
+.card {
+    --bs-card-bg: #000000;
+}
+
+/* Card header text color overrides */
+.card-header.bg-white h5, 
+.card-header.bg-white h6, 
+.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h5, 
+.card-header:not(.bg-primary):not(.bg-success):not(.bg-danger):not(.bg-warning):not(.bg-info):not(.bg-dark) h6 {
+    color: #ffffff !important;
+}
