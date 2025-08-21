@@ -74,64 +74,31 @@ def market_overview():
 @advanced_features.route('/crypto-dashboard')
 @access_required
 def crypto_dashboard():
-    """Cryptocurrency tracking dashboard"""
+    """Cryptocurrency tracking dashboard - simplified version"""
     try:
-        # Create comprehensive mock crypto data
+        # Simple crypto data that should always work
         crypto_data = {
-            'Bitcoin': {
-                'symbol': 'BTC',
-                'price': 43500.00,
-                'change_percent': 2.45,
-                'change_24h': 1040.50,
-                'volume': 15820000000,
-                'market_cap': 850000000000,
-                'circulating_supply': 19500000
-            },
-            'Ethereum': {
-                'symbol': 'ETH',
-                'price': 2650.00,
-                'change_percent': 1.82,
-                'change_24h': 47.30,
-                'volume': 8920000000,
-                'market_cap': 318000000000,
-                'circulating_supply': 120000000
-            },
-            'Solana': {
-                'symbol': 'SOL',
-                'price': 98.50,
-                'change_percent': 4.12,
-                'change_24h': 3.90,
-                'volume': 1820000000,
-                'market_cap': 44000000000,
-                'circulating_supply': 446000000
-            },
-            'Cardano': {
-                'symbol': 'ADA',
-                'price': 0.485,
-                'change_percent': -1.25,
-                'change_24h': -0.006,
-                'volume': 380000000,
-                'market_cap': 17000000000,
-                'circulating_supply': 35000000000
-            },
-            'Polkadot': {
-                'symbol': 'DOT',
-                'price': 7.42,
-                'change_percent': 0.95,
-                'change_24h': 0.07,
-                'volume': 145000000,
-                'market_cap': 9500000000,
-                'circulating_supply': 1280000000
-            },
-            'Chainlink': {
-                'symbol': 'LINK',
-                'price': 14.85,
-                'change_percent': 3.28,
-                'change_24h': 0.47,
-                'volume': 425000000,
-                'market_cap': 8200000000,
-                'circulating_supply': 552000000
-            }
+            'top_cryptos': [
+                {'symbol': 'BTC', 'name': 'Bitcoin', 'price': '$50000', 'change': '+2.5%', 'market_cap': '$1T'},
+                {'symbol': 'ETH', 'name': 'Ethereum', 'price': '$3000', 'change': '+1.8%', 'market_cap': '$350B'},
+                {'symbol': 'BNB', 'name': 'Binance Coin', 'price': '$300', 'change': '-0.5%', 'market_cap': '$50B'},
+            ],
+            'total_market_cap': '$2.1T',
+            'btc_dominance': '48.5%',
+            'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        return render_template('stocks/crypto_list.html', 
+                             crypto_data=crypto_data,
+                             page_title="Crypto Dashboard")
+    except Exception as e:
+        logger.error(f"Error in crypto dashboard: {e}")
+        # Fallback to crypto list page
+        from flask import redirect, url_for
+        return redirect(url_for('stocks.list_crypto'))
+            return redirect(url_for('stocks.list_crypto'))
+
+@advanced_features.route('/api/crypto-dashboard')
         }
         
         # Calculate total market data
