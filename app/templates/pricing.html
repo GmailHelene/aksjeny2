@@ -16,16 +16,20 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100 {% if plan.recommended %}border-success shadow-lg{% endif %}">
                 {% if plan.recommended %}
-                <div class="card-header text-white text-center" style="background-color: #155724;">
-                    <small>MEST POPULÆR</small>
+                <div class="card-header text-center" style="background-color: #155724 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">MEST POPULÆR</small>
                 </div>
                 {% elif plan.name == 'Månedlig' %}
-                <div class="card-header text-white text-center" style="background-color: #007bff;">
-                    <small>STANDARD</small>
+                <div class="card-header text-center" style="background-color: #007bff !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">STANDARD</small>
                 </div>
                 {% elif plan.name == 'Årlig' %}
-                <div class="card-header text-white text-center" style="background-color: #0c5460;">
-                    <small>PREMIUM</small>
+                <div class="card-header text-center" style="background-color: #0c5460 !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">PREMIUM</small>
+                </div>
+                {% else %}
+                <div class="card-header text-center" style="background-color: #6c757d !important; color: #ffffff !important; border: none;">
+                    <small style="color: #ffffff !important; font-weight: bold;">PLAN</small>
                 </div>
                 {% endif %}
                 <div class="card-body d-flex flex-column">

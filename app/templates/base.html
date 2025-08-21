@@ -370,25 +370,68 @@
         color: #333333 !important; /* Dark text on light backgrounds */
     }
     
-    /* CRITICAL: Dark green/red/yellow backgrounds (as per user preference) */
-    .bg-success {
-        background-color: #155724 !important; /* DARK green */
-        color: #ffffff !important; /* WHITE text */
+    /* ULTRA AGGRESSIVE TABLE FIXES - FORCE DARK TEXT ON LIGHT BACKGROUNDS */
+    .table, .table th, .table td, 
+    .table thead th, .table tbody td, .table tfoot td,
+    table, table th, table td,
+    table thead th, table tbody td, table tfoot td {
+        color: #212529 !important; /* Force dark text */
+        background-color: #ffffff !important; /* Force white background */
     }
     
-    .bg-danger {
-        background-color: #721c24 !important; /* DARK red */
-        color: #ffffff !important; /* WHITE text */
+    /* SPECIFIC FIXES FOR TABLE HEADERS */
+    .table thead th, table thead th,
+    .table thead, table thead {
+        background-color: #007bff !important; /* Blue header background */
+        color: #ffffff !important; /* White text on blue */
+        border-color: #0056b3 !important;
     }
     
-    .bg-warning {
-        background-color: #664d03 !important; /* DARK yellow/gold */
-        color: #ffffff !important; /* WHITE text */
+    /* SPECIFIC FIXES FOR TABLE ROWS */
+    .table tbody tr, table tbody tr,
+    .table tbody td, table tbody td {
+        background-color: #ffffff !important; /* Force white background */
+        color: #212529 !important; /* Force dark text */
     }
     
-    .bg-info {
-        background-color: #0c5460 !important; /* DARK cyan/turquoise */
-        color: #ffffff !important; /* WHITE text */
+    .table tbody tr:hover, table tbody tr:hover {
+        background-color: #f8f9fa !important; /* Light gray on hover */
+        color: #212529 !important; /* Keep dark text */
+    }
+    
+    /* EMERGENCY OVERRIDE FOR ANY ELEMENT WITH WHITE TEXT ON LIGHT BACKGROUND */
+    .text-white, .text-light {
+        color: #212529 !important; /* Force dark text instead of white */
+    }
+    
+    /* BUT KEEP WHITE TEXT ON ACTUALLY DARK BACKGROUNDS */
+    .bg-dark .text-white, .bg-primary .text-white, .bg-success .text-white,
+    .bg-info .text-white, .bg-danger .text-white, .bg-secondary .text-white,
+    [style*="background-color: #0"] .text-white,
+    [style*="background-color: #1"] .text-white,
+    [style*="background-color: #2"] .text-white,
+    [style*="background-color: #3"] .text-white,
+    [style*="background: linear-gradient"][style*="#0"] .text-white,
+    [style*="background: linear-gradient"][style*="#1"] .text-white,
+    [style*="background: linear-gradient"][style*="#2"] .text-white,
+    [style*="background: linear-gradient"][style*="#3"] .text-white {
+        color: #ffffff !important; /* Actually white text on dark backgrounds */
+    }
+    
+    /* PRICING CARDS - FORCE PROPER COLORS */
+    .card-header {
+        background-color: #007bff !important; /* Blue background */
+        color: #ffffff !important; /* White text */
+        border-bottom: 1px solid #0056b3 !important;
+    }
+    
+    .card-header.bg-success {
+        background-color: #155724 !important; /* Dark green */
+        color: #ffffff !important;
+    }
+    
+    .card-header[style*="background-color"] {
+        color: #ffffff !important; /* Force white text on colored headers */
     }
     
     /* CRITICAL FIX: btn-outline-secondary missing */
@@ -910,6 +953,9 @@
                             <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}">
                                 <i class="bi bi-droplet"></i> Olje-korrelasjon
                             </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}">
+                                <i class="bi bi-building"></i> Regjeringsanalyse
+                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}">
                                 <i class="bi bi-truck"></i> Shipping Intelligence
                             </a></li>
@@ -995,7 +1041,7 @@
                         </ul>
                     </li>
                     
-                    <!-- Resources & Learning Dropdown - MOVED TO FOOTER
+                    <!-- Resources & Learning Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('resources.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-book"></i> Ressurser

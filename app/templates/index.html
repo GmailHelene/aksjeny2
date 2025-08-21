@@ -339,37 +339,37 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0" style="background: linear-gradient(135deg, #f8faff 0%, #e6f3ff 100%);">
+                    <div class="card-body p-0" style="background-color: #ffffff !important;">
                         <!-- Desktop Table -->
                         <div class="table-responsive d-none d-lg-block">
-                            <table class="table table-hover mb-0" style="background-color: #ffffff;">
-                                <thead style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">
+                            <table class="table table-hover mb-0" style="background-color: #ffffff !important; color: #212529 !important;">
+                                <thead style="background-color: #007bff !important; color: #ffffff !important;">
                                     <tr>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Symbol</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Navn</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Pris</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Endring</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Endring %</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Volum</th>
-                                        <th class="border-0 fw-bold" style="color: #ffffff !important;">Handlinger</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Symbol</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Navn</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Pris</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Endring</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Endring %</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Volum</th>
+                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Handlinger</th>
                                     </tr>
                                 </thead>
-                                <tbody style="background-color: #ffffff;">
+                                <tbody style="background-color: #ffffff !important; color: #212529 !important;">
                                     {% if market_data.oslo_stocks %}
                                         {% for stock in market_data.oslo_stocks %}
-                                            <tr class="align-middle stock-row" style="border-bottom: 1px solid rgba(0,0,0,0.05); background-color: #ffffff;">
-                                                <td><strong class="text-primary fw-bold" style="color: #007bff !important;">{{ stock.symbol }}</strong></td>
-                                                <td class="fw-medium" style="color: #333333 !important;">{{ stock.name }}</td>
-                                                <td><strong class="fs-6" style="color: #333333 !important;">{{ stock.price }} NOK</strong></td>
-                                                <td class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-bold" style="color: {{ '#155724' if stock.change >= 0 else '#721c24' }} !important;">
+                                            <tr class="align-middle stock-row" style="background-color: #ffffff !important; color: #212529 !important; border-bottom: 1px solid rgba(0,0,0,0.1);">
+                                                <td style="background-color: #ffffff !important; color: #007bff !important;"><strong class="fw-bold">{{ stock.symbol }}</strong></td>
+                                                <td style="background-color: #ffffff !important; color: #212529 !important;" class="fw-medium">{{ stock.name }}</td>
+                                                <td style="background-color: #ffffff !important; color: #212529 !important;"><strong class="fs-6">{{ stock.price }} NOK</strong></td>
+                                                <td style="background-color: #ffffff !important; color: {{ '#155724' if stock.change >= 0 else '#721c24' }} !important;" class="fw-bold">
                                                     <i class="bi bi-{{ 'arrow-up' if stock.change >= 0 else 'arrow-down' }}-circle-fill me-1"></i>
                                                     {{ stock.change }}
                                                 </td>
-                                                <td class="{{ 'text-success' if stock.change_percent >= 0 else 'text-danger' }} fw-bold" style="color: {{ '#155724' if stock.change_percent >= 0 else '#721c24' }} !important;">
+                                                <td style="background-color: #ffffff !important; color: {{ '#155724' if stock.change_percent >= 0 else '#721c24' }} !important;" class="fw-bold">
                                                     {{ stock.change_percent }}%
                                                 </td>
-                                                <td class="fw-medium" style="color: #666666 !important;">{{ stock.volume | int | nn }}</td>
-                                                <td>
+                                                <td style="background-color: #ffffff !important; color: #666666 !important;" class="fw-medium">{{ stock.volume | int | nn }}</td>
+                                                <td style="background-color: #ffffff !important;">
                                                     <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
                                                         <i class="bi bi-eye me-1"></i>Detaljer
                                                     </a>
