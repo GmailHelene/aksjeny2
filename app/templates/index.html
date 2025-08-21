@@ -171,7 +171,7 @@
                                     <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Administrer din portefølje">
                                         <i class="bi bi-briefcase-fill fs-1 mb-2 text-white"></i>
                                         <span class="fw-bold text-white">Portefølje</span>
-                                        <small class="mt-1 d-none d-md-block" style="color: #ffffff !important;">Investeringer</small>
+                                        <small class="mt-1 d-none d-md-block text-white">Investeringer</small>
                                     </a>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@
                                     <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Siste markedsnyheter">
                                         <i class="bi bi-newspaper fs-1 mb-2 text-white"></i>
                                         <span class="fw-bold text-white">Nyheter</span>
-                                        <small class="mt-1 d-none d-md-block" style="color: #ffffff !important;">AI-kurert</small>
+                                        <small class="mt-1 d-none d-md-block text-white">AI-kurert</small>
                                     </a>
                                     {% if recommendations and recommendations|length > 0 %}
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning shadow-sm">
@@ -194,7 +194,7 @@
                                     <a href="{{ url_for('watchlist_advanced.index') }}" class="btn btn-outline-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Overvåk favorittaksjer">
                                         <i class="bi bi-heart-fill fs-1 mb-2 text-white"></i>
                                         <span class="fw-bold text-white">Watchlist</span>
-                                        <small class="mt-1 d-none d-md-block" style="color: #ffffff !important;">{{ user_stats.watchlist_items }} aksjer</small>
+                                        <small class="mt-1 d-none d-md-block text-white">{{ user_stats.watchlist_items }} aksjer</small>
                                     </a>
                                 </div>
                             </div>
@@ -339,25 +339,25 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0" style="background-color: #ffffff !important;">
+                    <div class="card-body p-0">
                         <!-- Desktop Table -->
                         <div class="table-responsive d-none d-lg-block">
-                            <table class="table table-hover mb-0" style="background-color: #ffffff !important; color: #212529 !important;">
-                                <thead style="background-color: #007bff !important; color: #ffffff !important;">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-primary text-white">
                                     <tr>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Symbol</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Navn</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Pris</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Endring</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Endring %</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Volum</th>
-                                        <th class="border-0 fw-bold" style="background-color: #007bff !important; color: #ffffff !important;">Handlinger</th>
+                                        <th class="border-0 fw-bold">Symbol</th>
+                                        <th class="border-0 fw-bold">Navn</th>
+                                        <th class="border-0 fw-bold">Pris</th>
+                                        <th class="border-0 fw-bold">Endring</th>
+                                        <th class="border-0 fw-bold">Endring %</th>
+                                        <th class="border-0 fw-bold">Volum</th>
+                                        <th class="border-0 fw-bold">Handlinger</th>
                                     </tr>
                                 </thead>
-                                <tbody style="background-color: #ffffff !important; color: #212529 !important;">
+                                <tbody>
                                     {% if market_data.oslo_stocks %}
                                         {% for stock in market_data.oslo_stocks %}
-                                            <tr class="align-middle stock-row" style="background-color: #ffffff !important; color: #212529 !important; border-bottom: 1px solid rgba(0,0,0,0.1);">
+                                            <tr class="align-middle stock-row">
                                                 <td style="background-color: #ffffff !important; color: #007bff !important;"><strong class="fw-bold">{{ stock.symbol }}</strong></td>
                                                 <td style="background-color: #ffffff !important; color: #212529 !important;" class="fw-medium">{{ stock.name }}</td>
                                                 <td style="background-color: #ffffff !important; color: #212529 !important;"><strong class="fs-6">{{ stock.price }} NOK</strong></td>
@@ -524,7 +524,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
-                    <div class="card-header text-white border-0" style="background-color: #1b5e20 !important;">
+                    <div class="card-header bg-primary text-white border-0">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
                                 <i class="bi bi-bar-chart me-2"></i>

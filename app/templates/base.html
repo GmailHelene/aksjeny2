@@ -141,7 +141,7 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
                     </li>
@@ -412,69 +412,6 @@
     .navbar-nav .nav-link i {
         margin-right: 0.5rem;
     }
-    
-    /* PC Navigation positioning fix - Move navigation much more to the left */
-    @media (min-width: 992px) {
-        .navbar .container-fluid {
-            padding-left: 0 !important; /* Remove left padding completely */
-            padding-right: 1rem !important;
-            max-width: 100% !important; /* Use full width */
-        }
-        
-        .navbar-collapse {
-            margin-left: -4rem !important; /* Move navigation much more to the left */
-        }
-        
-        .navbar-nav {
-            margin-left: -2rem !important; /* Additional left margin for nav items */
-        }
-        
-        /* Ensure dropdown menus align properly and don't go off-screen */
-        .dropdown-menu {
-            right: 0 !important; /* Align dropdown to the right edge of the trigger */
-            left: auto !important;
-            min-width: 280px !important; /* Ensure adequate width */
-        }
-        
-        /* Special positioning for the last dropdown (KONTO) */
-        .navbar-nav .nav-item:last-child .dropdown-menu {
-            right: 0 !important;
-            left: auto !important;
-            transform: translateX(0) !important;
-        }
-    }
-    }
-    
-    .dropdown-menu {
-        background-color: #ffffff;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 250px;
-    }
-    
-    .dropdown-item {
-        color: #212529;
-        padding: 0.75rem 1.25rem;
-        transition: all 0.2s ease;
-    }
-    
-    .dropdown-item:hover {
-        background-color: #f8f9fa;
-        color: #007bff;
-    }
-    
-    .dropdown-item i {
-        margin-right: 0.5rem;
-        color: #6c757d;
-        width: 1.2rem;
-        text-align: center;
-    }
-    
-    .dropdown-divider {
-        margin: 0.5rem 0;
-        opacity: 0.1;
-    }
 
     /* Achievement toast styling */
     .achievement-toast {
@@ -491,55 +428,6 @@
         color: #000;
     }
 
-    /* Mobile navigation enhancements */
-    @media (max-width: 991.98px) {
-        .navbar-collapse {
-            background-color: rgba(26, 26, 26, 0.98);
-            border: 1px solid #333;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .navbar-nav .nav-item {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 0.25rem;
-        }
-        
-        .navbar-nav .nav-item:last-child {
-            border-bottom: none;
-        }
-        
-        .navbar-nav .dropdown-menu {
-            background-color: rgba(52, 58, 64, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-left: 1rem;
-            margin-top: 0.25rem;
-            position: static;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .navbar-nav .dropdown-item {
-            color: rgba(255, 255, 255, 0.9) !important;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-        }
-        
-        .navbar-nav .dropdown-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff !important;
-        }
-        
-        .navbar-nav .dropdown-item i {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .navbar-nav .dropdown-divider {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-    }
-    
     /* Enhanced text contrast fixes */
     .card-header h5,
     .card-header .bi {
@@ -731,7 +619,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                 <!-- FULL NAVIGATION FOR AUTHENTICATED USERS -->
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-auto">
                     <!-- Aksjer/Stocks Dropdown - EXPANDED -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
@@ -1059,7 +947,7 @@
                 </ul>
                 {% else %}
                 <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.demo') }}">
                             <i class="bi bi-play-circle"></i> Demo
