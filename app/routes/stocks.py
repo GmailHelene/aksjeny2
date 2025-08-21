@@ -913,41 +913,12 @@ def compare():
                              period='6mo',
                              interval='1d',
                              normalize=True)
-                signals[symbol] = random.choice(['BUY', 'HOLD', 'SELL'])
-            
-            logger.info(f"Generated demo chart data for {len(symbols)} symbols with {days} days each")
-            
-            # Return with comprehensive demo data
-            template_data = {
-                'tickers': symbols,
-                'stocks': [],
-                'ticker_names': ticker_names,
-                'comparison_data': {},
-                'current_prices': current_prices,
-                'price_changes': price_changes,
-                'volatility': volatility,
-                'volumes': volumes,
-                'correlations': {},
-                'betas': betas,
-                'rsi': rsi,
-                'macd': macd,
-                'bb': bb,
-                'sma200': sma200,
-                'sma50': sma50,
-                'signals': signals,
-                'chart_data': chart_data,
-                'period': period,
-                'interval': interval,
-                'normalize': normalize
-            }
-            
-            logger.info(f"Returning template with demo data for {len(symbols)} symbols")
-            return render_template('stocks/compare.html', **template_data)
 
-        # Helper for correlation matrix
-        price_matrix = {}
 
-        # Process each symbol
+# Helper route for demo data generation
+@stocks.route('/demo-data')
+@demo_access
+def generate_demo_data():
 
         from datetime import datetime, timedelta
         import random
