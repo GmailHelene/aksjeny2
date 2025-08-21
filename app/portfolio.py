@@ -269,25 +269,14 @@ def remove_stock_from_portfolio(id, stock_id):
 @portfolio.route('/watchlist')
 @access_required
 def watchlist():
-    """Show user's watchlist"""
+    """Show user's watchlist with real-time data"""
     try:
         if not hasattr(current_user, 'id') or current_user.is_anonymous:
             flash('Du må være innlogget for å bruke favorittlisten.', 'warning')
             return render_template('portfolio/watchlist.html', stocks=[])
-        watchlist = Watchlist.query.filter_by(user_id=current_user.id).first()
-        stocks = []
-        if watchlist:
-            for ws in watchlist.stocks:
-                try:
-                    # Hent sanntidsdata for aksjen
-                    stock_data = DataService.get_stock_data(ws.ticker, period='2d')
-                    last_price = None
-                    change_percent = None
-                    if not stock_data.empty and len(stock_data) > 1:
-                        last_price = stock_data['Close'].iloc[-1]
-                        prev_price = stock_data['Close'].iloc[-2]
-                        change_percent = ((last_price - prev_price) / prev_price) * 100 if prev_price else None
-                    # Hent navn fra info
+            
+        from .services.watchlist_service import WatchlistService
+        stocks = WatchlistService.get_watchlist_data(current_user.id)
                     info = DataService.get_stock_info(ws.ticker)
                     name = info.get('longName', ws.ticker) if info else ws.ticker
                     stocks.append({

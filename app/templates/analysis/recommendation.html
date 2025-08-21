@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Investeringsanbefalinger{% endblock %}
+{% block title %}
+    {% if specific_ticker %}
+        Anbefaling for {{ specific_ticker }}
+    {% else %}
+        Investeringsanbefalinger
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -8,11 +14,103 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
             <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
-            <li class="breadcrumb-item active">Investeringsanbefalinger</li>
+            <li class="breadcrumb-item"><a href="{{ url_for('analysis.recommendation') }}">Anbefalinger</a></li>
+            {% if specific_ticker %}
+            <li class="breadcrumb-item active">{{ specific_ticker }}</li>
+            {% endif %}
         </ol>
     </nav>
 
-    <!-- Page Header -->
+    {% if specific_ticker and specific_recommendation %}
+    <!-- Specific Stock Recommendation -->
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3">{{ specific_recommendation.company_name }} ({{ specific_ticker }})</h1>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-{{ 'success' if specific_recommendation.recommendation in ['BUY', 'STRONG BUY'] else 'danger' if specific_recommendation.recommendation == 'SELL' else 'warning' }}">
+                    <h2 class="h5 mb-0 text-white">
+                        Anbefaling: {{ specific_recommendation.recommendation }}
+                        <span class="float-end">Konfidens: {{ specific_recommendation.confidence }}%</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Prisinformasjon</h5>
+                            <table class="table">
+                                <tr>
+                                    <td>Nåværende kurs:</td>
+                                    <td class="text-end">{{ "%.2f"|format(specific_recommendation.current_price) }} NOK</td>
+                                </tr>
+                                <tr>
+                                    <td>Målkurs:</td>
+                                    <td class="text-end">{{ "%.2f"|format(specific_recommendation.price_target) }} NOK</td>
+                                </tr>
+                                <tr>
+                                    <td>Potensial:</td>
+                                    <td class="text-end 
+                                        {% if (specific_recommendation.price_target - specific_recommendation.current_price) > 0 %}
+                                        text-success
+                                        {% else %}
+                                        text-danger
+                                        {% endif %}">
+                                        {{ "%.1f"|format((specific_recommendation.price_target/specific_recommendation.current_price - 1) * 100) }}%
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Tekniske Indikatorer</h5>
+                            <table class="table">
+                                {% if specific_recommendation.technical_data %}
+                                    {% if specific_recommendation.technical_data.rsi %}
+                                    <tr>
+                                        <td>RSI:</td>
+                                        <td class="text-end
+                                            {% if specific_recommendation.technical_data.rsi < 30 %}
+                                            text-success
+                                            {% elif specific_recommendation.technical_data.rsi > 70 %}
+                                            text-danger
+                                            {% else %}
+                                            text-warning
+                                            {% endif %}">
+                                            {{ "%.1f"|format(specific_recommendation.technical_data.rsi) }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if specific_recommendation.technical_data.macd %}
+                                    <tr>
+                                        <td>MACD:</td>
+                                        <td class="text-end
+                                            {% if specific_recommendation.technical_data.macd > specific_recommendation.technical_data.macd_signal %}
+                                            text-success
+                                            {% else %}
+                                            text-danger
+                                            {% endif %}">
+                                            {{ "%.2f"|format(specific_recommendation.technical_data.macd) }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Analyse og Begrunnelse</h5>
+                        <p>{{ specific_recommendation.analysis }}</p>
+                        <ul>
+                            {% for reason in specific_recommendation.reasons %}
+                            <li>{{ reason }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- General Recommendations View -->
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="display-6 mb-3">Investeringsanbefalinger</h1>
@@ -22,6 +120,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 
     <!-- Market Insights Section -->
     {% if market_insights %}

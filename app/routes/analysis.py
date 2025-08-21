@@ -1752,6 +1752,9 @@ def screener_view():
 def recommendation(ticker=None):
     """Investment recommendations page with comprehensive analysis"""
     from datetime import datetime, timedelta
+    from ..services.data_service import DataService
+    from ..services.enhanced_yfinance_service import EnhancedYFinanceService
+    from flask import flash, redirect, url_for
     
     # Check for ticker in both path and query parameters
     if not ticker:
@@ -1760,22 +1763,69 @@ def recommendation(ticker=None):
     # If specific ticker is provided, focus on that stock
     if ticker:
         try:
-            from ..services.data_service import DataService
+            # Get stock info and technical data
             stock_info = DataService.get_stock_info(ticker)
-            # Return specific recommendation for this ticker
+            technical = DataService.get_technical_data(ticker) or {}
+            
+            # Get historical data for trend analysis
+            yf_service = EnhancedYFinanceService()
+            hist_data = yf_service.get_ticker_history(ticker, period='6mo')
+            
+            if not stock_info or hist_data is None:
+                flash('Kunne ikke hente aksjedata. Vennligst prøv igjen senere.', 'error')
+                return redirect(url_for('analysis.recommendation'))
+                
+            # Calculate technical indicators
+            rsi = technical.get('RSI', 50)
+            macd = technical.get('MACD', 0)
+            macd_signal = technical.get('MACD_signal', 0)
+            
+            # Get current price and calculate target
+            current_price = stock_info.get('regularMarketPrice', 
+                                       hist_data['Close'][-1] if len(hist_data) > 0 else 0)
+            analyst_target = stock_info.get('targetMedianPrice')
+            price_target = analyst_target if analyst_target else current_price * 1.15
+            
+            # Determine recommendation based on technical and fundamental data
+            if rsi < 30 and macd > macd_signal:
+                recommendation = 'STRONG BUY'
+                confidence = 90
+            elif rsi < 40 and macd > macd_signal:
+                recommendation = 'BUY'
+                confidence = 80
+            elif rsi > 70 and macd < macd_signal:
+                recommendation = 'SELL'
+                confidence = 75
+            else:
+                recommendation = 'HOLD'
+                confidence = 65
+                
+            # Generate reasons based on actual data
+            reasons = []
+            if rsi < 40:
+                reasons.append('Teknisk oversolgt - potensial for oppgang')
+            if macd > macd_signal:
+                reasons.append('Positiv MACD trend')
+            if stock_info.get('quickRatio', 0) > 1:
+                reasons.append('God likviditet')
+            if stock_info.get('forwardPE', 0) < stock_info.get('trailingPE', 0):
+                reasons.append('Attraktiv fremtidig verdsettelse')
+                
+            # Create recommendation object with real data
             specific_recommendation = {
                 'ticker': ticker,
-                'company_name': stock_info.get('name', ticker),
-                'recommendation': 'BUY',  # This should be calculated based on actual analysis
-                'confidence': 85,
-                'price_target': stock_info.get('last_price', 0) * 1.15,
-                'current_price': stock_info.get('last_price', 0),
-                'analysis': f"Basert på fundamental og teknisk analyse av {ticker}",
-                'reasons': [
-                    'Sterk finansiell posisjon',
-                    'Positive markedstrender',
-                    'Teknisk momentum'
-                ]
+                'company_name': stock_info.get('longName', stock_info.get('shortName', ticker)),
+                'recommendation': recommendation,
+                'confidence': confidence,
+                'price_target': price_target,
+                'current_price': current_price,
+                'analysis': f"Basert på omfattende analyse av {ticker}",
+                'reasons': reasons if reasons else ['Basert på teknisk og fundamental analyse'],
+                'technical_data': {
+                    'rsi': round(rsi, 2) if rsi else None,
+                    'macd': round(macd, 2) if macd else None,
+                    'macd_signal': round(macd_signal, 2) if macd_signal else None
+                }
             }
             return render_template('analysis/recommendation.html', 
                                  title=f'Anbefaling for {ticker}',
