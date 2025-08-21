@@ -206,11 +206,27 @@ function formatSymbolForTradingView(symbol) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts after a delay
-    setTimeout(() => {
-        loadMainChart(currentSymbol);
-        loadTechnicalAnalysis(currentSymbol);
-    }, 1000);
+    // Ensure TradingView script is loaded before initializing
+    function waitForTradingView() {
+        if (typeof TradingView !== 'undefined') {
+            console.log('✅ TradingView library loaded');
+            // Initialize charts with longer delay to ensure stability
+            setTimeout(() => {
+                try {
+                    loadMainChart(currentSymbol);
+                    loadTechnicalAnalysis(currentSymbol);
+                } catch (error) {
+                    console.error('Error initializing charts:', error);
+                    showFallbackMessage();
+                }
+            }, 2000);
+        } else {
+            console.log('⏳ Waiting for TradingView library...');
+            setTimeout(waitForTradingView, 500);
+        }
+    }
+    
+    waitForTradingView();
     
     // Search functionality
     document.getElementById('loadChart').addEventListener('click', function() {
@@ -230,6 +246,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Fallback message function
+function showFallbackMessage() {
+    const container = document.getElementById('tradingview_main_widget');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center p-5">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <h5>TradingView Chart</h5>
+                    <p>Charts lastes fra TradingView. Hvis chart ikke vises, prøv å refreshe siden eller sjekk din internettforbindelse.</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh side
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
 
 // Main chart loader
 function loadMainChart(symbol) {
