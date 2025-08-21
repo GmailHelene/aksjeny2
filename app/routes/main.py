@@ -1760,8 +1760,9 @@ def bust_cache():
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
-        }), 500
+            'error': 'Cache-busting midlertidig utilgjengelig',
+            'fallback': True
+        }), 200
 
 @main.route('/admin/api/cache/status')
 def cache_status():

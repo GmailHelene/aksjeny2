@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="{{ current_language or 'no' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="cache-bust" content="20250821_minimal_styling_fix">
+    
+    <!-- Minimal targeted contrast fixes -->
+    <style>
+    /* Targeted contrast fixes for readability */
+    
+    /* Fix for text on dark backgrounds - should be white */
+    .bg-primary, .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+    .bg-primary .card-title, .bg-primary .text-muted {
+        color: white !important;
+    }
+    
+    .bg-dark, .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+    .bg-dark .card-title, .bg-dark .text-muted {
+        color: white !important;
+    }
+    
+    /* Fix for purple backgrounds - change to dark green */
+    .bg-purple, [style*="background-color: purple"], [style*="background: purple"],
+    [style*="background-color: #800080"], [style*="background: #800080"] {
+        background-color: #2d5016 !important;
+        color: white !important;
+    }
+    
+    /* Fix light backgrounds that should be darker */
+    .bg-light-yellow, [style*="background-color: #ffffe0"], [style*="background: #ffffe0"] {
+        background-color: #b8860b !important; /* Dark goldenrod */
+        color: white !important;
+    }
+    
+    .bg-light-green, [style*="background-color: #90ee90"], [style*="background: #90ee90"] {
+        background-color: #2d5016 !important; /* Dark green */
+        color: white !important;
+    }
+    
+    .bg-light-red, [style*="background-color: #ffb3ba"], [style*="background: #ffb3ba"] {
+        background-color: #8b0000 !important; /* Dark red */
+        color: white !important;
+    }
+    </style>
+    
+    <title>AksjeRadar{% if title %} - {{ title }}{% endif %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css" rel="stylesheet">
+    {% if config.ENVIRONMENT == 'development' %}
+    <link href="/static/css/app.css?v={{ cache_buster }}" rel="stylesheet">
+    {% else %}
+    <link href="/static/css/app.css" rel="stylesheet">
+    {% endif %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fas fa-chart-line me-2"></i>AksjeRadar
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stocks.stocks_overview') }}"><i class="fas fa-chart-bar"></i> Aksjer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('crypto.crypto_overview') }}"><i class="fab fa-bitcoin"></i> Crypto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('currency.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis.analysis') }}"><i class="fas fa-brain"></i> Analyse</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.portfolio') }}"><i class="fas fa-briefcase"></i> Portefølje</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('forum.forum') }}"><i class="fas fa-comments"></i> Forum</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> Konto
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Logg inn</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Registrer</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AksjeRadar</h5>
+                    <p>Din komplette plattform for finansielle investeringer og analyse.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2024 AksjeRadar. Alle rettigheter forbeholdt.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+    
+    <!-- CSRF Token for AJAX -->
+    <script>
+        window.csrfToken = '{{ csrf_token() }}';
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

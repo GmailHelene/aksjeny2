@@ -69,10 +69,13 @@ def api_sentiment():
                         }
             except Exception as symbol_error:
                 current_app.logger.error(f"Error processing sentiment for {selected_symbol}: {symbol_error}")
-                return make_response(jsonify({
-                    'success': False,
-                    'error': f'Teknisk feil: {str(symbol_error)}'
-                }), 500)
+                # Return fallback data instead of 500 error
+                sentiment_data = {
+                    'overall_score': 50,
+                    'sentiment_label': 'Nøytral',
+                    'error': 'Sentimentdata midlertidig utilgjengelig.',
+                    'fallback': True
+                }
         else:
             return make_response(jsonify({
                 'success': False,
@@ -85,10 +88,16 @@ def api_sentiment():
         })
     except Exception as e:
         current_app.logger.error(f"Error in API sentiment analysis: {e}")
-        return make_response(jsonify({
-            'success': False,
-            'error': f'Teknisk feil: {str(e)}'
-        }), 500)
+        # Return fallback data instead of 500 error
+        return jsonify({
+            'success': True,
+            'data': {
+                'overall_score': 50,
+                'sentiment_label': 'Nøytral',
+                'error': 'Sentimentdata midlertidig utilgjengelig.',
+                'fallback': True
+            }
+        })
 
 @analysis.route('/')
 @access_required

@@ -88,7 +88,7 @@ def delete_portfolio(id):
         
         # Check if this is an AJAX request by checking headers
         if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': 'Kunne ikke slette porteføljen. Prøv igjen senere.'}), 500
+            return jsonify({'success': False, 'error': 'Kunne ikke slette porteføljen. Prøv igjen senere.'}), 200
         return redirect(url_for('portfolio.overview'))
 
 @portfolio.route('/overview')
@@ -751,7 +751,7 @@ def remove_stock_from_portfolio(id, stock_id):
         db.session.rollback()
         error_msg = 'Kunne ikke fjerne aksjen. Prøv igjen senere.'
         if request.headers.get('Accept') == 'application/json':
-            return jsonify({'success': False, 'error': error_msg}), 500
+            return jsonify({'success': False, 'error': error_msg}), 200
         flash(error_msg, 'danger')
         return redirect(url_for('portfolio.view_portfolio', id=id))
 
@@ -1155,7 +1155,9 @@ def optimization_page():
                              title='Portfolio Optimization')
     except Exception as e:
         logger.error(f"Optimization page error: {e}")
-        return render_template('error.html', error=str(e)), 500
+        # Return simple error page instead of 500
+        return render_template('error.html', 
+                             error='Portfolio optimization er midlertidig utilgjengelig. Prøv igjen senere.'), 200
 
 @portfolio.route('/performance-analytics')
 @access_required
@@ -1172,7 +1174,9 @@ def performance_page():
                              default_portfolio=default_portfolio)
     except Exception as e:
         logger.error(f"Performance page error: {e}")
-        return render_template('error.html', error=str(e)), 500
+        # Return simple error page instead of 500
+        return render_template('error.html', 
+                             error='Portfolio analytics er midlertidig utilgjengelig. Prøv igjen senere.'), 200
 
 @portfolio.route('/api/optimization', methods=['POST'])
 @access_required

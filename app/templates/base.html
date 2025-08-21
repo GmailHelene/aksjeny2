@@ -4,354 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="cache-bust" content="20250821_complete_styling_fix">
+    <meta name="cache-bust" content="20250821_minimal_styling_fix">
     
-    <!-- Simple navbar styling -->
+    <!-- Minimal targeted contrast fixes -->
     <style>
-    /* GLOBAL COLOR CONTRAST FIXES - Proper button colors for dark theme */
-    .bg-danger, .badge-danger, .alert-danger {
-        background-color: #dc3545 !important; /* Standard Bootstrap red */
-        border-color: #dc3545 !important;
-    }
+    /* Targeted contrast fixes for readability */
     
-    /* CRITICAL FIX: Normal Bootstrap buttons should have VISIBLE colors */
-    .btn-danger {
-        background-color: #dc3545 !important; /* Bright red - clearly visible */
-        border-color: #dc3545 !important;
-        color: #ffffff !important;
-    }
-    
-    .bg-primary, .badge-primary {
-        background-color: #0d47a1 !important; /* Very dark blue for badges */
-        border-color: #0d47a1 !important;
-    }
-    
-    .btn-primary {
-        background-color: #007bff !important; /* Bright blue - clearly visible */
-        border-color: #007bff !important;
-        color: #ffffff !important;
-    }
-    
-    .bg-warning, .badge-warning {
-        background-color: #e65100 !important; /* Dark orange for badges */
+    /* Fix for text on dark backgrounds - should be white */
+    .bg-primary, .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+    .bg-primary .card-title, .bg-primary .text-muted {
         color: white !important;
-        border-color: #e65100 !important;
     }
     
-    .btn-warning {
-        background-color: #ffc107 !important; /* Bright yellow - clearly visible */
-        color: #000000 !important; /* Black text on yellow */
-        border-color: #ffc107 !important;
+    .bg-dark, .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+    .bg-dark .card-title, .bg-dark .text-muted {
+        color: white !important;
     }
     
-    .bg-info, .badge-info {
-        background-color: #01579b !important; /* Very dark cyan for badges */
-        border-color: #01579b !important;
+    /* Fix for purple backgrounds - change to dark green */
+    .bg-purple, [style*="background-color: purple"], [style*="background: purple"],
+    [style*="background-color: #800080"], [style*="background: #800080"] {
+        background-color: #2d5016 !important;
+        color: white !important;
     }
     
-    .btn-info {
-        background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
-        border-color: #17a2b8 !important;
-        color: #ffffff !important;
+    /* Fix light backgrounds that should be darker */
+    .bg-light-yellow, [style*="background-color: #ffffe0"], [style*="background: #ffffe0"] {
+        background-color: #b8860b !important; /* Dark goldenrod */
+        color: white !important;
     }
     
-    .bg-success, .badge-success {
-        background-color: #1b5e20 !important; /* Very dark green for badges */
-        border-color: #1b5e20 !important;
+    .bg-light-green, [style*="background-color: #90ee90"], [style*="background: #90ee90"] {
+        background-color: #2d5016 !important; /* Dark green */
+        color: white !important;
     }
     
-    .btn-success {
-        background-color: #28a745 !important; /* Bright green - clearly visible */
-        border-color: #28a745 !important;
-        color: #ffffff !important;
+    .bg-light-red, [style*="background-color: #ffb3ba"], [style*="background: #ffb3ba"] {
+        background-color: #8b0000 !important; /* Dark red */
+        color: white !important;
+    }
+    </style>
+    
+    <title>AksjeRadar{% if title %} - {{ title }}{% endif %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.css" rel="stylesheet">
+    {% if config.ENVIRONMENT == 'development' %}
+    <link href="/static/css/app.css?v={{ cache_buster }}" rel="stylesheet">
+    {% else %}
+    <link href="/static/css/app.css" rel="stylesheet">
+    {% endif %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fas fa-chart-line me-2"></i>AksjeRadar
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stocks.stocks_overview') }}"><i class="fas fa-chart-bar"></i> Aksjer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('crypto.crypto_overview') }}"><i class="fab fa-bitcoin"></i> Crypto</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('currency.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis.analysis') }}"><i class="fas fa-brain"></i> Analyse</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('portfolio.portfolio') }}"><i class="fas fa-briefcase"></i> Portefølje</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('forum.forum') }}"><i class="fas fa-comments"></i> Forum</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> Konto
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('pricing.pricing') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Logg inn</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Registrer</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>AksjeRadar</h5>
+                    <p>Din komplette plattform for finansielle investeringer og analyse.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2024 AksjeRadar. Alle rettigheter forbeholdt.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+    
+    <!-- CSRF Token for AJAX -->
+    <script>
+        window.csrfToken = '{{ csrf_token() }}';
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+    
+    <!-- Minimal targeted contrast fixes -->
+    <style>
+    /* Targeted contrast fixes for readability */
+    
+    /* Fix for text on dark backgrounds - should be white */
+    .bg-primary, .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
+    .bg-primary .card-title, .bg-primary .text-muted {
+        color: white !important;
     }
     
-    .btn-secondary {
-        background-color: #6c757d !important; /* Standard gray - clearly visible */
-        border-color: #6c757d !important;
-        color: #ffffff !important;
+    .bg-dark, .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6,
+    .bg-dark .card-title, .bg-dark .text-muted {
+        color: white !important;
     }
     
-    /* CRITICAL FIX: Bootstrap table and background classes must have proper colors */
-    .table-light {
-        background-color: #f8f9fa !important; /* Light gray background for table headers */
-        color: #212529 !important; /* Dark text on light background */
+    /* Fix for purple backgrounds - change to dark green */
+    .bg-purple, [style*="background-color: purple"], [style*="background: purple"],
+    [style*="background-color: #800080"], [style*="background: #800080"] {
+        background-color: #2d5016 !important;
+        color: white !important;
     }
     
-    .bg-light {
-        background-color: #f8f9fa !important; /* Light gray background */
-        color: #212529 !important; /* Dark text on light background */
+    /* Fix light backgrounds that should be darker */
+    .bg-light-yellow, [style*="background-color: #ffffe0"], [style*="background: #ffffe0"] {
+        background-color: #b8860b !important; /* Dark goldenrod */
+        color: white !important;
     }
     
-    .bg-secondary {
-        background-color: #6c757d !important; /* Gray background */
-        color: #ffffff !important; /* White text on gray background */
+    .bg-light-green, [style*="background-color: #90ee90"], [style*="background: #90ee90"] {
+        background-color: #2d5016 !important; /* Dark green */
+        color: white !important;
     }
     
-    /* Fix for badges with light backgrounds */
-    .badge.bg-light {
-        background-color: #f8f9fa !important;
-        color: #212529 !important;
-        border: 1px solid #dee2e6 !important; /* Light border for definition */
-    }
-    
-    .badge.bg-secondary {
-        background-color: #6c757d !important;
-        color: #ffffff !important;
-    }
-    
-    /* CRITICAL FIX: Progress bars and other Bootstrap utility classes */
-    .progress-bar.bg-warning {
-        background-color: #ffc107 !important;
-        color: #000000 !important;
-    }
-    
-    .progress-bar.bg-success {
-        background-color: #28a745 !important;
-    }
-    
-    .progress-bar.bg-primary {
-        background-color: #007bff !important;
-    }
-    
-    .progress-bar.bg-info {
-        background-color: #17a2b8 !important;
-    }
-    
-    .progress-bar.bg-danger {
-        background-color: #dc3545 !important;
-    }
-    
-    /* CRITICAL FIX: Badge classes for all color schemes */
-    .badge.bg-primary {
-        background-color: #007bff !important;
-        color: #ffffff !important;
-    }
-    
-    .badge.bg-success {
-        background-color: #28a745 !important;
-        color: #ffffff !important;
-    }
-    
-    .badge.bg-warning {
-        background-color: #ffc107 !important;
-        color: #000000 !important;
-    }
-    
-    .badge.bg-info {
-        background-color: #17a2b8 !important;
-        color: #ffffff !important;
-    }
-    
-    .badge.bg-danger {
-        background-color: #dc3545 !important;
-        color: #ffffff !important;
-    }
-    
-    /* CRITICAL FIX: Navbar classes */
-    .navbar-light {
-        background-color: #f8f9fa !important;
-    }
-    
-    .navbar-light .navbar-brand,
-    .navbar-light .navbar-nav .nav-link {
-        color: #212529 !important;
-    }
-    
-    /* CRITICAL FIX: Modal headers */
-    .modal-header.bg-warning {
-        background-color: #ffc107 !important;
-        color: #000000 !important;
-    }
-    
-    .modal-header.bg-primary {
-        background-color: #007bff !important;
-        color: #ffffff !important;
-    }
-    
-    .modal-header.bg-success {
-        background-color: #28a745 !important;
-        color: #ffffff !important;
-    }
-    
-    .modal-header.bg-danger {
-        background-color: #dc3545 !important;
-        color: #ffffff !important;
-    }
-    
-    .modal-header.bg-info {
-        background-color: #17a2b8 !important;
-        color: #ffffff !important;
-    }
-    
-    /* CRITICAL FIX: All dark backgrounds MUST have white text */
-    [style*="background-color: #0"],[style*="background: #0"],
-    [style*="background-color: #1"],[style*="background: #1"], 
-    [style*="background-color: #2"],[style*="background: #2"],
-    [style*="background-color: #3"],[style*="background: #3"],
-    [style*="background-color: #4"],[style*="background: #4"],
-    [style*="background-color: #5"],[style*="background: #5"],
-    [style*="background-color: #6"],[style*="background: #6"],
-    [style*="background-color: #7"],[style*="background: #7"],
-    [style*="background-color: #8"],[style*="background: #8"],
-    [style*="background-color: #9"],[style*="background: #9"],
-    [style*="background-color: #a"],[style*="background: #a"],
-    [style*="background-color: #b"],[style*="background: #b"],
-    .bg-dark, .bg-primary, .bg-success, .bg-info, .bg-danger, 
-    .card-header.bg-primary, .card-header.bg-success, .card-header.bg-info, 
-    .card-header.bg-danger, .card-header.bg-dark {
-        color: #ffffff !important; /* WHITE text on ALL dark backgrounds */
-    }
-    
-    /* CRITICAL FIX: Card headers with background colors should be VISIBLE */
-    .card-header.bg-primary {
-        background-color: #007bff !important; /* Bright blue - clearly visible */
-        color: #ffffff !important;
-        border-color: #007bff !important;
-    }
-    
-    .card-header.bg-success {
-        background-color: #28a745 !important; /* Bright green - clearly visible */
-        color: #ffffff !important;
-        border-color: #28a745 !important;
-    }
-    
-    .card-header.bg-info {
-        background-color: #17a2b8 !important; /* Bright cyan - clearly visible */
-        color: #ffffff !important;
-        border-color: #17a2b8 !important;
-    }
-    
-    .card-header.bg-warning {
-        background-color: #ffc107 !important; /* Bright yellow - clearly visible */
-        color: #000000 !important; /* Black text on yellow */
-        border-color: #ffc107 !important;
-    }
-    
-    .card-header.bg-danger {
-        background-color: #dc3545 !important; /* Bright red - clearly visible */
-        color: #ffffff !important;
-        border-color: #dc3545 !important;
-    }
-    
-    /* CRITICAL FIX: Bootstrap outline buttons for quick actions */
-    .btn-outline-primary {
-        background-color: #007bff !important; /* Blue background */
-        border-color: #007bff !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-success {
-        background-color: #155724 !important; /* DARK green background */
-        border-color: #155724 !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-info {
-        background-color: #0c5460 !important; /* DARK cyan background */
-        border-color: #0c5460 !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-dark {
-        background-color: #1a1a1a !important; /* Very dark background */
-        border-color: #6c757d !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-warning {
-        background-color: #664d03 !important; /* DARK yellow/gold background */
-        border-color: #664d03 !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-danger {
-        background-color: #721c24 !important; /* DARK red background */
-        border-color: #721c24 !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    .btn-outline-secondary {
-        background-color: #495057 !important; /* DARK gray background */
-        border-color: #495057 !important;
-        color: #ffffff !important; /* WHITE text */
-    }
-    
-    /* Hover states for outline buttons */
-    .btn-outline-primary:hover,
-    .btn-outline-success:hover,
-    .btn-outline-info:hover,
-    .btn-outline-dark:hover,
-    .btn-outline-warning:hover,
-    .btn-outline-danger:hover {
-        opacity: 0.8 !important;
-        color: #ffffff !important;
-    }
-    
-    /* CRITICAL FIX: Hover states for normal buttons */
-    .btn-primary:hover {
-        background-color: #0056b3 !important;
-        border-color: #004085 !important;
-    }
-    
-    .btn-success:hover {
-        background-color: #218838 !important;
-        border-color: #1e7e34 !important;
-    }
-    
-    .btn-info:hover {
-        background-color: #138496 !important;
-        border-color: #117a8b !important;
-    }
-    
-    .btn-warning:hover {
-        background-color: #e0a800 !important;
-        border-color: #d39e00 !important;
-    }
-    
-    .btn-danger:hover {
-        background-color: #c82333 !important;
-        border-color: #bd2130 !important;
-    }
-    
-    .btn-secondary:hover {
-        background-color: #5a6268 !important;
-        border-color: #545b62 !important;
-    }
-    
-    /* CRITICAL FIX: Bootstrap text color classes */
-    .text-muted {
-        color: #ffffff !important; /* WHITE text for visibility on any background */
-    }
-    
-    .text-primary {
-        color: #66b3ff !important; /* Lighter blue for visibility */
-    }
-    
-    .text-success {
-        color: #66d9aa !important; /* Lighter green for visibility */
-    }
-    
-    .text-info {
-        color: #66ccff !important; /* Lighter cyan for visibility */
-    }
-    
-    .text-warning {
-        color: #ffcc66 !important; /* Lighter yellow for visibility */
-    }
-    
-    .text-danger {
-        color: #ff6666 !important; /* Lighter red for visibility */
-    }
-    
-    .text-dark {
-        color: #ffffff !important; /* White instead of dark for dark theme */
-    }
-    
-    /* CRITICAL: Table text visibility fixes */
-    .table {
-        color: #333333 !important; /* Dark text for light table backgrounds */
-    }
+    .bg-light-red, [style*="background-color: #ffb3ba"], [style*="background: #ffb3ba"] {
+        background-color: #8b0000 !important; /* Dark red */
+        color: white !important;
+    </style>
     
     .table thead th {
         color: #333333 !important; /* Ensure header text is visible */

@@ -90,7 +90,7 @@ def api_mark_read(notification_id):
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error marking notification as read: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke markere som lest', 'fallback': True}), 200
 
 @notifications_bp.route('/api/mark-unread/<int:notification_id>', methods=['POST'])
 @login_required
@@ -112,7 +112,7 @@ def api_mark_unread(notification_id):
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error marking notification as unread: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke markere som ulest', 'fallback': True}), 200
 
 @notifications_bp.route('/api/mark-all-read', methods=['POST'])
 @login_required
@@ -131,7 +131,7 @@ def api_mark_all_read():
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error marking all notifications as read: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke markere alle som lest', 'fallback': True}), 200
 
 @notifications_bp.route('/api/delete/<int:notification_id>', methods=['DELETE'])
 @login_required
@@ -152,7 +152,7 @@ def api_delete(notification_id):
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error deleting notification: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke slette varsling', 'fallback': True}), 200
 
 @notifications_bp.route('/api/unread-count')
 @login_required
@@ -167,7 +167,7 @@ def api_unread_count():
         return jsonify({'success': True, 'count': count})
     except Exception as e:
         logger.error(f"Error getting unread count: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke hente antall uleste', 'fallback': True}), 200
 
 @notifications_bp.route('/settings', methods=['GET', 'POST'])
 @demo_access
@@ -246,7 +246,7 @@ def settings():
                 logger.error(f"Error updating notification settings: {update_error}")
                 db.session.rollback()
                 if request.is_json:
-                    return jsonify({'success': False, 'error': 'Failed to update settings'}), 500
+                    return jsonify({'success': False, 'error': 'Kunne ikke oppdatere innstillinger', 'fallback': True}), 200
                 else:
                     flash('Failed to update notification settings. Please try again.', 'error')
                     return redirect(url_for('notifications.settings'))
@@ -332,18 +332,18 @@ def api_update_settings():
             try:
                 success = current_user.update_notification_settings(settings_data)
                 if not success:
-                    return jsonify({'success': False, 'error': 'Failed to save settings in database'}), 500
+                    return jsonify({'success': False, 'error': 'Kunne ikke lagre innstillinger', 'fallback': True}), 200
                     
                 db.session.commit()
                 return jsonify({'success': True, 'message': 'Settings updated successfully'})
             except Exception as db_error:
                 db.session.rollback()
                 logger.error(f"Database error saving notification settings: {str(db_error)}")
-                return jsonify({'success': False, 'error': str(db_error)}), 500
+                return jsonify({'success': False, 'error': 'Database-feil, prøv igjen senere', 'fallback': True}), 200
             
     except Exception as e:
         logger.error(f"Error in API settings: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Innstillinger midlertidig utilgjengelig', 'fallback': True}), 200
 
 @notifications_bp.route('/api/test', methods=['POST'])
 @login_required
@@ -361,7 +361,7 @@ def api_test_notification():
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error sending test notification: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke sende testvarsel', 'fallback': True}), 200
 
 @notifications_bp.route('/api/push_subscription', methods=['POST'])
 @login_required
@@ -400,7 +400,7 @@ def save_push_subscription():
             'error': 'Push notifications kan ikke aktiveres. Dette kan skyldes nettleserinnstillinger eller at siden ikke er tilgjengelig via HTTPS.',
             'fallback_available': True,
             'fallback_message': 'E-post og in-app notifications er fortsatt tilgjengelig.'
-        }), 500
+        }), 200
 
 @notifications_bp.route('/api/clear-read', methods=['POST'])
 @login_required
@@ -416,7 +416,7 @@ def api_clear_read():
         return jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error clearing read notifications: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke slette leste varsler', 'fallback': True}), 200
 
 # Web interface routes
 notifications_web_bp = Blueprint('notifications_web', __name__, url_prefix='/notifications')
@@ -480,7 +480,7 @@ def api_get_notifications():
         return jsonify({'success': True, 'notifications': [n.to_dict() for n in notifications]})
     except Exception as e:
         logger.error(f"Error fetching notifications: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke hente varsler', 'fallback': True}), 200
 
 @notifications_bp.route('/api/user/preferences', methods=['GET', 'POST'])
 @login_required

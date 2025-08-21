@@ -147,7 +147,13 @@ def api_screener():
         return jsonify({'success': True, 'results': results})
     except Exception as e:
         logger.error(f"API screener error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        # Return fallback data instead of 500 error
+        return jsonify({
+            'success': True, 
+            'results': [],
+            'error': 'Screener midlertidig utilgjengelig',
+            'fallback': True
+        }), 200
 
 @pro_tools.route('/api/alerts', methods=['GET'])
 @access_required

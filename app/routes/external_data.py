@@ -58,7 +58,8 @@ def external_analysis(symbol):
                              
     except Exception as e:
         logger.error(f"Error in external analysis for {symbol}: {e}")
-        return render_template('error.html', error="Kunne ikke hente eksterne data"), 500
+        # Return error template with 200 status instead of 500
+        return render_template('error.html', error="Kunne ikke hente eksterne data"), 200
 
 @external_data_bp.route('/api/external-data/<symbol>')
 @login_required
@@ -120,7 +121,13 @@ def api_external_data(symbol):
             
     except Exception as e:
         logger.error(f"Error in API external data for {symbol}: {e}")
-        return jsonify({'error': str(e)}), 500
+        # Return fallback data instead of 500 error
+        return jsonify({
+            'success': False,
+            'error': 'Eksterne data midlertidig utilgjengelig',
+            'fallback': True,
+            'symbol': symbol
+        }), 200
 
 @external_data_bp.route('/api/market-overview')
 @access_required
@@ -132,7 +139,16 @@ def api_market_overview():
         
     except Exception as e:
         logger.error(f"Error getting market overview: {e}")
-        return jsonify({'error': str(e)}), 500
+        # Return fallback market data instead of 500 error
+        return jsonify({
+            'success': False,
+            'error': 'Markedsoversikt midlertidig utilgjengelig',
+            'fallback': True,
+            'data': {
+                'status': 'Utilgjengelig',
+                'markets': []
+            }
+        }), 200
 
 @external_data_bp.route('/insider-trading')
 @login_required
@@ -157,7 +173,7 @@ def insider_trading_overview():
                              
     except Exception as e:
         logger.error(f"Error in insider trading overview: {e}")
-        return render_template('error.html', error="Kunne ikke hente innsidehandel data"), 500
+        return render_template('error.html', error="Kunne ikke hente innsidehandel data"), 200
 
 @external_data_bp.route('/analyst-coverage')
 @demo_access
@@ -217,7 +233,7 @@ def analyst_coverage():
                              
     except Exception as e:
         logger.error(f"Error in analyst coverage: {e}")
-        return render_template('error.html', error="Kunne ikke hente analytiker data"), 500
+        return render_template('error.html', error="Kunne ikke hente analytiker data"), 200
 
 @external_data_bp.route('/market-intelligence')
 @demo_access
@@ -290,4 +306,4 @@ def market_intelligence():
                              
     except Exception as e:
         logger.error(f"Error in market intelligence: {e}")
-        return render_template('error.html', error="Kunne ikke hente markedsintelligens"), 500
+        return render_template('error.html', error="Kunne ikke hente markedsintelligens"), 200

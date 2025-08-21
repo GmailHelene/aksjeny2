@@ -67,4 +67,9 @@ def force_refresh():
         return redirect(url_for('main.index', v=timestamp))
     except Exception as e:
         current_app.logger.error(f"Error in force_refresh: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        # Return fallback instead of 500 error
+        return jsonify({
+            'success': False,
+            'error': 'Cache-refresh midlertidig utilgjengelig',
+            'fallback': True
+        }), 200

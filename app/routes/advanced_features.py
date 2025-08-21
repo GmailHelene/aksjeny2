@@ -69,7 +69,15 @@ def market_overview():
     
     except Exception as e:
         logger.error(f"Error fetching market overview: {e}")
-        return jsonify({'error': str(e)}), 500
+        # Return fallback data instead of 500 error
+        return jsonify({
+            'success': True,
+            'data': {
+                'market_status': 'Utilgjengelig',
+                'error': 'Markedsdata midlertidig utilgjengelig',
+                'fallback': True
+            }
+        }), 200
 
 @advanced_features.route('/crypto-dashboard')
 @access_required

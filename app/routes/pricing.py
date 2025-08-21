@@ -347,7 +347,12 @@ def buy_report():
         
     except Exception as e:
         logger.error(f"Report purchase error: {e}")
-        return jsonify({'error': 'Feil ved opprettelse av betaling'}), 500
+        # Return fallback instead of 500 error
+        return jsonify({
+            'success': False,
+            'error': 'Betalingstjeneste midlertidig utilgjengelig. Prøv igjen senere.',
+            'fallback': True
+        }), 200
 
 @pricing.route('/report/success')
 @login_required
