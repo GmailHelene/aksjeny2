@@ -43,6 +43,80 @@
         background-color: #8b0000 !important; /* Dark red */
         color: white !important;
     }
+    
+    /* Fix buttons that changed from black to brown - revert to black */
+    .btn-warning {
+        background-color: #343a40 !important; /* Dark gray (almost black) */
+        border-color: #343a40 !important;
+        color: white !important;
+    }
+    
+    .btn-warning:hover, .btn-warning:focus, .btn-warning:active {
+        background-color: #23272b !important; /* Even darker on hover */
+        border-color: #23272b !important;
+        color: white !important;
+    }
+    
+    /* Fix warning backgrounds that appear brown */
+    .bg-warning {
+        background-color: #b8860b !important; /* Dark goldenrod instead of orange */
+        color: white !important;
+    }
+    
+    /* Mobile footer search field spacing fix */
+    @media (max-width: 768px) {
+        footer .col-md-3:first-child {
+            margin-bottom: 2rem;
+        }
+        
+        footer .input-group {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        footer h6 {
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* Fix card headers - ensure white text on DARK backgrounds as requested */
+    .card-header, .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
+        background-color: #343a40 !important; /* Dark gray background */
+        color: white !important; /* White text */
+    }
+    
+    /* Fix Bootstrap background colors for better contrast */
+    .bg-success {
+        background-color: #1e4620 !important; /* Dark green instead of bright green */
+        color: white !important;
+    }
+    
+    .bg-info {
+        background-color: #17a2b8 !important; /* Keep cyan but ensure proper styling */
+        color: white !important;
+    }
+    
+    /* Fix badges and buttons */
+    .badge.bg-warning {
+        background-color: #856404 !important; /* Dark gold instead of bright yellow */
+        color: white !important;
+    }
+    
+    /* Fix problematic light/bright colors to darker versions */
+    .bg-light-green, .bg-success.text-white {
+        background-color: #1e4620 !important; /* Dark green */
+        color: white !important;
+    }
+    
+    /* Fix explicit dark text classes */
+    .text-dark {
+        color: #212529 !important; /* Keep dark text for light backgrounds */
+    }
+    
+    /* Special case: dark text on card headers should be white */
+    .card-header .text-dark, .card-header.bg-primary .text-dark, .card-header.bg-dark .text-dark {
+        color: white !important;
+    }
     </style>
     
     <title>AksjeRadar{% if title %} - {{ title }}{% endif %}</title>
@@ -745,9 +819,6 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}">
                                 <i class="bi bi-funnel"></i> Aksje-screener
                             </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener_view') }}">
-                                <i class="bi bi-funnel-fill"></i> Screener Visning
-                            </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.backtest') }}">
                                 <i class="bi bi-graph-up"></i> Backtest
                             </a></li>
@@ -842,9 +913,7 @@
                         </a>
                         <ul class="dropdown-menu">
                             <!-- Dashboard removed - was just linking to / -->
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.advanced_screener') }}">
-                                <i class="bi bi-funnel-fill"></i> Avansert screener
-                            </a></li>
+                            <!-- Screener removed - duplicate of analysis.screener which is more comprehensive -->
                             <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}">
                                 <i class="bi bi-bell-fill"></i> Prisalarmer
                             </a></li>
@@ -902,37 +971,6 @@
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}">
                                 <i class="bi bi-robot"></i> ML Analytics
-                            </a></li>
-                        </ul>
-                    </li>
-                    
-                    <!-- Resources & Learning Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('resources.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-book"></i> Ressurser
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('investment_guides.index') }}">
-                                <i class="bi bi-book-half"></i> Investeringsguider
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.index') }}">
-                                <i class="bi bi-folder"></i> Ressurser
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.analysis_tools') }}">
-                                <i class="bi bi-tools"></i> Analyseverktøy
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.tool_comparison') }}">
-                                <i class="bi bi-arrows-angle-expand"></i> Verktøy Sammenligning
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.guides') }}">
-                                <i class="bi bi-question-circle"></i> Guider
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/blog/">
-                                <i class="bi bi-journal-text"></i> Blogg
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.help') }}">
-                                <i class="bi bi-question-circle-fill"></i> Hjelp & FAQ
                             </a></li>
                         </ul>
                     </li>
@@ -1060,8 +1098,6 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-
-        {% block content %}{% endblock %}
     </div>
 
     <!-- Footer -->
@@ -1092,6 +1128,9 @@
                             <i class="bi bi-folder me-1"></i>Ressurser
                         </a>
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <h6>Community</h6>
                     <div class="mb-2">
                         <a href="{{ url_for('forum.index') }}" class="text-light text-decoration-none">
                             <i class="bi bi-chat-dots me-1"></i>Forum

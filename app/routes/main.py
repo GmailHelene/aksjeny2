@@ -1554,20 +1554,20 @@ def profile():
     except Exception as e:
         logger.error(f"Error in profile page for user {getattr(current_user, 'id', 'unknown')}: {e}")
         flash('Kunne ikke laste profilsiden. Prøv igjen senere.', 'error')
-    return render_template('profile.html',
-                 user=current_user,
-                 subscription=None,
-                 subscription_status='free',
-                 user_stats={},
-                 user_language='nb',
-                 user_display_mode='light',
-                 user_number_format='norwegian',
-                 user_dashboard_widgets='[]',
-                 user_favorites=user_favorites,
-                 referrals_made=0,
-                 referral_earnings=0,
-                 referral_code='REF001',
-                             error=True)
+        return render_template('profile.html',
+                     user=current_user,
+                     subscription=None,
+                     subscription_status='free',
+                     user_stats={},
+                     user_language='nb',
+                     user_display_mode='light',
+                     user_number_format='norwegian',
+                     user_dashboard_widgets='[]',
+                     user_favorites=[],
+                     referrals_made=0,
+                     referral_earnings=0,
+                     referral_code='REF001',
+                     error=True)
 
 @main.route('/mitt-abonnement')
 @main.route('/my-subscription')

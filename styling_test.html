@@ -44,6 +44,28 @@
         background-color: #8b0000 !important; /* Dark red */
         color: white !important;
     }
+    
+    /* Fix card headers - ensure white text on DARK backgrounds as requested */
+    .card-header, .card-header h1, .card-header h2, .card-header h3, .card-header h4, .card-header h5, .card-header h6 {
+        background-color: #343a40 !important; /* Dark gray background */
+        color: white !important; /* White text */
+    }
+    
+    /* Fix Bootstrap background colors for better contrast */
+    .bg-success {
+        background-color: #1e4620 !important; /* Dark green instead of bright green */
+        color: white !important;
+    }
+    
+    /* Fix explicit dark text classes */
+    .text-dark {
+        color: #212529 !important; /* Keep dark text for light backgrounds */
+    }
+    
+    /* Special case: dark text on card headers should be white */
+    .card-header .text-dark, .card-header.bg-primary .text-dark, .card-header.bg-dark .text-dark {
+        color: white !important;
+    }
     </style>
 </head>
 <body>
@@ -128,7 +150,49 @@
                             <li>✅ Light yellow → Dark goldenrod with white text</li>
                             <li>✅ Light green → Dark green with white text</li>
                             <li>✅ Light red → Dark red with white text</li>
+                            <li>✅ Card headers → Dark gray background with white text</li>
+                            <li>✅ Premium banners → Black and white styling</li>
+                            <li>✅ Green backgrounds → Dark green instead of bright green</li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card Header Tests -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Standard Card Header</h3>
+                        <p>Dette skal være MØRK GRØNN bakgrunn med hvit tekst</p>
+                    </div>
+                    <div class="card-body">
+                        <p>Normal card body content</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Aksjetips Test</h2>
+                        <p class="text-muted">Skal være hvit tekst som "Aksjetips" overskriften</p>
+                    </div>
+                    <div class="card-body">
+                        <p>Simulerer portfolio tips siden</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Premium Markedsoversikt</h3>
+                        <p>Sort/hvit styling som du ønsket</p>
+                    </div>
+                    <div class="card-body">
+                        <p>Card body innhold</p>
                     </div>
                 </div>
             </div>

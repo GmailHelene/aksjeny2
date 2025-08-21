@@ -53,13 +53,13 @@
                 <!-- Article Image -->
                 {% if article.image_url %}
                 <div class="mb-6">
-                <div class="relative overflow-hidden rounded-lg shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 h-24 flex items-center justify-center">
+                <div class="relative overflow-hidden rounded-lg shadow-lg bg-gradient-to-r from-blue-500 to-green-600 h-24 flex items-center justify-center">
                         <img src="{{ article.image_url }}"
                              alt="{{ article.title }}"
                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                              style="max-height: 120px !important;"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="absolute inset-0 flex items-center justify-center text-white text-lg font-semibold bg-gradient-to-r from-blue-500 to-purple-600" style="display: none;">
+                        <div class="absolute inset-0 flex items-center justify-center text-white text-lg font-semibold bg-gradient-to-r from-blue-500 to-green-600" style="display: none;">
                             <i class="bi bi-newspaper me-2" style="font-size: 1rem;"></i>
                             {{ article.title[:50] }}{% if article.title|length > 50 %}...{% endif %}
                         </div>

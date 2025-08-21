@@ -4,6 +4,33 @@
 {% block description %}Revolusjonerende AI-drevne aksjeanalyser som gir deg competitive fordeler. Maskinlæring analyserer markedstrender, sentiments og predikerer aksjeutvikling.{% endblock %}
 {% block keywords %}AI aksjeanalyse, kunstig intelligens aksjer, maskinlæring trading, AI Oslo Børs, automatisk aksjeanalyse, smart investering{% endblock %}
 
+{% block head %}
+<style>
+/* Mobile responsive fixes for AI analysis search */
+@media (max-width: 768px) {
+    .input-group {
+        flex-wrap: wrap;
+    }
+    
+    .input-group .form-control {
+        min-width: 0;
+        flex: 1 1 100%;
+        margin-bottom: 0.5rem;
+        border-radius: 0.375rem !important;
+    }
+    
+    .input-group .btn {
+        flex: 1 1 100%;
+        border-radius: 0.375rem !important;
+    }
+    
+    .input-group-text {
+        border-radius: 0.375rem 0 0 0.375rem !important;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <nav aria-label="breadcrumb" class="my-3">
