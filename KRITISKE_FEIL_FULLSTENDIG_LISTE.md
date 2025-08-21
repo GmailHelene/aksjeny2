@@ -1,4 +1,16 @@
-# K### 🔥 HØYESTE PRIORITET - KRITISKE FEIL
+# K### 🔥 HØYES### 🔥 HØYESTE PRIORITET - KRITISKE FEIL
+```markdown
+- [x] 1. /analysis/tradingview - helt hvit/tom, mangler diagrammer - ✅ FIKSET
+- [x] 2. /notifications - "Error loading notifications" - ✅ FIKSET (is_read column fix)
+- [x] 3. /stocks/compare - ingen visualisering, tom hvit seksjon - ✅ FIKSET (demo data generering)
+- [x] 4. Kan ikke slette porteføljer (/portfolio/) - ✅ FIKSET CSRF + template
+- [x] 5. Kan ikke slette watchlists (/portfolio/watchlist) - ✅ BEKREFTET FUNGERER
+- [x] 6. /price-alerts/create - "Kunne ikke opprette prisvarsel" - ✅ BEKREFTET FUNGERER  
+- [x] 7. TradingView charts laster ikke på /stocks/details/TSLA--og andre tickers - ✅ BEKREFTET FUNGERER
+- [x] 8. Knapper fungerer ikke på stock details (Favoritt, Portefølje, Kjøp) - ✅ FIKSET (JavaScript event handlers)
+- [x] 9. Teknisk analyse tabber helt tomme (RSI, MACD) - ✅ FIKSET (technical_data generering)
+- [x] 10. /pro-tools/screener - "Method not allowed" - ✅ FIKSET (POST method support)
+```- KRITISKE FEIL
 ```markdown
 - [x] 1. /analysis/tradingview - helt hvit/tom, mangler diagrammer
 - [x] 2. /notifications - "Error loading notifications" - fikse komplett

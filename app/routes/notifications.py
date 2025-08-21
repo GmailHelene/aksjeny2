@@ -28,7 +28,7 @@ def index():
         query = Notification.query.filter_by(user_id=current_user.id)
         
         if unread_only:
-            query = query.filter_by(read=False)
+            query = query.filter_by(is_read=False)
         
         # Order by newest first
         query = query.order_by(Notification.created_at.desc())
@@ -39,7 +39,7 @@ def index():
         
         # Get summary statistics
         total_count = Notification.query.filter_by(user_id=current_user.id).count()
-        unread_count = Notification.query.filter_by(user_id=current_user.id, read=False).count()
+        unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
         
         # Get counts by type
         type_counts = db.session.query(
