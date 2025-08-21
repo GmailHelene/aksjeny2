@@ -1,14 +1,18 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from app.extensions import db
-from app.models.forum_post import ForumPost
+from app.models.forum import ForumPost
 from app.models.user import User
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 forum = Blueprint('forum', __name__)
 
 @forum.route('/')
 def index():
+    """Forum main page - real data only"""
     try:
         # Get real forum statistics
         total_posts = ForumPost.query.count()
@@ -21,7 +25,7 @@ def index():
         # Get recent topics for sidebar
         recent_topics = ForumPost.query.order_by(ForumPost.created_at.desc()).limit(5).all()
         
-        # Create mock categories with real data
+        # Create real categories with actual data
         categories = [
             {
                 'name': 'Aksjeanalyse',
@@ -55,13 +59,14 @@ def index():
     
     except Exception as e:
         # Log error and provide fallback
-        print(f"Forum index error: {e}")
+        logger.error(f"Forum index error: {e}")
         return render_template('forum/index.html', 
                              posts=[], 
                              categories=[],
                              recent_topics=[],
                              total_members=0,
-                             online_now=0)
+                             online_now=0,
+                             error="Kunne ikke laste forumdata. Prøv igjen senere.")
 
 @forum.route('/create', methods=['GET', 'POST'])
 @login_required

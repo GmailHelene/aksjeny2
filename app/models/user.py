@@ -98,6 +98,15 @@ class User(UserMixin, db.Model):
                 'reset_token_expires': None,
                 'language': 'no',
                 'notification_settings': None,
+                'email_notifications_enabled': True,
+                'price_alerts_enabled': True,
+                'market_news_enabled': True,
+                'portfolio_updates_enabled': True,
+                'ai_insights_enabled': True,
+                'weekly_reports_enabled': True,
+                'email_notifications': True,
+                'price_alerts': True,
+                'market_news': True,
                 'email_notifications': True,
                 'price_alerts': True,
                 'market_news': True,
@@ -189,6 +198,42 @@ class User(UserMixin, db.Model):
         
         # Check if user already has a referral code
         existing_referral = Referral.query.filter_by(referrer_id=self.id).first()
+        
+    def update_notification_settings(self, settings):
+        """Update notification settings for the user"""
+        try:
+            # Update notification settings JSON
+            if isinstance(settings, dict):
+                import json
+                self.notification_settings = json.dumps(settings)
+            
+            # Update individual boolean columns if provided
+            boolean_fields = [
+                'email_notifications_enabled',
+                'price_alerts_enabled',
+                'market_news_enabled',
+                'portfolio_updates_enabled',
+                'ai_insights_enabled',
+                'weekly_reports_enabled',
+                'email_notifications',
+                'price_alerts',
+                'market_news'
+            ]
+            
+            for field in boolean_fields:
+                if field in settings:
+                    value = settings[field]
+                    if isinstance(value, str):
+                        value = value.lower() == 'true'
+                    setattr(self, field, bool(value))
+            
+            db.session.commit()
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating notification settings: {e}")
+            return False
         if existing_referral:
             return existing_referral.referral_code
         

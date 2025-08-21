@@ -16,6 +16,7 @@ from flask_migrate import Migrate
 import psutil
 import time
 import redis
+from add_missing_columns import add_missing_columns
 
 # Load environment variables
 load_dotenv()
@@ -48,6 +49,13 @@ def create_app(config_class=None):
     
     # Initialize Flask extensions
     db.init_app(app)
+    
+    # Ensure notification columns exist
+    with app.app_context():
+        try:
+            add_missing_columns()
+        except Exception as e:
+            app.logger.error(f"Error adding missing columns: {e}")
     migrate = Migrate(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
