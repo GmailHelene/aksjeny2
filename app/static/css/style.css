@@ -119,7 +119,7 @@ main {
 }
 
 .text-primary {
-    color: #0d6efd !important;
+    /* color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important; */
 }
 
 .text-secondary {
