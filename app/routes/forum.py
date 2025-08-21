@@ -72,7 +72,12 @@ def create():
         if not title or not content:
             flash('Tittel og innhold er påkrevd.', 'error')
             return redirect(url_for('forum.create'))
-        post = ForumPost(title=title, content=content, user_id=current_user.id)
+        post = ForumPost(
+            title=title, 
+            content=content, 
+            user_id=current_user.id,
+            author_id=current_user.id
+        )
         db.session.add(post)
         db.session.commit()
         flash('Innlegg opprettet!', 'success')
