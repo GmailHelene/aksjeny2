@@ -2,6 +2,72 @@
 
 {% block title %}Ressurser - Aksjeradar{% endblock %}
 
+{% block head %}
+<style>
+/* Resources page specific styling fixes */
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Force proper colors for resources page elements */
+.bg-primary-soft {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.text-primary {
+    color: #1976d2 !important;
+}
+
+.text-success {
+    color: #388e3c !important;
+}
+
+.text-info {
+    color: #0288d1 !important;
+}
+
+.text-warning {
+    color: #f57c00 !important;
+}
+
+/* Ensure card headers have proper colors */
+.card-body .fs-3 {
+    font-size: 2rem !important;
+}
+
+/* Force button colors */
+.btn-primary {
+    background-color: #1976d2 !important;
+    border-color: #1976d2 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-success {
+    background-color: #2e7d32 !important;
+    border-color: #2e7d32 !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-info {
+    background-color: #0277bd !important;
+    border-color: #0277bd !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-warning {
+    background-color: #ef6c00 !important;
+    border-color: #ef6c00 !important;
+    color: #ffffff !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row">

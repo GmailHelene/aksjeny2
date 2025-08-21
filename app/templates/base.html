@@ -493,15 +493,34 @@
         margin-right: 0.5rem;
     }
     
-    /* PC Navigation positioning fix */
+    /* PC Navigation positioning fix - Move navigation much more to the left */
     @media (min-width: 992px) {
         .navbar .container-fluid {
-            padding-left: 1rem !important;
-            max-width: 95% !important;
+            padding-left: 0 !important; /* Remove left padding completely */
+            padding-right: 1rem !important;
+            max-width: 100% !important; /* Use full width */
         }
         
         .navbar-collapse {
-            margin-left: -2rem !important;
+            margin-left: -4rem !important; /* Move navigation much more to the left */
+        }
+        
+        .navbar-nav {
+            margin-left: -2rem !important; /* Additional left margin for nav items */
+        }
+        
+        /* Ensure dropdown menus align properly and don't go off-screen */
+        .dropdown-menu {
+            right: 0 !important; /* Align dropdown to the right edge of the trigger */
+            left: auto !important;
+            min-width: 280px !important; /* Ensure adequate width */
+        }
+        
+        /* Special positioning for the last dropdown (KONTO) */
+        .navbar-nav .nav-item:last-child .dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
+            transform: translateX(0) !important;
         }
     }
     }
@@ -1074,7 +1093,6 @@
                             </a></li>
                         </ul>
                     </li>
-                    -->
                     
                     <!-- Advanced Features Dropdown - MOVED TO PRO TOOLS
                     <li class="nav-item dropdown">
@@ -1229,6 +1247,11 @@
                     <div class="mb-2">
                         <a href="/resources" class="text-light text-decoration-none">
                             <i class="bi bi-folder me-1"></i>Ressurser
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a href="{{ url_for('forum.index') }}" class="text-light text-decoration-none">
+                            <i class="bi bi-chat-dots me-1"></i>Forum
                         </a>
                     </div>
                 </div>
