@@ -731,7 +731,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if current_user.is_authenticated %}
                 <!-- FULL NAVIGATION FOR AUTHENTICATED USERS -->
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <!-- Aksjer/Stocks Dropdown - EXPANDED -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
@@ -1059,7 +1059,7 @@
                 </ul>
                 {% else %}
                 <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.demo') }}">
                             <i class="bi bi-play-circle"></i> Demo
