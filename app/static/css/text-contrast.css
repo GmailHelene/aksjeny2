@@ -105,11 +105,6 @@
 }
 
 /* Override Bootstrap utilities to prevent white colors */
-.bg-gradient {
-    /* Override Bootstrap gradient - keep empty to disable default gradient */
-    background-image: none !important;
-}
-
 .text-white {
     /* Disable Bootstrap text-white utility when not wanted */
     color: inherit !important;
@@ -144,9 +139,7 @@
     background-color: #198754 !important;
 }
 
-.card-header.bg-gradient {
-    color: #ffffff !important;
-}
+
 
 /* Override text-white in card headers specifically */
 .card-header .text-white {
@@ -161,10 +154,6 @@
     color: inherit !important;
 }
 
-/* Set card background to black */
-.card {
-    --bs-card-bg: #000000;
-}
 
 /* Card header text color overrides */
 .card-header.bg-white h5, 
