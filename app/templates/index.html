@@ -32,7 +32,7 @@
     transition: all 0.3s ease;
     border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); /* Blue gradient instead of purple */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .feature-card:hover {
@@ -140,7 +140,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card enhanced-card border-0 shadow-sm">
-                    <div class="card-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: #ffffff !important;">  <!-- Blue gradient with white text -->">
+                    <div class="card-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
                                 <i class="bi bi-lightning-fill me-2"></i>
@@ -169,18 +169,18 @@
                             <div class="col-6 col-md-3">
                                 <div class="quick-action-wrapper position-relative">
                                     <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Administrer din portefølje">
-                                        <i class="bi bi-briefcase-fill fs-1 mb-2 text-white"></i>
-                                        <span class="fw-bold text-white">Portefølje</span>
-                                        <small class="mt-1 d-none d-md-block text-white">Investeringer</small>
+                                        <i class="bi bi-briefcase-fill fs-1 mb-2 text-success"></i>
+                                        <span class="fw-bold">Portefølje</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">Investeringer</small>
                                     </a>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="quick-action-wrapper position-relative">
                                     <a href="{{ url_for('news_bp.index') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Siste markedsnyheter">
-                                        <i class="bi bi-newspaper fs-1 mb-2 text-white"></i>
-                                        <span class="fw-bold text-white">Nyheter</span>
-                                        <small class="mt-1 d-none d-md-block text-white">AI-kurert</small>
+                                        <i class="bi bi-newspaper fs-1 mb-2 text-info"></i>
+                                        <span class="fw-bold">Nyheter</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">AI-kurert</small>
                                     </a>
                                     {% if recommendations and recommendations|length > 0 %}
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning shadow-sm">
@@ -192,9 +192,9 @@
                             <div class="col-6 col-md-3">
                                 <div class="quick-action-wrapper position-relative">
                                     <a href="{{ url_for('watchlist_advanced.index') }}" class="btn btn-outline-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Overvåk favorittaksjer">
-                                        <i class="bi bi-heart-fill fs-1 mb-2 text-white"></i>
-                                        <span class="fw-bold text-white">Watchlist</span>
-                                        <small class="mt-1 d-none d-md-block text-white">{{ user_stats.watchlist_items }} aksjer</small>
+                                        <i class="bi bi-heart-fill fs-1 mb-2 text-dark"></i>
+                                        <span class="fw-bold">Watchlist</span>
+                                        <small class="text-muted mt-1 d-none d-md-block">{{ user_stats.watchlist_items }} aksjer</small>
                                     </a>
                                 </div>
                             </div>
@@ -339,37 +339,37 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="background: linear-gradient(135deg, #f8faff 0%, #e6f3ff 100%);">
                         <!-- Desktop Table -->
                         <div class="table-responsive d-none d-lg-block">
                             <table class="table table-hover mb-0">
-                                <thead class="bg-primary text-white">
+                                <thead style="background: linear-gradient(135deg, #f1f8ff 0%, #e3f2fd 100%);">
                                     <tr>
-                                        <th class="border-0 fw-bold">Symbol</th>
-                                        <th class="border-0 fw-bold">Navn</th>
-                                        <th class="border-0 fw-bold">Pris</th>
-                                        <th class="border-0 fw-bold">Endring</th>
-                                        <th class="border-0 fw-bold">Endring %</th>
-                                        <th class="border-0 fw-bold">Volum</th>
-                                        <th class="border-0 fw-bold">Handlinger</th>
+                                        <th class="border-0 fw-bold text-primary">Symbol</th>
+                                        <th class="border-0 fw-bold text-primary">Navn</th>
+                                        <th class="border-0 fw-bold text-primary">Pris</th>
+                                        <th class="border-0 fw-bold text-primary">Endring</th>
+                                        <th class="border-0 fw-bold text-primary">Endring %</th>
+                                        <th class="border-0 fw-bold text-primary">Volum</th>
+                                        <th class="border-0 fw-bold text-primary">Handlinger</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% if market_data.oslo_stocks %}
                                         {% for stock in market_data.oslo_stocks %}
-                                            <tr class="align-middle stock-row">
-                                                <td style="background-color: #ffffff !important; color: #007bff !important;"><strong class="fw-bold">{{ stock.symbol }}</strong></td>
-                                                <td style="background-color: #ffffff !important; color: #212529 !important;" class="fw-medium">{{ stock.name }}</td>
-                                                <td style="background-color: #ffffff !important; color: #212529 !important;"><strong class="fs-6">{{ stock.price }} NOK</strong></td>
-                                                <td style="background-color: #ffffff !important; color: {{ '#155724' if stock.change >= 0 else '#721c24' }} !important;" class="fw-bold">
+                                            <tr class="align-middle stock-row" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                                <td><strong class="text-primary fw-bold">{{ stock.symbol }}</strong></td>
+                                                <td class="fw-medium">{{ stock.name }}</td>
+                                                <td><strong class="fs-6">{{ stock.price }} NOK</strong></td>
+                                                <td class="{{ 'text-success' if stock.change >= 0 else 'text-danger' }} fw-bold">
                                                     <i class="bi bi-{{ 'arrow-up' if stock.change >= 0 else 'arrow-down' }}-circle-fill me-1"></i>
                                                     {{ stock.change }}
                                                 </td>
-                                                <td style="background-color: #ffffff !important; color: {{ '#155724' if stock.change_percent >= 0 else '#721c24' }} !important;" class="fw-bold">
+                                                <td class="{{ 'text-success' if stock.change_percent >= 0 else 'text-danger' }} fw-bold">
                                                     {{ stock.change_percent }}%
                                                 </td>
-                                                <td style="background-color: #ffffff !important; color: #666666 !important;" class="fw-medium">{{ stock.volume | int | nn }}</td>
-                                                <td style="background-color: #ffffff !important;">
+                                                <td class="text-muted fw-medium">{{ stock.volume | int | nn }}</td>
+                                                <td>
                                                     <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
                                                         <i class="bi bi-eye me-1"></i>Detaljer
                                                     </a>
@@ -508,7 +508,7 @@
                             <p class="lead mb-0">Bruk vår ROI-kalkulator og se hvor lønnsomt det kan være å investere smart med Aksjeradar.trade</p>
                         </div>
                         <div class="col-md-4">
-                            <a href="{{ url_for('main.roi_kalkulator') }}" class="btn btn-dark btn-lg shadow" style="background-color: #2c3e50; border-color: #2c3e50; color: white;">
+                            <a href="{{ url_for('main.roi_kalkulator') }}" class="btn btn-light btn-lg shadow">
                                 <i class="bi bi-calculator me-2"></i>Beregn ROI
                             </a>
                         </div>
