@@ -389,6 +389,9 @@ def details(symbol):
             'sector': stock_info.get('sector', 'Technology'),
         }
 
+        # Get ticker-specific AI recommendation
+        ai_recommendations = DataService.get_ticker_specific_ai_recommendation(symbol)
+
         # Return the stock details template with all data
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
@@ -396,7 +399,7 @@ def details(symbol):
                              stock=stock,
                              stock_info=template_stock_info,
                              technical_data=technical_data,
-                             ai_recommendations={'summary': 'Demo AI-analyse', 'recommendation': 'HOLD', 'confidence': 75},
+                             ai_recommendations=ai_recommendations,
                              news=[],
                              earnings=[],
                              competitors=[],
@@ -405,6 +408,13 @@ def details(symbol):
     except Exception as e:
         current_app.logger.error(f"Error loading stock details for {symbol}: {e}")
         current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
+        
+        # Get fallback AI recommendation even on error
+        try:
+            ai_recommendations = DataService.get_ticker_specific_ai_recommendation(symbol)
+        except:
+            ai_recommendations = {'summary': 'Feil ved lasting av data - ingen AI-analyse tilgjengelig', 'recommendation': 'HOLD', 'confidence': 0}
+        
         # Return the details template with error rather than redirect
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
@@ -427,7 +437,7 @@ def details(symbol):
                                  'signal_strength': 'N/A',
                                  'signal_reason': 'Error loading data'
                              },
-                             ai_recommendations={'summary': 'Feil ved lasting av data - ingen AI-analyse tilgjengelig', 'recommendation': 'HOLD', 'confidence': 0},
+                             ai_recommendations=ai_recommendations,
                              news=[],
                              earnings=[],
                              competitors=[],
