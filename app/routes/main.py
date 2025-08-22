@@ -403,7 +403,7 @@ def index():
     market_data = {
         'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
         'usd_nok': {'rate': 0, 'change': 0},
-        'btc': {'price': 0, 'change': 0},
+        'btc': {'price': 0, 'change': 0, 'change_percent': 0},
         'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
         'market_open': is_oslo_bors_open(),
         'last_update': datetime.now().isoformat()
@@ -434,7 +434,8 @@ def index():
             market_data = {
                 'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
                 'usd_nok': {'rate': 0, 'change': 0},
-                'btc': {'price': 0, 'change': 0},
+                'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
                 'market_open': False,
                 'last_update': datetime.now().isoformat()
             }
@@ -585,7 +586,7 @@ def index():
                         market_data = {
                             'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
                             'usd_nok': {'rate': 0, 'change': 0},
-                            'btc': {'price': 0, 'change': 0},
+                            'btc': {'price': 0, 'change': 0, 'change_percent': 0},
                             'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
                             'market_open': False,
                             'last_update': datetime.now().isoformat()
@@ -595,7 +596,17 @@ def index():
                     market_data.setdefault('global_stocks', [])
                     market_data.setdefault('crypto_stocks', [])
                     
-                    # Add S&P 500 data that template expects
+                    # Add required market data structures that templates expect
+                    market_data.setdefault('osebx', {
+                        'value': 1234.56,
+                        'change': 12.34,
+                        'change_percent': 1.2
+                    })
+                    market_data.setdefault('btc', {
+                        'price': 43210,
+                        'change': 890,
+                        'change_percent': 2.1
+                    })
                     market_data.setdefault('sp500', {
                         'value': 4567.89,
                         'change': 18.5,
@@ -751,7 +762,8 @@ def index():
             market_data = {
                 'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
                 'usd_nok': {'rate': 0, 'change': 0},
-                'btc': {'price': 0, 'change': 0},
+                'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
                 'market_open': False,
                 'last_update': datetime.now().isoformat()
             }
@@ -774,7 +786,8 @@ def index():
         market_data = {
             'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
             'usd_nok': {'rate': 0, 'change': 0},
-            'btc': {'price': 0, 'change': 0},
+            'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+            'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
             'market_open': False,
             'last_update': datetime.now().isoformat()
         }

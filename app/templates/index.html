@@ -224,9 +224,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">{{ market_data.osebx.value if market_data.osebx.value else '1,234.56' }}</h4>
-                                                    <span class="badge {% if market_data.osebx.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
-                                                        {% if market_data.osebx.change >= 0 %}+{% endif %}{{ market_data.osebx.change_percent if market_data.osebx.change_percent else '+1.2' }}%
+                                                    <h4 class="mb-0 me-3">{{ market_data.get('osebx', {}).get('value', '1,234.56') }}</h4>
+                                                    <span class="badge {% if market_data.get('osebx', {}).get('change', 0) >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.get('osebx', {}).get('change', 0) >= 0 %}+{% endif %}{{ market_data.get('osebx', {}).get('change_percent', '+1.2') }}%
                                                     </span>
                                                 </div>
                                             </div>
@@ -258,9 +258,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">${{ market_data.btc.price if market_data.btc.price else '43,210' }}</h4>
-                                                    <span class="badge {% if market_data.btc.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
-                                                        {% if market_data.btc.change >= 0 %}+{% endif %}{{ market_data.btc.change_percent if market_data.btc.change_percent else '+2.1' }}%
+                                                    <h4 class="mb-0 me-3">${{ market_data.get('btc', {}).get('price', '43,210') }}</h4>
+                                                    <span class="badge {% if market_data.get('btc', {}).get('change', 0) >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.get('btc', {}).get('change', 0) >= 0 %}+{% endif %}{{ market_data.get('btc', {}).get('change_percent', '+2.1') }}%
                                                     </span>
                                                 </div>
                                             </div>

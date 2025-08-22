@@ -34,28 +34,28 @@
                             <tbody>
                                 <tr>
                                     <td><strong>S&P 500</strong> <small class="text-muted">USA</small></td>
-                                    <td class="text-end">{{ market_data.sp500.value|default('4,285.32') }}</td>
-                                    <td class="text-end text-success">{{ market_data.sp500.change|default('+0.78') }}%</td>
+                                    <td class="text-end">{{ market_data.get('sp500', {}).get('value', '4,285.32') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('sp500', {}).get('change_percent', '+0.78') }}%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Nasdaq</strong> <small class="text-muted">USA</small></td>
-                                    <td class="text-end">{{ market_data.nasdaq.value|default('13,542.11') }}</td>
-                                    <td class="text-end text-success">{{ market_data.nasdaq.change|default('+1.24') }}%</td>
+                                    <td class="text-end">{{ market_data.get('nasdaq', {}).get('value', '13,542.11') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('nasdaq', {}).get('change_percent', '+1.24') }}%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>DAX</strong> <small class="text-muted">Tyskland</small></td>
-                                    <td class="text-end">{{ market_data.dax.value|default('15,892.45') }}</td>
-                                    <td class="text-end text-danger">{{ market_data.dax.change|default('-0.35') }}%</td>
+                                    <td class="text-end">{{ market_data.get('dax', {}).get('value', '15,892.45') }}</td>
+                                    <td class="text-end text-danger">{{ market_data.get('dax', {}).get('change_percent', '-0.35') }}%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>FTSE 100</strong> <small class="text-muted">UK</small></td>
-                                    <td class="text-end">{{ market_data.ftse.value|default('7,654.12') }}</td>
-                                    <td class="text-end text-success">{{ market_data.ftse.change|default('+0.45') }}%</td>
+                                    <td class="text-end">{{ market_data.get('ftse', {}).get('value', '7,654.12') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('ftse', {}).get('change_percent', '+0.45') }}%</td>
                                 </tr>
                                 <tr>
                                     <td><strong>OBX</strong> <small class="text-muted">Norge</small></td>
-                                    <td class="text-end">{{ market_data.osebx.value|default('1,125.67') }}</td>
-                                    <td class="text-end text-success">{{ market_data.osebx.change|default('+0.89') }}%</td>
+                                    <td class="text-end">{{ market_data.get('osebx', {}).get('value', '1,125.67') }}</td>
+                                    <td class="text-end text-success">{{ market_data.get('osebx', {}).get('change_percent', '+0.89') }}%</td>
                                 </tr>
                             </tbody>
                         </table>
