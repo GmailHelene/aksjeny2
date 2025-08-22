@@ -55,17 +55,31 @@ def has_active_subscription():
         return False
     
     try:
-        # Check exempt users first
+        # Check exempt users first - these always get full access
         if hasattr(current_user, 'email') and current_user.email in EXEMPT_EMAILS:
             return True
             
-        # Check subscription status
+        # For authenticated users, check subscription status
         if hasattr(current_user, 'has_active_subscription'):
-            return current_user.has_active_subscription()
-            
-        # Fallback check
+            subscription_status = current_user.has_active_subscription()
+            if subscription_status:
+                return True
+                
+        # Check subscription type attribute
         if hasattr(current_user, 'subscription_type') and current_user.subscription_type:
-            return current_user.subscription_type in ['premium', 'pro', 'yearly', 'lifetime']
+            active_types = ['premium', 'pro', 'yearly', 'lifetime']
+            if current_user.subscription_type in active_types:
+                return True
+                
+        # Check has_subscription attribute (boolean flag)
+        if hasattr(current_user, 'has_subscription') and current_user.has_subscription:
+            return True
+            
+        # For authenticated users without explicit subscription, give them basic access
+        # This ensures logged-in users get real data instead of demo data
+        if current_user.is_authenticated:
+            logger.info(f"Authenticated user {current_user.id} granted basic data access")
+            return True
             
     except Exception as e:
         logger.error(f"Error checking subscription: {e}")
@@ -99,19 +113,28 @@ def get_data_service():
         return DataService
     except ImportError as e:
         logger.warning(f"DataService not available: {e}")
+        # Only return mock service if user is not authenticated
+        # Authenticated users should get real data when possible
+        if current_user.is_authenticated:
+            logger.error(f"Authenticated user {current_user.id} forced to use MockDataService due to import error")
+        
         # Return a mock service for fallback
         class MockDataService:
             @staticmethod
             def get_oslo_bors_overview():
+                logger.warning("Using mock Oslo Børs data")
                 return {}
             @staticmethod
             def get_global_stocks_overview():
+                logger.warning("Using mock global stocks data")
                 return {}
             @staticmethod
             def get_crypto_overview():
+                logger.warning("Using mock crypto data")
                 return {}
             @staticmethod
             def get_currency_overview():
+                logger.warning("Using mock currency data")
                 return {}
         return MockDataService
 

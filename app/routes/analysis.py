@@ -2255,47 +2255,77 @@ def prediction():
 @analysis.route('/currency-overview')
 @premium_required
 def currency_overview():
-    """Currency market overview"""
+    """Currency market overview with error handling"""
     from datetime import datetime
     
-    # Demo currency data
-    currencies = {
-        'USD/NOK': {
-            'rate': 10.85,
-            'change': 0.12,
-            'change_percent': 1.12,
-            'high': 10.95,
-            'low': 10.70,
-            'volume': 1200000,
-            'signal': 'BUY',
-            'name': 'USD/NOK'
-        },
-        'EUR/NOK': {
-            'rate': 11.75,
-            'change': -0.05,
-            'change_percent': -0.42,
-            'high': 11.80,
-            'low': 11.60,
-            'volume': 950000,
-            'signal': 'HOLD',
-            'name': 'EUR/NOK'
-        },
-        'GBP/NOK': {
-            'rate': 13.65,
-            'change': 0.08,
-            'change_percent': 0.59,
-            'high': 13.75,
-            'low': 13.50,
-            'volume': 800000,
-            'signal': 'SELL',
-            'name': 'GBP/NOK'
-        }
-    }
+    try:
+        # Try to get real currency data first
+        currency_data = DataService.get_currency_overview() if hasattr(DataService, 'get_currency_overview') else None
+        
+        if currency_data and isinstance(currency_data, dict):
+            # Use real data if available
+            currencies = currency_data
+        else:
+            # Fallback to demo currency data
+            currencies = {
+                'USD/NOK': {
+                    'rate': 10.85,
+                    'change': 0.12,
+                    'change_percent': 1.12,
+                    'high': 10.95,
+                    'low': 10.70,
+                    'volume': 1200000,
+                    'signal': 'BUY',
+                    'name': 'USD/NOK'
+                },
+                'EUR/NOK': {
+                    'rate': 11.75,
+                    'change': -0.05,
+                    'change_percent': -0.42,
+                    'high': 11.80,
+                    'low': 11.60,
+                    'volume': 950000,
+                    'signal': 'HOLD',
+                    'name': 'EUR/NOK'
+                },
+                'GBP/NOK': {
+                    'rate': 13.65,
+                    'change': 0.08,
+                    'change_percent': 0.59,
+                    'high': 13.75,
+                    'low': 13.50,
+                    'volume': 800000,
+                    'signal': 'SELL',
+                    'name': 'GBP/NOK'
+                }
+            }
+        
+        return render_template('analysis/currency_overview.html', 
+                             title='Valutaoversikt',
+                             currencies=currencies,
+                             now=datetime.now())
     
-    return render_template('analysis/currency_overview.html', 
-                         title='Valutaoversikt',
-                         currencies=currencies,
-                         now=datetime.now())
+    except Exception as e:
+        logger.error(f"Error in currency overview: {e}")
+        # Provide minimal fallback currency data
+        fallback_currencies = {
+            'USD/NOK': {
+                'rate': 10.85,
+                'change': 0.0,
+                'change_percent': 0.0,
+                'high': 10.85,
+                'low': 10.85,
+                'volume': 0,
+                'signal': 'HOLD',
+                'name': 'USD/NOK'
+            }
+        }
+        
+        return render_template('analysis/currency_overview.html', 
+                             title='Valutaoversikt',
+                             currencies=fallback_currencies,
+                             now=datetime.now(),
+                             error="Data ikke tilgjengelig for øyeblikket")
 
 @analysis.route('/oslo-overview')
 @access_required

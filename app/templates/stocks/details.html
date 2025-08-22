@@ -8,7 +8,7 @@
         <div class="col-lg-8">
             <!-- Stock Header -->
             <div class="card mb-4">
-                <div class="card-body">
+                <div class="card-body stock-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h1 class="h3 mb-1">{{ stock.name or 'N/A' }}</h1>
@@ -875,6 +875,151 @@ document.addEventListener('DOMContentLoaded', function() {
 .bg-dark-green {
     background-color: #14532d !important;
     color: #fff !important;
+}
+
+/* Enhanced Mobile Responsiveness for Stock Details */
+@media (max-width: 768px) {
+    /* Better header layout on mobile */
+    .stock-header .row {
+        text-align: center;
+    }
+    
+    .stock-header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stock-price {
+        font-size: 1.75rem !important;
+        margin-top: 0.5rem;
+    }
+    
+    /* Compact navigation tabs */
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .nav-tabs .nav-item {
+        white-space: nowrap;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        border-radius: 0;
+    }
+    
+    /* Better table layout on mobile */
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.4rem 0.3rem;
+        vertical-align: middle;
+    }
+    
+    /* Improved button spacing */
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .btn-sm {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Better card spacing */
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+    
+    .card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Enhanced chart container */
+    #price-chart {
+        height: 300px !important;
+        border-radius: 8px;
+    }
+    
+    /* Better form controls */
+    .form-control,
+    .form-select {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Improved alert styling */
+    .alert {
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    
+    /* Better badge styling */
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.6em;
+    }
+    
+    /* Compact metrics display */
+    .row.g-2 {
+        margin: -0.25rem;
+    }
+    
+    .row.g-2 > * {
+        padding: 0.25rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Extra compact layout for small phones */
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.3rem 0.2rem;
+        font-size: 0.8rem;
+    }
+    
+    .stock-price {
+        font-size: 1.5rem !important;
+    }
+    
+    .h3, h3 {
+        font-size: 1.25rem;
+    }
 }
 </style>
 {% endblock %}

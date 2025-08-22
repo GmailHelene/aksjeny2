@@ -55,13 +55,13 @@
                 <!-- Primary Actions Row -->
                 <div class="row g-2 mb-3">
                     <div class="col-6">
-                        <a href="{{ url_for('analysis.index') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
-                            <i class="bi bi-house"></i><br><small>Oversikt</small>
+                        <a href="{{ url_for('analysis.index') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}" style="padding: 0.6rem 0.5rem; font-size: 0.8rem;">
+                            <i class="bi bi-house d-block mb-1"></i><small>Oversikt</small>
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
-                            <i class="bi bi-graph-up"></i><br><small>Teknisk</small>
+                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}" style="padding: 0.6rem 0.5rem; font-size: 0.8rem;">
+                            <i class="bi bi-graph-up d-block mb-1"></i><small>Teknisk</small>
                         </a>
                     </div>
                 </div>
@@ -69,18 +69,18 @@
                 <!-- Analysis Tools Row -->
                 <div class="row g-2 mb-3">
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.fundamental') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}">
-                            <i class="bi bi-calculator"></i><br><small>Fundamental</small>
+                        <a href="{{ url_for('analysis.fundamental') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-calculator d-block mb-1"></i><small>Fundamental</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}">
-                            <i class="bi bi-person-check"></i><br><small>W. Buffett</small>
+                        <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-person-check d-block mb-1"></i><small>W. Buffett</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}">
-                            <i class="bi bi-book"></i><br><small>B. Graham</small>
+                        <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-book d-block mb-1"></i><small>B. Graham</small>
                         </a>
                     </div>
                 </div>
@@ -88,62 +88,58 @@
                 <!-- More Tools Row -->
                 <div class="row g-2 mb-3">
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
-                            <i class="bi bi-cpu"></i><br><small>AI-Analyse</small>
+                        <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-cpu d-block mb-1"></i><small>AI-Analyse</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
-                            <i class="bi bi-graph-down"></i><br><small>Short</small>
+                        <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-graph-down d-block mb-1"></i><small>Short</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
-                            <i class="bi bi-emoji-smile"></i><br><small>Sentiment</small>
+                        <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-emoji-smile d-block mb-1"></i><small>Sentiment</small>
                         </a>
                     </div>
                 </div>
 
                 <!-- Market Overview Row -->
                 <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}">
-                            <i class="bi bi-grid-3x3"></i><br><small style="font-size: 0.75rem;">Markedsoversikt</small>
+                    <div class="col-6">
+                        <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-grid-3x3 d-block mb-1"></i><small>Markedsoversikt</small>
                         </a>
                     </div>
-                    <div class="col-4">
-                        <!-- Empty space -->
-                    </div>
-                    <div class="col-4">
-                        <!-- Empty space -->
+                    <div class="col-6">
+                        <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-funnel d-block mb-1"></i><small>Screener</small>
+                        </a>
                     </div>
                 </div>
                 
                 <!-- Final Tools Row -->
                 <div class="row g-2 mb-3">
-                    <div class="col-4">
-                        <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
-                            <i class="bi bi-crystal-ball"></i><br><small>Prediksjoner</small>
+                    <div class="col-6">
+                        <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-crystal-ball d-block mb-1"></i><small>Prediksjoner</small>
                         </a>
                     </div>
-                    <div class="col-4">
-                        <a href="{{ url_for('analysis.recommendation', ticker=ticker) if ticker else url_for('analysis.recommendation') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
-                            <i class="bi bi-star"></i><br><small>Anbefalinger</small>
-                        </a>
-                    </div>
-                    <div class="col-4">
-                        <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
-                            <i class="bi bi-funnel"></i><br><small>Screener</small>
+                    <div class="col-6">
+                        <a href="{{ url_for('analysis.recommendation', ticker=ticker) if ticker else url_for('analysis.recommendation') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}" style="padding: 0.5rem 0.3rem; font-size: 0.75rem;">
+                            <i class="bi bi-star d-block mb-1"></i><small>Anbefalinger</small>
                         </a>
                     </div>
                 </div>
                 
                 <!-- Mobile Ticker Input -->
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" id="ticker-input-mobile" class="form-control" placeholder="Søk ticker (f.eks. AAPL)">
-                    <button type="button" class="btn btn-outline-secondary" onclick="analyzeCustomTickerMobile()">
-                        Analyser
+                    <span class="input-group-text bg-primary text-white border-primary">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="ticker-input-mobile" class="form-control border-primary" placeholder="Søk ticker (f.eks. AAPL)" style="font-size: 16px;">
+                    <button type="button" class="btn btn-primary" onclick="analyzeCustomTickerMobile()">
+                        <i class="bi bi-arrow-right"></i>
                     </button>
                 </div>
             </div>
