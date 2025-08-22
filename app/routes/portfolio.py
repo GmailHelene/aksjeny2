@@ -271,72 +271,65 @@ def watchlist():
 
 # Get user data for portfolio display
 def get_user_data_for_portfolio():
-        try:
-            from ..models.favorites import Favorites
-            favorites = Favorites.get_user_favorites(current_user.id)
-            # Convert favorites to watchlist item format
-            for fav in favorites:
-                # Create a mock watchlist item object for favorites
-                class MockWatchlistItem:
-                    def __init__(self, symbol, name=None):
-                        self.symbol = symbol
-                        self.ticker = symbol
-                        self.name = name or symbol
-                        
-                watchlist_items.append(MockWatchlistItem(fav.symbol, fav.name))
-        except Exception as e:
-            current_app.logger.warning(f"Could not get favorites: {e}")
-        
-        # Get current prices for watchlist items
-        watchlist_data = []
-        for item in watchlist_items:
-            try:
-                symbol = getattr(item, 'symbol', getattr(item, 'ticker', 'UNKNOWN'))
-                stock_data = get_data_service().get_stock_info(symbol)
-                
-                # KRITISK FIX: Sikre at alle verdier er numeriske
-                current_price = float(stock_data.get('regularMarketPrice', 0)) if stock_data.get('regularMarketPrice') is not None else 0.0
-                change = float(stock_data.get('regularMarketChange', 0)) if stock_data.get('regularMarketChange') is not None else 0.0
-                change_percent = float(stock_data.get('regularMarketChangePercent', 0)) if stock_data.get('regularMarketChangePercent') is not None else 0.0
-                
-                watchlist_data.append({
-                    'item': item,
-                    'ticker': symbol,
-                    'current_price': current_price,
-                    'change': change,
-                    'change_percent': change_percent,
-                    'name': stock_data.get('shortName', symbol) if stock_data else symbol
-                })
-            except Exception as e:
-                current_app.logger.warning(f"Could not get data for watchlist item {symbol}: {e}")
-                # KRITISK FIX: Alltid bruk numeriske fallback-verdier
-                watchlist_data.append({
-                    'item': item,
-                    'ticker': symbol,
-                    'current_price': 0.0,
-                    'change': 0.0,
-                    'change_percent': 0.0,
-                    'name': symbol
-                })
-        
-        # If no watchlist data, create sample data for demo
-        if not watchlist_data:
-            sample_stocks = [
-                {'ticker': 'EQNR.OL', 'name': 'Equinor', 'last_price': 280.50, 'change_percent': 2.1},
-                {'ticker': 'DNB.OL', 'name': 'DNB Bank', 'last_price': 220.30, 'change_percent': -0.8},
-                {'ticker': 'AAPL', 'name': 'Apple Inc.', 'last_price': 175.40, 'change_percent': 1.2}
-            ]
-            return render_template('portfolio/watchlist.html', stocks=sample_stocks, watchlist=[], demo_mode=True)
-        
-        return render_template('portfolio/watchlist.html', watchlist=watchlist_data, stocks=watchlist_data)
+    watchlist_items = []
+    try:
+        from ..models.favorites import Favorites
+        favorites = Favorites.get_user_favorites(current_user.id)
+        # Convert favorites to watchlist item format
+        for fav in favorites:
+            # Create a mock watchlist item object for favorites
+            class MockWatchlistItem:
+                def __init__(self, symbol, name=None):
+                    self.symbol = symbol
+                    self.ticker = symbol
+                    self.name = name or symbol
+                    
+            watchlist_items.append(MockWatchlistItem(fav.symbol, fav.name))
     except Exception as e:
-        current_app.logger.error(f"Error in watchlist: {str(e)}")
-        # Provide fallback data instead of error
+        current_app.logger.warning(f"Could not get favorites: {e}")
+    
+    # Get current prices for watchlist items
+    watchlist_data = []
+    for item in watchlist_items:
+        try:
+            symbol = getattr(item, 'symbol', getattr(item, 'ticker', 'UNKNOWN'))
+            stock_data = get_data_service().get_stock_info(symbol)
+            
+            # KRITISK FIX: Sikre at alle verdier er numeriske
+            current_price = float(stock_data.get('regularMarketPrice', 0)) if stock_data.get('regularMarketPrice') is not None else 0.0
+            change = float(stock_data.get('regularMarketChange', 0)) if stock_data.get('regularMarketChange') is not None else 0.0
+            change_percent = float(stock_data.get('regularMarketChangePercent', 0)) if stock_data.get('regularMarketChangePercent') is not None else 0.0
+            
+            watchlist_data.append({
+                'item': item,
+                'ticker': symbol,
+                'current_price': current_price,
+                'change': change,
+                'change_percent': change_percent,
+                'name': stock_data.get('shortName', symbol) if stock_data else symbol
+            })
+        except Exception as e:
+            current_app.logger.warning(f"Could not get data for watchlist item {symbol}: {e}")
+            # KRITISK FIX: Alltid bruk numeriske fallback-verdier
+            watchlist_data.append({
+                'item': item,
+                'ticker': symbol,
+                'current_price': 0.0,
+                'change': 0.0,
+                'change_percent': 0.0,
+                'name': symbol
+            })
+    
+    # If no watchlist data, create sample data for demo
+    if not watchlist_data:
         sample_stocks = [
             {'ticker': 'EQNR.OL', 'name': 'Equinor', 'last_price': 280.50, 'change_percent': 2.1},
-            {'ticker': 'DNB.OL', 'name': 'DNB Bank', 'last_price': 220.30, 'change_percent': -0.8}
+            {'ticker': 'DNB.OL', 'name': 'DNB Bank', 'last_price': 220.30, 'change_percent': -0.8},
+            {'ticker': 'AAPL', 'name': 'Apple Inc.', 'last_price': 175.40, 'change_percent': 1.2}
         ]
-        return render_template('portfolio/watchlist.html', stocks=sample_stocks, error_message="Watchlist midlertidig utilgjengelig")
+        return render_template('portfolio/watchlist.html', stocks=sample_stocks, watchlist=[], demo_mode=True)
+    
+    return render_template('portfolio/watchlist.html', watchlist=watchlist_data, stocks=watchlist_data)
 
 @portfolio.route('/')
 @login_required
