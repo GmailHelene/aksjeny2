@@ -29,7 +29,7 @@
         color: #ffffff !important;
     }
     
-    .card-header.bg-primary, .bg-primary * {
+    .bg-primary * {
         color: #ffffff !important;
     }
     
@@ -43,16 +43,14 @@
         color: #ffffff !important;
     }
     
-    .bg-warning, .badge-warning, .btn-warning {
-        background-color: #e65100 !important; /* Dark orange instead of light yellow */
-        color: white !important;
-        border-color: #e65100 !important;
+        .bg-warning, .badge-warning, .btn-warning {
+        background-color: #0d6efd !important;
+        color: #ffffff !important;
     }
     
     .bg-info, .badge-info, .btn-info {
-        background-color: #01579b !important; /* Very dark cyan for white text */
-        color: white !important;
-        border-color: #01579b !important;
+        background-color: #0d6efd !important;
+        color: #ffffff !important;
     }
     
     .bg-success, .badge-success, .btn-success {
@@ -69,12 +67,6 @@
     .alert-warning {
         background-color: #664d03 !important;
         color: #fff3cd !important;
-    }
-    
-    /* Card header overrides */
-    .card-header.bg-primary {
-        background-color: #0d47a1 !important;
-        color: white !important;
     }
     
     .card-header.bg-danger {
@@ -120,19 +112,12 @@
     }
     
     .dropdown-item {
-        color: #212529;
         padding: 0.75rem 1.25rem;
         transition: all 0.2s ease;
     }
     
-    .dropdown-item:hover {
-        background-color: #f8f9fa;
-        color: #007bff;
-    }
-    
     .dropdown-item i {
         margin-right: 0.5rem;
-        color: #6c757d;
         width: 1.2rem;
         text-align: center;
     }
@@ -140,6 +125,11 @@
     .dropdown-divider {
         margin: 0.5rem 0;
         opacity: 0.1;
+    }
+    
+    .dropdown-header {
+        color: #0d6efd !important;
+        font-weight: 600;
     }
 
     /* Achievement toast styling */
@@ -187,14 +177,8 @@
         }
         
         .navbar-nav .dropdown-item {
-            color: rgba(255, 255, 255, 0.9) !important;
             padding: 0.6rem 1rem;
             font-size: 0.9rem;
-        }
-        
-        .navbar-nav .dropdown-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff !important;
         }
         
         .navbar-nav .dropdown-item i {
@@ -247,14 +231,6 @@
     .card-header .btn,
     .card-header a {
         color: #212529 !important;
-    }
-    
-    /* Exception for explicitly colored headers */
-    .card-header.bg-primary,
-    .card-header.bg-primary h5,
-    .card-header.bg-primary h6 {
-        background-color: #0d6efd !important;
-        color: #ffffff !important;
     }
     
     .card-header.bg-success,

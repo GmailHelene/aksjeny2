@@ -116,13 +116,13 @@
                 <div class="card enhanced-card border-0 shadow-sm">
                     <div class="card-header bg-gradient border-0" style="background: linear-gradient(135deg, #13182c 0%, #000000 100%);">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="bi bi-lightning-fill me-2"></i>
-                                <span class="fw-bold">Hurtigtilgang</span>
+                            <h5 class="mb-0 text-white">
+                                <i class="bi bi-lightning-fill me-2 text-white"></i>
+                                <span class="fw-bold text-white">Hurtigtilgang</span>
                             </h5>
                             <div class="d-flex align-items-center">
                                 <span class="live-indicator"></span>
-                                <small class="opacity-90 d-none d-md-inline fw-medium">Live Dashboard</small>
+                                <small class="opacity-90 d-none d-md-inline fw-medium text-white">Live Dashboard</small>
                             </div>
                         </div>
                     </div>
@@ -1314,6 +1314,31 @@
 .card-header.bg-success .bi,
 .card-header.bg-success span, 
 .card-header.bg-success i {
+    color: #ffffff !important;
+}
+
+/* Fix for quick action button icons to remain visible on hover */
+.quick-action-btn:hover .bi.text-primary {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-success {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-info {
+    color: #ffffff !important;
+}
+
+.quick-action-btn:hover .bi.text-dark {
+    color: #ffffff !important;
+}
+
+/* Alternative approach - ensure icons stay visible on all hover states */
+.btn-outline-primary:hover .bi,
+.btn-outline-success:hover .bi,
+.btn-outline-info:hover .bi,
+.btn-outline-dark:hover .bi {
     color: #ffffff !important;
 }
 </style>

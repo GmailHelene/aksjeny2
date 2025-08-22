@@ -59,3 +59,8 @@ Did you mean 'stocks.compare' instead?
 ```
 
 **STARTER MED CSS SERVING PROBLEMET NÅ...**
+
+
+https://aksjeradar.trade/profile https://aksjeradar.trade/watchlist/ https://aksjeradar.trade/portfolio/watchlist https://aksjeradar.trade/norwegian-intel/government-impact https://aksjeradar.trade/advanced/crypto-dashboard https://aksjeradar.trade/stocks/compare https://aksjeradar.trade/analysis/warren-buffett?ticker=AAPL
+Fortsatt 500 error på alle disse,selvom du sa at de skuille vært i roden! Fiks nå nøye alle dissse 500 errorene..?=)
+
