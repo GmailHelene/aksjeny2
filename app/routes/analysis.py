@@ -664,7 +664,12 @@ def sentiment():
                         'Volumtrender indikerer interesse fra investorer'
                     ],
                     'indicators': [],  # Simplified - no helper function
-                    'recommendation': f'Hold - {selected_symbol} viser stabile mønstre',  # Simplified
+                    'recommendation': {
+                        'type': 'hold',
+                        'action': 'Hold',
+                        'reasoning': f'{selected_symbol} viser stabile mønstre',
+                        'confidence': 0.75
+                    },  # Dictionary structure for template
                     'news_sentiment_articles': [],  # Simplified - no helper function  
                     'history': []  # Simplified - no helper function
                 }
@@ -686,7 +691,12 @@ def sentiment():
                     'market_trend': 'neutral',
                     'sentiment_reasons': ['Sentimentdata prosesseres', 'Analyser basert på tilgjengelige data'],
                     'indicators': [],
-                    'recommendation': 'Hold - avventer mer data',
+                    'recommendation': {
+                        'type': 'hold',
+                        'action': 'Hold',
+                        'reasoning': 'Avventer mer data',
+                        'confidence': 0.5
+                    },
                     'news_sentiment_articles': [],
                     'history': []
                 }
@@ -715,7 +725,12 @@ def sentiment():
                 'market_trend': 'neutral',
                 'sentiment_reasons': ['Tjenesten er tilgjengelig', 'Generelle markedsdata'],
                 'indicators': [],
-                'recommendation': 'Data prosesseres',
+                'recommendation': {
+                    'type': 'hold',
+                    'action': 'Hold',
+                    'reasoning': 'Data prosesseres',
+                    'confidence': 0.5
+                },
                 'news_sentiment_articles': [],
                 'history': []
             },

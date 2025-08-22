@@ -5,7 +5,7 @@ from ..models import User
 from ..models.favorites import Favorites
 from ..extensions import db
 from ..utils.market_open import is_market_open, is_oslo_bors_open
-from ..utils.access_control import access_required
+from ..utils.access_control import access_required, demo_access
 from ..services.dashboard_service import DashboardService
 import logging
 import os
@@ -2152,10 +2152,16 @@ def norwegian_intel_government_impact():
         return redirect(url_for('main.index'))
 
 @main.route('/advanced/crypto-dashboard')
-@login_required
+@demo_access
 def advanced_crypto_dashboard():
     """Advanced crypto dashboard route"""
-    return redirect(url_for('advanced_features.crypto_dashboard'))
+    try:
+        return redirect(url_for('advanced_features.crypto_dashboard'))
+    except Exception as e:
+        current_app.logger.error(f"Error redirecting to crypto dashboard: {e}")
+        # Fallback: render simple message
+        return render_template('error.html', 
+                             error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @main.route('/stocks/compare')
 @login_required
