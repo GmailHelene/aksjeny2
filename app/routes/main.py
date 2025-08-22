@@ -410,7 +410,13 @@ def before_request():
 @main.route('/')
 @main.route('/index')
 def index():
-    """Homepage - works for both authenticated and non-authenticated users"""
+    """Homepage - redirects logged-in users to stocks page, shows landing page for anonymous users"""
+    
+    # If user is logged in, redirect to stocks page
+    if current_user.is_authenticated:
+        return redirect(url_for('stocks.index'))
+    
+    # For anonymous users, show the landing page
     investments = {
         'total_invested': 0,
         'total_value': 0,

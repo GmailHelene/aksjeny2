@@ -1,0 +1,117 @@
+/* Master CSS fixes for all styling issues */
+
+/* 1. Fix card-header to use solid #222222 background instead of gradients */
+.card-header {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+    border: 0 !important;
+    color: #ffffff !important;
+}
+
+.card-header.bg-gradient {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+}
+
+.card-header.bg-primary {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+}
+
+.card-header.bg-dark {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+}
+
+/* 2. Remove problematic .bg-gradient background-image rule */
+.bg-gradient {
+    background-image: none !important;
+}
+
+/* 3. Remove .card-header .bi white color rules that cause visibility issues */
+.card-header .bi {
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+.card-header i {
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+/* 4. Fix button active background rule */
+.btn-check:checked+.btn, 
+.btn.active, 
+.btn.show, 
+.btn:first-child:active, 
+:not(.btn-check)+.btn:active {
+    background-color: transparent !important;
+}
+
+/* 5. Fix calendar-nav to solid #222222 color (no gradient) */
+.calendar-nav {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+}
+
+/* 6. Remove problematic dropdown header color rule */
+.dropdown-menu .dropdown-header, 
+.dropdown-menu h6.dropdown-header, 
+.navbar-dark .dropdown-menu .dropdown-header {
+    color: inherit !important;
+}
+
+/* 7. Ensure all card headers have consistent styling */
+.card-header h5,
+.card-header h6,
+.card-header span,
+.card-header .small {
+    color: #ffffff !important;
+}
+
+/* 8. Market card headers specific fixes */
+.market-card-oslo .card-header,
+.market-card-global .card-header,
+.market-card-crypto .card-header,
+.market-card-currency .card-header {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
+/* 9. Ensure text contrast is maintained */
+.card-header * {
+    color: #ffffff !important;
+}
+
+/* 10. Currency page header styling to match crypto page */
+.currency-header h1,
+.currency-header h2 {
+    color: #000000 !important;
+    background: none !important;
+    text-shadow: none !important;
+    background-image: none !important;
+}
+
+/* 11. Fix any remaining gradient issues */
+*[class*="gradient"] {
+    background-image: none !important;
+}
+
+/* 12. Override any conflicting styles */
+.bg-primary, .bg-dark, .bg-success, .bg-info, .bg-warning, .bg-danger {
+    background-image: none !important;
+}
+
+/* 13. Ensure card headers with border-0 class still get solid background */
+.card-header.border-0 {
+    background: #222222 !important;
+    background-color: #222222 !important;
+    color: #ffffff !important;
+}

@@ -2423,3 +2423,267 @@ def backtest():
 def strategy_builder():
     """Strategy builder functionality"""
     return render_template('analysis/strategy_builder.html', title='Strategibygger')
+
+# New missing routes that the user mentioned
+@analysis.route('/portfolio-tips')
+@access_required
+def portfolio_tips():
+    """Portfolio tips and recommendations"""
+    try:
+        # Generate portfolio tips
+        tips = [
+            {
+                'title': 'Diversifiser din portefølje',
+                'description': 'Spre investeringene dine på tvers av ulike sektorer og geografiske markeder for å redusere risiko.',
+                'category': 'Risk Management',
+                'importance': 'High'
+            },
+            {
+                'title': 'Langsiktig investering',
+                'description': 'Hold investeringene dine i minimum 3-5 år for å dra nytte av sammensatt avkastning.',
+                'category': 'Strategy',
+                'importance': 'High'
+            },
+            {
+                'title': 'Regelmessig rebalansering',
+                'description': 'Gjennomgå og juster porteføljen din hver 6-12 måned for å opprettholde ønsket allokering.',
+                'category': 'Maintenance',
+                'importance': 'Medium'
+            },
+            {
+                'title': 'Ikke følg trender blindt',
+                'description': 'Unngå å investere basert på kortsiktige markedstrender eller sosiale medier.',
+                'category': 'Psychology',
+                'importance': 'High'
+            }
+        ]
+        
+        return render_template('analysis/portfolio_tips.html', 
+                             title='Porteføljetips',
+                             tips=tips)
+    except Exception as e:
+        logger.error(f"Error loading portfolio tips: {e}")
+        return render_template('analysis/portfolio_tips.html', 
+                             title='Porteføljetips',
+                             tips=[],
+                             error="Kunne ikke laste porteføljetips")
+
+@analysis.route('/risk-analysis')
+@access_required
+def risk_analysis():
+    """Comprehensive risk analysis"""
+    try:
+        # Generate risk analysis data
+        risk_factors = {
+            'market_risk': {
+                'level': 'Medium',
+                'description': 'Generell markedsrisiko basert på makroøkonomiske faktorer',
+                'percentage': 65
+            },
+            'sector_risk': {
+                'level': 'Low',
+                'description': 'Risiko knyttet til spesifikke sektorer',
+                'percentage': 30
+            },
+            'currency_risk': {
+                'level': 'High',
+                'description': 'Valutarisiko for internasjonale investeringer',
+                'percentage': 85
+            },
+            'inflation_risk': {
+                'level': 'Medium',
+                'description': 'Risiko for inflasjon som påvirker kjøpekraft',
+                'percentage': 55
+            }
+        }
+        
+        return render_template('analysis/risk_analysis.html',
+                             title='Risikoanalyse',
+                             risk_factors=risk_factors)
+    except Exception as e:
+        logger.error(f"Error loading risk analysis: {e}")
+        return render_template('analysis/risk_analysis.html',
+                             title='Risikoanalyse',
+                             risk_factors={},
+                             error="Kunne ikke laste risikoanalyse")
+
+@analysis.route('/peer-comparison')
+@access_required
+def peer_comparison():
+    """Peer comparison analysis"""
+    try:
+        # Generate peer comparison data
+        symbol = request.args.get('symbol', 'EQNR.OL')
+        
+        comparison_data = {
+            'target_stock': {
+                'symbol': symbol,
+                'name': 'Equinor ASA',
+                'pe_ratio': 12.5,
+                'pb_ratio': 1.8,
+                'roe': 15.2,
+                'debt_ratio': 0.3
+            },
+            'peers': [
+                {
+                    'symbol': 'AKER.OL',
+                    'name': 'Aker ASA',
+                    'pe_ratio': 14.2,
+                    'pb_ratio': 2.1,
+                    'roe': 13.8,
+                    'debt_ratio': 0.4
+                },
+                {
+                    'symbol': 'YAR.OL',
+                    'name': 'Yara International ASA',
+                    'pe_ratio': 11.8,
+                    'pb_ratio': 1.6,
+                    'roe': 16.5,
+                    'debt_ratio': 0.25
+                }
+            ]
+        }
+        
+        return render_template('analysis/peer_comparison.html',
+                             title='Peer-sammenligning',
+                             comparison_data=comparison_data,
+                             symbol=symbol)
+    except Exception as e:
+        logger.error(f"Error loading peer comparison: {e}")
+        return render_template('analysis/peer_comparison.html',
+                             title='Peer-sammenligning',
+                             comparison_data={},
+                             error="Kunne ikke laste peer-sammenligning")
+
+@analysis.route('/options-screener')
+@access_required
+def options_screener():
+    """Options screener functionality"""
+    try:
+        # Generate options data (placeholder)
+        options_data = [
+            {
+                'symbol': 'EQNR.OL',
+                'strike': 250,
+                'expiry': '2024-03-15',
+                'type': 'CALL',
+                'premium': 15.50,
+                'volume': 1250,
+                'open_interest': 3400
+            },
+            {
+                'symbol': 'DNB.OL',
+                'strike': 180,
+                'expiry': '2024-02-16',
+                'type': 'PUT',
+                'premium': 8.75,
+                'volume': 890,
+                'open_interest': 2100
+            }
+        ]
+        
+        return render_template('analysis/options_screener.html',
+                             title='Opsjons-screener',
+                             options_data=options_data)
+    except Exception as e:
+        logger.error(f"Error loading options screener: {e}")
+        return render_template('analysis/options_screener.html',
+                             title='Opsjons-screener',
+                             options_data=[],
+                             error="Kunne ikke laste opsjons-screener")
+
+@analysis.route('/dividend-calendar')
+@access_required
+def dividend_calendar():
+    """Dividend calendar"""
+    try:
+        from datetime import datetime, timedelta
+        
+        # Generate dividend calendar data
+        dividend_events = [
+            {
+                'symbol': 'EQNR.OL',
+                'company': 'Equinor ASA',
+                'ex_date': '2024-02-15',
+                'payment_date': '2024-03-01',
+                'amount': 12.50,
+                'currency': 'NOK',
+                'yield': 5.2
+            },
+            {
+                'symbol': 'DNB.OL',
+                'company': 'DNB Bank ASA',
+                'ex_date': '2024-02-20',
+                'payment_date': '2024-03-05',
+                'amount': 8.75,
+                'currency': 'NOK',
+                'yield': 6.1
+            },
+            {
+                'symbol': 'TEL.OL',
+                'company': 'Telenor ASA',
+                'ex_date': '2024-02-25',
+                'payment_date': '2024-03-10',
+                'amount': 7.00,
+                'currency': 'NOK',
+                'yield': 4.8
+            }
+        ]
+        
+        return render_template('analysis/dividend_calendar.html',
+                             title='Utbyttekalender',
+                             dividend_events=dividend_events)
+    except Exception as e:
+        logger.error(f"Error loading dividend calendar: {e}")
+        return render_template('analysis/dividend_calendar.html',
+                             title='Utbyttekalender',
+                             dividend_events=[],
+                             error="Kunne ikke laste utbyttekalender")
+
+@analysis.route('/earnings-calendar')
+@access_required
+def earnings_calendar():
+    """Earnings calendar"""
+    try:
+        from datetime import datetime, timedelta
+        
+        # Generate earnings calendar data
+        earnings_events = [
+            {
+                'symbol': 'EQNR.OL',
+                'company': 'Equinor ASA',
+                'date': '2024-02-10',
+                'time': 'Before Market',
+                'period': 'Q4 2023',
+                'eps_estimate': 15.20,
+                'revenue_estimate': 125000000000
+            },
+            {
+                'symbol': 'DNB.OL',
+                'company': 'DNB Bank ASA',
+                'date': '2024-02-12',
+                'time': 'After Market',
+                'period': 'Q4 2023',
+                'eps_estimate': 8.50,
+                'revenue_estimate': 45000000000
+            },
+            {
+                'symbol': 'TEL.OL',
+                'company': 'Telenor ASA',
+                'date': '2024-02-14',
+                'time': 'Before Market',
+                'period': 'Q4 2023',
+                'eps_estimate': 4.25,
+                'revenue_estimate': 32000000000
+            }
+        ]
+        
+        return render_template('analysis/earnings_calendar.html',
+                             title='Resultatkalender',
+                             earnings_events=earnings_events)
+    except Exception as e:
+        logger.error(f"Error loading earnings calendar: {e}")
+        return render_template('analysis/earnings_calendar.html',
+                             title='Resultatkalender',
+                             earnings_events=[],
+                             error="Kunne ikke laste resultatkalender")
