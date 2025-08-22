@@ -49,7 +49,7 @@
                             </h1>
                             <p class="text-muted mb-2">{{ ticker }}</p>
                             <div class="d-flex align-items-center">
-                                <h2 class="text-primary mb-0 me-3">
+                                <h2 class="text-primary mb-0 me-3 stock-price">
                                     {% if stock_info and stock_info.get('regularMarketPrice') %}
                                         {% if stock_info.get('currency') == 'NOK' %}
                                             {{ "{:,.2f}".format(stock_info.get('regularMarketPrice')).replace(',', ' ').replace('.', ',') }} kr
