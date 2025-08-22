@@ -275,12 +275,35 @@ def watchlist():
             flash('Du må være innlogget for å bruke favorittlisten.', 'warning')
             return render_template('portfolio/watchlist.html', stocks=[])
         
+        # Get user's watchlists and their stocks
+        user_watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
         stocks = []
-        return render_template('portfolio/watchlist.html', stocks=stocks)
+        
+        for watchlist in user_watchlists:
+            watchlist_stocks = WatchlistStock.query.filter_by(watchlist_id=watchlist.id).all()
+            for ws in watchlist_stocks:
+                try:
+                    # Get current stock data
+                    stock_data = DataService.get_single_stock_data(ws.ticker)
+                    if stock_data:
+                        stocks.append({
+                            'ticker': ws.ticker,
+                            'name': stock_data.get('shortName', ws.ticker),
+                            'last_price': stock_data.get('last_price', 0),
+                            'change': stock_data.get('change', 0),
+                            'change_percent': stock_data.get('change_percent', 0),
+                            'watchlist_name': watchlist.name,
+                            'watchlist_id': watchlist.id
+                        })
+                except Exception as stock_error:
+                    current_app.logger.warning(f"Error getting data for watchlist stock {ws.ticker}: {stock_error}")
+                    continue
+        
+        return render_template('portfolio/watchlist.html', stocks=stocks, watchlists=user_watchlists)
     except Exception as e:
         current_app.logger.error(f"Error in watchlist: {str(e)}")
         flash('Det oppstod en feil ved lasting av favorittlisten.', 'danger')
-        return render_template('portfolio/watchlist.html', stocks=[])
+        return render_template('portfolio/watchlist.html', stocks=[], watchlists=[])
 
 @portfolio.route('/watchlist/create', methods=['GET', 'POST'])
 @access_required

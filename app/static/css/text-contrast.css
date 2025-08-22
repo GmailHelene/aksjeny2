@@ -175,8 +175,7 @@
 .card-header {
     padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
     margin-bottom: 0;
-    /* Remove Bootstrap's default card header color */
-    color: inherit !important;
+    /* Remove Bootstrap's default card header color - removed problematic color: inherit !important */
     background-color: var(--bs-card-cap-bg);
     border-bottom: var(--bs-card-border-width) solid rgb(105 48 48 / 18%);
 }

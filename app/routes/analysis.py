@@ -142,88 +142,114 @@ def technical():
                                  show_search_prompt=True,
                                  error_message=None)
         if symbol and symbol.strip():
-            # Generate realistic technical data for symbol
+            # Get real technical analysis for symbol
             symbol = symbol.strip().upper()
             
             try:
-                # Create realistic but consistent data based on symbol hash
-                base_hash = abs(hash(symbol)) % 1000
+                # Import real technical analysis and data services
+                from ..services.data_service import DataService
+                from ..services.technical_analysis import calculate_comprehensive_technical_data
+                import yfinance as yf
                 
-                # Generate consistent realistic prices for well-known tickers
-                if symbol == 'DNB.OL':
-                    base_price = 185.20
-                    company_name = 'DNB Bank ASA'
-                elif symbol == 'EQNR.OL':
-                    base_price = 270.50
-                    company_name = 'Equinor ASA'
-                elif symbol == 'TEL.OL':
-                    base_price = 125.30
-                    company_name = 'Telenor ASA'
-                elif symbol == 'MOWI.OL':
-                    base_price = 182.50
-                    company_name = 'Mowi ASA'
-                elif symbol == 'AAPL':
-                    base_price = 185.00
-                    company_name = 'Apple Inc.'
-                elif symbol == 'MSFT':
-                    base_price = 420.50
-                    company_name = 'Microsoft Corporation'
-                elif symbol == 'TSLA':
-                    base_price = 210.30
-                    company_name = 'Tesla Inc.'
-                else:
-                    # Generate consistent price for other symbols
-                    base_price = 100.0 + (base_hash % 300)
-                    company_name = symbol.replace('.OL', '').replace('.', ' ').title() + ' Analysis'
+                # Get historical data for technical analysis
+                historical_data = None
+                stock_info = None
                 
-                # Add some realistic variation
-                import random
-                random.seed(base_hash)  # Consistent randomness
+                # Try to get real stock info first
+                try:
+                    stock_info = DataService.get_stock_info(symbol)
+                except Exception as e:
+                    logger.warning(f"DataService failed for {symbol}: {e}")
                 
-                current_price = base_price * (0.98 + random.random() * 0.04)
-                previous_close = current_price * (0.995 + random.random() * 0.01)
-                change = current_price - previous_close
-                change_percent = (change / previous_close) * 100 if previous_close > 0 else 0
-                volume = 500000 + (base_hash % 2000000)
+                # Get historical data for technical calculations
+                try:
+                    ticker = yf.Ticker(symbol)
+                    historical_data = ticker.history(period="6mo", interval="1d")
+                    if historical_data.empty:
+                        raise ValueError("No historical data available")
+                except Exception as e:
+                    logger.warning(f"yfinance historical data failed for {symbol}: {e}")
+                    historical_data = None
                 
-                # Generate realistic technical indicators
-                rsi = 30 + (base_hash % 40)  # RSI between 30-70
-                macd = -2.0 + (base_hash % 40) / 10  # MACD between -2 and 2
-                sma_20 = current_price * (0.98 + (base_hash % 4) / 100)
-                sma_50 = current_price * (0.95 + (base_hash % 6) / 100)
-                bollinger_upper = current_price * (1.02 + (base_hash % 3) / 100)
-                bollinger_lower = current_price * (0.98 - (base_hash % 3) / 100)
+                # If we have real data, calculate real technical indicators
+                if historical_data is not None and not historical_data.empty:
+                    try:
+                        # Calculate real technical analysis
+                        technical_indicators = calculate_comprehensive_technical_data(historical_data)
+                        
+                        # Get current price from stock_info or historical data
+                        if stock_info and isinstance(stock_info, dict):
+                            current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                            previous_close = stock_info.get('previousClose', current_price)
+                            company_name = stock_info.get('longName', stock_info.get('shortName', symbol))
+                        else:
+                            current_price = float(historical_data['Close'].iloc[-1])
+                            previous_close = float(historical_data['Close'].iloc[-2]) if len(historical_data) > 1 else current_price
+                            company_name = symbol.replace('.OL', ' ASA').replace('.', ' ').title()
+                        
+                        # Calculate change
+                        change = current_price - previous_close
+                        change_percent = (change / previous_close) * 100 if previous_close > 0 else 0
+                        
+                        # Create technical data structure matching template expectations
+                        technical_data = {
+                            'symbol': symbol,
+                            'name': company_name,
+                            'last_price': round(current_price, 2),
+                            'change': round(change, 2),
+                            'change_percent': round(change_percent, 2),
+                            'volume': int(historical_data['Volume'].iloc[-1]) if 'Volume' in historical_data else 0,
+                            'rsi': round(technical_indicators.get('rsi', 50), 1),
+                            'macd': round(technical_indicators.get('macd', 0), 3),
+                            'macd_signal': round(technical_indicators.get('macd_signal', 0), 3),
+                            'resistance': round(technical_indicators.get('bollinger_upper', current_price * 1.02), 2),
+                            'support': round(technical_indicators.get('bollinger_lower', current_price * 0.98), 2),
+                            'sma_20': round(technical_indicators.get('sma_20', current_price), 2),
+                            'sma_50': round(technical_indicators.get('sma_50', current_price), 2),
+                            'signal': technical_indicators.get('signal', 'HOLD'),
+                            'signal_strength': technical_indicators.get('signal_strength', 'Medium'),
+                            'signal_reason': technical_indicators.get('signal_reason', 'Technical analysis complete'),
+                            'is_real_data': True
+                        }
+                        
+                        return render_template('analysis/technical.html',
+                                             symbol=symbol,
+                                             technical_data=technical_data,
+                                             show_analysis=True)
+                                             
+                    except Exception as e:
+                        logger.error(f"Real technical analysis failed for {symbol}: {e}")
+                        # Fall through to synthetic data
                 
-                technical_data = {
-                    'symbol': symbol,
-                    'name': company_name,
-                    'last_price': round(current_price, 2),
-                    'change': round(change, 2),
-                    'change_percent': round(change_percent, 2),
-                    'indicators': {
-                        'rsi': round(rsi, 1),
-                        'macd': round(macd, 2),
-                        'volume': volume,
-                        'sma_20': round(sma_20, 2),
-                        'sma_50': round(sma_50, 2),
-                        'bollinger_upper': round(bollinger_upper, 2),
-                        'bollinger_lower': round(bollinger_lower, 2)
-                    },
-                    'is_demo_data': True
-                }
-                
-                return render_template('analysis/technical.html',
-                                     symbol=symbol,
-                                     technical_data=technical_data,
-                                     show_analysis=True)
+                # If real data failed, show error instead of fake data
+                try:
+                    if stock_info and isinstance(stock_info, dict):
+                        company_name = stock_info.get('longName', stock_info.get('shortName', symbol))
+                        current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    else:
+                        company_name = symbol.replace('.OL', ' ASA').replace('.', ' ').title()
+                        current_price = 0
+                        
+                    return render_template('analysis/technical.html',
+                                         symbol=symbol,
+                                         technical_data=None,
+                                         show_analysis=False,
+                                         error_message=f"Teknisk analyse for {company_name} er ikke tilgjengelig. Dette kan skyldes manglende historiske data eller at selskapet ikke er børsnotert.")
+                except Exception as e:
+                    logger.error(f"Error creating error response for {symbol}: {e}")
+                    return render_template('analysis/technical.html',
+                                         symbol=symbol,
+                                         technical_data=None,
+                                         show_analysis=False,
+                                         error_message=f"Teknisk analyse for {symbol} er ikke tilgjengelig.")
                 
             except Exception as e:
-                logger.error(f"Error generating technical data for {symbol}: {e}")
+                logger.error(f"Error in technical analysis for {symbol}: {e}")
                 return render_template('analysis/technical.html',
                                      symbol=symbol,
                                      technical_data=None,
                                      show_analysis=False,
-                                     error_message=f"Feil ved henting av data for {symbol}. Prøv igjen senere.")
+                                     error_message=f"Feil ved henting av teknisk analyse for {symbol}. Prøv igjen senere.")
         else:
             # Show technical analysis overview with popular stocks using real data
             popular_stocks = []
@@ -1802,61 +1828,7 @@ def recommendation(ticker=None):
         except Exception as e:
             logger.error(f"Error generating recommendation for {ticker}: {e}")
             flash(f'Kunne ikke generere anbefaling for {ticker}. Viser generell oversikt.', 'warning')
-            macd_signal = technical.get('MACD_signal', 0)
-            
-            # Get current price and calculate target
-            current_price = stock_info.get('regularMarketPrice', 
-                                       hist_data['Close'][-1] if len(hist_data) > 0 else 0)
-            analyst_target = stock_info.get('targetMedianPrice')
-            price_target = analyst_target if analyst_target else current_price * 1.15
-            
-            # Determine recommendation based on technical and fundamental data
-            if rsi < 30 and macd > macd_signal:
-                recommendation = 'STRONG BUY'
-                confidence = 90
-            elif rsi < 40 and macd > macd_signal:
-                recommendation = 'BUY'
-                confidence = 80
-            elif rsi > 70 and macd < macd_signal:
-                recommendation = 'SELL'
-                confidence = 75
-            else:
-                recommendation = 'HOLD'
-                confidence = 65
-                
-            # Generate reasons based on actual data
-            reasons = []
-            if rsi < 40:
-                reasons.append('Teknisk oversolgt - potensial for oppgang')
-            if macd > macd_signal:
-                reasons.append('Positiv MACD trend')
-            if stock_info.get('quickRatio', 0) > 1:
-                reasons.append('God likviditet')
-            if stock_info.get('forwardPE', 0) < stock_info.get('trailingPE', 0):
-                reasons.append('Attraktiv fremtidig verdsettelse')
-                
-            # Create recommendation object with real data
-            specific_recommendation = {
-                'ticker': ticker,
-                'company_name': stock_info.get('longName', stock_info.get('shortName', ticker)),
-                'recommendation': recommendation,
-                'confidence': confidence,
-                'price_target': price_target,
-                'current_price': current_price,
-                'analysis': f"Basert på omfattende analyse av {ticker}",
-                'reasons': reasons if reasons else ['Basert på teknisk og fundamental analyse'],
-                'technical_data': {
-                    'rsi': round(rsi, 2) if rsi else None,
-                    'macd': round(macd, 2) if macd else None,
-                    'macd_signal': round(macd_signal, 2) if macd_signal else None
-                }
-            }
-            return render_template('analysis/recommendation.html', 
-                                 title=f'Anbefaling for {ticker}',
-                                 specific_ticker=ticker,
-                                 specific_recommendation=specific_recommendation)
-        except Exception as e:
-            logger.error(f"Error getting recommendation for {ticker}: {e}")
+            return redirect(url_for('analysis.recommendation'))
     
     # Comprehensive investment recommendations data
     recommendations = {

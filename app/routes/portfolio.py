@@ -219,32 +219,58 @@ def overview():
 def watchlist():
     """User's watchlist"""
     try:
-        # Import models with fallback handling
-        try:
-            from ..models.watchlist import Watchlist, WatchlistItem
-        except ImportError:
-            # Fallback if watchlist model is not available
-            current_app.logger.warning("Watchlist model not available")
-            return render_template('portfolio/watchlist.html', watchlist=[], error=True)
+        # Get user's watchlist items using correct models
+        from ..models import Watchlist, WatchlistStock
+        from ..services.data_service import DataService
         
-        # Get user's watchlist items - check both old and new models
-        watchlist_items = []
-        try:
-            # Try new watchlist structure first
-            watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
-            for wl in watchlists:
-                watchlist_items.extend(wl.items)
-        except Exception:
-            # Try alternative approach - direct items
-            try:
-                watchlist_items = WatchlistItem.query.join(Watchlist).filter(
-                    Watchlist.user_id == current_user.id
-                ).all()
-            except Exception as e:
-                current_app.logger.warning(f"No watchlist items found: {e}")
-                watchlist_items = []
+        # Get user's watchlists and their stocks
+        user_watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
+        stocks = []
         
-        # Also get favorites and add them to watchlist_items
+        for watchlist in user_watchlists:
+            watchlist_stocks = WatchlistStock.query.filter_by(watchlist_id=watchlist.id).all()
+            for ws in watchlist_stocks:
+                try:
+                    # Get current stock data
+                    stock_data = DataService.get_single_stock_data(ws.ticker)
+                    if stock_data:
+                        stocks.append({
+                            'ticker': ws.ticker,
+                            'name': stock_data.get('shortName', ws.ticker),
+                            'last_price': stock_data.get('last_price', 0),
+                            'change': stock_data.get('change', 0),
+                            'change_percent': stock_data.get('change_percent', 0),
+                            'watchlist_name': watchlist.name,
+                            'watchlist_id': watchlist.id
+                        })
+                except Exception as stock_error:
+                    current_app.logger.warning(f"Error getting data for watchlist stock {ws.ticker}: {stock_error}")
+                    # Add stock with fallback data
+                    stocks.append({
+                        'ticker': ws.ticker,
+                        'name': ws.ticker,
+                        'last_price': 'Ikke tilgjengelig',
+                        'change': 0,
+                        'change_percent': 0,
+                        'watchlist_name': watchlist.name,
+                        'watchlist_id': watchlist.id
+                    })
+        
+        return render_template('portfolio/watchlist.html', 
+                             stocks=stocks, 
+                             watchlists=user_watchlists,
+                             error=False)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in watchlist: {str(e)}")
+        flash('Det oppstod en feil ved lasting av favorittlisten.', 'danger')
+        return render_template('portfolio/watchlist.html', 
+                             stocks=[], 
+                             watchlists=[],
+                             error=True)
+
+# Get user data for portfolio display
+def get_user_data_for_portfolio():
         try:
             from ..models.favorites import Favorites
             favorites = Favorites.get_user_favorites(current_user.id)

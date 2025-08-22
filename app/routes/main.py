@@ -1508,11 +1508,9 @@ def profile():
         subscription = None
         subscription_status = getattr(current_user, 'subscription_status', 'free')
         
-        # Ensure user has subscription properties set correctly
-        if not hasattr(current_user, 'subscription_type') or not current_user.subscription_type:
-            current_user.subscription_type = 'monthly'  # Default to monthly
-            current_user.has_subscription = True
-            db.session.commit()
+        # Get subscription info safely without modifying database
+        subscription_type = getattr(current_user, 'subscription_type', 'monthly')
+        has_subscription = getattr(current_user, 'has_subscription', True)
         
         if hasattr(current_user, 'subscription') and current_user.subscription:
             subscription = current_user.subscription

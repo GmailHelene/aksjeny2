@@ -33,7 +33,7 @@
                 <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
                     <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
                 </a>
-                <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                <a href="{{ url_for('analysis.recommendation', ticker=ticker) if ticker else url_for('analysis.recommendation') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
                     <i class="bi bi-star me-1"></i>Anbefalinger
                 </a>
                 <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
@@ -127,7 +127,7 @@
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                        <a href="{{ url_for('analysis.recommendation', ticker=ticker) if ticker else url_for('analysis.recommendation') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
                             <i class="bi bi-star"></i><br><small>Anbefalinger</small>
                         </a>
                     </div>
@@ -187,6 +187,8 @@ function redirectToAnalysis(ticker) {
         targetRoute = `/analysis/sentiment?symbol=${ticker}`;
     } else if (currentPath.includes('/ai')) {
         targetRoute = `/analysis/ai?ticker=${ticker}`;
+    } else if (currentPath.includes('/recommendation')) {
+        targetRoute = `/analysis/recommendation/${ticker}`;
     } else {
         // Default to technical analysis
         targetRoute = `/analysis/technical?ticker=${ticker}`;

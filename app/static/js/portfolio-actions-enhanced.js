@@ -224,6 +224,7 @@ class PortfolioActionsManager {
      * Update favorite button appearance
      */
     updateFavoriteButton(button, isFavorite) {
+        button.disabled = false; // Always re-enable the button
         if (isFavorite) {
             button.innerHTML = '<i class="bi bi-star-fill"></i> I favoritter';
             button.className = 'btn btn-warning';
@@ -237,6 +238,7 @@ class PortfolioActionsManager {
      * Update favorite button state (for different button types)
      */
     updateFavoriteButtonState(button, isFavorite) {
+        button.disabled = false; // Always re-enable the button
         if (button.classList.contains('btn-star-favorite')) {
             // Handle star buttons in stock list
             if (isFavorite) {
@@ -289,6 +291,7 @@ class PortfolioActionsManager {
                 button.innerHTML = '<i class="bi bi-check-circle"></i> I portefølje';
                 button.classList.remove('btn-outline-success');
                 button.classList.add('btn-success');
+                button.disabled = false; // Re-enable the button
             } else {
                 throw new Error(data.message || 'Kunne ikke legge til i portefølje');
             }

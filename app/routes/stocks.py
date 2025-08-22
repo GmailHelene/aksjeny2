@@ -298,79 +298,125 @@ def details(symbol):
         # Get stock data from DataService with fallback
         stock_info = DataService.get_stock_info(symbol)
         
-        # Generate realistic consistent data based on symbol
+        # Check if we have real data from the API
+        if stock_info and isinstance(stock_info, dict) and stock_info.get('regularMarketPrice'):
+            # Use real API data when available
+            current_app.logger.info(f"Using real API data for {symbol}")
+            current_price = stock_info.get('regularMarketPrice', stock_info.get('last_price', 0))
+            
+            # Ensure all the financial metrics exist in the real data
+            # If missing from API, set to None so template will show "-"
+            financial_fields = ['trailingPE', 'trailingEps', 'dividendYield', 'marketCap', 
+                               'forwardPE', 'bookValue', 'priceToBook', 'sector', 'industry']
+            for field in financial_fields:
+                if field not in stock_info:
+                    stock_info[field] = None
+                    
+        else:
+            # Fallback to synthetic data when API is not available
+            current_app.logger.warning(f"API data not available for {symbol}, using synthetic data")
+            
+            # Generate realistic consistent data based on symbol
+            base_hash = hash(symbol) % 1000
+            import random
+            random.seed(base_hash)  # Consistent randomness per symbol
+            
+            # Create realistic data for well-known tickers
+            if symbol == 'DNB.OL':
+                base_price = 185.20
+                company_name = 'DNB Bank ASA'
+                sector = 'Finansielle tjenester'
+                market_cap = 275000000000  # 275B NOK
+                pe_ratio = 12.5
+                eps = base_price / pe_ratio
+                dividend_yield = 0.068  # 6.8%
+            elif symbol == 'EQNR.OL':
+                base_price = 270.50
+                company_name = 'Equinor ASA'
+                sector = 'Energi'
+                market_cap = 850000000000  # 850B NOK
+                pe_ratio = 14.8
+                eps = base_price / pe_ratio
+                dividend_yield = 0.042  # 4.2%
+            elif symbol == 'TEL.OL':
+                base_price = 125.30
+                company_name = 'Telenor ASA'
+                sector = 'Telekommunikasjon'
+                market_cap = 170000000000  # 170B NOK
+                pe_ratio = 16.2
+                eps = base_price / pe_ratio
+                dividend_yield = 0.055  # 5.5%
+            elif symbol == 'MOWI.OL':
+                base_price = 182.50
+                company_name = 'Mowi ASA'
+                sector = 'Sjømat'
+                market_cap = 95000000000  # 95B NOK
+                pe_ratio = 22.1
+                eps = base_price / pe_ratio
+                dividend_yield = 0.034  # 3.4%
+            else:
+                # Generate consistent data for other symbols
+                base_price = 100.0 + (base_hash % 300)
+                company_name = symbol.replace('.OL', '').replace('.', ' ').title()
+                sector = 'Industrials' if symbol.endswith('.OL') else 'Technology'
+                market_cap = 10000000000 + (base_hash % 100000000000)  # 10B-110B
+                pe_ratio = 12.0 + (base_hash % 20)  # PE between 12-32
+                eps = base_price / pe_ratio
+                dividend_yield = (base_hash % 60) / 1000.0  # 0-6%
+            
+            # Generate realistic variations
+            current_price = base_price * (0.96 + random.random() * 0.08)
+            previous_close = current_price * (0.995 + random.random() * 0.01)
+            change = current_price - previous_close
+            change_percent = (change / previous_close) * 100 if previous_close > 0 else 0
+            
+            # Generate volume and other metrics
+            volume = 500000 + (base_hash % 2000000)
+            high = current_price * (1.01 + random.random() * 0.03)
+            low = current_price * (0.97 - random.random() * 0.03)
+            opening = current_price * (0.98 + random.random() * 0.04)
+            
+            # Create comprehensive stock_info with financial metrics
+            stock_info = {
+                'ticker': symbol,
+                'name': company_name,
+                'longName': company_name,
+                'shortName': company_name[:20],
+                'last_price': round(current_price, 2),
+                'regularMarketPrice': round(current_price, 2),
+                'change': round(change, 2),
+                'regularMarketChange': round(change, 2),
+                'change_percent': round(change_percent, 2),
+                'regularMarketChangePercent': round(change_percent, 2),
+                'volume': volume,
+                'regularMarketVolume': volume,
+                'high': round(high, 2),
+                'dayHigh': round(high, 2),
+                'low': round(low, 2),
+                'dayLow': round(low, 2),
+                'open': round(opening, 2),
+                'regularMarketOpen': round(opening, 2),
+                'previousClose': round(previous_close, 2),
+                'marketCap': market_cap,
+                'sector': sector,
+                'currency': 'NOK' if symbol.endswith('.OL') else 'USD',
+                # Add important financial metrics that templates expect
+                'trailingPE': round(pe_ratio, 2),
+                'trailingEps': round(eps, 2),
+                'dividendYield': dividend_yield,
+                'forwardPE': round(pe_ratio * 0.95, 2),  # Slightly lower forward PE
+                'bookValue': round(current_price * 0.7, 2),
+                'priceToBook': round(current_price / (current_price * 0.7), 2),
+                'industry': sector
+            }
+        
+        # Get current price from the stock info (whether real or synthetic)
+        current_price = stock_info.get('regularMarketPrice', stock_info.get('last_price', stock_info.get('price', 100.0)))
+        
+        # Generate technical data based on symbol (consistent regardless of data source)
         base_hash = hash(symbol) % 1000
         import random
         random.seed(base_hash)  # Consistent randomness per symbol
-        
-        # Create realistic data for well-known tickers
-        if symbol == 'DNB.OL':
-            base_price = 185.20
-            company_name = 'DNB Bank ASA'
-            sector = 'Finansielle tjenester'
-            market_cap = 275000000000  # 275B NOK
-        elif symbol == 'EQNR.OL':
-            base_price = 270.50
-            company_name = 'Equinor ASA'
-            sector = 'Energi'
-            market_cap = 850000000000  # 850B NOK
-        elif symbol == 'TEL.OL':
-            base_price = 125.30
-            company_name = 'Telenor ASA'
-            sector = 'Telekommunikasjon'
-            market_cap = 170000000000  # 170B NOK
-        elif symbol == 'MOWI.OL':
-            base_price = 182.50
-            company_name = 'Mowi ASA'
-            sector = 'Sjømat'
-            market_cap = 95000000000  # 95B NOK
-        else:
-            # Generate consistent data for other symbols
-            base_price = 100.0 + (base_hash % 300)
-            company_name = symbol.replace('.OL', '').replace('.', ' ').title()
-            sector = 'Industrials' if symbol.endswith('.OL') else 'Technology'
-            market_cap = 10000000000 + (base_hash % 100000000000)  # 10B-110B
-        
-        # Generate realistic variations
-        current_price = base_price * (0.96 + random.random() * 0.08)
-        previous_close = current_price * (0.995 + random.random() * 0.01)
-        change = current_price - previous_close
-        change_percent = (change / previous_close) * 100 if previous_close > 0 else 0
-        
-        # Generate volume and other metrics
-        volume = 500000 + (base_hash % 2000000)
-        high = current_price * (1.01 + random.random() * 0.03)
-        low = current_price * (0.97 - random.random() * 0.03)
-        opening = current_price * (0.98 + random.random() * 0.04)
-        
-        # Create comprehensive stock_info
-        stock_info = {
-            'ticker': symbol,
-            'name': company_name,
-            'longName': company_name,
-            'shortName': company_name[:20],
-            'last_price': round(current_price, 2),
-            'regularMarketPrice': round(current_price, 2),
-            'change': round(change, 2),
-            'regularMarketChange': round(change, 2),
-            'change_percent': round(change_percent, 2),
-            'regularMarketChangePercent': round(change_percent, 2),
-            'volume': volume,
-            'regularMarketVolume': volume,
-            'high': round(high, 2),
-            'dayHigh': round(high, 2),
-            'low': round(low, 2),
-            'dayLow': round(low, 2),
-            'open': round(opening, 2),
-            'regularMarketOpen': round(opening, 2),
-            'previousClose': round(previous_close, 2),
-            'marketCap': market_cap,
-            'sector': sector,
-            'currency': 'NOK' if symbol.endswith('.OL') else 'USD'
-        }
-        
-        # Get current price    
-        current_price = stock_info.get('last_price', stock_info.get('price', 100.0))
         
         # Create comprehensive technical data with meaningful values
         try:
