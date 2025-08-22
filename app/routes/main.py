@@ -833,32 +833,6 @@ def index():
                             recommendations=recommendations,
                             user_stats=user_stats)
 
-@main.route('/favicon.ico')
-def favicon():
-    """Serve favicon"""
-    try:
-        return send_from_directory(
-            os.path.join(current_app.root_path, 'static'),
-            'favicon.ico',
-            mimetype='image/vnd.microsoft.icon'
-        )
-    except Exception:
-        # Return 204 No Content if favicon not found
-        return '', 204
-
-@main.route('/robots.txt')
-def robots():
-    """Serve robots.txt"""
-    try:
-        return send_from_directory(
-            os.path.join(current_app.root_path, 'static'),
-            'robots.txt',
-            mimetype='text/plain'
-        )
-    except Exception:
-        # Return basic robots.txt content
-        return 'User-agent: *\nDisallow:', 200, {'Content-Type': 'text/plain'}
-
 @main.route('/demo')
 def demo():
     """
