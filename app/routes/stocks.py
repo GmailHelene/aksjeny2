@@ -493,6 +493,8 @@ def details(symbol):
             'regularMarketChange': stock_info.get('change', 0),
             'regularMarketChangePercent': stock_info.get('change_percent', 0),
             'regularMarketVolume': stock_info.get('volume', 1000000),
+            'volume': stock_info.get('volume', 1000000),  # Add volume field for template
+            'marketCap': stock_info.get('marketCap', None),  # Add marketCap field for template
             'currency': currency,
             'sector': stock_info.get('sector', 'Technology' if not symbol.endswith('.OL') else 'Industrials'),
             'dayHigh': current_price * 1.03,

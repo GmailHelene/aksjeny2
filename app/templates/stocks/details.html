@@ -15,7 +15,7 @@
                             <p class="text-muted mb-0">{{ stock.symbol }} | {{ stock.exchange or 'Oslo Børs' }}</p>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <h2 class="h4 mb-1 
+                            <h2 class="h4 mb-1 stock-price
                                 {% if stock.change and stock.change > 0 %}text-success
                                 {% elif stock.change and stock.change < 0 %}text-danger
                                 {% else %}text-muted{% endif %}">
@@ -679,7 +679,7 @@ function addToPortfolio(ticker) {
             body: new URLSearchParams({
                 'ticker': ticker,
                 'quantity': 1,
-                'price': parseFloat(document.querySelector('.stock-price')?.textContent?.replace(/[^\d.]/g, '') || 0)
+                'purchase_price': parseFloat(document.querySelector('.stock-price')?.textContent?.replace(/[^\d.]/g, '') || 0)
             })
         })
         .then(response => {

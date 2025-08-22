@@ -987,46 +987,71 @@ def quick_add_stock(ticker):
 @portfolio.route('/add', methods=['GET', 'POST'])
 @access_required
 def add_stock():
-    """Add a stock to the user's default portfolio"""
+    """Add a stock to the user's default portfolio, supporting JSON requests for AJAX"""
     if request.method == 'POST':
-        ticker = request.form.get('ticker')
-        quantity = float(request.form.get('quantity', 0))
-        purchase_price = float(request.form.get('purchase_price', 0))
+        # Handle both JSON (AJAX) and form data
+        if request.is_json:
+            data = request.get_json()
+            ticker = data.get('ticker')
+            quantity = float(data.get('quantity', 1))
+            purchase_price = float(data.get('purchase_price', 0))
+        else:
+            ticker = request.form.get('ticker')
+            quantity = float(request.form.get('quantity', 0))
+            purchase_price = float(request.form.get('purchase_price', 0))
         
         if not ticker or quantity <= 0 or purchase_price <= 0:
-            flash('Alle felt må fylles ut korrekt.', 'danger')
+            error_msg = 'Alle felt må fylles ut korrekt.'
+            if request.is_json:
+                return jsonify({'success': False, 'error': error_msg}), 400
+            flash(error_msg, 'danger')
             return redirect(url_for('portfolio.add_stock'))
         
-        # Hent brukerens portefølje
-        user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
-        if not user_portfolio:
-            user_portfolio = Portfolio(name="Min portefølje", user_id=current_user.id)
-            db.session.add(user_portfolio)
+        try:
+            # Hent brukerens portefølje
+            user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
+            if not user_portfolio:
+                user_portfolio = Portfolio(name="Min portefølje", user_id=current_user.id)
+                db.session.add(user_portfolio)
+                db.session.commit()
+            
+            # Sjekk om aksjen allerede finnes i porteføljen
+            existing_stock = PortfolioStock.query.filter_by(portfolio_id=user_portfolio.id, ticker=ticker).first()
+            if existing_stock:
+                # Beregn ny gjennomsnittspris
+                total_value = (existing_stock.shares * existing_stock.purchase_price) + (quantity * purchase_price)
+                total_quantity = existing_stock.shares + quantity
+                existing_stock.purchase_price = total_value / total_quantity
+                existing_stock.shares = total_quantity
+            else:
+                # Legg til ny aksje
+                portfolio_stock = PortfolioStock(
+                    portfolio_id=user_portfolio.id,
+                    ticker=ticker,
+                    shares=quantity,
+                    purchase_price=purchase_price
+                )
+                db.session.add(portfolio_stock)
+            
             db.session.commit()
-        
-        # Sjekk om aksjen allerede finnes i porteføljen
-        existing_stock = PortfolioStock.query.filter_by(portfolio_id=user_portfolio.id, ticker=ticker).first()
-        if existing_stock:
-            # Beregn ny gjennomsnittspris
-            total_value = (existing_stock.shares * existing_stock.purchase_price) + (quantity * purchase_price)
-            total_quantity = existing_stock.shares + quantity
-            existing_stock.purchase_price = total_value / total_quantity
-            existing_stock.shares = total_quantity
-        else:
-            # Legg til ny aksje
-            portfolio_stock = PortfolioStock(
-                portfolio_id=user_portfolio.id,
-                ticker=ticker,
-                shares=quantity,
-                purchase_price=purchase_price
-            )
-            db.session.add(portfolio_stock)
-        
-        db.session.commit()
-        flash(f'{ticker} lagt til i porteføljen.', 'success')
-        return redirect(url_for('portfolio.index'))
+            success_msg = f'{ticker} lagt til i porteføljen.'
+            
+            if request.is_json:
+                return jsonify({'success': True, 'message': success_msg})
+            flash(success_msg, 'success')
+            return redirect(url_for('portfolio.index'))
+            
+        except Exception as e:
+            db.session.rollback()
+            error_msg = f'Kunne ikke legge til aksje: {str(e)}'
+            if request.is_json:
+                return jsonify({'success': False, 'error': error_msg}), 500
+            flash(error_msg, 'error')
+            return redirect(url_for('portfolio.add_stock'))
     
-    return render_template('portfolio/add_stock.html')
+    # GET: support pre-filling ticker from ?symbol= param
+    prefill_ticker = request.args.get('symbol', '')
+    return render_template('portfolio/add_stock.html', prefill_ticker=prefill_ticker)
 
 @portfolio.route('/edit/<ticker>', methods=['GET', 'POST'])
 @access_required

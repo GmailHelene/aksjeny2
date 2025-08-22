@@ -1560,7 +1560,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add to Portfolio functionality
-    document.getElementById('add-to-portfolio')?.addEventListener('click', function() {
+    document.getElementById('add-to-portfolio')?.addEventListener('click', async function() {
         if (!isAuthenticated) {
             window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
             return;
@@ -1569,18 +1569,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const ticker = this.dataset.ticker;
         if (!ticker) return;
         
+        // Get current price from the price element
+        const priceElement = document.querySelector('.stock-price');
+        const currentPrice = priceElement ? parseFloat(priceElement.textContent.replace(/[^\d,.-]/g, '').replace(',', '.')) : 100;
+        
         // Show loading state
         const originalHtml = this.innerHTML;
-        this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Omdirigerer...';
+        this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
         this.disabled = true;
         
         try {
-            window.location.href = `/portfolio/add?symbol=${ticker}`;
+            const response = await fetch('/portfolio/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    ticker: ticker,
+                    quantity: 1,
+                    purchase_price: currentPrice
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.innerHTML = '<i class="bi bi-check-circle me-1"></i>Lagt til';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
+                showToast(result.message || `${ticker} lagt til i portefølje!`, 'success');
+            } else {
+                throw new Error(result.error || 'Ukjent feil');
+            }
         } catch (error) {
-            console.error('Portfolio redirect error:', error);
+            console.error('Portfolio add error:', error);
             this.innerHTML = originalHtml;
             this.disabled = false;
-            showToast('Kunne ikke åpne porteføljeside', 'error');
+            showToast('Kunne ikke legge til i portefølje: ' + error.message, 'error');
         }
     });
     
