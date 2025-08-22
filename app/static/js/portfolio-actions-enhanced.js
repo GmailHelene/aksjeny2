@@ -105,13 +105,35 @@ class PortfolioActionsManager {
             button.disabled = true;
             button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
 
+            // Determine exchange and name based on ticker format
+            let exchange = 'Unknown';
+            let name = ticker;
+            
+            if (ticker.includes('-USD') || ticker.includes('BTC') || ticker.includes('ETH')) {
+                exchange = 'Crypto';
+                name = ticker.replace('-USD', '');
+            } else if (ticker.includes('/')) {
+                exchange = 'Currency';
+                name = ticker;
+            } else if (ticker.includes('.OL')) {
+                exchange = 'Oslo Børs';
+                name = ticker.replace('.OL', '');
+            } else if (ticker.length <= 5 && /^[A-Z]+$/.test(ticker)) {
+                exchange = 'NASDAQ/NYSE';
+                name = ticker;
+            }
+
             const response = await fetch('/stocks/api/favorites/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': this.getCSRFToken()
                 },
-                body: JSON.stringify({ symbol: ticker })
+                body: JSON.stringify({ 
+                    symbol: ticker,
+                    name: name,
+                    exchange: exchange
+                })
             });
 
             const data = await response.json();
@@ -353,6 +375,11 @@ class PortfolioActionsManager {
 
 // Create global instance
 window.portfolioActionsManager = new PortfolioActionsManager();
+
+// Global function for onclick handlers
+window.toggleFavorite = async function(ticker, button) {
+    return await window.portfolioActionsManager.toggleFavorite(ticker, button);
+};
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {

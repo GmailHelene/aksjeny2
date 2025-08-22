@@ -267,7 +267,11 @@
                                     <h6 class="mb-3 text-muted">Markedsstatus</h6>
                                     <div class="d-flex align-items-center mb-3">
                                         <span class="live-indicator me-2"></span>
-                                        <span class="fw-bold text-success">Markeder åpne</span>
+                                        {% if market_data.market_open %}
+                                            <span class="fw-bold text-success">Markeder åpne</span>
+                                        {% else %}
+                                            <span class="fw-bold text-danger">Markeder stengt</span>
+                                        {% endif %}
                                     </div>
                                     <div class="stat-cards">
                                         <div class="stat-card mb-2">
@@ -300,16 +304,16 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card enhanced-card border-0 shadow">
-                    <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                    <div class="card-header border-0 text-white" style="background: linear-gradient(135deg, #343a40 0%, #212529 100%);">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold">
+                            <h5 class="mb-0 fw-bold text-white">
                                 <i class="bi bi-bar-chart-fill me-2"></i>
                                 <span class="d-none d-md-inline">Oslo Børs - Topp Aksjer</span>
                                 <span class="d-inline d-md-none">Oslo Børs</span>
                             </h5>
                             <div class="d-flex align-items-center">
                                 <span class="live-indicator"></span>
-                                <small class="opacity-90 d-none d-md-inline fw-medium">Sanntidsdata</small>
+                                <small class="opacity-90 d-none d-md-inline fw-medium text-white">Sanntidsdata</small>
                             </div>
                         </div>
                     </div>
@@ -380,9 +384,7 @@
                                                 </div>
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted fw-medium">
-                                                    <i class="bi bi-graph-up me-1"></i>Vol: {{ stock.volume | int | nn }}
-                                                </small>
+                                                <div></div>
                                                 <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
                                                     <i class="bi bi-eye me-1"></i>Se
                                                 </a>

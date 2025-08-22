@@ -6,6 +6,9 @@
                 <a href="{{ url_for('analysis.index') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.index' else 'btn-outline-primary' }}">
                     <i class="bi bi-house me-1"></i>Oversikt
                 </a>
+                <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}">
+                    <i class="bi bi-globe me-1"></i>Markedsoversikt
+                </a>
                 <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
                     <i class="bi bi-graph-up me-1"></i>Teknisk
                 </a>
@@ -98,6 +101,21 @@
                         <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
                             <i class="bi bi-emoji-smile"></i><br><small>Sentiment</small>
                         </a>
+                    </div>
+                </div>
+
+                <!-- Market Overview Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.market_overview' else 'btn-outline-primary' }}">
+                            <i class="bi bi-grid-3x3"></i><br><small>Markedsoversikt</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <!-- Empty space -->
+                    </div>
+                    <div class="col-4">
+                        <!-- Empty space -->
                     </div>
                 </div>
                 

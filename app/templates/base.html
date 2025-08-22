@@ -427,7 +427,6 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}"><i class="fas fa-book"></i> Benjamin Graham</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}"><i class="fas fa-filter"></i> Aksje-screener</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.backtest') }}"><i class="fas fa-chart-line"></i> Backtest</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.strategy_builder') }}"><i class="fas fa-tools"></i> Strategibygger</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.tradingview') }}"><i class="fas fa-chart-line"></i> TradingView</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
@@ -587,7 +586,6 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </nav>
                 {% else %}
                 <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
                 <ul class="navbar-nav ms-auto">
@@ -640,7 +638,7 @@
                 <div class="col-md-3">
                     <h6>Søk aksjer</h6>
                     <form class="d-flex" action="{{ url_for('stocks.search') }}" method="get">
-                        <div class="input-group">
+                        <div class="input-group my-3 my-md-0">
                             <input type="search" name="q" class="form-control" 
                                    placeholder="Søk aksjer..." aria-label="Søk aksjer">
                             <button class="btn btn-outline-light" type="submit">

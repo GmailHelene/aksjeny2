@@ -404,7 +404,7 @@ def index():
         'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
         'usd_nok': {'rate': 0, 'change': 0},
         'btc': {'price': 0, 'change': 0},
-        'market_open': False,
+        'market_open': is_oslo_bors_open(),
         'last_update': datetime.now().isoformat()
     }
     recommendations = []

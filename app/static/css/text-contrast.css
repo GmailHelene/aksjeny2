@@ -55,13 +55,7 @@
     color: #ffffff !important;
 }
 
-.nav-link {
-    color: #ffffff !important;
-}
-
-.nav-link:hover {
-    color: #ffffff !important;
-}
+/* Navigation link styles moved to component-specific rules */
 
 /* Mobile navigation specific styles */
 @media (max-width: 991.98px) {
@@ -169,10 +163,9 @@
     color: #ffffff !important;
 }
 
-/* Override Bootstrap utilities to prevent white colors */
+/* Bootstrap text-white utility restored to default behavior */
 .text-white {
-    /* Disable Bootstrap text-white utility when not wanted */
-    color: inherit !important;
+    color: #ffffff !important;
 }
 
 .border-0 {

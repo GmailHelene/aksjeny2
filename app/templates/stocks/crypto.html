@@ -235,5 +235,56 @@ function showToast(message, type) {
     // Remove after hidden
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
+
+// Add toggleFavorite function for onclick handlers
+window.toggleFavorite = async function(ticker, btn) {
+    if (!ticker || !btn) return;
+    
+    try {
+        // Check current state
+        const isFavorited = btn.classList.contains('btn-warning') || btn.querySelector('.bi-star-fill');
+        const url = isFavorited ? '/stocks/api/favorites/remove' : '/stocks/api/favorites/add';
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                symbol: ticker,
+                name: ticker,
+                exchange: 'Crypto'
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const starIcon = btn.querySelector('i');
+            if (isFavorited) {
+                // Remove from favorites
+                starIcon.className = 'bi bi-star';
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-warning');
+                showToast(data.message || `${ticker} fjernet fra favoritter`, 'success');
+            } else {
+                // Add to favorites  
+                starIcon.className = 'bi bi-star-fill';
+                btn.classList.remove('btn-outline-warning');
+                btn.classList.add('btn-warning');
+                showToast(data.message || `${ticker} lagt til i favoritter`, 'success');
+            }
+        } else {
+            showToast(data.message || 'Kunne ikke oppdatere favoritter', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        showToast('Kunne ikke oppdatere favoritter', 'error');
+    }
+};
 </script>
+
+<!-- Include portfolio actions for favorites functionality -->
+<script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
 {% endblock %}
