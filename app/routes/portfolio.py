@@ -182,7 +182,7 @@ def delete_portfolio(id):
         return redirect(url_for('portfolio.overview'))
 
 @portfolio.route('/overview')
-@demo_access
+@access_required
 def overview():
     """Portfolio overview page with enhanced error handling"""
     error = None
@@ -985,7 +985,7 @@ def quick_add_stock(ticker):
     return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/add', methods=['GET', 'POST'])
-@demo_access
+@access_required
 def add_stock():
     """Add a stock to the user's default portfolio, supporting JSON requests for AJAX"""
     if request.method == 'POST':

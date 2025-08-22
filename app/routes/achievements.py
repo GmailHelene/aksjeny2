@@ -11,7 +11,7 @@ from datetime import datetime
 achievements_bp = Blueprint('achievements', __name__, url_prefix='/achievements')
 
 @achievements_bp.route('/')
-@demo_access
+@access_required
 def index():
     """Show user achievements page"""
     # Check if user is authenticated
@@ -49,7 +49,7 @@ def index():
                          demo_mode=False)
 
 @achievements_bp.route('/api/progress')
-@demo_access
+@access_required
 def get_progress():
     """Get user's current progress for AJAX updates"""
     if not current_user.is_authenticated:
@@ -73,7 +73,7 @@ def get_progress():
     })
 
 @achievements_bp.route('/api/update_stat', methods=['POST'])
-@demo_access
+@access_required
 def update_stat():
     """Update user stat and check for new achievements"""
     data = request.json

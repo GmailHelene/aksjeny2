@@ -1495,7 +1495,7 @@ def translation_help():
                          now=datetime.now())
 
 @main.route('/settings', methods=['GET', 'POST'])
-@demo_access 
+@access_required
 def settings():
     """User settings page"""
     if request.method == 'POST' and current_user.is_authenticated:
@@ -2125,7 +2125,7 @@ def update_notifications():
     return redirect(url_for('main.settings'))
 
 @main.route('/watchlist')
-@login_required
+@access_required
 def watchlist():
     """Main watchlist route - redirect to portfolio watchlist"""
     try:

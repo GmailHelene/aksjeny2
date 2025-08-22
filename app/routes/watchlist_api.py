@@ -30,7 +30,7 @@ def get_watchlist_data():
 
 @watchlist_api.route('/api/watchlist/add', methods=['POST'])
 @csrf.exempt
-@demo_access
+@access_required
 def add_to_watchlist():
     """Add stock to watchlist"""
     try:

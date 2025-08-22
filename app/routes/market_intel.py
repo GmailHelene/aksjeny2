@@ -146,7 +146,7 @@ def index():
                              error="Kunne ikke hente alle markedsdata. Viser tilgjengelig informasjon.")
 
 @market_intel.route('/insider-trading')
-@demo_access
+@access_required
 def insider_trading():
     """Redirect to the new insider trading page"""
     ticker = request.args.get('ticker', '').strip().upper()
@@ -158,7 +158,7 @@ def insider_trading():
         return redirect(url_for('insider_trading.index'), code=301)
 
 @market_intel.route('/earnings-calendar')
-@demo_access
+@access_required
 def earnings_calendar():
     """Earnings calendar page"""
     days_ahead = request.args.get('days', 30, type=int)

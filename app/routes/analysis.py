@@ -1534,7 +1534,7 @@ def sentiment_view():
     return redirect(url_for('analysis.sentiment'))
 
 @analysis.route('/insider-trading')
-@demo_access
+@access_required
 def insider_trading():
     """Redirect to dedicated insider trading page"""
     return redirect(url_for('market_intel.insider_trading'))
@@ -1653,7 +1653,7 @@ def ai(ticker=None):
 
 @analysis.route('/short-analysis')
 @analysis.route('/short-analysis/<ticker>')
-@demo_access
+@access_required
 def short_analysis(ticker=None):
     """Short selling analysis"""
     try:
@@ -1885,7 +1885,7 @@ def screener_view():
 @analysis.route('/recommendations')
 @analysis.route('/recommendation/<ticker>')
 @analysis.route('/recommendations/<ticker>')
-@demo_access
+@access_required
 def recommendation(ticker=None):
     """Investment recommendations page with comprehensive analysis"""
     from datetime import datetime, timedelta
@@ -2386,7 +2386,7 @@ def global_overview():
     return render_template('analysis/global_overview.html', title='Global Markeds Oversikt')
 
 @analysis.route('/tradingview')
-@demo_access
+@access_required
 def tradingview():
     """TradingView Charts Analysis - Enhanced with demo support"""
     symbol = request.args.get('symbol', 'AAPL')

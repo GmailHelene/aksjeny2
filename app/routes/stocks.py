@@ -648,7 +648,7 @@ def details(symbol):
                              error=f"Could not load data for {symbol}")
 
 @stocks.route('/search')
-@demo_access  
+@access_required  
 def search():
     """Search stocks page"""
     query = request.args.get('q', '').strip()
@@ -807,7 +807,7 @@ def api_stocks_search():
 
 @stocks.route('/api/favorites/add', methods=['POST'])
 @csrf.exempt
-@demo_access
+@access_required
 def add_to_favorites():
     """Add stock to favorites"""
     try:
@@ -879,7 +879,7 @@ def add_to_favorites():
         }), 200
 
 @stocks.route('/api/favorites/remove', methods=['POST'])
-@demo_access
+@access_required
 def remove_from_favorites():
     """Remove stock from favorites"""
     try:
