@@ -207,5 +207,5 @@
 .card-header span,
 .card-header i,
 .card-header .bi {
-    color: inherit !important;
+    color: #333 !important; /* Changed from 'inherit' to specific dark color */
 }

@@ -1326,7 +1326,7 @@ textarea::placeholder {
 
 /* Ensure proper contrast for all text elements */
 h1, h2, h3, h4, h5, h6, p, span, div, a {
-    color: inherit;
+    color: #333; /* Changed from 'inherit' to specific dark color for better visibility */
 }
 
 /* Links */
