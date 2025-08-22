@@ -68,11 +68,23 @@
                         <div class="col-md-6">
                             <h6>Nåværende plan</h6>
                             <p class="mb-2">
-                                <span class="badge bg-{{ 'success' if current_user.subscription_status == 'premium' else 'secondary' }}">
-                                    {{ current_user.subscription_status|title if current_user.subscription_status else 'Gratis' }}
+                                <span class="badge bg-{{ 'success' if current_user.has_subscription else 'secondary' }}">
+                                    {% if current_user.has_subscription %}
+                                        {% if current_user.subscription_type == 'yearly' %}
+                                            Premium Årlig
+                                        {% elif current_user.subscription_type == 'monthly' %}
+                                            Premium Månedlig
+                                        {% elif current_user.subscription_type == 'lifetime' %}
+                                            Premium Livstid
+                                        {% else %}
+                                            Premium
+                                        {% endif %}
+                                    {% else %}
+                                        Gratis
+                                    {% endif %}
                                 </span>
                             </p>
-                            {% if current_user.subscription_status == 'premium' %}
+                            {% if current_user.has_subscription %}
                                 <p class="text-muted small">Ditt premium-abonnement er aktivt.</p>
                             {% else %}
                                 <p class="text-muted small">Oppgrader for å få tilgang til alle funksjoner.</p>
@@ -80,7 +92,7 @@
                         </div>
                         <div class="col-md-6">
                             <a href="{{ url_for('main.my_subscription') }}" class="btn btn-outline-primary">
-                                {% if current_user.subscription_status == 'premium' %}
+                                {% if current_user.has_subscription %}
                                     Administrer abonnement
                                 {% else %}
                                     Oppgrader til Premium

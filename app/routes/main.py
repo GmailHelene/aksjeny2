@@ -1557,7 +1557,13 @@ def profile():
         user_preferences = current_user.get_notification_settings() if hasattr(current_user, 'get_notification_settings') else {}
         user_language = current_user.get_language() if hasattr(current_user, 'get_language') else 'nb'
         
-        user_favorites = Favorites.get_user_favorites(current_user.id)
+        # Get user favorites safely - this can fail if table doesn't exist
+        try:
+            user_favorites = Favorites.get_user_favorites(current_user.id)
+        except Exception as fav_error:
+            logger.warning(f"Could not load favorites for user {current_user.id}: {fav_error}")
+            user_favorites = []
+        
         return render_template('profile.html',
             user=current_user,
             subscription=subscription,

@@ -152,21 +152,18 @@
             </div>
             <div class="modal-body">
                 <form id="addHoldingForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
-                        <label for="symbol" class="form-label">Aksjesymbol</label>
-                        <input type="text" class="form-control" id="symbol" name="symbol" required>
+                        <label for="ticker" class="form-label">Aksjesymbol</label>
+                        <input type="text" class="form-control" id="ticker" name="ticker" required>
                     </div>
                     <div class="mb-3">
                         <label for="quantity" class="form-label">Antall aksjer</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" step="1" required>
                     </div>
                     <div class="mb-3">
-                        <label for="purchase_price" class="form-label">Kjøpspris per aksje</label>
-                        <input type="number" class="form-control" id="purchase_price" name="purchase_price" step="0.01" min="0" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="purchase_date" class="form-label">Kjøpsdato</label>
-                        <input type="date" class="form-control" id="purchase_date" name="purchase_date" required>
+                        <label for="price" class="form-label">Kjøpspris per aksje</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
                     </div>
                 </form>
             </div>
@@ -203,7 +200,23 @@ function deletePortfolio(portfolioId) {
     }
 }
 function submitHolding() {
-    alert('Funksjonalitet kommer snart!');
+    const form = document.getElementById('addHoldingForm');
+    const formData = new FormData(form);
+    
+    fetch(`/portfolio/portfolio/{{ portfolio.id }}/add`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(); // Reload page to show updated portfolio
+        } else {
+            throw new Error('Feil ved lagring');
+        }
+    })
+    .catch(error => {
+        alert('Feil ved lagring: ' + error.message);
+    });
 }
 
 function editHolding(holdingId) {

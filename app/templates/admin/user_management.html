@@ -50,7 +50,15 @@
                             <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else 'Ikke tilgjengelig' }}</td>
                             <td>
                                 {% if user.has_subscription %}
-                                    <span class="badge bg-success">{{ user.subscription_type|title }}</span>
+                                    {% if user.subscription_type == 'yearly' %}
+                                        <span class="badge bg-success">Premium Årlig</span>
+                                    {% elif user.subscription_type == 'monthly' %}
+                                        <span class="badge bg-success">Premium Månedlig</span>
+                                    {% elif user.subscription_type == 'lifetime' %}
+                                        <span class="badge bg-warning text-dark">Premium Livstid</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Premium</span>
+                                    {% endif %}
                                 {% else %}
                                     <span class="badge bg-secondary">Gratis</span>
                                 {% endif %}

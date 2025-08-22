@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, Response
 from flask_login import login_required, current_user
+from flask_wtf.csrf import validate_csrf, ValidationError
 from datetime import datetime, timedelta
 from io import BytesIO
 import logging
@@ -763,25 +764,24 @@ def view_portfolio(id):
         return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/portfolio/<int:id>/add', methods=['GET', 'POST'])
-@demo_access
+@login_required
 def add_stock_to_portfolio(id):
     """Add a stock to a specific portfolio"""
-    # For demo users, provide a simulated experience
-    if not current_user.is_authenticated:
-        if request.method == 'POST':
-            return jsonify({
-                'success': True,
-                'message': 'Demo: Stock addition simulated'
-            })
-        # Return a demo template or redirect
-        return render_template('portfolio/add_stock_demo.html', portfolio_id=id)
     
-    portfolio = Portfolio.query.get_or_404(id)
+    # Validate CSRF token for POST requests
+    if request.method == 'POST':
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except ValidationError:
+            flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
+            return redirect(request.referrer or url_for('portfolio.portfolio_index'))
+    
+    portfolio_obj = Portfolio.query.get_or_404(id)
 
     # Sjekk eierskap
-    if portfolio.user_id != current_user.id:
+    if portfolio_obj.user_id != current_user.id:
         flash('Du har ikke tilgang til denne porteføljen', 'danger')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_index'))
 
     if request.method == 'POST':
         ticker = request.form.get('ticker')
