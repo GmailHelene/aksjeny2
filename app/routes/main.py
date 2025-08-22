@@ -2112,3 +2112,39 @@ def update_notifications():
         db.session.rollback()
 
     return redirect(url_for('main.settings'))
+
+@main.route('/watchlist')
+@login_required
+def watchlist():
+    """Main watchlist route - redirect to portfolio watchlist"""
+    return redirect(url_for('portfolio.watchlist'))
+
+@main.route('/portfolio/watchlist')
+@login_required
+def portfolio_watchlist():
+    """Portfolio watchlist route - redirect to portfolio watchlist"""
+    return redirect(url_for('portfolio.watchlist'))
+
+@main.route('/norwegian-intel/government-impact')
+@login_required
+def norwegian_intel_government_impact():
+    """Norwegian intel government impact route"""
+    return redirect(url_for('norwegian_intel.government_impact'))
+
+@main.route('/advanced/crypto-dashboard')
+@login_required
+def advanced_crypto_dashboard():
+    """Advanced crypto dashboard route"""
+    return redirect(url_for('advanced_features.crypto_dashboard'))
+
+@main.route('/stocks/compare')
+@login_required
+def stocks_compare():
+    """Stocks compare route"""
+    return redirect(url_for('stocks.compare'))
+
+@main.route('/analysis/warren-buffett')
+@login_required
+def analysis_warren_buffett():
+    """Analysis Warren Buffett route"""
+    return redirect(url_for('analysis.warren_buffett', **request.args))

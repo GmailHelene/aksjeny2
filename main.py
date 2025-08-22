@@ -1,31 +1,3 @@
-"""
-Migration: Add reset token columns to users table
-Date: 2025-01-21
-"""
-
-# SQL migrations to execute
-MIGRATIONS = [
-    # Ensure the reset_token column exists in the users table
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR;",
-    
-    # Ensure the reset_token_expires column exists in the users table  
-    "ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;"
-]
-
-def up():
-    """Apply the migration"""
-    return MIGRATIONS
-
-def down():
-    """Rollback the migration"""
-    return [
-        "ALTER TABLE users DROP COLUMN IF EXISTS reset_token;",
-        "ALTER TABLE users DROP COLUMN IF EXISTS reset_token_expires;"
-    ]
-
-
-
-# --- NEW ENTRYPOINT LOGIC ---
 import os
 from app import create_app
 
