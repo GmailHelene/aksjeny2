@@ -9,22 +9,18 @@
                 <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
                     <i class="bi bi-graph-up me-1"></i>Teknisk
                 </a>
+                <a href="{{ url_for('analysis.fundamental') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}">
+                    <i class="bi bi-calculator me-1"></i>Fundamental
+                </a>
+                <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}">
+                    <i class="bi bi-person-check me-1"></i>Warren Buffett
+                </a>
+                <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}">
+                    <i class="bi bi-book me-1"></i>Benjamin Graham
+                </a>
                 <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
                     <i class="bi bi-cpu me-1"></i>AI-Analyse
                 </a>
-                <div class="dropdown">
-                    <button class="btn btn-sm {{ 'btn-primary' if 'buffett' in request.endpoint or 'benjamin_graham' in request.endpoint else 'btn-outline-primary' }} dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-badge me-1"></i>Fundamental
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
-                            <i class="bi bi-person-check me-2"></i>Warren Buffett
-                        </a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
-                            <i class="bi bi-graph-up me-2"></i>Benjamin Graham
-                        </a></li>
-                    </ul>
-                </div>
                 <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
                     <i class="bi bi-graph-down me-1"></i>Short
                 </a>
@@ -33,6 +29,9 @@
                 </a>
                 <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
                     <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
+                </a>
+                <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                    <i class="bi bi-star me-1"></i>Anbefalinger
                 </a>
                 <a href="{{ url_for('analysis.screener') }}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">
                     <i class="bi bi-funnel me-1"></i>Screener
@@ -67,34 +66,29 @@
                 <!-- Analysis Tools Row -->
                 <div class="row g-2 mb-3">
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.technical') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.technical' else 'btn-outline-primary' }}">
-                            <i class="bi bi-graph-up"></i><br><small>Teknisk</small>
+                        <a href="{{ url_for('analysis.fundamental') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.fundamental' else 'btn-outline-primary' }}">
+                            <i class="bi bi-calculator"></i><br><small>Fundamental</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
-                            <i class="bi bi-cpu"></i><br><small>AI-Analyse</small>
+                        <a href="{{ url_for('analysis.warren_buffett') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.warren_buffett' else 'btn-outline-primary' }}">
+                            <i class="bi bi-person-check"></i><br><small>W. Buffett</small>
                         </a>
                     </div>
                     <div class="col-4">
-                        <div class="dropdown w-100">
-                            <button class="btn btn-sm w-100 {{ 'btn-primary' if 'buffett' in request.endpoint or 'benjamin_graham' in request.endpoint else 'btn-outline-primary' }} dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-badge"></i><br><small>Fundamental</small>
-                            </button>
-                            <ul class="dropdown-menu w-100">
-                                <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}">
-                                    <i class="bi bi-person-check me-2"></i>Warren Buffett
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}">
-                                    <i class="bi bi-graph-up me-2"></i>Benjamin Graham
-                                </a></li>
-                            </ul>
-                        </div>
+                        <a href="{{ url_for('analysis.benjamin_graham') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.benjamin_graham' else 'btn-outline-primary' }}">
+                            <i class="bi bi-book"></i><br><small>B. Graham</small>
+                        </a>
                     </div>
                 </div>
                 
                 <!-- More Tools Row -->
                 <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.ai') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.ai' else 'btn-outline-primary' }}">
+                            <i class="bi bi-cpu"></i><br><small>AI-Analyse</small>
+                        </a>
+                    </div>
                     <div class="col-4">
                         <a href="{{ url_for('analysis.short_analysis') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.short_analysis' else 'btn-outline-primary' }}">
                             <i class="bi bi-graph-down"></i><br><small>Short</small>
@@ -103,6 +97,20 @@
                     <div class="col-4">
                         <a href="{{ url_for('analysis.sentiment') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.sentiment' else 'btn-outline-primary' }}">
                             <i class="bi bi-emoji-smile"></i><br><small>Sentiment</small>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Final Tools Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.prediction') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
+                            <i class="bi bi-crystal-ball"></i><br><small>Prediksjoner</small>
+                        </a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-sm w-100 {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                            <i class="bi bi-star"></i><br><small>Anbefalinger</small>
                         </a>
                     </div>
                     <div class="col-4">

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentSymbol = '{{ symbol }}';
     let updateInterval;
-    let priceChart, volumeChart, oscillatorChart;
+    let priceChart; // Removed volumeChart and oscillatorChart as they no longer exist
     let currentTimeframe = '1m';
     let currentChartType = 'candlestick';
     let indicatorPanelVisible = false;
@@ -166,8 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize functions
     function initializeCharts() {
         initializePriceChart();
-        initializeVolumeChart();
-        initializeOscillatorChart();
+        // Volume and Oscillator charts removed as containers no longer exist
     }
     
     function initializePriceChart() {
@@ -272,100 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return { labels, prices, volume, sma20, sma50 };
-    }
-    
-    function initializeVolumeChart() {
-        const ctx = document.getElementById('volumeChart');
-        if (!ctx) return;
-        
-        const chartData = generateAdvancedChartData();
-        
-        volumeChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    label: 'Volume',
-                    data: chartData.volume,
-                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                    borderColor: 'transparent',
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: { unit: 'day' },
-                        grid: { display: false }
-                    },
-                    y: {
-                        position: 'right',
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: false }
-                }
-            }
-        });
-    }
-    
-    function initializeOscillatorChart() {
-        const ctx = document.getElementById('oscillatorChart');
-        if (!ctx) return;
-        
-        const labels = [];
-        const rsi = [];
-        
-        for (let i = 0; i < 30; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() - (29 - i));
-            labels.push(date);
-            
-            const rsiValue = 50 + 20 * Math.sin(i * 0.1) + 5 * (Math.random() - 0.5);
-            rsi.push(Math.max(0, Math.min(100, rsiValue)));
-        }
-        
-        oscillatorChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'RSI',
-                    data: rsi,
-                    borderColor: '#6f42c1',
-                    backgroundColor: 'transparent',
-                    pointRadius: 0,
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: { unit: 'day' },
-                        grid: { display: false }
-                    },
-                    y: {
-                        min: 0,
-                        max: 100,
-                        position: 'right',
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                    }
-                },
-                plugins: {
-                    legend: { display: true, position: 'top' },
-                    tooltip: { enabled: false }
-                }
-            }
-        });
     }
     
     function handleChartHover(event, activeElements) {

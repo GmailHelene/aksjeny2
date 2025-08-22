@@ -166,16 +166,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Volume Chart -->
-                <div class="card-body p-0 border-top" style="height: 150px; position: relative;" id="volumeContainer">
-                    <canvas id="volumeChart" style="width: 100%; height: 100%;"></canvas>
-                </div>
-                
-                <!-- Oscillator Chart -->
-                <div class="card-body p-0 border-top" style="height: 120px; position: relative;" id="oscillatorContainer">
-                    <canvas id="oscillatorChart" style="width: 100%; height: 100%;"></canvas>
-                </div>
             </div>
             
             <!-- Chart Analysis Panel -->
@@ -661,9 +651,6 @@
                         </a>
                         <a href="{{ url_for('analysis.warren_buffett', ticker=symbol) }}" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-graph-up me-1"></i>Buffett Analyse
-                        </a>
-                        <a href="{{ url_for('backtest.index') }}" class="btn btn-outline-warning btn-sm">
-                            <i class="bi bi-arrow-repeat me-1"></i>Backtest
                         </a>
                     </div>
                 </div>

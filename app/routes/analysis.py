@@ -536,7 +536,7 @@ def market_overview():
                              error="Markedsoversikt er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @analysis.route('/sentiment')
-@access_required
+@demo_access
 def sentiment():
     """Market sentiment analysis with enhanced error handling"""
     try:
@@ -1023,7 +1023,7 @@ def recommendations_old(symbol=None):
                              error="Anbefalinger er midlertidig utilgjengelig.")
 
 @analysis.route('/screener', methods=['GET', 'POST'])
-@access_required
+@demo_access
 def screener():
     """Stock screener with basic functionality"""
     logger.info(f"Screener route accessed - Method: {request.method}")
@@ -1516,7 +1516,7 @@ def ai(ticker=None):
 
 @analysis.route('/short-analysis')
 @analysis.route('/short-analysis/<ticker>')
-@access_required
+@demo_access
 def short_analysis(ticker=None):
     """Short selling analysis"""
     try:
