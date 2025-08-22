@@ -59,7 +59,7 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% for ticker in ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'NHY.OL', 'MOWI.OL', 'YAR.OL', 'SALM.OL', 'ORK.OL'] %}
                         <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.location.href='{{ url_for('stocks.stock_detail', symbol=ticker) }}'">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.location.href='{{ url_for('stocks.details', symbol=ticker) }}'">
                                 {{ ticker }}
                             </button>
                             <div class="btn-group" role="group">
@@ -117,7 +117,7 @@
                                 <strong>{{ stock.ticker }}</strong>
                                 <br>
                                 <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ url_for('stocks.stock_detail', symbol=stock.ticker) }}" 
+                                    <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" 
                                        class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-chart-line"></i> Detaljer
                                     </a>

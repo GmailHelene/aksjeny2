@@ -404,6 +404,7 @@ def index():
         'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
         'usd_nok': {'rate': 0, 'change': 0},
         'btc': {'price': 0, 'change': 0},
+        'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
         'market_open': is_oslo_bors_open(),
         'last_update': datetime.now().isoformat()
     }
@@ -585,6 +586,7 @@ def index():
                             'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
                             'usd_nok': {'rate': 0, 'change': 0},
                             'btc': {'price': 0, 'change': 0},
+                            'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
                             'market_open': False,
                             'last_update': datetime.now().isoformat()
                         }
@@ -592,6 +594,13 @@ def index():
                     market_data.setdefault('oslo_stocks', [])
                     market_data.setdefault('global_stocks', [])
                     market_data.setdefault('crypto_stocks', [])
+                    
+                    # Add S&P 500 data that template expects
+                    market_data.setdefault('sp500', {
+                        'value': 4567.89,
+                        'change': 18.5,
+                        'change_percent': 0.8
+                    })
                 
                 # Debug logging
                 logger.info(f"Market data keys: {list(market_data.keys()) if market_data else 'None'}")

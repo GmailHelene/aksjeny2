@@ -241,9 +241,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">{{ market_data.sp500.value if market_data.sp500.value else '4,567.89' }}</h4>
-                                                    <span class="badge {% if market_data.sp500.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
-                                                        {% if market_data.sp500.change >= 0 %}+{% endif %}{{ market_data.sp500.change_percent if market_data.sp500.change_percent else '+0.8' }}%
+                                                    <h4 class="mb-0 me-3">{{ market_data.get('sp500', {}).get('value', '4,567.89') }}</h4>
+                                                    <span class="badge {% if market_data.get('sp500', {}).get('change', 0) >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.get('sp500', {}).get('change', 0) >= 0 %}+{% endif %}{{ market_data.get('sp500', {}).get('change_percent', '+0.8') }}%
                                                     </span>
                                                 </div>
                                             </div>

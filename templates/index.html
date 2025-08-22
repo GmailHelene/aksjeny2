@@ -82,7 +82,7 @@
                                         {% for symbol, stock in oslo_stocks.items() %}
                                             {% if loop.index <= 5 %}
                                             <tr>
-                                                <td><a href="{{ url_for('stocks.stock_details', symbol=symbol) }}">{{ symbol }}</a></td>
+                                                <td><a href="{{ url_for('stocks.details', symbol=symbol) }}">{{ symbol }}</a></td>
                                                 <td>{{ stock.name or symbol }}</td>
                                                 <td class="text-end">{{ "%.2f"|format(stock.current_price or stock.price or stock.last_price) }} NOK</td>
                                                 <td class="text-end">
@@ -122,7 +122,7 @@
                                         {% for symbol, stock in global_stocks.items() %}
                                             {% if loop.index <= 5 %}
                                             <tr>
-                                                <td><a href="{{ url_for('stocks.stock_details', symbol=symbol) }}">{{ symbol }}</a></td>
+                                                <td><a href="{{ url_for('stocks.details', symbol=symbol) }}">{{ symbol }}</a></td>
                                                 <td>{{ stock.name or symbol }}</td>
                                                 <td class="text-end">${{ "%.2f"|format(stock.current_price or stock.price or stock.last_price) }}</td>
                                                 <td class="text-end">

@@ -45,7 +45,7 @@
                                         onclick="toggleFavorite('{{ stock.symbol }}')">
                                     <i class="fas fa-star"></i>
                                 </button>
-                                <a href="{{ url_for('stocks.stock_details', symbol=stock.symbol) }}" 
+                                <a href="{{ url_for('stocks.details', symbol=stock.symbol) }}" 
                                    class="btn btn-sm btn-primary">
                                     <i class="fas fa-info-circle"></i>
                                 </a>
