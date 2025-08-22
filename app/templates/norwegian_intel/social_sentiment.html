@@ -167,7 +167,7 @@
                                         <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}?symbol={{ stock.ticker }}">
                                             <i class="fas fa-thumbs-up"></i> AI Anbefaling
                                         </a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('comparison.compare') }}?symbols={{ stock.ticker }}">
+                                        <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}?symbols={{ stock.ticker }}">
                                             <i class="fas fa-balance-scale"></i> Sammenlign
                                         </a></li>
                                         <li><a class="dropdown-item" href="{{ url_for('portfolio.add_stock') }}?symbol={{ stock.ticker }}">

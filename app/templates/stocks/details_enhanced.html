@@ -88,11 +88,11 @@
                             <div class="text-center p-3 bg-light rounded">
                                 <div class="text-muted small">Dagshøy</div>
                                 <div class="fw-bold">
-                                    {% if stock_info and stock_info.get('dayHigh') %}
+                                    {% if stock_info and stock_info.get('dayHigh') is not none %}
                                         {% if stock_info.get('currency') == 'NOK' %}
-                                            {{ "{:,.2f}".format(stock_info.get('dayHigh')).replace(',', ' ').replace('.', ',') }}
+                                            {{ "{:,.2f}".format(stock_info.get('dayHigh')|float).replace(',', ' ').replace('.', ',') }}
                                         {% else %}
-                                            ${{ "{:,.2f}".format(stock_info.get('dayHigh')) }}
+                                            ${{ "{:,.2f}".format(stock_info.get('dayHigh')|float) }}
                                         {% endif %}
                                     {% else %}-{% endif %}
                                 </div>
@@ -102,11 +102,11 @@
                             <div class="text-center p-3 bg-light rounded">
                                 <div class="text-muted small">Dagsbunn</div>
                                 <div class="fw-bold">
-                                    {% if stock_info and stock_info.get('dayLow') %}
+                                    {% if stock_info and stock_info.get('dayLow') is not none %}
                                         {% if stock_info.get('currency') == 'NOK' %}
-                                            {{ "{:,.2f}".format(stock_info.get('dayLow')).replace(',', ' ').replace('.', ',') }}
+                                            {{ "{:,.2f}".format(stock_info.get('dayLow')|float).replace(',', ' ').replace('.', ',') }}
                                         {% else %}
-                                            ${{ "{:,.2f}".format(stock_info.get('dayLow')) }}
+                                            ${{ "{:,.2f}".format(stock_info.get('dayLow')|float) }}
                                         {% endif %}
                                     {% else %}-{% endif %}
                                 </div>
@@ -116,8 +116,8 @@
                             <div class="text-center p-3 bg-light rounded">
                                 <div class="text-muted small">Volum</div>
                                 <div class="fw-bold">
-                                    {% if stock_info and stock_info.get('volume') %}
-                                        {{ "{:,.0f}".format(stock_info.get('volume')).replace(',', ' ') }}
+                                    {% if stock_info and stock_info.get('volume') is not none %}
+                                        {{ "{:,.0f}".format(stock_info.get('volume')|int).replace(',', ' ') }}
                                     {% else %}-{% endif %}
                                 </div>
                             </div>
@@ -126,13 +126,13 @@
                             <div class="text-center p-3 bg-light rounded">
                                 <div class="text-muted small">Markedsverdi</div>
                                 <div class="fw-bold">
-                                    {% if stock_info and stock_info.get('marketCap') %}
+                                    {% if stock_info and stock_info.get('marketCap') is not none %}
                                         {% if stock_info.get('marketCap') > 1000000000 %}
                                             {{ "{:.1f}".format(stock_info.get('marketCap')/1000000000).replace('.', ',') }} mrd
                                         {% elif stock_info.get('marketCap') > 1000000 %}
                                             {{ "{:.1f}".format(stock_info.get('marketCap')/1000000).replace('.', ',') }} mill
                                         {% else %}
-                                            {{ "{:,.0f}".format(stock_info.get('marketCap')).replace(',', ' ') }}
+                                            {{ "{:,.0f}".format(stock_info.get('marketCap')|int).replace(',', ' ') }}
                                         {% endif %}
                                     {% else %}-{% endif %}
                                 </div>
@@ -232,8 +232,8 @@
                                     <div class="d-flex justify-content-between">
                                         <span>P/E-forhold</span>
                                         <strong>
-                                            {% if stock_info and stock_info.get('trailingPE') %}
-                                                {{ "{:.2f}".format(stock_info.get('trailingPE')).replace('.', ',') }}
+                                            {% if stock_info and stock_info.get('trailingPE') is not none %}
+                                                {{ "{:.2f}".format(stock_info.get('trailingPE')|float).replace('.', ',') }}
                                             {% else %}-{% endif %}
                                         </strong>
                                     </div>
@@ -242,8 +242,8 @@
                                     <div class="d-flex justify-content-between">
                                         <span>EPS</span>
                                         <strong>
-                                            {% if stock_info and stock_info.get('trailingEps') %}
-                                                {{ "{:.2f}".format(stock_info.get('trailingEps')).replace('.', ',') }}
+                                            {% if stock_info and stock_info.get('trailingEps') is not none %}
+                                                {{ "{:.2f}".format(stock_info.get('trailingEps')|float).replace('.', ',') }}
                                             {% else %}-{% endif %}
                                         </strong>
                                     </div>
@@ -252,8 +252,8 @@
                                     <div class="d-flex justify-content-between">
                                         <span>Utbytte</span>
                                         <strong>
-                                            {% if stock_info and stock_info.get('dividendYield') %}
-                                                {{ "{:.2f}".format(stock_info.get('dividendYield') * 100).replace('.', ',') }}%
+                                            {% if stock_info and stock_info.get('dividendYield') is not none %}
+                                                {{ "{:.2f}".format(stock_info.get('dividendYield')|float * 100).replace('.', ',') }}%
                                             {% else %}-{% endif %}
                                         </strong>
                                     </div>
@@ -262,11 +262,11 @@
                                     <div class="d-flex justify-content-between">
                                         <span>52-ukers høy</span>
                                         <strong>
-                                            {% if stock_info and stock_info.get('fiftyTwoWeekHigh') %}
+                                            {% if stock_info and stock_info.get('fiftyTwoWeekHigh') is not none %}
                                                 {% if stock_info.get('currency') == 'NOK' %}
-                                                    {{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekHigh')).replace(',', ' ').replace('.', ',') }} kr
+                                                    {{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekHigh')|float).replace(',', ' ').replace('.', ',') }} kr
                                                 {% else %}
-                                                    ${{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekHigh')) }}
+                                                    ${{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekHigh')|float) }}
                                                 {% endif %}
                                             {% else %}-{% endif %}
                                         </strong>
@@ -276,11 +276,11 @@
                                     <div class="d-flex justify-content-between">
                                         <span>52-ukers lav</span>
                                         <strong>
-                                            {% if stock_info and stock_info.get('fiftyTwoWeekLow') %}
+                                            {% if stock_info and stock_info.get('fiftyTwoWeekLow') is not none %}
                                                 {% if stock_info.get('currency') == 'NOK' %}
-                                                    {{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekLow')).replace(',', ' ').replace('.', ',') }} kr
+                                                    {{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekLow')|float).replace(',', ' ').replace('.', ',') }} kr
                                                 {% else %}
-                                                    ${{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekLow')) }}
+                                                    ${{ "{:,.2f}".format(stock_info.get('fiftyTwoWeekLow')|float) }}
                                                 {% endif %}
                                             {% else %}-{% endif %}
                                         </strong>
@@ -436,24 +436,24 @@
                                 <tr>
                                     <td>ROE</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('returnOnEquity') %}
-                                            {{ "{:.2f}".format(stock_info.get('returnOnEquity') * 100).replace('.', ',') }}%
+                                        {% if stock_info and stock_info.get('returnOnEquity') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('returnOnEquity')|float * 100).replace('.', ',') }}%
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>ROA</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('returnOnAssets') %}
-                                            {{ "{:.2f}".format(stock_info.get('returnOnAssets') * 100).replace('.', ',') }}%
+                                        {% if stock_info and stock_info.get('returnOnAssets') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('returnOnAssets')|float * 100).replace('.', ',') }}%
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Bruttomargin</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('grossMargins') %}
-                                            {{ "{:.2f}".format(stock_info.get('grossMargins') * 100).replace('.', ',') }}%
+                                        {% if stock_info and stock_info.get('grossMargins') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('grossMargins')|float * 100).replace('.', ',') }}%
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>
@@ -465,24 +465,24 @@
                                 <tr>
                                     <td>P/E</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('trailingPE') %}
-                                            {{ "{:.2f}".format(stock_info.get('trailingPE')).replace('.', ',') }}
+                                        {% if stock_info and stock_info.get('trailingPE') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('trailingPE')|float).replace('.', ',') }}
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>P/B</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('priceToBook') %}
-                                            {{ "{:.2f}".format(stock_info.get('priceToBook')).replace('.', ',') }}
+                                        {% if stock_info and stock_info.get('priceToBook') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('priceToBook')|float).replace('.', ',') }}
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>EV/EBITDA</td>
                                     <td class="text-end">
-                                        {% if stock_info and stock_info.get('enterpriseToEbitda') %}
-                                            {{ "{:.2f}".format(stock_info.get('enterpriseToEbitda')).replace('.', ',') }}
+                                        {% if stock_info and stock_info.get('enterpriseToEbitda') is not none %}
+                                            {{ "{:.2f}".format(stock_info.get('enterpriseToEbitda')|float).replace('.', ',') }}
                                         {% else %}-{% endif %}
                                     </td>
                                 </tr>

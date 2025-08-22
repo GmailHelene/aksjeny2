@@ -492,6 +492,10 @@ def setup_error_handlers(app):
     
     @app.errorhandler(404)
     def not_found_error(error):
+        # Don't handle static file 404s - let Flask handle them naturally
+        if request.path.startswith('/static/'):
+            return error, 404
+        
         # Return JSON for API requests
         if request.path.startswith('/api/'):
             return jsonify({

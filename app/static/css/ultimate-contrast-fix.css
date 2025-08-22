@@ -9,6 +9,11 @@
     color: #ffffff !important;
 }
 
+/* Card header span elements with dark backgrounds */
+.card-header span {
+    color: #ffffff !important;
+}
+
 /* Navigation menu fixes */
 .dropdown-header {
     color: #6c757d !important;
