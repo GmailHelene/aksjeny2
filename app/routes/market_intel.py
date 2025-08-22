@@ -317,3 +317,15 @@ def api_crypto_fear_greed():
         return jsonify(data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@market_intel.route('/analyst-coverage')
+@demo_access
+def analyst_coverage():
+    """Redirect to external data analyst coverage"""
+    return redirect(url_for('external_data.analyst_coverage'), code=301)
+
+@market_intel.route('/market-intelligence')
+@demo_access
+def market_intelligence():
+    """Redirect to external data market intelligence"""
+    return redirect(url_for('external_data.market_intelligence'), code=301)
