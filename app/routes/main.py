@@ -2162,7 +2162,7 @@ def norwegian_intel_government_impact():
         return redirect(url_for('main.index'))
 
 @main.route('/advanced/crypto-dashboard')
-@demo_access
+@access_required
 def advanced_crypto_dashboard():
     """Advanced crypto dashboard route"""
     try:

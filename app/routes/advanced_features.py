@@ -82,61 +82,77 @@ def market_overview():
 @advanced_features.route('/crypto-dashboard')
 @access_required
 def crypto_dashboard():
-    """Cryptocurrency tracking dashboard with clean layout"""
+    """Cryptocurrency tracking dashboard with real data and fallback"""
     try:
-        # Comprehensive crypto data with proper structure
-        crypto_data = {
-            'Bitcoin': {
-                'symbol': 'BTC',
-                'name': 'Bitcoin',
-                'price': 43500.00,
-                'change_percent': 2.45,
-                'change_24h': 1040.50,
-                'volume': 15820000000,
-                'market_cap': 850000000000,
-                'circulating_supply': 19500000
-            },
-            'Ethereum': {
-                'symbol': 'ETH', 
-                'name': 'Ethereum',
-                'price': 2650.00,
-                'change_percent': 1.82,
-                'change_24h': 47.30,
-                'volume': 8920000000,
-                'market_cap': 318000000000,
-                'circulating_supply': 120000000
-            },
-            'Binance Coin': {
-                'symbol': 'BNB',
-                'name': 'Binance Coin', 
-                'price': 285.50,
-                'change_percent': -0.85,
-                'change_24h': -2.45,
-                'volume': 1250000000,
-                'market_cap': 43000000000,
-                'circulating_supply': 150000000
-            },
-            'Cardano': {
-                'symbol': 'ADA',
-                'name': 'Cardano',
-                'price': 0.52,
-                'change_percent': 1.75,
-                'change_24h': 0.009,
-                'volume': 385000000,
-                'market_cap': 18000000000,
-                'circulating_supply': 35000000000
-            },
-            'Polkadot': {
-                'symbol': 'DOT',
-                'name': 'Polkadot',
-                'price': 7.42,
-                'change_percent': 0.95,
-                'change_24h': 0.07,
-                'volume': 145000000,
-                'market_cap': 9500000000,
-                'circulating_supply': 1280000000
+        # Try to fetch real crypto data first
+        crypto_data = {}
+        real_data_available = False
+        
+        try:
+            # Attempt to get real crypto data from external service
+            real_crypto_data = external_data_service.get_crypto_overview()
+            if real_crypto_data and isinstance(real_crypto_data, dict) and len(real_crypto_data) > 0:
+                crypto_data = real_crypto_data
+                real_data_available = True
+                logger.info("Successfully fetched real crypto data")
+        except Exception as crypto_error:
+            logger.warning(f"Failed to fetch real crypto data: {crypto_error}")
+        
+        # If no real data available, use comprehensive fallback data
+        if not real_data_available:
+            logger.info("Using fallback crypto data")
+            crypto_data = {
+                'Bitcoin': {
+                    'symbol': 'BTC',
+                    'name': 'Bitcoin',
+                    'price': 43500.00,
+                    'change_percent': 2.45,
+                    'change_24h': 1040.50,
+                    'volume': 15820000000,
+                    'market_cap': 850000000000,
+                    'circulating_supply': 19500000
+                },
+                'Ethereum': {
+                    'symbol': 'ETH', 
+                    'name': 'Ethereum',
+                    'price': 2650.00,
+                    'change_percent': 1.82,
+                    'change_24h': 47.30,
+                    'volume': 8920000000,
+                    'market_cap': 318000000000,
+                    'circulating_supply': 120000000
+                },
+                'Binance Coin': {
+                    'symbol': 'BNB',
+                    'name': 'Binance Coin', 
+                    'price': 285.50,
+                    'change_percent': -0.85,
+                    'change_24h': -2.45,
+                    'volume': 1250000000,
+                    'market_cap': 43000000000,
+                    'circulating_supply': 150000000
+                },
+                'Cardano': {
+                    'symbol': 'ADA',
+                    'name': 'Cardano',
+                    'price': 0.52,
+                    'change_percent': 1.75,
+                    'change_24h': 0.009,
+                    'volume': 385000000,
+                    'market_cap': 18000000000,
+                    'circulating_supply': 35000000000
+                },
+                'Polkadot': {
+                    'symbol': 'DOT',
+                    'name': 'Polkadot',
+                    'price': 7.42,
+                    'change_percent': 0.95,
+                    'change_24h': 0.07,
+                    'volume': 145000000,
+                    'market_cap': 9500000000,
+                    'circulating_supply': 1280000000
+                }
             }
-        }
         
         # Calculate market statistics
         total_market_cap = sum(coin['market_cap'] for coin in crypto_data.values())
@@ -149,13 +165,15 @@ def crypto_dashboard():
             'btc_dominance': btc_dominance,
             'fear_greed_index': 68,
             'active_cryptocurrencies': len(crypto_data),
-            'market_trend': 'Bullish' if btc_dominance > 45 else 'Bearish'
+            'market_trend': 'Bullish' if btc_dominance > 45 else 'Bearish',
+            'real_data': real_data_available
         }
         
         return render_template('advanced_features/crypto_dashboard.html',
                              crypto_data=crypto_data,
                              market_stats=market_stats,
-                             page_title="Crypto Dashboard")
+                             page_title="Crypto Dashboard",
+                             real_data_available=real_data_available)
     
     except Exception as e:
         logger.error(f"Error loading crypto dashboard: {e}")
