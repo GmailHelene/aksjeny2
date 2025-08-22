@@ -1,6 +1,58 @@
 {% extends 'base.html' %}
 {% block title %}KI-analyse | Aksjeradar{% endblock %}
 
+{% block head %}
+<style>
+/* Mobile responsive fixes for AI analysis search */
+@media (max-width: 768px) {
+    .input-group-lg {
+        flex-direction: column;
+    }
+    
+    .input-group-lg .input-group-text {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+        border-bottom: none;
+        justify-content: center;
+    }
+    
+    .input-group-lg .form-control {
+        border-radius: 0 !important;
+        border-top: none;
+        border-bottom: none;
+        text-align: center;
+    }
+    
+    .input-group-lg .btn {
+        border-radius: 0 0 0.5rem 0.5rem !important;
+        border-top: none;
+        padding: 0.75rem;
+    }
+    
+    .input-group-lg .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+    }
+}
+
+@media (max-width: 576px) {
+    .input-group-lg .form-control {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .input-group-lg .btn {
+        font-size: 1rem;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <nav aria-label="breadcrumb" class="my-3">

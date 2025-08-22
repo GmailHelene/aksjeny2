@@ -97,28 +97,65 @@ def create_topic():
 
 @forum.route('/category/<category_name>')
 def category(category_name):
-    # For now, show all posts filtered by category if we had categories
-    posts = ForumPost.query.order_by(ForumPost.created_at.desc()).limit(20).all()
-    return render_template('forum/category.html', 
-                         posts=posts, 
-                         category_name=category_name)
+    """Category view with proper error handling"""
+    try:
+        # Handle invalid category names
+        if category_name == '---' or not category_name.strip():
+            flash('Ugyldig kategori.', 'error')
+            return redirect(url_for('forum.index'))
+        
+        # Get posts - in the future this could be filtered by actual category
+        posts = ForumPost.query.order_by(ForumPost.created_at.desc()).limit(20).all()
+        
+        return render_template('forum/category.html', 
+                             posts=posts, 
+                             category_name=category_name.replace('-', ' ').title())
+    except Exception as e:
+        logger.error(f"Forum category error for {category_name}: {e}")
+        flash('Kunne ikke laste kategori.', 'error')
+        return redirect(url_for('forum.index'))
 
-@forum.route('/topic/<int:topic_id>')
+@forum.route('/topic/<topic_id>')
 def topic(topic_id):
-    # Alias for view route
-    return view(topic_id)
+    """Topic view with proper error handling"""
+    try:
+        # Handle invalid topic IDs
+        if topic_id == '---' or not str(topic_id).isdigit():
+            flash('Ugyldig emne-ID.', 'error')
+            return redirect(url_for('forum.index'))
+        
+        # Alias for view route
+        return view(int(topic_id))
+    except ValueError:
+        flash('Ugyldig emne-ID.', 'error')
+        return redirect(url_for('forum.index'))
+    except Exception as e:
+        logger.error(f"Forum topic error for {topic_id}: {e}")
+        flash('Kunne ikke laste emne.', 'error')
+        return redirect(url_for('forum.index'))
 
 @forum.route('/search')
 def search():
-    query = request.args.get('q', '').strip()
-    if query:
-        posts = ForumPost.query.filter(
-            ForumPost.title.contains(query) | 
-            ForumPost.content.contains(query)
-        ).order_by(ForumPost.created_at.desc()).all()
-    else:
-        posts = []
-    return render_template('forum/search.html', posts=posts, query=query)
+    """Search with better error handling"""
+    try:
+        query = request.args.get('q', '').strip()
+        if query:
+            # Use proper SQL LIKE syntax for better compatibility
+            posts = ForumPost.query.filter(
+                db.or_(
+                    ForumPost.title.ilike(f'%{query}%'),
+                    ForumPost.content.ilike(f'%{query}%')
+                )
+            ).order_by(ForumPost.created_at.desc()).limit(50).all()
+        else:
+            posts = []
+        return render_template('forum/search.html', posts=posts, query=query)
+    except Exception as e:
+        logger.error(f"Forum search error for query '{query}': {e}")
+        return render_template('forum/search.html', 
+                             posts=[], 
+                             query=query,
+                             error="Søket kunne ikke utføres. Prøv igjen.")
 
 @forum.route('/<int:post_id>')
 def view(post_id):

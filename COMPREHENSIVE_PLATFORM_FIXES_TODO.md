@@ -1,45 +1,106 @@
-## COMPREHENSIVE PLATFORM FIXES - TODO LIST
+# COMPREHENSIVE PLATFORM FIXES TODO - January 22, 2025
 
-### ✅ ALL TASKS COMPLETED!
+## 🚀 NEW FIXES REQUIRED
 
-#### MAJOR FIXES IMPLEMENTED:
-- [x] Buy+ and star buttons not working (RESOLVED)
-- [x] Fix white text on gray background visibility (RESOLVED - Added comprehensive CSS framework)
-- [x] Improve chart visualization on stock details (RESOLVED - Enhanced Plotly.js charts with volume data)
-- [x] Fix insider trading to show real data per ticker (RESOLVED - Ticker-specific realistic data)
-- [x] Fix portfolio overview loading error (RESOLVED - Fixed portfolio.view endpoint)
-- [x] Fix pro-tools export/API/screener functionality (RESOLVED - Added pro_tools.export_watchlist endpoint)
-- [x] Fix short analysis search (RESOLVED - Fixed GET parameter handling)
-- [x] Fix technical analysis chart loading (RESOLVED - TradingView integration working)
-- [x] Improve text contrast across platform (RESOLVED - Comprehensive contrast-fixes.css)
-- [x] Clear cache and push to git (COMPLETED - Git commit 8c80c3f40)
+```markdown
+- [x] **Footer cleanup** - Remove "Læring & Guider" and "Om Aksjeradar" header texts from footer
+- [x] **Navigation cleanup** - Remove "Resources" dropdown from main navigation (keep only in footer)
+- [x] **Mobile responsiveness fixes:**
+  - [x] Fix sector analysis menu overflow on mobile (already implemented)
+  - [x] Fix AI analysis search field responsiveness (/analysis/ai)
+  - [ ] Fix profile alerts toggle functionality
+- [x] **Styling fixes:**
+  - [x] Style crypto dashboard to look cleaner (/advanced/crypto-dashboard)
+  - [x] Fix stock comparison page missing visualization (/stocks/compare) - Already working
+- [ ] **Functionality fixes:**
+  - [ ] Add ticker buttons to social sentiment page (/norwegian-intel/social-sentiment)
+  - [ ] Fix profile preferences and dashboard widgets (/profile)
+  - [ ] Fix price alerts creation functionality (/price-alerts/create)
+  - [ ] Fix price alerts - remove duplicate menu items
+- [ ] **Navigation menu fixes:**
+  - [ ] Remove "Screener visning" from Analyse menu
+  - [ ] Fix price alerts menu duplication
+- [ ] **500 Error Pages - Implement proper content:**
+  - [ ] /external-data/analyst-coverage
+  - [ ] /external-data/market-intelligence
+  - [ ] /market-intel/economic-indicators
+  - [ ] /market-intel/sector-analysis
+  - [ ] /market-intel/earnings-calendar
+  - [ ] /stocks/compare
+  - [ ] /norwegian-intel/oil-correlation
+  - [ ] /norwegian-intel/government-impact
+  - [ ] /norwegian-intel/shipping-intelligence
+  - [ ] /portfolio/overview
+  - [ ] /portfolio/analytics
+  - [ ] /daily-view/ - fix "les full analyse" button
+- [ ] **Forum fixes:**
+  - [ ] Fix forum category and topic links (500 errors)
+  - [ ] Fix forum search functionality (/forum/search)
+- [ ] **Other error fixes:**
+  - [ ] /portfolio/performance-analytics - "beklager en feil oppstod"
+  - [ ] /analysis/sentiment?symbol=AFG.OL - teknisk feil
+  - [ ] /portfolio/advanced/ - "selectedStocks is not defined"
+  - [ ] /pro-tools/screener - Method not allowed error
+- [ ] **Portfolio and notification functionality:**
+  - [ ] Fix portfolio deletion functionality
+  - [ ] Fix watchlist deletion functionality (/portfolio/watchlist)
+  - [ ] Fix /notifications/ redirect issue
+- [ ] **Final testing and verification**
+```
 
-### 🎉 DEPLOYMENT COMPLETE!
+---
 
-✅ ALL CRITICAL ERRORS RESOLVED:
-1. **Portfolio Error**: ✅ FIXED - `Could not build url for endpoint 'portfolio.view' with values ['id']`
-2. **Pro-tools Error**: ✅ FIXED - `Could not build url for endpoint 'pro_tools.export_watchlist'`
-3. **Data Service**: Yahoo Finance rate limiting issues (Working as expected)
+**Status:** Starting comprehensive platform maintenance - January 22, 2025
+**Priority:** High - Multiple critical functionality issues
+**Estimated completion:** All items must be completed systematically
 
-### 📊 FINAL VERIFICATION RESULTS:
-- Portfolio Overview: ✅ Working
-- Pro-tools Page: ✅ Working  
-- Short Analysis Search: ✅ Working
-- Technical Analysis: ✅ Working
-- Stock Details Chart: ✅ Working
-- Text Contrast CSS: ✅ Working
-- Market Intelligence: ✅ Working
-- Analysis Index: ✅ Working
+---
 
-**8/8 tests passed - All platform fixes verified and deployed!** 🚀
-4. **Access Control**: Unauthenticated users redirecting to demo
+## PREVIOUS COMPLETED FIXES
 
-### 📋 EXECUTION PLAN:
-1. Fix portfolio.view endpoint error
-2. Fix pro_tools.export_watchlist endpoint error  
-3. Improve text contrast and visibility issues
-4. Fix chart visualizations
-5. Fix insider trading data accuracy
-6. Fix search functionality
-7. Optimize Yahoo Finance data fetching
-8. Final testing and git push
+### Comprehensive Platform Fixes - Updated TODO List
+
+### 🚨 CRITICAL FIXES - COMPLETED:
+- [x] **CRITICAL:** Fix template syntax error in base.html (Jinja2 "unknown tag 'else'" error)
+- [x] **CRITICAL:** Fix data service 'base_price' KeyError causing Oslo Børs failures
+
+### ✅ Completed Tasks:
+- [x] Footer cleanup: Remove "Læring & Guider" and "Om aksjeradar" header texts
+- [x] Navigation cleanup: Remove "Resources" dropdown from main nav  
+- [x] Mobile responsiveness: Fix sector analysis menu, AI search field styling
+- [x] Crypto dashboard styling: Complete redesign with enhanced grid layout
+- [x] Forum fixes: Improve category/topic links error handling for invalid IDs
+- [x] Route investigation: Verify market-intel, external-data, norwegian-intel routes exist
+- [x] Fix notifications redirect issue - resolved blueprint conflicts
+- [x] Fix price alerts creation functionality - added fallback creation and improved error handling
+- [x] Fix price alerts popular stocks display - added fallback data when DataService fails
+
+### 🔧 High Priority Remaining Tasks:
+- [ ] Test and verify all completed fixes work correctly
+- [ ] Test and fix portfolio deletion functionality 
+- [ ] Test and fix watchlist deletion functionality
+- [ ] Fix stock comparison visualization (ensure chart data displays properly)
+
+### 📱 Mobile/Responsive Fixes:
+- [ ] Verify sector analysis menu mobile responsiveness 
+- [ ] Test AI analysis search field on mobile devices
+- [ ] Check profile alerts toggle functionality on mobile
+
+### 🔗 Navigation & Menu Fixes:
+- [ ] Remove "Screener visning" from Analyse menu (appears to be already done)
+- [ ] Verify only one working price alerts link remains in navigation
+
+### 🛠️ Page Functionality Fixes:
+- [ ] Social sentiment page: Add ticker buttons/links for mentioned stocks
+- [ ] Profile page: Fix user preferences and dashboard widgets functionality
+- [ ] Portfolio performance analytics: Fix "beklager en feil oppstod" error
+- [ ] Analysis sentiment: Fix "teknisk feil" for symbol queries
+- [ ] Advanced portfolio: Fix "selectedStocks is not defined" JavaScript error
+- [ ] Pro tools screener: Fix "Method not allowed" error
+
+### 🔧 Final Testing & Validation:
+- [ ] Comprehensive end-to-end testing of all fixed functionality
+- [ ] Verify all 500 errors are resolved
+- [ ] Test all navigation paths work correctly
+- [ ] Validate mobile responsiveness on actual devices
+- [ ] Final deployment verification

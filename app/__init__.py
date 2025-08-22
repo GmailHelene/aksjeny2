@@ -353,7 +353,7 @@ def register_blueprints(app):
         ('.routes.realtime_routes', 'realtime_bp', '/realtime'),
         ('.routes.realtime_websocket', 'realtime_data', None),
         ('.routes.portfolio_analytics', 'portfolio_analytics', '/portfolio-analytics'),
-        ('.routes.notifications', 'notifications_bp', '/notifications'),
+        ('.routes.notifications', 'notifications_bp', '/notifications/api'),
         ('.routes.notifications', 'notifications_web_bp', None),
         ('.routes.norwegian_intel', 'norwegian_intel', '/norwegian-intel'),
         ('.routes.daily_view', 'daily_view', '/daily-view'),

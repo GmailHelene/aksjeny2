@@ -496,22 +496,6 @@
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('resources.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-graduation-cap"></i> Resources
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('resources.index') }}"><i class="fas fa-graduation-cap"></i> Resources Oversikt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('forum.index') }}"><i class="bi bi-chat-dots"></i> Forum</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.learning_center') }}"><i class="fas fa-book"></i> Læringsenter</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.guides') }}"><i class="fas fa-compass"></i> Guider</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.tutorials') }}"><i class="fas fa-play-circle"></i> Tutorials</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.documentation') }}"><i class="fas fa-file-alt"></i> Dokumentasjon</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('resources.api') }}"><i class="fas fa-code"></i> API</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> Konto
                         </a>
@@ -551,84 +535,6 @@
             </div>
         </div>
     </nav>
-                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}"><i class="fas fa-oil-can"></i> Olje-korrelasjon</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.government_impact') }}"><i class="fas fa-university"></i> Regjeringsanalyse</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}"><i class="fas fa-ship"></i> Shipping Intelligence</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('external_data.market_intelligence') }}"><i class="fas fa-cloud-download-alt"></i> Ekstern Data</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('external_data.analyst_coverage') }}"><i class="fas fa-users"></i> Analytiker Dekning</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="nav-item dropdown">
-                                                <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-tools"></i> Pro Tools
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}"><i class="fas fa-bell"></i> Prisalarmer</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}"><i class="fas fa-users"></i> Analytiker Anbefalinger</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><h6 class="dropdown-header">Avanserte Verktøy</h6></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}"><i class="fas fa-exchange-alt"></i> Valutakonverter</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}"><i class="fas fa-calculator"></i> Investment Analyzer</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('mobile_trading.mobile_dashboard') }}"><i class="fas fa-mobile-alt"></i> Mobile Trading</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="nav-item dropdown">
-                                                <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-briefcase"></i> Portfolio
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}"><i class="fas fa-eye"></i> Watchlist</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.index') }}"><i class="fas fa-eye"></i> Avansert Watchlist</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}"><i class="fas fa-lightbulb"></i> Aksjetips</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}"><i class="fas fa-cogs"></i> Avansert portfolio</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}"><i class="fas fa-robot"></i> ML Analytics</a></li>
-                                                </ul>
-                                            </li>
-                                            <li class="nav-item dropdown">
-                                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                                    <i class="fas fa-user"></i> Konto
-                                                </a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('pricing.pricing_page') }}"><i class="fas fa-crown"></i> Abonnement</a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                {% else %}
-                <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.demo') }}">
-                            <i class="bi bi-play-circle"></i> Demo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('pricing.pricing_page') }}">
-                            <i class="bi bi-star"></i> Priser
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.login') }}">
-                            <i class="bi bi-box-arrow-in-right"></i> Logg inn
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.register') }}">
-                            <i class="bi bi-person-plus"></i> Registrer
-                        </a>
-                    </li>
-                </ul>
-                {% endif %}
             </div>
         </div>
     </nav>

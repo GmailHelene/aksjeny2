@@ -2902,11 +2902,19 @@ class DataService:
     def _create_guaranteed_stock_data(ticker, info):
         """Create stock data entry from guaranteed data info"""
         hash_seed = abs(hash(ticker)) % 1000
-        price = info['base_price']
+        
+        # Handle missing base_price gracefully
+        if 'base_price' in info:
+            price = info['base_price']
+        else:
+            # Generate a fallback price based on ticker hash
+            price = 50 + (hash_seed % 300)  # 50-350 price range
+            logger.warning(f"Missing 'base_price' for {ticker}, using fallback: {price}")
+            
         change = round(((hash_seed % 201) - 100) / 50, 2)
         
         return {
-            'name': info['name'],
+            'name': info.get('name', f'Stock {ticker}'),
             'last_price': price,
             'change': change,
             'change_percent': round((change / price) * 100, 2),

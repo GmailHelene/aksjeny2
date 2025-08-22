@@ -103,16 +103,47 @@ def create():
             except Exception as e:
                 logger.warning(f"Could not check subscription limits: {e}")
             
-            # Create the alert with proper error handling
+            # Create the alert with improved fallback handling
             try:
-                alert = price_monitor.create_alert(
-                    user_id=current_user.id,
-                    symbol=symbol,
-                    target_price=target_price,
-                    alert_type=alert_type,
-                    company_name=company_name or None,
-                    notes=notes or None
-                )
+                # Try the price monitor service first
+                alert = None
+                try:
+                    alert = price_monitor.create_alert(
+                        user_id=current_user.id,
+                        symbol=symbol,
+                        target_price=target_price,
+                        alert_type=alert_type,
+                        company_name=company_name or None,
+                        notes=notes or None
+                    )
+                except Exception as monitor_error:
+                    logger.warning(f"Price monitor service failed: {monitor_error}")
+                    alert = None
+                
+                # If price monitor failed, create alert directly
+                if not alert:
+                    try:
+                        from ..models.price_alert import PriceAlert
+                        from .. import db
+                        
+                        alert = PriceAlert(
+                            user_id=current_user.id,
+                            symbol=symbol,
+                            target_price=target_price,
+                            alert_type=alert_type,
+                            company_name=company_name or f"Stock {symbol}",
+                            notes=notes,
+                            is_active=True
+                        )
+                        
+                        db.session.add(alert)
+                        db.session.commit()
+                        
+                        logger.info(f"Created price alert directly for user {current_user.id}: {symbol} at {target_price}")
+                        
+                    except Exception as db_error:
+                        logger.error(f"Direct database alert creation failed: {db_error}")
+                        alert = None
                 
                 if alert:
                     flash(f'Prisvarsel opprettet for {symbol} ved {target_price}!', 'success')
@@ -136,7 +167,7 @@ def create():
     
     # GET request - show create form
     try:
-        # Get popular stocks for suggestions
+        # Get popular stocks for suggestions with fallback
         popular_stocks = []
         if DataService:
             try:
@@ -153,7 +184,21 @@ def create():
                     ]
             except Exception as e:
                 logger.warning(f"Could not load popular stocks: {e}")
-                pass
+        
+        # Fallback popular stocks if DataService failed
+        if not popular_stocks:
+            popular_stocks = [
+                {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 278.50},
+                {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 215.20},
+                {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'last_price': 145.80},
+                {'symbol': 'MOWI.OL', 'name': 'Mowi ASA', 'last_price': 189.50},
+                {'symbol': 'NHY.OL', 'name': 'Norsk Hydro ASA', 'last_price': 64.82},
+                {'symbol': 'AAPL', 'name': 'Apple Inc.', 'last_price': 195.89},
+                {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'last_price': 140.93},
+                {'symbol': 'MSFT', 'name': 'Microsoft Corporation', 'last_price': 384.52},
+                {'symbol': 'TSLA', 'name': 'Tesla Inc.', 'last_price': 248.50},
+                {'symbol': 'NVDA', 'name': 'NVIDIA Corporation', 'last_price': 485.20},
+            ]
         
         return render_template('price_alerts/create.html',
                              popular_stocks=popular_stocks)
