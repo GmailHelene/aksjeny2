@@ -863,10 +863,25 @@ main {
     color: #fff !important;
 }
 
+/* Info buttons should match primary button styling */
+.btn-info {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+.btn-info:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+    color: #fff !important;
+}
+
 /* Ensure buttons in subscription page have white text */
 .pricing-card .btn-primary,
+.pricing-card .btn-info,
 .pricing-card .btn-success,
 button[type="submit"].btn-primary,
+button[type="submit"].btn-info,
 button[type="submit"].btn-success {
     color: #ffffff !important;
 }

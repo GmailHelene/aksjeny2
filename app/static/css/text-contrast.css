@@ -55,7 +55,7 @@
     color: #ffffff !important;
 }
 
-/* Navigation link styles moved to component-specific rules */
+/* Navigation link styles removed per requirements */
 
 /* Mobile navigation specific styles */
 @media (max-width: 991.98px) {
@@ -78,14 +78,14 @@
     }
     
     .navbar-nav .nav-link {
-        color: #ffffff !important;
+        /* Color rules removed - controlled elsewhere */
         padding: 0.75rem 1rem !important;
         font-weight: 500;
     }
     
     .navbar-nav .nav-link:hover,
     .navbar-nav .nav-link:focus {
-        color: #ffffff !important;
+        /* Color rules removed - controlled elsewhere */
         background-color: #333333 !important;
         border-radius: 4px;
     }
@@ -163,7 +163,7 @@
     color: #ffffff !important;
 }
 
-/* Bootstrap text-white utility restored to default behavior */
+/* Bootstrap text-white utility - remove inherit rule */
 .text-white {
     color: #ffffff !important;
 }
@@ -200,10 +200,7 @@
     background-color: #1e5ed0!important;
 }
 
-/* Override text-white in card headers specifically */
-.card-header .text-white {
-    color: inherit !important;
-}
+/* text-white inherit rule removed per requirements */
 
 /* Override for any h5, span, i elements in card headers */
 .card-header h5,

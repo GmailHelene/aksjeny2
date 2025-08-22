@@ -1783,17 +1783,28 @@ def recommendation(ticker=None):
             # Generate ticker-specific recommendation analysis
             base_hash = abs(hash(ticker)) % 1000
             
+            # Create a class-like object to match template expectations
+            class RecommendationData:
+                def __init__(self, data):
+                    for key, value in data.items():
+                        setattr(self, key, value)
+            
             # Create realistic but demo recommendation data for the specific ticker
-            ticker_recommendation = {
+            ticker_recommendation_data = {
                 'ticker': ticker,
+                'name': f"Analysis for {ticker}",
                 'company_name': f"Analysis for {ticker}",
                 'sector': 'Financial Services' if 'DNB' in ticker else 'Technology',
+                'rating': 'KJØP' if base_hash % 3 == 0 else 'HOLD' if base_hash % 3 == 1 else 'SELG',
                 'recommendation': 'KJØP' if base_hash % 3 == 0 else 'HOLD' if base_hash % 3 == 1 else 'SELG',
                 'target_price': 100 + (base_hash % 200),
                 'current_price': 90 + (base_hash % 150),
+                'upside': round(((100 + (base_hash % 200)) / (90 + (base_hash % 150)) - 1) * 100, 2),
                 'upside_percent': round(((100 + (base_hash % 200)) / (90 + (base_hash % 150)) - 1) * 100, 2),
                 'risk_level': 'Moderat',
+                'timeframe': '6-12 måneder',
                 'time_horizon': '6-12 måneder',
+                'confidence': 70 + (base_hash % 20),
                 'analyst_rating': 3.5 + (base_hash % 15) / 10,
                 'strengths': [
                     f'Strong market position for {ticker}',
@@ -1814,8 +1825,15 @@ def recommendation(ticker=None):
                     'fundamental_score': 55 + (base_hash % 35),
                     'sentiment_score': 50 + (base_hash % 40),
                     'overall_score': 55 + (base_hash % 35)
-                }
+                },
+                'price_targets': RecommendationData({
+                    'high': 120 + (base_hash % 50),
+                    'average': 100 + (base_hash % 30),
+                    'low': 80 + (base_hash % 40)
+                })
             }
+            
+            ticker_recommendation = RecommendationData(ticker_recommendation_data)
             
             # Return ticker-specific recommendation template
             return render_template('analysis/recommendation_detail.html', 

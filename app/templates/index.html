@@ -224,8 +224,10 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">1,234.56</h4>
-                                                    <span class="badge bg-success rounded-pill">+1.2%</span>
+                                                    <h4 class="mb-0 me-3">{{ market_data.osebx.value if market_data.osebx.value else '1,234.56' }}</h4>
+                                                    <span class="badge {% if market_data.osebx.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.osebx.change >= 0 %}+{% endif %}{{ market_data.osebx.change_percent if market_data.osebx.change_percent else '+1.2' }}%
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -239,8 +241,10 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">4,567.89</h4>
-                                                    <span class="badge bg-success rounded-pill">+0.8%</span>
+                                                    <h4 class="mb-0 me-3">{{ market_data.sp500.value if market_data.sp500.value else '4,567.89' }}</h4>
+                                                    <span class="badge {% if market_data.sp500.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.sp500.change >= 0 %}+{% endif %}{{ market_data.sp500.change_percent if market_data.sp500.change_percent else '+0.8' }}%
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -254,8 +258,10 @@
                                                     </div>
                                                 </div>
                                                 <div class="d-flex align-items-center">
-                                                    <h4 class="mb-0 me-3">$43,210</h4>
-                                                    <span class="badge bg-success rounded-pill">+2.1%</span>
+                                                    <h4 class="mb-0 me-3">${{ market_data.btc.price if market_data.btc.price else '43,210' }}</h4>
+                                                    <span class="badge {% if market_data.btc.change >= 0 %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {% if market_data.btc.change >= 0 %}+{% endif %}{{ market_data.btc.change_percent if market_data.btc.change_percent else '+2.1' }}%
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
