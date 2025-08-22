@@ -602,6 +602,9 @@ def index():
                     except Exception as e:
                         logger.warning(f"Error loading currency data for homepage: {e}")
                         market_data['currency'] = {}
+                    
+                    # Always ensure market_open is correctly set with real-time data
+                    market_data['market_open'] = is_oslo_bors_open()
                         
                 except Exception as e:
                     logger.warning(f"Error getting market data: {e}")
@@ -612,13 +615,16 @@ def index():
                             'usd_nok': {'rate': 0, 'change': 0},
                             'btc': {'price': 0, 'change': 0, 'change_percent': 0},
                             'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-                            'market_open': False,
+                            'market_open': is_oslo_bors_open(),  # Use real-time data even in fallback
                             'last_update': datetime.now().isoformat()
                         }
                     # Always ensure these keys exist
                     market_data.setdefault('oslo_stocks', [])
                     market_data.setdefault('global_stocks', [])
                     market_data.setdefault('crypto_stocks', [])
+                    
+                    # Ensure market_open is always set with real-time data
+                    market_data['market_open'] = is_oslo_bors_open()
                     
                     # Add required market data structures that templates expect
                     market_data.setdefault('osebx', {
@@ -788,7 +794,7 @@ def index():
                 'usd_nok': {'rate': 0, 'change': 0},
                 'btc': {'price': 0, 'change': 0, 'change_percent': 0},
                 'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-                'market_open': False,
+                'market_open': is_oslo_bors_open(),  # Use real-time data even in fallback
                 'last_update': datetime.now().isoformat()
             }
         
@@ -798,6 +804,10 @@ def index():
             logger.info(f"Public Oslo stocks count: {len(market_data['oslo_stocks'])}")
         else:
             logger.warning("Public Oslo stocks not found in market_data")
+        
+        # Always ensure market_open is correctly set with real-time data for non-authenticated users
+        if market_data:
+            market_data['market_open'] = is_oslo_bors_open()
             
         return render_template('index.html', market_data=market_data)
             
