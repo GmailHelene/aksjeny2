@@ -3982,27 +3982,73 @@ class DataService:
     def search_stocks(query):
         """Search for stocks by name or ticker with fallback data"""
         results = []
-        query = query.upper()
+        query_lower = query.lower()
+        query_upper = query.upper()
         
-        # Search in fallback Oslo Børs data
-        for ticker, data in FALLBACK_OSLO_DATA.items():
-            if query in ticker or query in data['name'].upper():
+        # Enhanced search mapping for common names
+        name_mappings = {
+            'tesla': 'TSLA',
+            'dnb': 'DNB.OL', 
+            'apple': 'AAPL',
+            'microsoft': 'MSFT',
+            'equinor': 'EQNR.OL',
+            'telenor': 'TEL.OL',
+            'amazon': 'AMZN',
+            'google': 'GOOGL',
+            'alphabet': 'GOOGL',
+            'meta': 'META',
+            'facebook': 'META',
+            'nvidia': 'NVDA'
+        }
+        
+        # Check if query matches a common name
+        mapped_ticker = name_mappings.get(query_lower)
+        if mapped_ticker:
+            # Prioritize the mapped ticker
+            if mapped_ticker in FALLBACK_OSLO_DATA:
+                data = FALLBACK_OSLO_DATA[mapped_ticker]
                 results.append({
-                    'ticker': ticker,
+                    'ticker': mapped_ticker,
                     'name': data['name'],
                     'exchange': 'Oslo Børs',
                     'sector': data['sector']
                 })
-        
-        # Search in fallback global data
-        for ticker, data in FALLBACK_GLOBAL_DATA.items():
-            if query in ticker or query in data['name'].upper():
+            elif mapped_ticker in FALLBACK_GLOBAL_DATA:
+                data = FALLBACK_GLOBAL_DATA[mapped_ticker]
                 results.append({
-                    'ticker': ticker,
+                    'ticker': mapped_ticker,
                     'name': data['name'],
                     'exchange': 'NASDAQ',
                     'sector': data['sector']
                 })
+        
+        # Search in fallback Oslo Børs data
+        for ticker, data in FALLBACK_OSLO_DATA.items():
+            if (query_upper in ticker or 
+                query_lower in data['name'].lower() or
+                query_upper in data['name'].upper()):
+                # Avoid duplicates
+                if not any(r['ticker'] == ticker for r in results):
+                    results.append({
+                        'ticker': ticker,
+                        'name': data['name'],
+                        'exchange': 'Oslo Børs',
+                        'sector': data['sector']
+                    })
+        
+        # Search in fallback global data
+        for ticker, data in FALLBACK_GLOBAL_DATA.items():
+            if (query_upper in ticker or 
+                query_lower in data['name'].lower() or
+                query_upper in data['name'].upper()):
+                # Avoid duplicates
+                if not any(r['ticker'] == ticker for r in results):
+                    results.append({
+                        'ticker': ticker,
+                        'name': data['name'],
+                        'exchange': 'NASDAQ',
+                        'sector': data['sector']
+                    })
         
         return results[:10]  # Limit to 10 results
 
