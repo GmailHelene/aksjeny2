@@ -1,7 +1,7 @@
 """
 User achievements and gamification system
 """
-from ..extensions import db
+from .. import db
 from datetime import datetime
 
 class Achievement(db.Model):
