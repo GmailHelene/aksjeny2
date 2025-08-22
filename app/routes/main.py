@@ -8,6 +8,7 @@ from ..utils.market_open import is_market_open, is_oslo_bors_open
 from ..utils.access_control import access_required
 from ..services.dashboard_service import DashboardService
 import logging
+import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, urljoin
 import hashlib
@@ -831,6 +832,32 @@ def index():
                             market_data=market_data,
                             recommendations=recommendations,
                             user_stats=user_stats)
+
+@main.route('/favicon.ico')
+def favicon():
+    """Serve favicon"""
+    try:
+        return send_from_directory(
+            os.path.join(current_app.root_path, 'static'),
+            'favicon.ico',
+            mimetype='image/vnd.microsoft.icon'
+        )
+    except Exception:
+        # Return 204 No Content if favicon not found
+        return '', 204
+
+@main.route('/robots.txt')
+def robots():
+    """Serve robots.txt"""
+    try:
+        return send_from_directory(
+            os.path.join(current_app.root_path, 'static'),
+            'robots.txt',
+            mimetype='text/plain'
+        )
+    except Exception:
+        # Return basic robots.txt content
+        return 'User-agent: *\nDisallow:', 200, {'Content-Type': 'text/plain'}
 
 @main.route('/demo')
 def demo():
@@ -2117,19 +2144,38 @@ def update_notifications():
 @login_required
 def watchlist():
     """Main watchlist route - redirect to portfolio watchlist"""
-    return redirect(url_for('portfolio.watchlist'))
+    try:
+        return redirect(url_for('portfolio.watchlist'))
+    except Exception as e:
+        logger.error(f"Error redirecting to portfolio watchlist: {e}")
+        # Fallback: render a simple watchlist page
+        return render_template('portfolio/watchlist.html', 
+                             stocks=[], 
+                             message="Watchlist er midlertidig utilgjengelig")
 
 @main.route('/portfolio/watchlist')
 @login_required
 def portfolio_watchlist():
     """Portfolio watchlist route - redirect to portfolio watchlist"""
-    return redirect(url_for('portfolio.watchlist'))
+    try:
+        return redirect(url_for('portfolio.watchlist'))
+    except Exception as e:
+        logger.error(f"Error redirecting to portfolio watchlist: {e}")
+        # Fallback: render a simple watchlist page
+        return render_template('portfolio/watchlist.html', 
+                             stocks=[], 
+                             message="Watchlist er midlertidig utilgjengelig")
 
 @main.route('/norwegian-intel/government-impact')
 @login_required
 def norwegian_intel_government_impact():
     """Norwegian intel government impact route"""
-    return redirect(url_for('norwegian_intel.government_impact'))
+    try:
+        return redirect(url_for('norwegian_intel.government_impact'))
+    except Exception as e:
+        logger.error(f"Error redirecting to norwegian intel government impact: {e}")
+        # Fallback: render error page or redirect to main
+        return redirect(url_for('main.index'))
 
 @main.route('/advanced/crypto-dashboard')
 @login_required

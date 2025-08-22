@@ -415,6 +415,15 @@ def register_blueprints(app):
         app.logger.info("OK Registered realtime_api blueprint")
     except ImportError as e:
         app.logger.warning(f"Could not import realtime_api blueprint: {e}")
+    
+    # Register the watchlist_api blueprint
+    try:
+        from .routes.watchlist_api import watchlist_api
+        app.register_blueprint(watchlist_api)
+        blueprints_registered.append('watchlist_api')
+        app.logger.info("OK Registered watchlist_api blueprint")
+    except ImportError as e:
+        app.logger.warning(f"Could not import watchlist_api blueprint: {e}")
 
 def setup_production_database(app):
     """Setup database for production with proper error handling"""
