@@ -82,11 +82,28 @@
                                         </tr>
                                         <tr>
                                             <td>Volum:</td>
-                                            <td class="text-end">{{ "{:,}"|format(stock.volume or 0) }}</td>
+                                            <td class="text-end">{{ "{:,}"|format(stock.volume or stock.regularMarketVolume or 0) if (stock.volume or stock.regularMarketVolume) else 'Ikke tilgjengelig' }}</td>
                                         </tr>
                                         <tr>
                                             <td>Markedsverdi:</td>
-                                            <td class="text-end">{{ stock.market_cap or '450 mrd NOK' }}</td>
+                                            <td class="text-end">
+                                                {% if stock.market_cap or stock.marketCap %}
+                                                    {% set market_cap = stock.market_cap or stock.marketCap %}
+                                                    {% if market_cap is number %}
+                                                        {% if market_cap > 1000000000 %}
+                                                            {{ "%.1f"|format(market_cap / 1000000000) }} mrd NOK
+                                                        {% elif market_cap > 1000000 %}
+                                                            {{ "%.1f"|format(market_cap / 1000000) }} mill NOK
+                                                        {% else %}
+                                                            {{ "{:,}"|format(market_cap) }} NOK
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {{ market_cap }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    Ikke tilgjengelig
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>P/E-forhold:</td>
@@ -309,7 +326,7 @@
                         <button class="btn btn-success external-buy-btn" data-ticker="{{ stock.symbol }}">
                             <i class="fas fa-shopping-cart me-1"></i>Kjøp
                         </button>
-                        <a href="{{ url_for('analysis.ai_analysis', ticker=stock.symbol) }}" class="btn btn-info">
+                        <a href="{{ url_for('analysis.ai', ticker=stock.symbol or stock.ticker) }}" class="btn btn-info">
                             <i class="fas fa-robot me-1"></i>Vis AI analyse
                         </a>
                         <a href="{{ url_for('analysis.technical', ticker=stock.symbol) }}" class="btn btn-outline-secondary">

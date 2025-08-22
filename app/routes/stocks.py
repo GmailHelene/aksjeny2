@@ -508,7 +508,23 @@ def details(symbol):
             'change': stock_info.get('change', 0),
             'change_percent': stock_info.get('change_percent', 0),
             'volume': stock_info.get('volume', 1000000),
+            'regularMarketVolume': stock_info.get('volume', 1000000),
+            'market_cap': stock_info.get('marketCap', None),
+            'marketCap': stock_info.get('marketCap', None),
             'sector': stock_info.get('sector', 'Technology'),
+            'open': stock_info.get('open', current_price),
+            'high': stock_info.get('high', current_price * 1.03),
+            'low': stock_info.get('low', current_price * 0.97),
+            # Add technical data to stock object so template can access it
+            'rsi': technical_data.get('rsi', 50.0),
+            'macd': technical_data.get('macd', 0.0),
+            'ma50': technical_data.get('sma_50', current_price),
+            'sma_20': technical_data.get('sma_20', current_price),
+            'sma_50': technical_data.get('sma_50', current_price),
+            'ema_12': technical_data.get('ema_12', current_price),
+            'stochastic_k': technical_data.get('stochastic_k', 50.0),
+            'bollinger_upper': technical_data.get('bollinger_upper', current_price * 1.02),
+            'bollinger_lower': technical_data.get('bollinger_lower', current_price * 0.98),
         }
 
         # Get ticker-specific AI recommendation
