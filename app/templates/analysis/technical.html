@@ -804,108 +804,219 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loadingEl) loadingEl.style.display = 'none';
     }, 3000);
     
-    // Initialize TradingView widget
+    // Enhanced TradingView initialization with ad blocker detection
     if (typeof TradingView !== 'undefined' && symbol) {
-        // Convert symbols to TradingView format
-        let tvSymbol = symbol;
-        
-        // Oslo Børs - map to correct format (verified OSL:SYMBOL works)
-        if (symbol.endsWith('.OL')) {
-            const baseSymbol = symbol.replace('.OL', '');
-            tvSymbol = 'OSL:' + baseSymbol;
-            console.log(`✅ Oslo Børs mapping: ${symbol} → ${tvSymbol}`);
-        } 
-        // Cryptocurrencies
-        else if (symbol.includes('BTC') || symbol.includes('ETH') || symbol.endsWith('-USD')) {
-            if (symbol.endsWith('-USD')) {
-                tvSymbol = 'BINANCE:' + symbol.replace('-USD', 'USD');
-            } else {
-                tvSymbol = 'BINANCE:' + symbol + 'USD';
-            }
-            console.log(`🪙 Crypto mapping: ${symbol} → ${tvSymbol}`);
-        }
-        // Known US NASDAQ stocks
-        else if (['AAPL', 'MSFT', 'GOOGL', 'GOOG', 'TSLA', 'NVDA', 'META', 'NFLX', 'AMZN', 'INTC', 'ADBE', 'CRM', 'PYPL'].includes(symbol)) {
-            tvSymbol = 'NASDAQ:' + symbol;
-            console.log(`📈 NASDAQ mapping: ${symbol} → ${tvSymbol}`);
-        }
-        // Known US NYSE stocks
-        else if (['JPM', 'BAC', 'WMT', 'DIS', 'KO', 'XOM', 'JNJ', 'V', 'MA', 'PG', 'UNH'].includes(symbol)) {
-            tvSymbol = 'NYSE:' + symbol;
-            console.log(`🏛️ NYSE mapping: ${symbol} → ${tvSymbol}`);
-        }
-        // European stocks
-        else if (symbol.endsWith('.DE')) {
-            tvSymbol = 'XETR:' + symbol.replace('.DE', '');
-            console.log(`🇩🇪 German mapping: ${symbol} → ${tvSymbol}`);
-        }
-        else if (symbol.endsWith('.PA')) {
-            tvSymbol = 'EURONEXT:' + symbol.replace('.PA', '');
-            console.log(`🇫🇷 French mapping: ${symbol} → ${tvSymbol}`);
-        }
-        // Default mapping - try multiple exchanges for unknown symbols
-        else if (!symbol.includes('.') && !symbol.includes('-') && symbol.length <= 5) {
-            // For unknown symbols, try NASDAQ first, then NYSE
-            tvSymbol = 'NASDAQ:' + symbol;
-            console.log(`❓ Default NASDAQ mapping: ${symbol} → ${tvSymbol}`);
-        }
-        else {
-            // If all else fails, use the symbol as-is and let TradingView handle it
-            tvSymbol = symbol;
-            console.log(`⚠️ No mapping found, using symbol as-is: ${symbol}`);
-        }
-        
-        console.log(`🎯 Final TradingView symbol: ${tvSymbol} (Original: ${symbol})`);
-        
+        // Test TradingView accessibility
         try {
-            // Use the converted TradingView symbol
-            console.log('🔄 Initializing TradingView widget...');
-            const widget = new TradingView.widget({
-                "autosize": true,
-                "symbol": tvSymbol,
-                "interval": "D",
-                "timezone": "Europe/Oslo",
-                "theme": "light",
-                "style": "1",
-                "locale": "no",
-                "toolbar_bg": "#f1f3f6",
-                "enable_publishing": false,
-                "allow_symbol_change": true,
-                "container_id": "tradingview_widget",
-                "studies": [
-                    "RSI@tv-basicstudies",
-                    "MACD@tv-basicstudies",
-                    "BB@tv-basicstudies"
-                ],
-                "show_popup_button": true,
-                "popup_width": "1200",
-                "popup_height": "800",
-                "onChartReady": function() {
-                    console.log('✅ TradingView chart loaded successfully for:', tvSymbol);
-                    hideLoadingSpinner();
-                },
-                "onerror": function(error) {
-                    console.error('❌ TradingView widget error for', tvSymbol, ':', error);
-                    showTradingViewFallback();
-                }
-            });
+            if (!TradingView.widget) {
+                throw new Error('TradingView.widget not available - likely blocked');
+            }
             
-            // Set timeout to handle cases where chart doesn't load
-            setTimeout(() => {
-                const container = document.getElementById('tradingview_widget');
-                if (container && !container.querySelector('iframe')) {
-                    console.warn('⏰ TradingView timeout - no iframe found after 10 seconds');
-                    showTradingViewFallback();
-                }
-            }, 10000);
+            // Convert symbols to TradingView format with validation
+            let tvSymbol = symbol;
             
-        } catch (error) {
-            console.error('Error initializing TradingView widget:', error);
-            showTradingViewFallback();
+            // Enhanced symbol validation and mapping
+            if (!symbol || typeof symbol !== 'string') {
+                console.warn('Invalid symbol:', symbol);
+                tvSymbol = 'NASDAQ:AAPL'; // Safe fallback
+            } else {
+                const cleanSymbol = symbol.trim().toUpperCase();
+                
+                // Oslo Børs - enhanced validation
+                if (cleanSymbol.endsWith('.OL')) {
+                    const baseSymbol = cleanSymbol.replace('.OL', '');
+                    if (baseSymbol.length >= 2 && baseSymbol.length <= 6) {
+                        tvSymbol = 'OSL:' + baseSymbol;
+                        console.log(`✅ Oslo Børs validated: ${symbol} → ${tvSymbol}`);
+                    } else {
+                        console.warn('Invalid Oslo Børs symbol format:', symbol);
+                        tvSymbol = 'OSL:EQNR'; // Safe Oslo fallback
+                    }
+                } 
+                // Cryptocurrencies with validation
+                else if (cleanSymbol.includes('BTC') || cleanSymbol.includes('ETH') || cleanSymbol.endsWith('-USD')) {
+                    if (cleanSymbol.endsWith('-USD')) {
+                        const base = cleanSymbol.replace('-USD', '');
+                        tvSymbol = 'BINANCE:' + base + 'USD';
+                    } else if (cleanSymbol.length <= 10) {
+                        tvSymbol = 'BINANCE:' + cleanSymbol + 'USD';
+                    }
+                    console.log(`🪙 Crypto validated: ${symbol} → ${tvSymbol}`);
+                }
+                // Enhanced US stock validation
+                else if (['AAPL', 'MSFT', 'GOOGL', 'GOOG', 'TSLA', 'NVDA', 'META', 'NFLX', 'AMZN', 'INTC', 'ADBE', 'CRM', 'PYPL'].includes(cleanSymbol)) {
+                    tvSymbol = 'NASDAQ:' + cleanSymbol;
+                    console.log(`📈 NASDAQ validated: ${symbol} → ${tvSymbol}`);
+                }
+                else if (['JPM', 'BAC', 'WMT', 'DIS', 'KO', 'XOM', 'JNJ', 'V', 'MA', 'PG', 'UNH'].includes(cleanSymbol)) {
+                    tvSymbol = 'NYSE:' + cleanSymbol;
+                    console.log(`🏛️ NYSE validated: ${symbol} → ${tvSymbol}`);
+                }
+                // European stocks
+                else if (cleanSymbol.endsWith('.DE')) {
+                    tvSymbol = 'XETR:' + cleanSymbol.replace('.DE', '');
+                    console.log(`🇩🇪 German validated: ${symbol} → ${tvSymbol}`);
+                }
+                else if (cleanSymbol.endsWith('.PA')) {
+                    tvSymbol = 'EURONEXT:' + cleanSymbol.replace('.PA', '');
+                    console.log(`🇫🇷 French validated: ${symbol} → ${tvSymbol}`);
+                }
+                // Default validation for unknown symbols
+                else if (!cleanSymbol.includes('.') && !cleanSymbol.includes('-') && cleanSymbol.length <= 5 && /^[A-Z0-9]+$/i.test(cleanSymbol)) {
+                    tvSymbol = 'NASDAQ:' + cleanSymbol;
+                    console.log(`❓ Default NASDAQ validated: ${symbol} → ${tvSymbol}`);
+                }
+                else {
+                    console.log(`⚠️ Using symbol as-is (validation passed): ${symbol}`);
+                    tvSymbol = cleanSymbol;
+                }
+            }
+        
+            console.log(`🎯 Final TradingView symbol: ${tvSymbol} (Original: ${symbol})`);
+            
+            try {
+                // Enhanced widget creation with better error handling
+                console.log('🔄 Initializing TradingView widget with enhanced error handling...');
+                const widget = new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "D",
+                    "timezone": "Europe/Oslo",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "no",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_widget",
+                    "studies": [
+                        "RSI@tv-basicstudies",
+                        "MACD@tv-basicstudies",
+                        "BB@tv-basicstudies"
+                    ],
+                    "show_popup_button": true,
+                    "popup_width": "1200",
+                    "popup_height": "800",
+                    "onChartReady": function() {
+                        console.log('✅ TradingView chart loaded successfully for:', tvSymbol);
+                        hideLoadingSpinner();
+                    },
+                    "onerror": function(error) {
+                        console.error('❌ TradingView widget error for', tvSymbol, ':', error);
+                        handleTradingViewChartError(error, tvSymbol);
+                    }
+                });
+                
+                // Enhanced timeout handling with multiple checks
+                setTimeout(() => {
+                    const container = document.getElementById('tradingview_widget');
+                    if (container) {
+                        const iframe = container.querySelector('iframe');
+                        const hasContent = iframe && iframe.offsetHeight > 0;
+                        
+                        if (!hasContent) {
+                            console.warn('⏰ TradingView timeout - chart not loaded after 15 seconds');
+                            console.log('Container content:', container.innerHTML.substring(0, 200));
+                            showTradingViewFallback();
+                        }
+                    }
+                }, 15000);
+                
+                // Additional check for blocked content
+                setTimeout(() => {
+                    const container = document.getElementById('tradingview_widget');
+                    if (container && container.innerHTML.includes('blocked') || container.innerHTML.includes('error')) {
+                        console.warn('🚫 TradingView content appears to be blocked');
+                        showTradingViewFallback();
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                console.error('❌ Error initializing TradingView widget:', error);
+                handleTradingViewChartError(error, tvSymbol);
+            }
+        } catch (accessError) {
+            console.error('❌ TradingView access error (likely blocked):', accessError);
+            showTradingViewBlockedMessage();
         }
     } else {
-        console.log('TradingView library not loaded, showing fallback');
+        console.warn('⚠️ TradingView library not loaded or no symbol provided');
+        console.log('TradingView available:', typeof TradingView !== 'undefined');
+        console.log('Symbol provided:', symbol);
         showTradingViewFallback();
+    }
+    
+    // Enhanced error handling functions for TradingView
+    function handleTradingViewChartError(error, symbol) {
+        console.error('TradingView chart error details:', error);
+        
+        if (error.toString().includes('network') || error.toString().includes('fetch')) {
+            showNetworkErrorMessage();
+        } else if (error.toString().includes('rate') || error.toString().includes('limit')) {
+            showRateLimitMessage();
+        } else if (error.toString().includes('symbol') || error.toString().includes('invalid')) {
+            showInvalidSymbolMessage(symbol);
+        } else {
+            showTradingViewFallback();
+        }
+    }
+    
+    function showTradingViewBlockedMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-warning text-center p-4">
+                <i class="bi bi-shield-exclamation fs-1 text-warning mb-3"></i>
+                <h5>TradingView Blokkert</h5>
+                <p class="mb-3">TradingView charts er blokkert av ad blocker eller nettverksinnstillinger.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="showTradingViewFallback()">
+                        <i class="bi bi-bar-chart"></i> Vis Chart.js
+                    </button>
+                </div>
+                <small class="text-muted mt-2 d-block">Deaktiver ad blocker for denne siden</small>
+            </div>
+        `;
+    }
+    
+    function showNetworkErrorMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-danger text-center p-3">
+                <i class="bi bi-wifi-off text-danger mb-2"></i>
+                <h6>Nettverksfeil</h6>
+                <p class="small mb-2">Kan ikke koble til TradingView</p>
+                <button class="btn btn-sm btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Prøv igjen
+                </button>
+            </div>
+        `;
+    }
+    
+    function showRateLimitMessage() {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-info text-center p-3">
+                <i class="bi bi-clock text-info mb-2"></i>
+                <h6>Rate Limit</h6>
+                <p class="small mb-2">For mange forespørsler. Vent noen sekunder.</p>
+                <button class="btn btn-sm btn-primary" onclick="setTimeout(() => location.reload(), 5000)">
+                    Auto-refresh om 5 sek
+                </button>
+            </div>
+        `;
+    }
+    
+    function showInvalidSymbolMessage(symbol) {
+        document.getElementById('tradingview_widget').innerHTML = `
+            <div class="alert alert-warning text-center p-3">
+                <i class="bi bi-exclamation-triangle text-warning mb-2"></i>
+                <h6>Ugyldig Symbol</h6>
+                <p class="small mb-2">Symbol "${symbol}" ikke funnet på TradingView</p>
+                <button class="btn btn-sm btn-primary" onclick="showTradingViewFallback()">
+                    <i class="bi bi-bar-chart"></i> Vis fallback chart
+                </button>
+            </div>
+        `;
     }
     
     function showTradingViewFallback() {
