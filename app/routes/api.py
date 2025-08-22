@@ -3,7 +3,7 @@ import logging
 import random
 from flask import Blueprint, jsonify, request, current_app, render_template
 from flask_login import login_required, current_user
-from flask_wtf.csrf import exempt as csrf_exempt
+from ..extensions import csrf
 from ..services.data_service import DataService
 from ..services.ai_service import AIService
 from ..services.yahoo_finance_service import YahooFinanceService
@@ -810,7 +810,7 @@ def get_user_watchlist():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @api.route('/watchlist/add', methods=['POST'])
-@csrf_exempt
+@csrf.exempt
 def add_to_watchlist():
     """Add symbol to watchlist - Global API endpoint for template compatibility"""
     try:

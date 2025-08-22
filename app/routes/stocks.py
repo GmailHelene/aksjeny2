@@ -6,7 +6,7 @@ import traceback
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask import Response
 from flask_login import current_user, login_required
-from flask_wtf.csrf import exempt as csrf_exempt
+from ..extensions import csrf
 from datetime import datetime, timedelta
 from ..services.data_service import DataService, YFINANCE_AVAILABLE
 from ..services.analysis_service import AnalysisService
@@ -769,7 +769,7 @@ def api_stocks_search():
         }), 500
 
 @stocks.route('/api/favorites/add', methods=['POST'])
-@csrf_exempt
+@csrf.exempt
 @demo_access
 def add_to_favorites():
     """Add stock to favorites"""
