@@ -207,6 +207,7 @@
             padding: 0.1rem 1rem !important;
             font-size: 0.7rem !important;
             margin: 0 !important;
+            color: #ffffff !important; /* Change dropdown headers to white text */
         }
         
         .navbar-nav .dropdown-divider {
@@ -876,6 +877,7 @@
         padding: 0.3rem 1rem 0.2rem !important;
         font-size: 0.7rem !important;
         margin: 0 !important;
+        color: #ffffff !important; /* Change dropdown headers to white text */
     }
     
     /* Dropdown divider adjustments */
@@ -1041,6 +1043,7 @@
         margin-top: 0 !important;
         text-transform: uppercase;
         font-weight: 600;
+        color: #ffffff !important; /* Change dropdown headers to white text */
     }
     
     /* Dropdown divider improvements - MINIMAL */
