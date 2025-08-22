@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from ..extensions import csrf
 from ..services.watchlist_service import WatchlistService
+from ..utils.access_control import demo_access
 import logging
 
 watchlist_api = Blueprint('watchlist_api', __name__)
@@ -29,10 +30,17 @@ def get_watchlist_data():
 
 @watchlist_api.route('/api/watchlist/add', methods=['POST'])
 @csrf.exempt
-@login_required
+@demo_access
 def add_to_watchlist():
     """Add stock to watchlist"""
     try:
+        # Check if user is authenticated
+        if not current_user.is_authenticated:
+            return jsonify({
+                'success': False,
+                'error': 'Du må logge inn for å legge til favoritter'
+            }), 401
+            
         data = request.get_json()
         if not data or 'symbol' not in data:
             return jsonify({

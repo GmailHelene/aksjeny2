@@ -985,7 +985,7 @@ def quick_add_stock(ticker):
     return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/add', methods=['GET', 'POST'])
-@access_required
+@demo_access
 def add_stock():
     """Add a stock to the user's default portfolio, supporting JSON requests for AJAX"""
     if request.method == 'POST':

@@ -427,10 +427,120 @@ function updateChart(period) {
         </div>
     `;
     
-    // Simulate loading and create mock chart
-    setTimeout(() => {
-        createMockChart(period);
-    }, 1000);
+    // Load real chart data from API
+    loadRealChartData(period);
+}
+
+function loadRealChartData(period) {
+    // Map period to API format
+    const periodMap = {
+        '1D': '1d',
+        '1W': '5d', 
+        '1M': '1mo',
+        '3M': '3mo',
+        '6M': '6mo',
+        '1Y': '1y'
+    };
+    
+    const apiPeriod = periodMap[period] || '5d';
+    const apiUrl = `/stocks/api/demo/chart-data/${currentSymbol}?period=${apiPeriod}`;
+    
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.dates && data.prices && data.dates.length > 0) {
+                createRealChart(data, period);
+            } else {
+                // Fallback to mock data if API data is empty
+                createMockChart(period);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Fallback to mock data on error
+            createMockChart(period);
+        });
+}
+
+function createRealChart(data, period) {
+    const { dates, prices, volumes } = data;
+    
+    // Price trace
+    const priceTrace = {
+        x: dates,
+        y: prices,
+        type: 'scatter',
+        mode: 'lines',
+        name: currentSymbol,
+        line: {
+            color: prices[prices.length - 1] > prices[0] ? '#28a745' : '#dc3545',
+            width: 2
+        },
+        hovertemplate: '<b>%{fullData.name}</b><br>' +
+                      'Dato: %{x}<br>' +
+                      'Pris: %{y} NOK<br>' +
+                      '<extra></extra>'
+    };
+    
+    const traces = [priceTrace];
+    
+    // Add volume trace if available
+    if (volumes && volumes.length > 0) {
+        const volumeTrace = {
+            x: dates,
+            y: volumes,
+            type: 'bar',
+            name: 'Volum',
+            yaxis: 'y2',
+            marker: {
+                color: 'rgba(0, 123, 255, 0.3)'
+            },
+            hovertemplate: '<b>Volum</b><br>' +
+                          'Dato: %{x}<br>' +
+                          'Volum: %{y:,.0f}<br>' +
+                          '<extra></extra>'
+        };
+        traces.push(volumeTrace);
+    }
+    
+    const layout = {
+        title: {
+            text: `${currentSymbol} - ${period}`,
+            font: { size: 16 }
+        },
+        xaxis: {
+            title: 'Dato',
+            type: 'date'
+        },
+        yaxis: {
+            title: 'Pris (NOK)',
+            side: 'left'
+        },
+        yaxis2: volumes && volumes.length > 0 ? {
+            title: 'Volum',
+            overlaying: 'y',
+            side: 'right'
+        } : undefined,
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1
+        },
+        margin: { t: 50, r: 50, b: 50, l: 50 },
+        hovermode: 'x unified'
+    };
+    
+    const config = {
+        responsive: true,
+        displayModeBar: false
+    };
+    
+    Plotly.newPlot('price-chart', traces, layout, config);
 }
 
 function createMockChart(period) {
@@ -628,13 +738,13 @@ function addToWatchlist(ticker) {
         btn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
         btn.disabled = true;
         
-        fetch('/watchlist/api/watchlist/add', {
+        fetch('/api/watchlist/add', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
             },
-            body: JSON.stringify({ ticker: ticker })
+            body: JSON.stringify({ symbol: ticker })
         })
         .then(response => response.json())
         .then(data => {
