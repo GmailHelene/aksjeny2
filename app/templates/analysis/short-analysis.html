@@ -67,7 +67,7 @@
                             <div class="card text-center border-danger">
                                 <div class="card-body">
                                     <h6 class="text-danger">Short Interesse</h6>
-                                    <h4>{{ "%.1f"|format(stock_data.short_interest * 100) if stock_data.short_interest else 'N/A' }}%</h4>
+                                    <h4>{{ "%.1f"|format(stock_data.short_interest * 100) if stock_data.short_interest else 'Ikke tilgjengelig' }}%</h4>
                                     <small class="text-muted">
                                         {% if stock_data.short_interest %}
                                             {% if stock_data.short_interest > 0.20 %}
@@ -86,7 +86,7 @@
                             <div class="card text-center border-warning">
                                 <div class="card-body">
                                     <h6 class="text-warning">P/E Ratio</h6>
-                                    <h4>{{ "%.1f"|format(stock_data.pe_ratio) if stock_data.pe_ratio else 'N/A' }}</h4>
+                                    <h4>{{ "%.1f"|format(stock_data.pe_ratio) if stock_data.pe_ratio else 'Ikke tilgjengelig' }}</h4>
                                     <small class="text-muted">
                                         {% if stock_data.pe_ratio %}
                                             {% if stock_data.pe_ratio > 30 %}
@@ -105,7 +105,7 @@
                             <div class="card text-center border-info">
                                 <div class="card-body">
                                     <h6 class="text-info">Beta</h6>
-                                    <h4>{{ "%.2f"|format(stock_data.beta) if stock_data.beta else 'N/A' }}</h4>
+                                    <h4>{{ "%.2f"|format(stock_data.beta) if stock_data.beta else 'Ikke tilgjengelig' }}</h4>
                                     <small class="text-muted">
                                         {% if stock_data.beta %}
                                             {% if stock_data.beta > 1.5 %}

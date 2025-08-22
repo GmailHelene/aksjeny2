@@ -161,20 +161,20 @@
                                 {% for stock in results %}
                                 <tr>
                                     <td>
-                                        <strong>{{ stock.get('ticker', 'N/A') }}</strong>
+                                        <strong>{{ stock.get('ticker', 'Ukjent') }}</strong>
                                     </td>
                                     <td>
                                         <div>
-                                            <div class="fw-bold" title="{{ stock.get('company', 'N/A') }}">
-                                                {{ stock.get('company', 'N/A')[:30] }}{% if (stock.get('company', '')|length) > 30 %}...{% endif %}
+                                            <div class="fw-bold" title="{{ stock.get('company', 'Ukjent selskap') }}">
+                                                {{ stock.get('company', 'Ukjent selskap')[:30] }}{% if (stock.get('company', '')|length) > 30 %}...{% endif %}
                                             </div>
-                                            <small class="text-muted" title="{{ stock.get('industry', 'N/A') }}">
-                                                {{ stock.get('industry', 'N/A')[:25] }}{% if (stock.get('industry', '')|length) > 25 %}...{% endif %}
+                                            <small class="text-muted" title="{{ stock.get('industry', 'Ukjent bransje') }}">
+                                                {{ stock.get('industry', 'Ukjent bransje')[:25] }}{% if (stock.get('industry', '')|length) > 25 %}...{% endif %}
                                             </small>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-dark">{{ stock.get('sector', 'N/A') }}</span>
+                                        <span class="badge bg-light text-dark">{{ stock.get('sector', 'Ukjent sektor') }}</span>
                                     </td>
                                     <td>
                                         {% set price_val = stock.get('price', 0)|float %}

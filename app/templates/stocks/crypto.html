@@ -85,7 +85,7 @@ Kryptovaluta
                                                             {% set change_percent_val = (crypto.get('change_percent') or 0)|float %}
                                                             {% if change_percent_val > 0 %}+{% endif %}{{ "%.2f"|format(change_percent_val) }}%
                                                         </td>
-                                                        <td>{{ crypto.get('volume', 'N/A') }}</td>
+                                                        <td>{{ crypto.get('volume', 'Ikke tilgjengelig') }}</td>
                                                         <td>
                                                             {% set change_percent_val = (crypto.get('change_percent') or 0)|float %}
                                                             {% if change_percent_val > 2 %}

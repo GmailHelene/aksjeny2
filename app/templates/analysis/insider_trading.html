@@ -271,17 +271,17 @@ function updateInsiderData(data) {
             <tr>
                 <td>${new Date(transaction.date).toLocaleDateString('no-NO')}</td>
                 <td><strong>${transaction.ticker}</strong></td>
-                <td>${transaction.company || 'N/A'}</td>
+                <td>${transaction.company || 'Ikke tilgjengelig'}</td>
                 <td>${transaction.insider_name}</td>
-                <td class="small">${transaction.position || 'N/A'}</td>
+                <td class="small">${transaction.position || 'Ikke tilgjengelig'}</td>
                 <td>
                     <span class="badge ${transaction.transaction_type === 'Kjøp' ? 'bg-success' : 'bg-danger'}">
                         ${transaction.transaction_type}
                     </span>
                 </td>
-                <td>${transaction.shares ? transaction.shares.toLocaleString('no-NO') : 'N/A'}</td>
-                <td>kr ${transaction.price ? transaction.price.toFixed(2) : 'N/A'}</td>
-                <td>kr ${transaction.value ? transaction.value.toLocaleString('no-NO') : 'N/A'}</td>
+                <td>${transaction.shares ? transaction.shares.toLocaleString('no-NO') : 'Ikke tilgjengelig'}</td>
+                <td>kr ${transaction.price ? transaction.price.toFixed(2) : 'Ikke tilgjengelig'}</td>
+                <td>kr ${transaction.value ? transaction.value.toLocaleString('no-NO') : 'Ikke tilgjengelig'}</td>
                 <td>
                     <span class="badge ${getSignalClass(transaction.ownership_change)}">
                         ${transaction.ownership_change > 0 ? 'Positiv' : transaction.ownership_change < 0 ? 'Negativ' : 'Nøytral'}

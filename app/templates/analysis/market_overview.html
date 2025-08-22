@@ -56,7 +56,7 @@
             <div class="card market-summary-card {{ 'positive' if market_summaries.oslo.change >= 0 else 'negative' }}">
                 <div class="card-body">
                     <h6 class="card-title">Oslo Børs</h6>
-                    <h4>{{ market_summaries.oslo.index_value|default('N/A') }}</h4>
+                    <h4>{{ market_summaries.oslo.index_value|default('Ikke tilgjengelig') }}</h4>
                     <small class="{{ 'text-success' if market_summaries.oslo.change >= 0 else 'text-danger' }}">
                         {{ "{:+.2f}".format(market_summaries.oslo.change|default(0)) }} ({{ "{:+.1f}".format(market_summaries.oslo.change_percent|default(0)) }}%)
                     </small>
@@ -68,7 +68,7 @@
             <div class="card market-summary-card {{ 'positive' if market_summaries.global_market.change >= 0 else 'negative' }}">
                 <div class="card-body">
                     <h6 class="card-title">Globale Markeder</h6>
-                    <h4>{{ market_summaries.global_market.index_value|default('N/A') }}</h4>
+                    <h4>{{ market_summaries.global_market.index_value|default('Ikke tilgjengelig') }}</h4>
                     <small class="{{ 'text-success' if market_summaries.global_market.change >= 0 else 'text-danger' }}">
                         {{ "{:+.2f}".format(market_summaries.global_market.change|default(0)) }} ({{ "{:+.1f}".format(market_summaries.global_market.change_percent|default(0)) }}%)
                     </small>
@@ -92,7 +92,7 @@
             <div class="card market-summary-card">
                 <div class="card-body">
                     <h6 class="card-title">USD/NOK</h6>
-                    <h4>{{ market_summaries.currency.usd_nok|default('N/A') }}</h4>
+                    <h4>{{ market_summaries.currency.usd_nok|default('Ikke tilgjengelig') }}</h4>
                     <small class="{{ 'text-success' if market_summaries.currency.usd_nok_change >= 0 else 'text-danger' }}">
                         {{ "{:+.4f}".format(market_summaries.currency.usd_nok_change|default(0)) }}
                     </small>

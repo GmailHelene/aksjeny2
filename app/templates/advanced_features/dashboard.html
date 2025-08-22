@@ -146,7 +146,7 @@
                 {% if market_data.currencies %}
                     <div class="d-flex justify-content-between">
                         <span>USD/NOK:</span>
-                        <strong>{{ market_data.currencies.get('USD/NOK', 'N/A') }}</strong>
+                        <strong>{{ market_data.currencies.get('USD/NOK', 'Ikke tilgjengelig') }}</strong>
                     </div>
                 {% else %}
                     <small>{{ t('common.loading', fallback='Laster...') }}</small>

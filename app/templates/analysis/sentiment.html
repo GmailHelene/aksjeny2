@@ -169,15 +169,15 @@
                         </div>
                         <div class="col-md-3 text-center mb-3">
                             <h6 class="text-muted">Nyheter</h6>
-                            <h4>{{ sentiment_data.get('news_score', 'N/A') }}%</h4>
+                            <h4>{{ sentiment_data.get('news_score', 'Ikke tilgjengelig') }}%</h4>
                         </div>
                         <div class="col-md-3 text-center mb-3">
                             <h6 class="text-muted">Sosiale medier</h6>
-                            <h4>{{ sentiment_data.get('social_score', 'N/A') }}%</h4>
+                            <h4>{{ sentiment_data.get('social_score', 'Ikke tilgjengelig') }}%</h4>
                         </div>
                         <div class="col-md-3 text-center mb-3">
                             <h6 class="text-muted">Volum</h6>
-                            <h4>{{ sentiment_data.get('volume_trend', 'N/A') }}</h4>
+                            <h4>{{ sentiment_data.get('volume_trend', 'Ikke tilgjengelig') }}</h4>
                         </div>
                     </div>
                     {% else %}
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-6">Volatilitet:</dt>
-                        <dd class="col-6">{{ sentiment_data.volatility|default('N/A') }}</dd>
+                        <dd class="col-6">{{ sentiment_data.volatility|default('Ikke tilgjengelig') }}</dd>
                         
                         <dt class="col-6">Trend:</dt>
                         <dd class="col-6">
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <dd class="col-6">{{ (sentiment_data.confidence|default(0) * 100)|round }}%</dd>
                         
                         <dt class="col-6">Sist oppdatert:</dt>
-                        <dd class="col-6">{{ sentiment_data.last_updated|default('N/A') }}</dd>
+                        <dd class="col-6">{{ sentiment_data.last_updated|default('Ikke tilgjengelig') }}</dd>
                     </dl>
                 </div>
             </div>

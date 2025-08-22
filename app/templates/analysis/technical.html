@@ -42,7 +42,7 @@
                         </div>
                         <div class="col-md-6 text-md-end">
                             <h3 class="mb-1">
-                                <span id="current-price">{{ technical_data.get('last_price', 'N/A') }}</span>
+                                <span id="current-price">{{ technical_data.get('last_price', 'Ikke tilgjengelig') }}</span>
                                 <small class="text-muted">NOK</small>
                             </h3>
                             <span class="badge {{ 'bg-dark-green' if technical_data.get('change', 0) > 0 else 'bg-danger' if technical_data.get('change', 0) < 0 else 'bg-secondary' }} fs-6">
