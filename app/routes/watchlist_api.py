@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from ..extensions import csrf
 from ..services.watchlist_service import WatchlistService
-from ..utils.access_control import demo_access
+from ..utils.access_control import demo_access, access_required
 import logging
 
 watchlist_api = Blueprint('watchlist_api', __name__)

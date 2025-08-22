@@ -196,7 +196,6 @@
 /* Override for any h5, span, i elements in card headers */
 .card-header h5,
 .card-header span,
-.card-header i,
-.card-header .bi {
+.card-header i {
     color: #333 !important; /* Changed from 'inherit' to specific dark color */
 }
