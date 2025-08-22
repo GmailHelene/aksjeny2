@@ -3,6 +3,7 @@ API routes for watchlist operations.
 """
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
+from ..extensions import csrf
 from ..services.watchlist_service import WatchlistService
 import logging
 
@@ -27,6 +28,7 @@ def get_watchlist_data():
         }), 500
 
 @watchlist_api.route('/api/watchlist/add', methods=['POST'])
+@csrf.exempt
 @login_required
 def add_to_watchlist():
     """Add stock to watchlist"""
@@ -58,6 +60,7 @@ def add_to_watchlist():
         }), 500
 
 @watchlist_api.route('/api/watchlist/remove', methods=['POST'])
+@csrf.exempt
 @login_required
 def remove_from_watchlist():
     """Remove stock from watchlist"""

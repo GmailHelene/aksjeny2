@@ -245,11 +245,15 @@ window.toggleFavorite = async function(ticker, btn) {
         const isFavorited = btn.classList.contains('btn-warning') || btn.querySelector('.bi-star-fill');
         const url = isFavorited ? '/stocks/api/favorites/remove' : '/stocks/api/favorites/add';
         
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({ 
                 symbol: ticker,
