@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""
-Quick test for sentiment and crypto dashboard routes
-"""
+# TESTFIL FJERNET
 
 import sys
 import os

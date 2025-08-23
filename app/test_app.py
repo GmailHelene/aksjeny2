@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# SLETTET TESTFIL
 """
 Simplified Aksjeradar Application Test
 Tests if the application can be created and registered routes are working
