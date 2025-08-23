@@ -5,9 +5,18 @@
 {% block keywords %}teknisk analyse, RSI, MACD, Bollinger Bands, Moving Average, tekniske indikatorer, chart analyse, Oslo Børs teknisk analyse{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bg-dark-green.css') }}">
+<link rel="stylesheet" href="/static/css/bg-dark-green.css">
 <div class="container-fluid mt-4">
-    {% include 'analysis/_menu.html' %}
+    <!-- Temporary navigation while fixing menu include -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+                <li class="breadcrumb-item"><a href="/analysis">Analyse</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Teknisk Analyse</li>
+            </ol>
+        </nav>
+    </div>
     
     <div class="row">
         <div class="col-12">
@@ -16,13 +25,7 @@
                     <i class="bi bi-graph-up text-primary me-2"></i>
                     Avansert Teknisk Analyse
                 </h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
-                        <li class="breadcrumb-item active">Teknisk</li>
-                    </ol>
-                </nav>
+                <!-- Navigation menu temporarily removed due to production BuildError -->
             </div>
         </div>
     </div>
@@ -597,7 +600,7 @@
                     <h5 class="mb-0">Analyser Ny Aksje</h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ url_for('analysis.technical') }}" id="quick-analysis-form">
+                    <form method="GET" action="/analysis/technical" id="quick-analysis-form">
                         <div class="mb-3">
                             <label for="symbol" class="form-label">Aksjesymbol</label>
                             <input type="text" class="form-control" id="symbol" name="symbol" 
@@ -648,13 +651,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('analysis.benjamin_graham', ticker=symbol) }}" class="btn btn-outline-primary btn-sm">
+                        <a href="/analysis/benjamin-graham?ticker={{ symbol }}" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-calculator me-1"></i>Graham Analyse
                         </a>
-                        <a href="{{ url_for('analysis.ai', ticker=symbol) }}" class="btn btn-outline-info btn-sm">
+                        <a href="/analysis/ai?ticker={{ symbol }}" class="btn btn-outline-info btn-sm">
                             <i class="bi bi-robot me-1"></i>AI Analyse
                         </a>
-                        <a href="{{ url_for('analysis.warren_buffett', ticker=symbol) }}" class="btn btn-outline-success btn-sm">
+                        <a href="/analysis/warren-buffett?ticker={{ symbol }}" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-graph-up me-1"></i>Buffett Analyse
                         </a>
                     </div>
@@ -675,7 +678,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ url_for('analysis.technical') }}" id="main-analysis-form">
+                    <form method="GET" action="/analysis/technical" id="main-analysis-form">
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="position-relative">
@@ -747,7 +750,7 @@
                             <strong>{{ stock.symbol }}</strong>
                             <br><small class="text-muted">{{ stock.name|default(stock.symbol) }}</small>
                         </div>
-                        <a href="{{ url_for('analysis.technical', symbol=stock.symbol) }}" class="btn btn-sm btn-outline-primary">
+                        <a href="/analysis/technical?symbol={{ stock.symbol }}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-graph-up me-1"></i>Analyser
                         </a>
                     </div>
