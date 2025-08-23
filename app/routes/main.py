@@ -211,7 +211,7 @@ PREMIUM_ENDPOINTS = {
     'stocks.global_list',
     'stocks.list_crypto',
     # 'stocks.list_currency', # MOVED TO EXEMPT - should be accessible 
-    'stocks.compare',
+    # 'stocks.compare', # MOVED TO DEMO ACCESS - should be accessible to all users
     'stocks.list_stocks_by_category',
     
     # Analysis endpoints
@@ -2178,12 +2178,6 @@ def advanced_crypto_dashboard():
         # Fallback: render simple message
         return render_template('error.html', 
                              error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/stocks/compare')
-@login_required
-def stocks_compare():
-    """Stocks compare route"""
-    return redirect(url_for('stocks.compare'))
 
 @main.route('/analysis/warren-buffett')
 @login_required

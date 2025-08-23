@@ -520,7 +520,8 @@ def check_access_and_redirect():
         'main.about', 'main.contact', 'main.terms', 'main.privacy',
         'health.health_check', 'static', 'main.landing',
         'pricing.pricing_page', 'pricing.subscription', 'pricing.manage_subscription',
-        'pricing.stripe_webhook', 'pricing.cancel_subscription'
+        'pricing.stripe_webhook', 'pricing.cancel_subscription',
+        'stocks.compare'  # Stock comparison tool should be accessible to all users
     }
     
     # API endpoints that should be accessible for demo functionality
