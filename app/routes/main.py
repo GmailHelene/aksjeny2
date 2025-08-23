@@ -1239,7 +1239,7 @@ def register():
     from werkzeug.security import generate_password_hash
     
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect('/')
     
     form = RegistrationForm()
     
@@ -1369,11 +1369,11 @@ def subscription():
     """Subscription management page"""
     try:
         # Redirect to pricing page for subscription plans
-        return redirect(url_for('pricing.index'))
+        return redirect('/pricing')
     except Exception as e:
         current_app.logger.error(f"Error redirecting to pricing: {e}")
         flash('Kunne ikke laste prissiden.', 'error')
-        return redirect(url_for('main.index'))
+        return redirect('/')
 
 @main.route('/subscription/plans')
 @login_required
@@ -1381,11 +1381,11 @@ def subscription_plans():
     """Subscription plans page"""
     try:
         # Redirect to pricing page since that's where plans are shown
-        return redirect(url_for('pricing.index'))
+        return redirect('/pricing')
     except Exception as e:
         current_app.logger.error(f"Error redirecting to pricing: {e}")
         flash('Kunne ikke laste prissiden.', 'error')
-        return redirect(url_for('main.index'))
+        return redirect('/')
 
 @main.route('/roi-kalkulator')
 @main.route('/roi')
@@ -1400,13 +1400,13 @@ def roi_kalkulator():
     except Exception as e:
         current_app.logger.error(f"Error loading ROI calculator: {e}")
         flash('Kunne ikke laste ROI-kalkulatoren.', 'error')
-        return redirect(url_for('main.index'))
+        return redirect('/')
 
 @main.route('/dashboard')
 @access_required  
 def dashboard():
     """Main dashboard redirect to financial dashboard"""
-    return redirect(url_for('dashboard.financial_dashboard'))
+    return redirect('/dashboard/financial')
 
 @main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -1455,7 +1455,7 @@ Aksjeradar-teamet'''
             # Don't reveal if email exists or not
             flash('Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner.', 'info')
         
-        return redirect(url_for('main.login'))
+        return redirect('/login')
     
     return render_template('forgot_password.html', form=form)
 
@@ -1463,7 +1463,7 @@ Aksjeradar-teamet'''
 def reset_password(token):
     """Reset password with token"""
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect('/')
     
     LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, ReferralForm = get_forms()
     form = ResetPasswordForm()
@@ -1473,7 +1473,7 @@ def reset_password(token):
         email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour expiry
     except:
         flash('Ugyldig eller utløpt lenke for tilbakestilling av passord.', 'error')
-        return redirect(url_for('main.login'))
+        return redirect('/login')
     
     if form.validate_on_submit():
         User = get_user_model()
@@ -1503,7 +1503,7 @@ def referrals():
     stats = ReferralService.get_referral_stats(current_user)
     
     # Generate referral link
-    referral_link = url_for('main.register', ref=referral_code, _external=True)
+    referral_link = f"https://aksjeradar.trade/register?ref={referral_code}"
     
     return render_template('referrals.html',
                          referral_code=referral_code,
@@ -1518,11 +1518,11 @@ def send_referral():
     
     if not email:
         flash('E-postadresse er påkrevd.', 'error')
-        return redirect(url_for('main.referrals'))
+        return redirect('/referrals')
     
     ReferralService = get_referral_service()
     referral_code = ReferralService.get_or_create_referral_code(current_user)
-    referral_link = url_for('main.register', ref=referral_code, _external=True)
+    referral_link = f"https://aksjeradar.trade/register?ref={referral_code}"
     
     try:
         msg = EmailMessage(
@@ -1554,7 +1554,7 @@ Aksjeradar-teamet'''
         current_app.logger.error(f"Failed to send referral email: {e}")
         flash('Kunne ikke sende invitasjon. Vennligst prøv igjen senere.', 'error')
     
-    return redirect(url_for('main.referrals'))
+    return redirect('/referrals')
 
 @main.route('/terms')
 def terms():
