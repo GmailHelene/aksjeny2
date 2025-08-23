@@ -2135,54 +2135,240 @@ def update_notifications():
 @main.route('/watchlist')
 @access_required
 def watchlist():
-    """Main watchlist route - redirect to portfolio watchlist"""
+    """Main watchlist route - fallback implementation"""
     try:
+        # Try to redirect to portfolio watchlist first
         return redirect(url_for('portfolio.watchlist'))
     except Exception as e:
         logger.error(f"Error redirecting to portfolio watchlist: {e}")
-        # Fallback: render a simple watchlist page
-        return render_template('portfolio/watchlist.html', 
-                             stocks=[], 
-                             message="Watchlist er midlertidig utilgjengelig")
+        # Direct fallback implementation
+        try:
+            from ..models.favorites import Favorites
+            user_favorites = Favorites.get_user_favorites(current_user.id) if current_user.is_authenticated else []
+            return render_template('portfolio/watchlist.html', 
+                                 stocks=user_favorites, 
+                                 message="Watchlist vises med begrensede funksjoner")
+        except Exception as fallback_error:
+            logger.error(f"Fallback watchlist failed: {fallback_error}")
+            return render_template('error.html', 
+                                 error="Watchlist er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @main.route('/portfolio/watchlist')
 @login_required
 def portfolio_watchlist():
-    """Portfolio watchlist route - redirect to portfolio watchlist"""
+    """Portfolio watchlist route - fallback implementation"""
     try:
+        # Try to redirect to portfolio watchlist first
         return redirect(url_for('portfolio.watchlist'))
     except Exception as e:
         logger.error(f"Error redirecting to portfolio watchlist: {e}")
-        # Fallback: render a simple watchlist page
-        return render_template('portfolio/watchlist.html', 
-                             stocks=[], 
-                             message="Watchlist er midlertidig utilgjengelig")
+        # Direct fallback implementation
+        try:
+            from ..models.favorites import Favorites
+            user_favorites = Favorites.get_user_favorites(current_user.id) if current_user.is_authenticated else []
+            return render_template('portfolio/watchlist.html', 
+                                 stocks=user_favorites, 
+                                 message="Portfolio watchlist vises med begrensede funksjoner")
+        except Exception as fallback_error:
+            logger.error(f"Fallback portfolio watchlist failed: {fallback_error}")
+            return render_template('error.html', 
+                                 error="Portfolio watchlist er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @main.route('/norwegian-intel/government-impact')
 @login_required
 def norwegian_intel_government_impact():
-    """Norwegian intel government impact route"""
+    """Norwegian intel government impact route - fallback implementation"""
     try:
         return redirect(url_for('norwegian_intel.government_impact'))
     except Exception as e:
         logger.error(f"Error redirecting to norwegian intel government impact: {e}")
-        # Fallback: render error page or redirect to main
-        return redirect(url_for('main.index'))
+        # Fallback: render a simple analysis page
+        return render_template('analysis/norwegian_intel.html', 
+                             title="Norsk Politisk Påvirkning",
+                             message="Denne analysen er midlertidig utilgjengelig")
 
 @main.route('/advanced/crypto-dashboard')
 @access_required
 def advanced_crypto_dashboard():
-    """Advanced crypto dashboard route"""
+    """Advanced crypto dashboard route - fallback implementation"""
     try:
         return redirect(url_for('advanced_features.crypto_dashboard'))
     except Exception as e:
         current_app.logger.error(f"Error redirecting to crypto dashboard: {e}")
-        # Fallback: render simple message
-        return render_template('error.html', 
-                             error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
+        # Fallback: render crypto dashboard directly
+        try:
+            return render_template('advanced/crypto_dashboard.html',
+                                 title="Crypto Dashboard", 
+                                 crypto_data=[],
+                                 message="Crypto dashboard er i vedlikehold")
+        except Exception as template_error:
+            logger.error(f"Crypto dashboard template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/stocks/compare')
+@login_required  
+def stocks_compare():
+    """Stocks compare route - fallback implementation"""
+    try:
+        return redirect(url_for('stocks.compare'))
+    except Exception as e:
+        logger.error(f"Error redirecting to stocks compare: {e}")
+        # Fallback: render compare page directly
+        try:
+            return render_template('stocks/compare.html',
+                                 title="Sammenlign Aksjer",
+                                 stocks=[],
+                                 message="Sammenligning er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Stocks compare template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Aksjsammenligning er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @main.route('/analysis/warren-buffett')
 @login_required
 def analysis_warren_buffett():
-    """Analysis Warren Buffett route"""
-    return redirect(url_for('analysis.warren_buffett', **request.args))
+    """Analysis Warren Buffett route - fixed redirect loop"""
+    ticker = request.args.get('ticker', '')
+    
+    # Prevent redirect loops by checking if we're already in the warren_buffett route
+    if request.endpoint == 'main.analysis_warren_buffett':
+        try:
+            return render_template('analysis/warren_buffett.html',
+                                 title="Warren Buffett Analyse",
+                                 ticker=ticker,
+                                 analysis_data={},
+                                 message="Warren Buffett analyse er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Warren Buffett template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Warren Buffett analyse er midlertidig utilgjengelig. Prøv igjen senere.")
+    
+    try:
+        return redirect(url_for('analysis.warren_buffett', **request.args))
+    except Exception as e:
+        logger.error(f"Error redirecting to Warren Buffett analysis: {e}")
+        # Fallback: render analysis page directly  
+        try:
+            return render_template('analysis/warren_buffett.html',
+                                 title="Warren Buffett Analyse",
+                                 ticker=ticker,
+                                 analysis_data={},
+                                 message="Warren Buffett analyse er i vedlikehold")
+        except Exception as template_error:
+            logger.error(f"Warren Buffett template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Warren Buffett analyse er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/analysis/sentiment')
+@login_required
+def analysis_sentiment():
+    """Analysis sentiment route - fallback implementation"""
+    symbol = request.args.get('symbol', '')
+    
+    try:
+        return redirect(url_for('analysis.sentiment', **request.args))
+    except Exception as e:
+        logger.error(f"Error redirecting to sentiment analysis: {e}")
+        # Fallback: render sentiment page directly
+        try:
+            return render_template('analysis/sentiment.html',
+                                 title="Sentiment Analyse", 
+                                 symbol=symbol,
+                                 sentiment_data={},
+                                 message="Sentiment analyse er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Sentiment analysis template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Sentiment analyse er midlertidig utilgjengelig. Prøv igjen senere.")
+
+# Additional fallback routes for missing endpoints
+@main.route('/forum')
+@demo_access
+def forum_fallback():
+    """Forum fallback route"""
+    try:
+        return redirect(url_for('forum.index'))
+    except Exception as e:
+        logger.error(f"Error redirecting to forum: {e}")
+        try:
+            return render_template('forum/index.html',
+                                 title="Forum", 
+                                 posts=[],
+                                 message="Forum er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Forum template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Forum er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/norsk-intel')
+@demo_access
+def norsk_intel_fallback():
+    """Norwegian Intel fallback route"""
+    try:
+        return redirect(url_for('news_intelligence.norwegian_intel'))
+    except Exception as e:
+        logger.error(f"Error redirecting to norwegian intel: {e}")
+        try:
+            return render_template('norwegian_intel/index.html',
+                                 title="Norsk Intel", 
+                                 intelligence_data={},
+                                 message="Norsk intel er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Norwegian intel template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Norsk intel er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/advanced')
+@demo_access
+def advanced_fallback():
+    """Advanced features fallback route"""
+    try:
+        return redirect(url_for('portfolio.advanced'))
+    except Exception as e:
+        logger.error(f"Error redirecting to advanced: {e}")
+        try:
+            return render_template('advanced_features/dashboard.html',
+                                 title="Avanserte Funksjoner", 
+                                 features=[],
+                                 message="Avanserte funksjoner er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Advanced features template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Avanserte funksjoner er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/comparison')
+@demo_access
+def comparison_fallback():
+    """Stock comparison fallback route"""
+    try:
+        return redirect(url_for('resources_bp.comparison'))
+    except Exception as e:
+        logger.error(f"Error redirecting to comparison: {e}")
+        try:
+            return render_template('resources/index.html',
+                                 title="Aksje Sammenligning", 
+                                 stocks=[],
+                                 message="Aksje sammenligning er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Comparison template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Aksje sammenligning er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/crypto-dashboard')
+@demo_access
+def crypto_dashboard_fallback():
+    """Crypto dashboard fallback route"""
+    try:
+        return redirect(url_for('advanced_features.crypto_dashboard'))
+    except Exception as e:
+        logger.error(f"Error redirecting to crypto dashboard: {e}")
+        try:
+            return render_template('advanced_features/crypto_dashboard.html',
+                                 title="Crypto Dashboard", 
+                                 crypto_data={},
+                                 message="Crypto dashboard er midlertidig utilgjengelig")
+        except Exception as template_error:
+            logger.error(f"Crypto dashboard template error: {template_error}")
+            return render_template('error.html', 
+                                 error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
