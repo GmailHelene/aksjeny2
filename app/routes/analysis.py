@@ -6,6 +6,9 @@ from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
 from datetime import datetime, timedelta
 import logging
+import random
+import traceback
+import logging
 import requests
 import threading
 import random
@@ -2599,7 +2602,7 @@ def dividend_calendar():
     try:
         from datetime import datetime, timedelta
         
-        # Generate dividend calendar data
+        # Generate comprehensive dividend calendar data
         dividend_events = [
             {
                 'symbol': 'EQNR.OL',
@@ -2627,6 +2630,24 @@ def dividend_calendar():
                 'amount': 7.00,
                 'currency': 'NOK',
                 'yield': 4.8
+            },
+            {
+                'symbol': 'MOWI.OL',
+                'company': 'Mowi ASA',
+                'ex_date': '2024-03-01',
+                'payment_date': '2024-03-15',
+                'amount': 5.25,
+                'currency': 'NOK',
+                'yield': 3.9
+            },
+            {
+                'symbol': 'AAPL',
+                'company': 'Apple Inc.',
+                'ex_date': '2024-02-28',
+                'payment_date': '2024-03-12',
+                'amount': 0.94,
+                'currency': 'USD',
+                'yield': 0.5
             }
         ]
         
@@ -2647,43 +2668,86 @@ def earnings_calendar():
     try:
         from datetime import datetime, timedelta
         
-        # Generate earnings calendar data
+        # Generate comprehensive earnings calendar data
         earnings_events = [
             {
                 'symbol': 'EQNR.OL',
                 'company': 'Equinor ASA',
+                'sector': 'Energi',
                 'date': '2024-02-10',
-                'time': 'Before Market',
-                'period': 'Q4 2023',
+                'quarter': 'Q4 2023',
                 'eps_estimate': 15.20,
-                'revenue_estimate': 125000000000
+                'eps_previous': 14.85,
+                'eps_change': 2.4,
+                'currency': 'NOK',
+                'time_period': 'BMO',
+                'time_display': 'Før åpning'
             },
             {
                 'symbol': 'DNB.OL',
                 'company': 'DNB Bank ASA',
+                'sector': 'Finans',
                 'date': '2024-02-12',
-                'time': 'After Market',
-                'period': 'Q4 2023',
+                'quarter': 'Q4 2023',
                 'eps_estimate': 8.50,
-                'revenue_estimate': 45000000000
+                'eps_previous': 8.25,
+                'eps_change': 3.0,
+                'currency': 'NOK',
+                'time_period': 'AMC',
+                'time_display': 'Etter stenging'
             },
             {
                 'symbol': 'TEL.OL',
                 'company': 'Telenor ASA',
+                'sector': 'Telekom',
                 'date': '2024-02-14',
-                'time': 'Before Market',
-                'period': 'Q4 2023',
+                'quarter': 'Q4 2023',
                 'eps_estimate': 4.25,
-                'revenue_estimate': 32000000000
+                'eps_previous': 4.35,
+                'eps_change': -2.3,
+                'currency': 'NOK',
+                'time_period': 'BMO',
+                'time_display': 'Før åpning'
+            },
+            {
+                'symbol': 'AAPL',
+                'company': 'Apple Inc.',
+                'sector': 'Teknologi',
+                'date': '2024-02-16',
+                'quarter': 'Q1 2024',
+                'eps_estimate': 2.18,
+                'eps_previous': 2.10,
+                'eps_change': 3.8,
+                'currency': 'USD',
+                'time_period': 'AMC',
+                'time_display': 'Etter stenging'
+            },
+            {
+                'symbol': 'MSFT',
+                'company': 'Microsoft Corporation',
+                'sector': 'Teknologi',
+                'date': '2024-02-18',
+                'quarter': 'Q2 2024',
+                'eps_estimate': 2.95,
+                'eps_previous': 2.80,
+                'eps_change': 5.4,
+                'currency': 'USD',
+                'time_period': 'AMC',
+                'time_display': 'Etter stenging'
             }
         ]
         
+        # Notable earnings this week (subset of main data)
+        notable_earnings = earnings_events[:3]
+        
         return render_template('analysis/earnings_calendar.html',
                              title='Resultatkalender',
-                             earnings_events=earnings_events)
+                             earnings_events=earnings_events,
+                             notable_earnings=notable_earnings)
     except Exception as e:
         logger.error(f"Error loading earnings calendar: {e}")
         return render_template('analysis/earnings_calendar.html',
                              title='Resultatkalender',
                              earnings_events=[],
+                             notable_earnings=[],
                              error="Kunne ikke laste resultatkalender")

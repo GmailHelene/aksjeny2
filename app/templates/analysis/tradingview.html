@@ -5,6 +5,8 @@
 {% block head %}
 <!-- TradingView Chart Library -->
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<!-- TradingView Fix Script -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/tradingview-fix.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -90,11 +92,12 @@
         <div class="card-body p-0">
             <div id="tradingview_main_widget" style="height: 600px;">
                 <!-- TradingView Chart will load here -->
-                <div class="text-center p-5">
+                <div class="text-center p-5" id="loading-indicator">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Laster chart...</span>
+                        <span class="visually-hidden">Laster TradingView chart...</span>
                     </div>
                     <p class="text-muted mt-3">Laster TradingView chart...</p>
+                    <small class="text-muted">Hvis chartet ikke laster, kan det skyldes ad blocker eller nettverksproblemer</small>
                 </div>
             </div>
         </div>
