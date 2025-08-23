@@ -48,6 +48,52 @@ def get_time_ago(dt):
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from sqlalchemy import text
+
+# Professional dashboard route
+@main.route('/professional-dashboard')
+def professional_dashboard():
+    """Professional trading dashboard inspired by CMC Markets"""
+    try:
+        # Get market data with fallbacks
+        market_data = {
+            'market_open': is_oslo_bors_open(),
+            'osebx': {'value': 1234.5, 'change_percent': 0.8, 'change': 9.8},
+            'sp500': {'value': 4567.8, 'change_percent': -0.3, 'change': -13.7},
+            'btc': {'price': 43210, 'change_percent': 2.1, 'change': 888},
+            'usd_nok': {'rate': 10.85, 'change': 0.12}
+        }
+        
+        # Get user favorites if logged in
+        user_favorites = []
+        if current_user.is_authenticated:
+            try:
+                favorites = db.session.execute(
+                    text("SELECT symbol, name, current_price, change_percent FROM favorites WHERE user_id = :user_id LIMIT 8"),
+                    {'user_id': current_user.id}
+                ).fetchall()
+                
+                user_favorites = [
+                    {
+                        'symbol': fav[0],
+                        'name': fav[1],
+                        'current_price': fav[2] or 0,
+                        'change_percent': fav[3] or 0
+                    }
+                    for fav in favorites
+                ]
+            except Exception as e:
+                logger.error(f"Error fetching user favorites: {e}")
+                user_favorites = []
+        
+        return render_template('professional_dashboard.html',
+                             market_data=market_data,
+                             user_favorites=user_favorites)
+    
+    except Exception as e:
+        logger.error(f"Error in professional dashboard: {e}")
+        return render_template('professional_dashboard.html',
+                             market_data={'market_open': False},
+                             user_favorites=[])
 from ..extensions import db, login_manager
 
 def has_active_subscription():

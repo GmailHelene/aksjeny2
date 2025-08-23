@@ -50,6 +50,221 @@ logger = logging.getLogger(__name__)
 # Create analysis blueprint
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 
+@analysis.route('/technical')
+def technical():
+    """Advanced technical analysis with pattern recognition"""
+    try:
+        # Simulate pattern recognition data (in real app, would use AI/ML)
+        patterns = [
+            {
+                'symbol': 'EQUI.OL',
+                'name': 'Equinor ASA',
+                'pattern': 'Ascending Triangle',
+                'confidence': 87,
+                'timeframe': '1D',
+                'status': 'Bullish',
+                'target_price': 385.50,
+                'probability': 'High'
+            },
+            {
+                'symbol': 'TEL.OL',
+                'name': 'Telenor ASA',
+                'pattern': 'Head & Shoulders',
+                'confidence': 72,
+                'timeframe': '4H',
+                'status': 'Bearish',
+                'target_price': 145.20,
+                'probability': 'Medium'
+            },
+            {
+                'symbol': 'AKER.OL',
+                'name': 'Aker ASA',
+                'pattern': 'Bullish Flag',
+                'confidence': 91,
+                'timeframe': '1H',
+                'status': 'Bullish',
+                'target_price': 728.00,
+                'probability': 'Very High'
+            },
+            {
+                'symbol': 'DNB.OL',
+                'name': 'DNB Bank ASA',
+                'pattern': 'Double Bottom',
+                'confidence': 78,
+                'timeframe': '1D',
+                'status': 'Bullish',
+                'target_price': 198.50,
+                'probability': 'High'
+            }
+        ]
+        
+        # Technical indicators summary
+        indicators = {
+            'moving_averages': {
+                'ma20_above_ma50': 65,  # Percentage of stocks
+                'ma50_above_ma200': 58,
+                'golden_cross_signals': 12
+            },
+            'momentum': {
+                'rsi_overbought': 23,  # Number of stocks
+                'rsi_oversold': 8,
+                'macd_bullish': 145,
+                'macd_bearish': 89
+            },
+            'volume': {
+                'high_volume_breakouts': 34,
+                'volume_confirmation': 78,
+                'accumulation_stocks': 67
+            }
+        }
+        
+        return render_template('analysis/technical.html', 
+                             patterns=patterns,
+                             indicators=indicators)
+    
+    except Exception as e:
+        logger.error(f"Error in technical analysis: {e}")
+        return render_template('analysis/technical.html', 
+                             patterns=[],
+                             indicators={})
+
+@analysis.route('/sentiment')
+def sentiment():
+    """AI-powered sentiment analysis"""
+    try:
+        # Simulate sentiment data (would use real AI/NLP in production)
+        sentiment_data = {
+            'overall_market': {
+                'sentiment': 'Bullish',
+                'score': 72,
+                'confidence': 85,
+                'trend': 'Improving'
+            },
+            'sectors': [
+                {'name': 'Teknologi', 'sentiment': 78, 'change': '+5'},
+                {'name': 'Energi', 'sentiment': 65, 'change': '+2'},
+                {'name': 'Finans', 'sentiment': 58, 'change': '-3'},
+                {'name': 'Helse', 'sentiment': 71, 'change': '+8'},
+                {'name': 'Industri', 'sentiment': 62, 'change': '-1'},
+                {'name': 'Materialer', 'sentiment': 55, 'change': '-4'}
+            ],
+            'top_mentioned': [
+                {'symbol': 'EQUI.OL', 'mentions': 2847, 'sentiment': 82, 'trending': True},
+                {'symbol': 'TEL.OL', 'mentions': 1956, 'sentiment': 58, 'trending': False},
+                {'symbol': 'AKER.OL', 'mentions': 1523, 'sentiment': 75, 'trending': True},
+                {'symbol': 'DNB.OL', 'mentions': 1234, 'sentiment': 62, 'trending': False},
+                {'symbol': 'SALM.OL', 'mentions': 987, 'sentiment': 69, 'trending': True}
+            ],
+            'news_sentiment': [
+                {
+                    'headline': 'Equinor rapporterer sterke kvartalstall',
+                    'sentiment': 89,
+                    'source': 'E24',
+                    'time': '2 timer siden',
+                    'impact': 'High'
+                },
+                {
+                    'headline': 'Fed signaliserer mulige rentekutt',
+                    'sentiment': 75,
+                    'source': 'DN',
+                    'time': '4 timer siden',
+                    'impact': 'Medium'
+                },
+                {
+                    'headline': 'OSEBX stiger på oljepriser',
+                    'sentiment': 68,
+                    'source': 'Finansavisen',
+                    'time': '6 timer siden',
+                    'impact': 'Medium'
+                }
+            ]
+        }
+        
+        return render_template('analysis/sentiment.html', 
+                             sentiment_data=sentiment_data)
+    
+    except Exception as e:
+        logger.error(f"Error in sentiment analysis: {e}")
+        return render_template('analysis/sentiment.html', 
+                             sentiment_data={})
+
+@analysis.route('/backtest')
+def backtest():
+    """Strategy backtesting interface"""
+    try:
+        # Sample backtesting results
+        strategies = [
+            {
+                'name': 'Moving Average Crossover',
+                'description': 'Kjøp når 20-dagers MA krysser over 50-dagers MA',
+                'return': 15.4,
+                'sharpe_ratio': 1.23,
+                'max_drawdown': -8.7,
+                'win_rate': 58.3,
+                'total_trades': 47
+            },
+            {
+                'name': 'RSI Mean Reversion',
+                'description': 'Kjøp ved RSI < 30, selg ved RSI > 70',
+                'return': 12.8,
+                'sharpe_ratio': 1.05,
+                'max_drawdown': -12.3,
+                'win_rate': 61.2,
+                'total_trades': 73
+            },
+            {
+                'name': 'Momentum Strategy',
+                'description': 'Kjøp aksjer med høyest momentum siste 3 måneder',
+                'return': 18.9,
+                'sharpe_ratio': 1.41,
+                'max_drawdown': -15.6,
+                'win_rate': 54.7,
+                'total_trades': 32
+            }
+        ]
+        
+        return render_template('analysis/backtest.html', 
+                             strategies=strategies)
+    
+    except Exception as e:
+        logger.error(f"Error in backtest analysis: {e}")
+        return render_template('analysis/backtest.html', 
+                             strategies=[])
+
+@analysis.route('/api/run-backtest', methods=['POST'])
+@login_required
+def run_backtest():
+    """Run custom backtest strategy"""
+    try:
+        data = request.get_json()
+        strategy_name = data.get('strategy_name', 'Custom Strategy')
+        timeframe = data.get('timeframe', '1y')
+        
+        # Simulate backtesting (would use real historical data in production)
+        results = {
+            'strategy_name': strategy_name,
+            'timeframe': timeframe,
+            'total_return': round(random.uniform(-20, 30), 2),
+            'sharpe_ratio': round(random.uniform(0.5, 2.0), 2),
+            'max_drawdown': round(random.uniform(-25, -5), 2),
+            'win_rate': round(random.uniform(45, 70), 1),
+            'total_trades': random.randint(20, 100),
+            'monthly_returns': [round(random.uniform(-5, 5), 2) for _ in range(12)]
+        }
+        
+        return jsonify({
+            'success': True,
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f"Error running backtest: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Feil ved kjøring av backtest'
+        })
+analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
+
 @analysis.route('/api/sentiment')
 @access_required
 def api_sentiment():
