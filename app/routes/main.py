@@ -460,14 +460,14 @@ def index():
     try:
         # For authenticated users, show the main dashboard
         if current_user.is_authenticated:
-        try:
-            # Get user's portfolio data
-            investments = {
-                'total_invested': 0,
-                'total_value': 0,
-                'total_gain': 0,
-                'total_gain_percent': 0,
-                'portfolio_count': 0
+            try:
+                # Get user's portfolio data
+                investments = {
+                    'total_invested': 0,
+                    'total_value': 0,
+                    'total_gain': 0,
+                    'total_gain_percent': 0,
+                    'portfolio_count': 0
             }
             
             # Get recent activities
@@ -498,16 +498,16 @@ def index():
                                  user_stats=user_stats,
                                  recommendations=[])
                                  
-        except Exception as e:
-            logger.error(f"Error in authenticated dashboard: {e}")
-            # Fallback for authenticated users
-            return render_template('index.html')
-    
-    # For anonymous users, show the landing page
-    investments = {
-        'total_invested': 0,
-        'total_value': 0,
-        'total_gain': 0,
+            except Exception as e:
+                logger.error(f"Error in authenticated dashboard: {e}")
+                # Fallback for authenticated users
+                return render_template('index.html')
+        
+        # For anonymous users, show the landing page
+        investments = {
+            'total_invested': 0,
+            'total_value': 0,
+            'total_gain': 0,
         'total_gain_percent': 0,
         'portfolio_count': 0
     }
