@@ -986,17 +986,19 @@ def demo():
 
 # Pricing route handled by pricing blueprint (/pricing/)
 
-@main.route('/search')
-@access_required
-def search():
-    query = request.args.get('q', '')
-    if not query:
-        return redirect(url_for('main.index'))
-     
-    # Lazy import DataService
-    DataService = get_data_service()
-    results = DataService.search_ticker(query)
-    return render_template('search_results.html', results=results, query=query)
+# REMOVED CONFLICTING /search ROUTE - This was intercepting /stocks/search requests
+# The stocks blueprint handles /stocks/search properly with @demo_access
+# @main.route('/search')
+# @access_required  
+# def search():
+#     query = request.args.get('q', '')
+#     if not query:
+#         return redirect(url_for('main.index'))
+#      
+#     # Lazy import DataService
+#     DataService = get_data_service()
+#     results = DataService.search_ticker(query)
+#     return render_template('search_results.html', results=results, query=query)
 
 # # Prices route moved to stocks.py to avoid conflicts
 # # @main.route('/prices')

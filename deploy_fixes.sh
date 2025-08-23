@@ -1,33 +1,45 @@
 #!/bin/bash
 
-# Deploy fixes to production
-echo "🚀 Deploying Critical Fixes to Production"
-echo "========================================="
+# Deploy the stock search and compare fixes
+echo "🚀 DEPLOYING STOCK SEARCH & COMPARE FIXES"
+echo "=========================================="
 
-# First, let's make sure all our fixes are committed
-echo "📝 Committing all changes..."
+# Check git status
+echo "📋 Checking current git status..."
+git status
 
-# Add all changes
+echo ""
+echo "📝 Adding all changes..."
 git add .
 
-# Commit with timestamp
-TIMESTAMP=$(date '+%Y-%m-%d_%H:%M:%S')
-git commit -m "🔧 Critical Production Fixes - $TIMESTAMP
+echo ""
+echo "💾 Committing fixes..."
+git commit -m "Fix stock search and compare functionality
 
-✅ Fixed stock details 500 error (missing return statement)
-✅ Fixed sentiment analysis requests import
-✅ Fixed favorites toggleFavorite function in list.html  
-✅ Fixed Warren Buffett analysis error handling
-✅ Fixed notification settings update functionality
-✅ Fixed search functionality on analysis pages
-✅ Fixed financial dashboard tab functionality
+- Remove conflicting @main.route('/search') that was intercepting stocks blueprint
+- Verify @demo_access decorators on stocks.search and stocks.compare routes  
+- Ensure both endpoints are in public_endpoints whitelist
+- Fix route conflicts that prevented proper blueprint resolution
 
-Issues resolved:
-- /stocks/details/EQNR.OL 500 error
-- /analysis/sentiment NameError fixed  
-- /settings notification toggle errors
-- /analysis/warren-buffett error handling
-- Favorites not displaying properly
+Fixes:
+- https://aksjeradar.trade/stocks/search?q=tesla now works properly
+- https://aksjeradar.trade/stocks/compare shows actual interface
+- Both endpoints accessible without demo restrictions"
+
+echo ""
+echo "🚢 Pushing to production..."
+git push origin main
+
+echo ""
+echo "⏰ Deployment initiated! Railway typically takes 2-3 minutes to deploy."
+echo "🔍 Run final_verification_script.py after deployment to verify fixes."
+echo ""
+echo "📊 Expected results after deployment:"
+echo "  ✅ /stocks/search?q=tesla - Shows search interface, finds Tesla results"
+echo "  ✅ /stocks/compare - Shows comparison tool interface"
+echo "  ❌ Should NOT show 'demo-modus aktivert' or promotional content"
+echo ""
+echo "🏁 Deployment script complete!"
 - Search field on analysis pages
 - Financial dashboard tabs
 

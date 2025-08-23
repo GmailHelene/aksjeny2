@@ -648,7 +648,7 @@ def details(symbol):
                              error=f"Could not load data for {symbol}")
 
 @stocks.route('/search')
-@access_required  
+@demo_access  
 def search():
     """Search stocks page"""
     query = request.args.get('q', '').strip()
