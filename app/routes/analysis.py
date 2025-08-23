@@ -263,7 +263,6 @@ def run_backtest():
             'success': False,
             'error': 'Feil ved kjøring av backtest'
         })
-analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 
 @analysis.route('/api/sentiment')
 @access_required

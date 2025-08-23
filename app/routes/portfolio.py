@@ -32,117 +32,6 @@ def get_analysis_service():
     from ..services.analysis_service import AnalysisService
     return AnalysisService
 
-@portfolio.route('/optimization')
-@login_required 
-def optimization():
-    """Modern Portfolio Theory optimization"""
-    try:
-        # Sample portfolio data
-        current_portfolio = [
-            {'symbol': 'EQUI.OL', 'name': 'Equinor ASA', 'weight': 30.0, 'expected_return': 12.5, 'risk': 18.2},
-            {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'weight': 25.0, 'expected_return': 10.8, 'risk': 15.4},
-            {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'weight': 20.0, 'expected_return': 8.2, 'risk': 12.1},
-            {'symbol': 'MOWI.OL', 'name': 'Mowi ASA', 'weight': 15.0, 'expected_return': 14.2, 'risk': 22.3},
-            {'symbol': 'YAR.OL', 'name': 'Yara International', 'weight': 10.0, 'expected_return': 11.5, 'risk': 19.8}
-        ]
-        
-        # Optimization scenarios
-        scenarios = [
-            {
-                'name': 'Conservative',
-                'target_risk': 12.0,
-                'expected_return': 9.5,
-                'description': 'Lav risiko, stabil avkastning'
-            },
-            {
-                'name': 'Balanced',
-                'target_risk': 15.0,
-                'expected_return': 11.2,
-                'description': 'Balansert risiko og avkastning'
-            },
-            {
-                'name': 'Aggressive',
-                'target_risk': 20.0,
-                'expected_return': 14.8,
-                'description': 'Høy risiko, høy potensial avkastning'
-            }
-        ]
-        
-        # Risk metrics
-        risk_metrics = {
-            'portfolio_var_95': 8.5,  # Value at Risk 95%
-            'portfolio_var_99': 12.3,  # Value at Risk 99%
-            'expected_shortfall': 15.7,
-            'beta': 1.12,
-            'alpha': 0.8,
-            'correlation_to_market': 0.78
-        }
-        
-        return render_template('portfolio/optimization.html',
-                             current_portfolio=current_portfolio,
-                             scenarios=scenarios,
-                             risk_metrics=risk_metrics)
-    
-    except Exception as e:
-        logger.error(f"Error in portfolio optimization: {e}")
-        return render_template('portfolio/optimization.html',
-                             current_portfolio=[],
-                             scenarios=[],
-                             risk_metrics={})
-
-@portfolio.route('/api/optimize', methods=['POST'])
-@login_required
-def optimize_portfolio():
-    """Run portfolio optimization"""
-    try:
-        data = request.get_json()
-        target_risk = data.get('target_risk', 15.0)
-        target_return = data.get('target_return', 10.0)
-        
-        # Simulate optimization (would use real MPT in production)
-        import random
-        optimized_weights = [
-            {'symbol': 'EQUI.OL', 'weight': round(random.uniform(15, 35), 1)},
-            {'symbol': 'DNB.OL', 'weight': round(random.uniform(20, 30), 1)},
-            {'symbol': 'TEL.OL', 'weight': round(random.uniform(15, 25), 1)},
-            {'symbol': 'MOWI.OL', 'weight': round(random.uniform(10, 20), 1)},
-            {'symbol': 'YAR.OL', 'weight': round(random.uniform(5, 15), 1)}
-        ]
-        
-        # Normalize weights to sum to 100%
-        total_weight = sum(w['weight'] for w in optimized_weights)
-        for weight in optimized_weights:
-            weight['weight'] = round((weight['weight'] / total_weight) * 100, 1)
-        
-        results = {
-            'optimized_weights': optimized_weights,
-            'expected_return': round(target_return + random.uniform(-1, 1), 2),
-            'expected_risk': round(target_risk + random.uniform(-0.5, 0.5), 2),
-            'sharpe_ratio': round(random.uniform(0.8, 1.5), 2),
-            'improvement': {
-                'return_improvement': round(random.uniform(0.5, 2.0), 2),
-                'risk_reduction': round(random.uniform(1.0, 3.0), 2)
-            }
-        }
-        
-        return jsonify({
-            'success': True,
-            'results': results
-        })
-    
-    except Exception as e:
-        logger.error(f"Error optimizing portfolio: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Feil ved optimalisering av portefølje'
-        })
-    """Lazy import AnalysisService to avoid circular imports"""
-    try:
-        from ..services.analysis_service import AnalysisService
-        return AnalysisService
-    except ImportError:
-        return None
-
 # Lazy import for reportlab to handle optional dependency
 def get_reportlab():
     """Lazy import reportlab components for PDF generation"""
@@ -1716,3 +1605,110 @@ def _generate_portfolio_health_analysis(holdings):
             'error': str(e)
         }
         return jsonify({'error': 'Ugyldig format'}), 400
+
+
+@portfolio.route('/optimization')
+@login_required 
+def optimization():
+    """Modern Portfolio Theory optimization"""
+    try:
+        # Sample portfolio data
+        current_portfolio = [
+            {'symbol': 'EQUI.OL', 'name': 'Equinor ASA', 'weight': 30.0, 'expected_return': 12.5, 'risk': 18.2},
+            {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'weight': 25.0, 'expected_return': 10.8, 'risk': 15.4},
+            {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'weight': 20.0, 'expected_return': 8.2, 'risk': 12.1},
+            {'symbol': 'MOWI.OL', 'name': 'Mowi ASA', 'weight': 15.0, 'expected_return': 14.2, 'risk': 22.3},
+            {'symbol': 'YAR.OL', 'name': 'Yara International', 'weight': 10.0, 'expected_return': 11.5, 'risk': 19.8}
+        ]
+        
+        # Optimization scenarios
+        scenarios = [
+            {
+                'name': 'Conservative',
+                'target_risk': 12.0,
+                'expected_return': 9.5,
+                'description': 'Lav risiko, stabil avkastning'
+            },
+            {
+                'name': 'Balanced',
+                'target_risk': 15.0,
+                'expected_return': 11.2,
+                'description': 'Balansert risiko og avkastning'
+            },
+            {
+                'name': 'Aggressive',
+                'target_risk': 20.0,
+                'expected_return': 14.8,
+                'description': 'Høy risiko, høy potensial avkastning'
+            }
+        ]
+        
+        # Risk metrics
+        risk_metrics = {
+            'portfolio_var_95': 8.5,  # Value at Risk 95%
+            'portfolio_var_99': 12.3,  # Value at Risk 99%
+            'expected_shortfall': 15.7,
+            'beta': 1.12,
+            'alpha': 0.8,
+            'correlation_to_market': 0.78
+        }
+        
+        return render_template('portfolio/optimization.html',
+                             current_portfolio=current_portfolio,
+                             scenarios=scenarios,
+                             risk_metrics=risk_metrics)
+    
+    except Exception as e:
+        logger.error(f"Error in portfolio optimization: {e}")
+        return render_template('portfolio/optimization.html',
+                             current_portfolio=[],
+                             scenarios=[],
+                             risk_metrics={})
+
+
+@portfolio.route('/api/optimize', methods=['POST'])
+@login_required
+def optimize_portfolio():
+    """Run portfolio optimization"""
+    try:
+        data = request.get_json()
+        target_risk = data.get('target_risk', 15.0)
+        target_return = data.get('target_return', 10.0)
+        
+        # Simulate optimization (would use real MPT in production)
+        import random
+        optimized_weights = [
+            {'symbol': 'EQUI.OL', 'weight': round(random.uniform(15, 35), 1)},
+            {'symbol': 'DNB.OL', 'weight': round(random.uniform(20, 30), 1)},
+            {'symbol': 'TEL.OL', 'weight': round(random.uniform(15, 25), 1)},
+            {'symbol': 'MOWI.OL', 'weight': round(random.uniform(10, 20), 1)},
+            {'symbol': 'YAR.OL', 'weight': round(random.uniform(5, 15), 1)}
+        ]
+        
+        # Normalize weights to sum to 100%
+        total_weight = sum(w['weight'] for w in optimized_weights)
+        for weight in optimized_weights:
+            weight['weight'] = round((weight['weight'] / total_weight) * 100, 1)
+        
+        results = {
+            'optimized_weights': optimized_weights,
+            'expected_return': round(target_return + random.uniform(-1, 1), 2),
+            'expected_risk': round(target_risk + random.uniform(-0.5, 0.5), 2),
+            'sharpe_ratio': round(random.uniform(0.8, 1.5), 2),
+            'improvement': {
+                'return_improvement': round(random.uniform(0.5, 2.0), 2),
+                'risk_reduction': round(random.uniform(1.0, 3.0), 2)
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f"Error optimizing portfolio: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Feil ved optimalisering av portefølje'
+        })
