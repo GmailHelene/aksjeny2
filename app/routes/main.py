@@ -456,8 +456,10 @@ def before_request():
 def index():
     """Homepage - main dashboard for both authenticated and anonymous users"""
     
-    # For authenticated users, show the main dashboard
-    if current_user.is_authenticated:
+    # EMERGENCY: Wrap entire function to prevent 500 errors
+    try:
+        # For authenticated users, show the main dashboard
+        if current_user.is_authenticated:
         try:
             # Get user's portfolio data
             investments = {
@@ -933,6 +935,18 @@ def index():
                             market_data=market_data,
                             recommendations=recommendations,
                             user_stats=user_stats)
+    
+    except Exception as critical_error:
+        logger.error(f"CRITICAL ERROR in index route: {critical_error}")
+        # Emergency fallback for 500 errors
+        return render_template('index.html',
+                             investments={'total_invested': 0, 'total_value': 0, 'total_gain': 0, 'total_gain_percent': 0, 'portfolio_count': 0},
+                             activities=[],
+                             portfolio_performance={'best_performing': None, 'worst_performing': None, 'recent_transactions': []},
+                             market_data={'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8}, 'market_open': False, 'last_update': datetime.now().isoformat()},
+                             recommendations=[],
+                             user_stats={'portfolios': 0, 'watchlist_items': 0, 'recent_activities': []},
+                             error_mode=True)
 
 @main.route('/demo')
 def demo():
@@ -1652,6 +1666,7 @@ def internal_error(error):
 @login_required
 def profile():
     """User profile page with proper error handling"""
+    # EMERGENCY: Enhanced error handling to prevent 500 errors
     try:
         # Allow all authenticated users to access profile page
         subscription = None
@@ -1720,6 +1735,25 @@ def profile():
                      referral_earnings=0,
                      referral_code='REF001',
                      error=True)
+                             
+    except Exception as critical_profile_error:
+        logger.error(f"CRITICAL ERROR in profile route: {critical_profile_error}")
+        # Emergency fallback for profile 500 errors
+        return render_template('profile.html',
+                     user=current_user,
+                     subscription=None,
+                     subscription_status='free',
+                     user_stats={'member_since': datetime.now()},
+                     user_language='nb',
+                     user_display_mode='light',
+                     user_number_format='norwegian',
+                     user_dashboard_widgets='[]',
+                     user_favorites=[],
+                     referrals_made=0,
+                     referral_earnings=0,
+                     referral_code='REF001',
+                     error=True,
+                     error_message='Midlertidig feil - prøv igjen senere')
 
 @main.route('/mitt-abonnement')
 @main.route('/my-subscription')

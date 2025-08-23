@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 from ..models.achievements import Achievement, UserAchievement, UserStats
 from .. import db
-from ..utils.access_control import demo_access
+from ..utils.access_control import demo_access, access_required
 from datetime import datetime
 
 achievements_bp = Blueprint('achievements', __name__, url_prefix='/achievements')

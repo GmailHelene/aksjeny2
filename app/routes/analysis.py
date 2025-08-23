@@ -2519,6 +2519,7 @@ def prediction():
                          predictions_global=predictions_global)
 
 @analysis.route('/currency-overview')
+@analysis.route('/currency_overview')
 @premium_required
 def currency_overview():
     """Currency market overview with error handling"""
@@ -2639,6 +2640,7 @@ def backtest():
     return render_template('analysis/backtest.html', title='Backtest Strategier')
 
 @analysis.route('/strategy-builder')
+@analysis.route('/strategy_builder')
 @access_required
 def strategy_builder():
     """Strategy builder functionality"""

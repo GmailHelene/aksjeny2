@@ -4,7 +4,8 @@
  * Handles favorites, portfolio actions, and watchlist functionality
  */
 
-class PortfolioActionsManager {
+if (typeof PortfolioActionsManager === 'undefined') {
+    class PortfolioActionsManager {
     constructor() {
         this.isInitialized = false;
         this.initializeEventListeners();
@@ -377,7 +378,9 @@ class PortfolioActionsManager {
 }
 
 // Create global instance
-window.portfolioActionsManager = new PortfolioActionsManager();
+if (!window.portfolioActionsManager) {
+    window.portfolioActionsManager = new PortfolioActionsManager();
+}
 
 // Global function for onclick handlers
 window.toggleFavorite = async function(ticker, button) {
@@ -387,4 +390,5 @@ window.toggleFavorite = async function(ticker, button) {
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = PortfolioActionsManager;
+}
 }
