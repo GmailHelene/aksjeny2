@@ -858,7 +858,7 @@ def sentiment():
         # Validate the selected symbol
         if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
             flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
-            return redirect(url_for('analysis.sentiment'))
+            return redirect('/analysis/sentiment')
 
         sentiment_data = None
         error = None
@@ -1751,13 +1751,13 @@ def benjamin_graham():
 @access_required  
 def sentiment_view():
     """Sentiment analysis view"""
-    return redirect(url_for('analysis.sentiment'))
+    return redirect('/analysis/sentiment')
 
 @analysis.route('/insider-trading')
 @access_required
 def insider_trading():
     """Redirect to dedicated insider trading page"""
-    return redirect(url_for('market_intel.insider_trading'))
+    return redirect('/market-intel/insider-trading')
 
 # API Endpoints
 @analysis.route('/api/technical/<symbol>')
@@ -2093,7 +2093,7 @@ def fundamental():
 @access_required
 def technical_analysis(symbol):
     """Alternative route for technical analysis with symbol parameter"""
-    return redirect(url_for('analysis.technical', ticker=symbol))
+    return redirect(f'/analysis/technical?ticker={symbol}')
 
 @analysis.route('/screener-view')
 @access_required
@@ -2189,7 +2189,7 @@ def recommendation(ticker=None):
         except Exception as e:
             logger.error(f"Error generating recommendation for {ticker}: {e}")
             flash(f'Kunne ikke generere anbefaling for {ticker}. Viser generell oversikt.', 'warning')
-            return redirect(url_for('analysis.recommendation'))
+            return redirect('/analysis/recommendation')
     
     # Comprehensive investment recommendations data
     recommendations = {

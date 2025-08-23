@@ -137,7 +137,7 @@ def portfolio_index():
     except Exception as e:
         current_app.logger.error(f"Error in portfolio index: {str(e)}")
         flash('Det oppstod en feil ved lasting av porteføljer.', 'error')
-        return redirect(url_for('main.index'))
+        return redirect('/')
 
 # Delete portfolio route
 @portfolio.route('/delete/<int:id>', methods=['POST'])
@@ -151,7 +151,7 @@ def delete_portfolio(id):
             # Check if this is an AJAX request by checking headers
             if request.headers.get('Content-Type') == 'application/json' or 'application/json' in request.headers.get('Accept', ''):
                 return jsonify({'success': False, 'error': 'Portefølje ikke funnet eller du har ikke tilgang.'}), 404
-            return redirect(url_for('portfolio.overview'))
+            return redirect('/portfolio/overview')
 
         # Delete all stocks in the portfolio
         try:

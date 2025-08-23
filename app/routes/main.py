@@ -1145,7 +1145,7 @@ def demo():
     from sqlalchemy.exc import OperationalError, ProgrammingError
     
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect('/')
     
     form = LoginForm()
     
@@ -1169,7 +1169,7 @@ def demo():
                 
                 next_page = request.args.get('next')
                 if not next_page or urlparse(next_page).netloc != '':
-                    next_page = url_for('main.index')
+                    next_page = '/'
                 
                 current_app.logger.info(f'Successful login for user: {user.email}')
                 flash('Innlogging vellykket!', 'success')
@@ -1191,7 +1191,7 @@ def demo():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     """Login page - redirect to auth blueprint"""
-    return redirect(url_for('auth.login'))
+    return redirect('/login')
 
 @main.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -1210,7 +1210,7 @@ def logout():
     flash('Du er nå utlogget.', 'success')
     
     # Create simple response with minimal headers
-    response = make_response(redirect(url_for('main.index')))
+    response = make_response(redirect('/'))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -1224,7 +1224,7 @@ def logout():
 
 def unauthorized_handler():
     flash('Du må logge inn for å få tilgang til denne siden.', 'warning')
-    return redirect(url_for('main.login', next=request.url))
+    return redirect('/login')
 
 # Register unauthorized handler
 login_manager.unauthorized_handler(unauthorized_handler)
@@ -1280,10 +1280,10 @@ def handle_share():
     
     # Hvis delt innhold ser ut som en aksjeticker (f.eks. "AAPL")
     if shared_text and len(shared_text.strip()) < 10 and shared_text.strip().isalpha():
-        return redirect(url_for('stocks.details', ticker=shared_text.strip()))
+        return redirect(f'/stocks/details/{shared_text.strip()}')
     
     # Ellers, bruk søkefunksjonen
-    return redirect(url_for('stocks.search', query=shared_text.strip()))
+    return redirect(f'/stocks/search?query={shared_text.strip()}')
 
 # Market overview route moved to analysis.py to avoid conflicts
 
@@ -2223,7 +2223,7 @@ def watchlist():
     """Main watchlist route - fallback implementation"""
     try:
         # Try to redirect to portfolio watchlist first
-        return redirect(url_for('portfolio.watchlist'))
+        return redirect('/portfolio/watchlist')
     except Exception as e:
         logger.error(f"Error redirecting to portfolio watchlist: {e}")
         # Direct fallback implementation
