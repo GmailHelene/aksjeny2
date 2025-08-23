@@ -131,9 +131,9 @@ def access_required(f):
         # For unauthenticated users - redirect directly to demo
         else:
             # All unauthenticated users should go to demo page
-            from flask import redirect, url_for
+            from flask import redirect
             logging.warning(f"[ACCESS_REQUIRED] Unauthenticated user, redirecting to demo")
-            return redirect(url_for('main.demo', source='login_required'))
+            return redirect('/demo?source=login_required')
     
     return decorated_function
 
@@ -143,7 +143,7 @@ def premium_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             flash('Please log in to access premium features.', 'info')
-            return redirect(url_for('main.login', next=request.url))
+            return redirect('/login')
         
         # Exempt emails always have access
         if current_user.email in EXEMPT_EMAILS:
@@ -155,7 +155,7 @@ def premium_required(f):
         
         # Premium features are not available during trial
         flash('This is a premium feature. Please upgrade to access.', 'warning')
-        return redirect(url_for('pricing.pricing_page'))
+        return redirect('/pricing')
     
     return decorated_function
 
@@ -164,12 +164,12 @@ def pro_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for('main.login'))
+            return redirect('/login')
         
         # Check if user has pro subscription
         if not (hasattr(current_user, 'is_pro') and current_user.is_pro):
             flash('Denne funksjonen krever Pro-abonnement. Oppgrader for å få tilgang.', 'warning')
-            return redirect(url_for('pricing.pricing_page'))
+            return redirect('/pricing')
         
         return f(*args, **kwargs)
     return decorated_function
@@ -228,14 +228,14 @@ def subscription_required(f):
                     return f(*args, **kwargs)
                     
             # No valid subscription, redirect to pricing page
-            from flask import flash, redirect, url_for
+            from flask import flash, redirect
             flash('Denne funksjonen krever et aktivt abonnement. Vennligst oppgrader for å fortsette.', 'warning')
-            return redirect(url_for('pricing.pricing_page'))
+            return redirect('/pricing')
             
         # For unauthenticated users - NO TRIAL ACCESS, redirect to demo
         else:
-            from flask import Response, url_for
-            location = url_for('main.demo', source='subscription_required')
+            from flask import Response
+            location = '/demo?source=subscription_required'
             logging.warning(f"[SUBSCRIPTION_REQUIRED] Unauthenticated user, redirecting to {location}")
             return Response('', status=302, headers={'Location': location})
     
@@ -426,18 +426,18 @@ def _handle_no_access():
                 return jsonify({
                     'error': 'Access denied',
                     'message': 'Subscription required',
-                    'redirect': url_for('pricing.pricing_page')
+                    'redirect': '/pricing'
                 }), 403
             
             flash('Denne funksjonen krever et aktivt abonnement. Vennligst oppgrader for å få tilgang.', 'warning')
-            return redirect(url_for('pricing.pricing_page'))
+            return redirect('/pricing')
         else:
             # For anonymous users (trial expired), redirect to demo
             if _is_ajax_request():
                 return jsonify({
                     'error': 'Access denied',
                     'message': 'Trial expired',
-                    'redirect': url_for('main.demo', source='trial_expired')
+                    'redirect': '/demo?source=trial_expired'
                 }), 403
             
             # Don't show trial expired messages - redirect silently
