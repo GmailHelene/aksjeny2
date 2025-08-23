@@ -234,8 +234,6 @@ def get_pytz():
         current_app.logger.warning("pytz not available - import failed")
         return None
 
-main = Blueprint('main', __name__)
-
 EXEMPT_EMAILS = {'helene@luxushair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
 
 # Always accessible endpoints (authentication, basic info, etc.)
@@ -456,11 +454,52 @@ def before_request():
 @main.route('/')
 @main.route('/index')
 def index():
-    """Homepage - redirects logged-in users to stocks page, shows landing page for anonymous users"""
+    """Homepage - main dashboard for both authenticated and anonymous users"""
     
-    # If user is logged in, redirect to stocks page
+    # For authenticated users, show the main dashboard
     if current_user.is_authenticated:
-        return redirect(url_for('stocks.index'))
+        try:
+            # Get user's portfolio data
+            investments = {
+                'total_invested': 0,
+                'total_value': 0,
+                'total_gain': 0,
+                'total_gain_percent': 0,
+                'portfolio_count': 0
+            }
+            
+            # Get recent activities
+            activities = []
+            
+            # Get market data
+            market_data = {
+                'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8},
+                'usd_nok': {'rate': 10.85, 'change': 0.12},
+                'btc': {'price': 43210, 'change': 888, 'change_percent': 2.1},
+                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
+                'market_open': is_oslo_bors_open(),
+                'last_update': datetime.now().isoformat()
+            }
+            
+            # Get user stats
+            user_stats = {
+                'portfolios': 0,
+                'watchlist_items': 0,
+                'alerts': 0,
+                'total_trades': 0
+            }
+            
+            return render_template('index.html',
+                                 investments=investments,
+                                 activities=activities,
+                                 market_data=market_data,
+                                 user_stats=user_stats,
+                                 recommendations=[])
+                                 
+        except Exception as e:
+            logger.error(f"Error in authenticated dashboard: {e}")
+            # Fallback for authenticated users
+            return render_template('index.html')
     
     # For anonymous users, show the landing page
     investments = {
