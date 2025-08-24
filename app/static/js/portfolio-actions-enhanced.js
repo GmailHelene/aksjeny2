@@ -83,30 +83,63 @@ if (typeof PortfolioActionsManager === 'undefined') {
      * Toggle favorite status for a stock
      */
     async toggleFavorite(ticker, button) {
+        if (!ticker || !button) {
+            console.error('Missing required parameters for toggleFavorite');
+            window.showToast('Manglende informasjon for favoritt-endring', 'error');
+            return;
+        }
+
+        const originalText = button.innerHTML;
         try {
+            // Disable button and show loading state
             button.disabled = true;
-            const originalText = button.innerHTML;
             button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Oppdaterer...';
 
+            // Get CSRF token
+            const csrfToken = this.getCSRFToken();
+            if (!csrfToken) {
+                throw new Error('CSRF token not found');
+            }
+
+            // Make API request
             const response = await fetch(`/api/favorites/toggle/${ticker}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
+                    'X-CSRFToken': csrfToken
                 }
             });
+
+            // Handle non-200 responses
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
             if (data.success) {
+                // Update button state and show success message
                 this.updateFavoriteButtonState(button, data.favorited);
-                this.showNotification(data.message, 'success');
+                window.showToast(data.favorited ? 
+                    `${ticker} lagt til i favoritter` : 
+                    `${ticker} fjernet fra favoritter`, 
+                    'success'
+                );
             } else {
-                throw new Error(data.error || 'Failed to toggle favorite status');
+                throw new Error(data.error || 'Kunne ikke oppdatere favoritt-status');
             }
         } catch (error) {
             console.error('Error toggling favorite:', error);
-            this.showNotification('Feil ved endring av favoritt-status', 'error');
+            
+            // Show user-friendly error message
+            window.showToast(
+                error.message === 'CSRF token not found' ?
+                'Sikkerhetsfeil: Vennligst last siden på nytt' :
+                'Kunne ikke oppdatere favoritt-status. Prøv igjen senere.',
+                'error'
+            );
+
+            // Restore original button state
             button.innerHTML = originalText;
         } finally {
             button.disabled = false;
@@ -230,27 +263,71 @@ if (typeof PortfolioActionsManager === 'undefined') {
     }
 
     /**
-     * Show notification to user
+     * Show notification to user using unified toast system
      */
     showNotification(message, type = 'info') {
-        // Try to use existing notification system
-        if (typeof window.showNotification === 'function') {
-            window.showNotification(message, type);
+        if (typeof window.showToast === 'function') {
+            // Use the global toast system
+            window.showToast(message, type);
             return;
         }
 
-        // Fallback to simple alert or console
-        if (type === 'error') {
-            console.error(message);
-        } else {
-            console.log(message);
-        }
+        // Log message for debugging
+        console.log(`${type.toUpperCase()}: ${message}`);
         
-        // Show a simple browser notification
-        if (type !== 'error') {
-            // Create a simple toast notification
-            this.createToastNotification(message, type);
+        // Create fallback toast if global system is not available
+        const toast = document.createElement('div');
+        toast.className = 'toast align-items-center text-white border-0 position-fixed';
+        toast.style.cssText = 'bottom: 1rem; right: 1rem; z-index: 9999;';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        // Set background color based on type
+        switch(type) {
+            case 'success':
+                toast.classList.add('bg-success');
+                break;
+            case 'error':
+                toast.classList.add('bg-danger');
+                break;
+            case 'warning':
+                toast.classList.add('bg-warning');
+                break;
+            default:
+                toast.classList.add('bg-info');
         }
+
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Lukk"></button>
+            </div>
+        `;
+
+        // Create container if it doesn't exist
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+        }
+
+        container.appendChild(toast);
+
+        // Initialize Bootstrap toast
+        const bsToast = new bootstrap.Toast(toast, {
+            animation: true,
+            autohide: true,
+            delay: 3000
+        });
+
+        bsToast.show();
+
+        // Remove from DOM after hiding
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
     /**

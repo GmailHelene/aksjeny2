@@ -911,19 +911,53 @@
             originalAlert.call(this, message);
         };
         
-        // Override any global showToast functions
-        if (window.showToast) {
-            const originalShowToast = window.showToast;
-            window.showToast = function(message, type) {
-                if (typeof message === 'string' && 
-                    (message.includes('❌ Teknisk feil') || 
-                     message.includes('En teknisk feil oppsto') ||
-                     message.includes('Det oppstod en teknisk feil') ||
-                     message.includes('teknisk feil'))) {
-                    console.warn('Technical error toast suppressed:', message);
-                    return;
+        // Global toast notification handler
+        if (!window.showToast) {
+            window.showToast = function(message, type = 'info') {
+                // Create toast container if it doesn't exist
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+                    toastContainer.style.zIndex = '9999';
+                    document.body.appendChild(toastContainer);
                 }
-                originalShowToast.call(this, message, type);
+
+                // Create toast element
+                const toastElement = document.createElement('div');
+                toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
+                toastElement.setAttribute('role', 'alert');
+                toastElement.setAttribute('aria-live', 'assertive');
+                toastElement.setAttribute('aria-atomic', 'true');
+
+                // Create toast content
+                const toastContent = document.createElement('div');
+                toastContent.className = 'd-flex';
+
+                const toastBody = document.createElement('div');
+                toastBody.className = 'toast-body';
+                toastBody.textContent = message;
+
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn-close btn-close-white me-2 m-auto';
+                closeButton.setAttribute('data-bs-dismiss', 'toast');
+                closeButton.setAttribute('aria-label', 'Lukk');
+
+                toastContent.appendChild(toastBody);
+                toastContent.appendChild(closeButton);
+                toastElement.appendChild(toastContent);
+                toastContainer.appendChild(toastElement);
+
+                // Initialize and show toast
+                const toast = new bootstrap.Toast(toastElement, {
+                    animation: true,
+                    autohide: true,
+                    delay: 3000
+                });
+                toast.show();
+            };
             };
         }
         
