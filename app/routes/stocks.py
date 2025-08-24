@@ -268,79 +268,83 @@ def compare():
         for ticker in tickers:
             try:
                 try:
-                # Get historical data and validate structure
-                history = DataService.get_historical_data(ticker, period=period, interval=interval)
-                if not isinstance(history, pd.DataFrame) or history.empty:
-                    logger.warning(f"No historical data found for {ticker}")
-                    continue
-                
-                required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
-                if not all(col in history.columns for col in required_columns):
-                    logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
-                    continue
-                
-                # Get current stock info
-                stock_info = DataService.get_stock_info(ticker)
-                stock_name = stock_info.get('longName', ticker) if stock_info else ticker
-                
-                # Convert to list of dictionaries with proper validation
-                ticker_data = []
-                base_price = None
-                
-                for date, row in history.iterrows():
-                    try:
-                        price = float(row['Close'])
-                        if normalize:
-                            if base_price is None:
-                                base_price = price
-                            if base_price > 0:  # Prevent division by zero
-                                price = ((price / base_price) - 1) * 100
-                            else:
-                                price = 0
-                        
-                        # Ensure all values are valid numbers
-                        data_point = {
-                            'date': date.strftime('%Y-%m-%d'),
-                            'open': float(row['Open']),
-                            'high': float(row['High']),
-                            'low': float(row['Low']),
-                            'close': float(price),
-                            'volume': int(row['Volume'])
-                        }
-                        ticker_data.append(data_point)
-                    except (ValueError, TypeError) as e:
-                        logger.warning(f"Invalid data point for {ticker} at {date}: {e}")
+                    # Get historical data and validate structure
+                    history = DataService.get_historical_data(ticker, period=period, interval=interval)
+                    if not isinstance(history, pd.DataFrame) or history.empty:
+                        logger.warning(f"No historical data found for {ticker}")
                         continue
-                
-                if ticker_data:  # Only add if we have valid data
-                    chart_data[ticker] = ticker_data
                     
-                    # Add metrics if stock info is available
-                    if stock_info:
-                        metrics[ticker] = {
-                            'name': stock_name,
-                            'price': stock_info.get('regularMarketPrice', 0),
-                            'change': stock_info.get('regularMarketChangePercent', 0),
-                            'volume': stock_info.get('regularMarketVolume', 0),
-                            'marketCap': stock_info.get('marketCap', 0),
-                            'pe_ratio': stock_info.get('trailingPE', 0),
-                            'eps': stock_info.get('trailingEps', 0),
-                            'sector': stock_info.get('sector', 'N/A'),
-                            'exchange': stock_info.get('exchange', 'N/A')
-                        }
-                    else:
-                        metrics[ticker] = {
-                            'name': stock_name,
-                            'price': ticker_data[-1]['close'],
-                            'change': 0,
-                            'volume': ticker_data[-1]['volume'],
-                            'marketCap': 0,
-                            'pe_ratio': 0,
-                            'eps': 0,
-                            'sector': 'N/A',
-                            'exchange': 'N/A'
-                        }
+                    required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
+                    if not all(col in history.columns for col in required_columns):
+                        logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
+                        continue
+                    
+                    # Get current stock info
+                    stock_info = DataService.get_stock_info(ticker)
+                    stock_name = stock_info.get('longName', ticker) if stock_info else ticker
+                    
+                    # Convert to list of dictionaries with proper validation
+                    ticker_data = []
+                    base_price = None
+                    
+                    for date, row in history.iterrows():
+                        try:
+                            price = float(row['Close'])
+                            if normalize:
+                                if base_price is None:
+                                    base_price = price
+                                if base_price > 0:  # Prevent division by zero
+                                    price = ((price / base_price) - 1) * 100
+                                else:
+                                    price = 0
+                            
+                            # Ensure all values are valid numbers
+                            data_point = {
+                                'date': date.strftime('%Y-%m-%d'),
+                                'open': float(row['Open']),
+                                'high': float(row['High']),
+                                'low': float(row['Low']),
+                                'close': float(price),
+                                'volume': int(row['Volume'])
+                            }
+                            ticker_data.append(data_point)
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Invalid data point for {ticker} at {date}: {e}")
+                            continue
+                    
+                    if ticker_data:  # Only add if we have valid data
+                        chart_data[ticker] = ticker_data
+                        
+                        # Add metrics if stock info is available
+                        if stock_info:
+                            metrics[ticker] = {
+                                'name': stock_name,
+                                'price': stock_info.get('regularMarketPrice', 0),
+                                'change': stock_info.get('regularMarketChangePercent', 0),
+                                'volume': stock_info.get('regularMarketVolume', 0),
+                                'marketCap': stock_info.get('marketCap', 0),
+                                'pe_ratio': stock_info.get('trailingPE', 0),
+                                'eps': stock_info.get('trailingEps', 0),
+                                'sector': stock_info.get('sector', 'N/A'),
+                                'exchange': stock_info.get('exchange', 'N/A')
+                            }
+                        else:
+                            metrics[ticker] = {
+                                'name': stock_name,
+                                'price': ticker_data[-1]['close'],
+                                'change': 0,
+                                'volume': ticker_data[-1]['volume'],
+                                'marketCap': 0,
+                                'pe_ratio': 0,
+                                'eps': 0,
+                                'sector': 'N/A',
+                                'exchange': 'N/A'
+                            }
                 
+                except Exception as inner_e:
+                    logger.error(f"Inner error processing {ticker}: {inner_e}")
+                    continue
+                    
             except Exception as e:
                 logger.error(f"Error processing {ticker}: {e}")
                 logger.debug(traceback.format_exc())
