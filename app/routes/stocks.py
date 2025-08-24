@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 # Create the stocks blueprint
 stocks = Blueprint('stocks', __name__, url_prefix='/stocks')
 
+@stocks.route('/')
+@stocks.route('/index')
+@demo_access
+def index():
+    """Stocks main index page - redirect to overview"""
+    return redirect(url_for('stocks.list_index'))
+
 def calculate_rsi(prices, periods=14):
     """Calculate RSI (Relative Strength Index) for given prices"""
     try:

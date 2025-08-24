@@ -6,10 +6,10 @@
 - [ x] Step 5: Fix /watchlist/ 500 errorf
 - x[ ] Step 6: Fix /profile 500 error
 - [ x] Step 7: Fix /analysis/sentiment 500 error
-- [ ] Step 8: Fix /analysis/warren-buffett 500 error
-- [ ] Step 9: Fix /advanced-analysis 500 error
-- [ ] Step 10: Fix /pro-tools/alerts "Method Not Allowed" error
-- [ ] Step 11: Fix /portfolio/portfolio/9/add 500 error
+- [ x] Step 8: Fix /analysis/warren-buffett 500 error
+- [x ] Step 9: Fix /advanced-analysis 500 error
+- [x ] Step 10: Fix /pro-tools/alerts "Method Not Allowed" error
+- [x ] Step 11: Fix /portfolio/portfolio/9/add 500 error
 - [ ] Step 12: Fix TradingView chart integration
 - [ ] Step 13: Ensure real data loading for logged-in users
 - [ ] Step 14: Fix portfolio functionality
