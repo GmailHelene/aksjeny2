@@ -456,7 +456,6 @@ def before_request():
 def index():
     """Homepage - main dashboard for both authenticated and anonymous users"""
     
-    # EMERGENCY: Wrap entire function to prevent 500 errors
     try:
         # For authenticated users, show the main dashboard
         if current_user.is_authenticated:
@@ -532,55 +531,152 @@ def index():
             'recent_activities': []
         }
 
+        return render_template('index.html',
+                             investments=investments,
+                             activities=activities,
+                             portfolio_performance=portfolio_performance,
+                             market_data=market_data,
+                             recommendations=recommendations,
+                             user_stats=user_stats)
+                             
+    except Exception as e:
+        logger.error(f"Critical error in index route: {e}")
+        return render_template('index.html',
+                             investments={'total_invested': 0, 'total_value': 0, 'total_gain': 0, 'total_gain_percent': 0, 'portfolio_count': 0},
+                             activities=[],
+                             portfolio_performance={'best_performing': None, 'worst_performing': None, 'recent_transactions': []},
+                             market_data={'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8}, 'market_open': False, 'last_update': datetime.now().isoformat()},
+                             recommendations=[],
+                             user_stats={'portfolios': 0, 'watchlist_items': 0, 'recent_activities': []})
+
+@main.route('/demo')
+def demo():
+    """
+    Demo page with safe access control - prevents redirect loops
+    Available to all users (authenticated and unauthenticated)
+    """
     try:
-        if current_user.is_authenticated:
-            # Initialize with fallback data in case of service errors
-            investments = {
-                'total_invested': 0,
-                'total_value': 0,
-                'total_gain': 0,
-                'total_gain_percent': 0,
-                'portfolio_count': 0
-            }
-            activities = []
-            portfolio_performance = {
-                'best_performing': None,
-                'worst_performing': None,
-                'recent_transactions': []
-            }
-            market_data = {
-                'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
-                'usd_nok': {'rate': 0, 'change': 0},
-                'btc': {'price': 0, 'change': 0, 'change_percent': 0},
-                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-                'market_open': False,
-                'last_update': datetime.now().isoformat()
-            }
-            recommendations = []
-            
+        # Prevent redirect loops by always allowing demo access
+        from ..utils.access_control_unified import get_access_level, log_access_attempt
+        
+        access_level = get_access_level()
+        log_access_attempt('main.demo', 
+                          getattr(current_user, 'id', None) if current_user.is_authenticated else None,
+                          access_level)
+        
+        # Get real data for demo stocks
+        data_service = get_data_service()
+        oslo_stocks = ['EQNR.OL', 'DNB.OL', 'TEL.OL']
+        
+        stocks_data = []
+        for symbol in oslo_stocks:
             try:
-                # Get all dashboard data from services
-                from ..services.dashboard_service import DashboardService
-                dashboard_service = DashboardService()
-                
-                # Get user data with individual error handling
-                try:
-                    investments = dashboard_service.get_user_investments(current_user.id)
-                except Exception as e:
-                    logger.warning(f"Error getting user investments: {e}")
-                
-                try:
-                    activities = dashboard_service.get_user_activities(current_user.id)
-                except Exception as e:
-                    logger.warning(f"Error getting user activities: {e}")
-                
-                try:
-                    portfolio_performance = dashboard_service.get_portfolio_performance(current_user.id)
-                except Exception as e:
-                    logger.warning(f"Error getting portfolio performance: {e}")
-                
-                try:
-                    # Get basic market data
+                stock_info = data_service.get_stock_info(symbol)
+                if stock_info:
+                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
+                    previous_close = stock_info.get('previousClose', current_price)
+                    
+                    # Calculate change
+                    if previous_close and previous_close > 0:
+                        change_abs = current_price - previous_close
+                        change_percent = (change_abs / previous_close) * 100
+                        change_str = f"{'+' if change_abs >= 0 else ''}{change_percent:.1f}%"
+                    else:
+                        change_percent = 0.0
+                        change_str = "0.0%"
+                    
+                    # Simple signal logic
+                    if change_percent > 1:
+                        signal = 'KJØP'
+                        analysis = 'Positiv momentum'
+                    elif change_percent < -1:
+                        signal = 'SELG'
+                        analysis = 'Svak utvikling'
+                    else:
+                        signal = 'HOLD'
+                        analysis = 'Stabil utvikling'
+                    
+                    stocks_data.append({
+                        'symbol': symbol,
+                        'name': stock_info.get('longName', stock_info.get('shortName', symbol)),
+                        'price': current_price,
+                        'change': change_str,
+                        'signal': signal,
+                        'analysis': analysis
+                    })
+            except Exception as e:
+                logger.warning(f"Error getting data for {symbol}: {e}")
+        
+        # If no real data available, show error instead of fake data
+        if not stocks_data:
+            logger.warning("No real stock data available for demo")
+            demo_data = {
+                'demo_mode': True,
+                'context': {'is_authenticated': current_user.is_authenticated},
+                'error': 'Markedsdata er ikke tilgjengelig for øyeblikket. Prøv igjen senere.',
+                'stocks': [],
+                'analysis': None,
+                'portfolio': None
+            }
+            return render_template('demo.html', **demo_data)
+        
+        # Determine user context for demo experience
+        demo_context = {
+            'is_authenticated': current_user.is_authenticated,
+            'access_level': access_level,
+            'can_upgrade': access_level in ['demo', 'none'],
+            'show_trial_message': not current_user.is_authenticated,
+            'trial_expired': False
+        }
+        
+        demo_data = {
+            'demo_mode': True,
+            'context': demo_context,
+            'stocks': stocks_data,
+            'analysis': {
+                'recommendation': 'N/A',
+                'confidence': 'Data ikke tilgjengelig',
+                'target_price': 'N/A',
+                'risk_level': 'N/A',
+                'time_horizon': 'N/A',
+                'signals': [
+                    'Markedsdata ikke tilgjengelig',
+                    'Kontakt support for hjelp', 
+                    'Prøv igjen senere'
+                ]
+            },
+            'portfolio': {
+                'total_value': 'Data ikke tilgjengelig',
+                'daily_change': 'Data ikke tilgjengelig',
+                'daily_change_percent': 'N/A',
+                'holdings': []
+            }
+        }
+        
+        return render_template('demo.html', **demo_data)
+        
+    except Exception as e:
+        logger.error(f"Error in demo route: {e}")
+        
+        # Error fallback with clear indication of service issues
+        fallback_context = {
+            'is_authenticated': current_user.is_authenticated if current_user else False,
+            'access_level': 'none',
+            'can_upgrade': True,
+            'show_trial_message': True,
+            'trial_expired': False
+        }
+        
+        demo_data = {
+            'demo_mode': True,
+            'context': fallback_context,
+            'error': 'Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.',
+            'stocks': [],
+            'analysis': None,
+            'portfolio': None
+        }
+        
+        return render_template('demo.html', **demo_data)
                     market_data = dashboard_service.get_market_data()
                     
                     # Add detailed stock lists that the template expects
