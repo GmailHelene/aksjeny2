@@ -261,44 +261,50 @@ def compare():
             return render_template('stocks/compare.html',
                                 demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
             
+        import numpy as np
         chart_data = {}
         metrics = {}
-        
+        price_series = {}
+        volume_series = {}
+        ticker_names = {}
+        current_prices = {}
+        price_changes = {}
+        volatility = {}
+        volumes = {}
+        correlations = {}
+        betas = {}
+
         # Get historical data for each ticker
         for ticker in tickers:
             try:
                 try:
-                    # Get historical data and validate structure
                     history = DataService.get_historical_data(ticker, period=period, interval=interval)
                     if not isinstance(history, pd.DataFrame) or history.empty:
                         logger.warning(f"No historical data found for {ticker}")
                         continue
-                    
                     required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
                     if not all(col in history.columns for col in required_columns):
                         logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
                         continue
-                    
-                    # Get current stock info
                     stock_info = DataService.get_stock_info(ticker)
                     stock_name = stock_info.get('longName', ticker) if stock_info else ticker
-                    
-                    # Convert to list of dictionaries with proper validation
+                    ticker_names[ticker] = stock_name
                     ticker_data = []
                     base_price = None
-                    
+                    closes = []
+                    volumes_list = []
                     for date, row in history.iterrows():
                         try:
                             price = float(row['Close'])
                             if normalize:
                                 if base_price is None:
                                     base_price = price
-                                if base_price > 0:  # Prevent division by zero
+                                if base_price > 0:
                                     price = ((price / base_price) - 1) * 100
                                 else:
                                     price = 0
-                            
-                            # Ensure all values are valid numbers
+                            closes.append(price)
+                            volumes_list.append(float(row['Volume']))
                             data_point = {
                                 'date': date.strftime('%Y-%m-%d'),
                                 'open': float(row['Open']),
@@ -311,11 +317,14 @@ def compare():
                         except (ValueError, TypeError) as e:
                             logger.warning(f"Invalid data point for {ticker} at {date}: {e}")
                             continue
-                    
-                    if ticker_data:  # Only add if we have valid data
+                    if ticker_data:
                         chart_data[ticker] = ticker_data
-                        
-                        # Add metrics if stock info is available
+                        price_series[ticker] = closes
+                        volume_series[ticker] = volumes_list
+                        current_prices[ticker] = closes[-1] if closes else 0
+                        price_changes[ticker] = ((closes[-1] - closes[0]) / closes[0] * 100) if closes and closes[0] != 0 else 0
+                        volatility[ticker] = float(np.std(np.diff(closes)) if len(closes) > 1 else 0)
+                        volumes[ticker] = float(np.mean(volumes_list)) if volumes_list else 0
                         if stock_info:
                             metrics[ticker] = {
                                 'name': stock_name,
@@ -331,25 +340,57 @@ def compare():
                         else:
                             metrics[ticker] = {
                                 'name': stock_name,
-                                'price': ticker_data[-1]['close'],
+                                'price': closes[-1] if closes else 0,
                                 'change': 0,
-                                'volume': ticker_data[-1]['volume'],
+                                'volume': volumes_list[-1] if volumes_list else 0,
                                 'marketCap': 0,
                                 'pe_ratio': 0,
                                 'eps': 0,
                                 'sector': 'N/A',
                                 'exchange': 'N/A'
                             }
-                
                 except Exception as inner_e:
                     logger.error(f"Inner error processing {ticker}: {inner_e}")
                     continue
-                    
             except Exception as e:
                 logger.error(f"Error processing {ticker}: {e}")
                 logger.debug(traceback.format_exc())
                 continue
-                
+
+        # Calculate correlations and betas
+        if price_series:
+            tickers_list = list(price_series.keys())
+            ref_ticker = tickers_list[0] if tickers_list else None
+            for ticker in tickers_list:
+                correlations[ticker] = {}
+                for other in tickers_list:
+                    try:
+                        arr1 = np.array(price_series[ticker])
+                        arr2 = np.array(price_series[other])
+                        if len(arr1) == len(arr2) and len(arr1) > 1:
+                            corr = float(np.corrcoef(arr1, arr2)[0, 1])
+                        else:
+                            corr = 1.0 if ticker == other else 0.0
+                        correlations[ticker][other] = corr
+                    except Exception:
+                        correlations[ticker][other] = 0.0
+                # Beta calculation vs. reference ticker
+                if ref_ticker and ticker != ref_ticker:
+                    try:
+                        arr1 = np.array(price_series[ticker])
+                        arr2 = np.array(price_series[ref_ticker])
+                        if len(arr1) == len(arr2) and len(arr1) > 1:
+                            cov = np.cov(arr1, arr2)[0, 1]
+                            var = np.var(arr2)
+                            beta = float(cov / var) if var != 0 else 1.0
+                        else:
+                            beta = 1.0
+                        betas[ticker] = beta
+                    except Exception:
+                        betas[ticker] = 1.0
+                else:
+                    betas[ticker] = 1.0
+
         # If we have no valid data for any tickers, show an error
         if not chart_data:
             return render_template('stocks/compare.html',
@@ -363,6 +404,13 @@ def compare():
                              period=period,
                              interval=interval,
                              normalize=normalize,
+                             ticker_names=ticker_names,
+                             current_prices=current_prices,
+                             price_changes=price_changes,
+                             volatility=volatility,
+                             volumes=volumes,
+                             correlations=correlations,
+                             betas=betas,
                              compare_periods=['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y'],
                              compare_intervals=['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'])
 
