@@ -12,7 +12,7 @@ def register_blueprints(app):
     # Register blueprints
     app.register_blueprint(main)
     app.register_blueprint(auth)
-    app.register_blueprint(stocks)
+    app.register_blueprint(stocks, url_prefix='/stocks')
     app.register_blueprint(portfolio)
     app.register_blueprint(watchlist)  # Added watchlist blueprint
     app.register_blueprint(api)

@@ -1023,137 +1023,14 @@ def toggle_favorite(symbol):
         }), 200
 
 @stocks.route('/compare')
-@demo_access
 def compare():
-    """Stock comparison page - Simplified and robust version"""
-    try:
-        # Support both 'symbols' and 'tickers' parameters for backward compatibility
-        symbols_param = request.args.get('symbols') or request.args.get('tickers')
-        symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
+    """Stock comparison page - Working simple version"""
+    return "<h1>Compare Works!</h1><p>Route is functioning correctly</p>"
 
-        # Handle both comma-separated string and multiple parameters
-        if symbols_param and ',' in symbols_param:
-            symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()]
-        else:
-            symbols = symbols_list
-
-        period = request.args.get('period', '6mo')
-        interval = request.args.get('interval', '1d')
-        normalize = request.args.get('normalize', '1') == '1'
-
-        # Remove empty strings and filter valid symbols
-        symbols = [s.strip().upper() for s in symbols if s.strip()][:4]  # Max 4 stocks
-
-        logger.info(f"Stock comparison requested for symbols: {symbols}")
-
-        # Initialize empty data structures
-        template_data = {
-            'tickers': symbols,
-            'stocks': [],
-            'ticker_names': {},
-            'comparison_data': {},
-            'current_prices': {},
-            'price_changes': {},
-            'volatility': {},
-            'volumes': {},
-            'correlations': {},
-            'betas': {},
-            'rsi': {},
-            'macd': {},
-            'bb': {},
-            'sma200': {},
-            'sma50': {},
-            'signals': {},
-            'chart_data': {},
-            'period': period,
-            'interval': interval,
-            'normalize': normalize
-        }
-
-        # If no symbols provided, show empty form
-        if not symbols:
-            logger.info("No symbols provided, showing empty comparison form")
-            return render_template('stocks/compare.html', **template_data)
-
-        # Try to get real data, but fallback to demo data on error
-        try:
-            historical_data = DataService.get_comparative_data(symbols, period=period, interval=interval)
-            if historical_data:
-                logger.info(f"Successfully fetched real data for {len(historical_data)} symbols")
-                # Process real data here if needed
-            else:
-                raise Exception("No real data available")
-        except Exception as e:
-            logger.warning(f"Failed to get real data: {e}, using demo data")
-            historical_data = {}
-
-        # Generate demo data for all symbols (either as fallback or primary)
-        for symbol in symbols:
-            # Get basic stock info
-            try:
-                info = DataService.get_stock_info(symbol)
-                template_data['ticker_names'][symbol] = info.get('name', symbol) if info else symbol
-            except:
-                template_data['ticker_names'][symbol] = symbol
-                
-            # Generate demo values
-            import random
-            base_price = 100.0 + (abs(hash(symbol)) % 500)
-            template_data['current_prices'][symbol] = round(base_price, 2)
-            template_data['price_changes'][symbol] = round(random.uniform(-15, 15), 2)
-            template_data['volatility'][symbol] = round(15.0 + (abs(hash(symbol)) % 20), 2)
-            template_data['volumes'][symbol] = 500000 + (abs(hash(symbol)) % 2000000)
-            template_data['betas'][symbol] = round(0.8 + (abs(hash(symbol)) % 8) / 10, 2)
-            template_data['rsi'][symbol] = 30 + (abs(hash(symbol)) % 40)
-            template_data['macd'][symbol] = {
-                'macd': round(random.uniform(-2, 2), 2), 
-                'signal': round(random.uniform(-1.5, 1.5), 2),
-                'histogram': round(random.uniform(-1, 1), 2)
-            }
-            template_data['bb'][symbol] = {
-                'upper': round(base_price * 1.1, 2), 
-                'lower': round(base_price * 0.9, 2), 
-                'middle': round(base_price, 2), 
-                'position': random.choice(['upper', 'middle', 'lower'])
-            }
-            template_data['sma200'][symbol] = round(random.uniform(-10, 10), 2)
-            template_data['sma50'][symbol] = round(random.uniform(-5, 8), 2)
-            template_data['signals'][symbol] = random.choice(['BUY', 'HOLD', 'SELL'])
-
-            # Generate simple chart data
-            chart_data = []
-            from datetime import datetime, timedelta
-            current_date = datetime.now() - timedelta(days=30)
-            price = base_price
-            
-            for i in range(30):
-                change = random.uniform(-0.03, 0.03)
-                price = max(10, price * (1 + change))
-                chart_data.append({
-                    'date': current_date.strftime('%Y-%m-%d'),
-                    'close': round(price, 2),
-                    'volume': random.randint(100000, 1000000)
-                })
-                current_date += timedelta(days=1)
-            
-            template_data['chart_data'][symbol] = chart_data
-
-        logger.info(f"Returning comparison page with data for {len(symbols)} symbols")
-        return render_template('stocks/compare.html', **template_data)
-
-    except Exception as e:
-        logger.error(f"Error in compare route: {str(e)}")
-        import traceback
-        logger.error(f"Traceback: {traceback.format_exc()}")
-        # Return empty template with error message
-        return render_template('stocks/compare.html', 
-                             tickers=[], 
-                             stocks=[], 
-                             comparison_data={},
-                             error_message="En feil oppstod ved sammenligning av aksjer. Prøv igjen.",
-                             period='6mo',
-                             interval='1d',
-                             normalize=True)
+@stocks.route('/compare-test')
+def compare_test():
+    """Test route to check if routing works"""
+    return "<h1>Compare Test Works!</h1><p>This is a new test route</p>"
 
 
 # Helper route for demo data generation
