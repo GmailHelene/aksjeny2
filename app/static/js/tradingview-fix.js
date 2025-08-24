@@ -360,11 +360,10 @@ function initializeTradingViewCharts() {
             }
         });
     }
-}
-        }
-        
-        console.log(`Formatted symbol: ${formattedSymbol}`);
-        
+    
+    console.log(`Formatted symbol: ${formattedSymbol}`);
+    
+    try {
         // Create widget with minimal configuration
         const widget = new TradingView.widget({
             width: "100%",

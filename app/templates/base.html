@@ -8,11 +8,13 @@
     <!-- Core styling -->
     <link href="{{ url_for('static', filename='css/master-styling-fixes.css') }}?v=20250824" rel="stylesheet">
     
+    <!-- Card header fixes (must load first) -->
+    <link href="{{ url_for('static', filename='css/card-header-fixes.css') }}?v=20250824" rel="stylesheet">
+    
     <!-- Theme fixes in correct order -->
     <link href="{{ url_for('static', filename='css/comprehensive-theme-fixes.css') }}?v=20250824" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}?v=20250824" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/text-contrast.css') }}?v=20250824" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/card-header-override.css') }}?v=20250824" rel="stylesheet">
     
     <!-- Simple navbar styling -->
     <style>
@@ -40,12 +42,8 @@
         color: #ffffff !important;
     }
     
-    /* Ensure icons on blue backgrounds are white for visibility */
-    .bg-primary i, .bg-warning i, .bg-info i, .card-header i {
-        color: #ffffff !important;
-    }
-    
-    /* Force icon colors on colored backgrounds */
+    /* Card header styles moved to card-header-fixes.css */
+    /* Icon colors on colored backgrounds */
     .text-warning i, .text-primary i, .text-info i {
         color: #ffffff !important;
     }
@@ -76,10 +74,7 @@
         color: #fff3cd !important;
     }
     
-    .card-header.bg-danger {
-        background-color: #b71c1c !important;
-        color: white !important;
-    }
+    /* Danger card header styles moved to card-header-fixes.css */
     
     .navbar {
         background-color: #1a1a1a !important;

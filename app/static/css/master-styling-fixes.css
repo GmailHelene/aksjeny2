@@ -1,6 +1,4 @@
-/* Master CSS fixes for all styling issues */
-
-/* Remove all problematic gradient and image backgrounds */
+/* Master CSS fixes for all styling issues/* Card header styles moved to card-header-fixes.css */e all problematic gradient and image backgrounds */
 .bg-gradient,
 *[class*="gradient"],
 [class*="-gradient"],

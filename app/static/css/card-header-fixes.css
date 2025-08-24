@@ -1,0 +1,116 @@
+/* Card Header Global Fixes - August 24, 2025 */
+
+/* Base card header styles */
+.card-header {
+    padding: 1rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Remove forced colors from card header elements */
+.card-header h5,
+.card-header h6,
+.card-header span,
+.card-header i,
+.card-header .bi,
+.card-header .btn,
+.card-header a,
+.card-header .small {
+    color: inherit !important;
+}
+
+/* Light theme card headers */
+.card-header:not([class*="bg-"]) {
+    background-color: #ffffff;
+    color: #212529;
+}
+
+/* Primary themed card headers */
+.card-header.bg-primary {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+/* Success themed card headers */
+.card-header.bg-success {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+}
+
+/* Info themed card headers */
+.card-header.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000000 !important;
+}
+
+/* Warning themed card headers */
+.card-header.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+}
+
+/* Danger themed card headers */
+.card-header.bg-danger {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+/* Dark themed card headers */
+.card-header.bg-dark {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+}
+
+/* Secondary themed card headers */
+.card-header.bg-secondary {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
+/* Light themed card headers */
+.card-header.bg-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Remove forced background colors */
+.card-header[class*="bg-"] {
+    background-image: none !important;
+}
+
+/* Ensure text contrast in themed headers */
+.card-header[class*="bg-"]:not(.bg-light):not(.bg-warning):not(.bg-info) .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Handle button colors in themed headers */
+.card-header[class*="bg-"] .btn-light {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: inherit !important;
+}
+
+.card-header[class*="bg-"] .btn-light:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Icon coloring in themed headers */
+.card-header[class*="bg-"] .bi {
+    color: inherit !important;
+}
+
+/* Fix spacing issues */
+.card-header .btn {
+    margin: -0.5rem 0;
+}
+
+.card-header .btn + .btn {
+    margin-left: 0.5rem;
+}
+
+/* Remove legacy !important rules */
+.card-header h5.mb-0,
+.card-header h6.mb-0 {
+    color: inherit !important;
+    background: transparent !important;
+}

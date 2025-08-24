@@ -4,7 +4,20 @@ import random
 import time
 import traceback
 import numpy as np
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+import logging
+from datetime import datetime, timedelta
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, Response
+from flask_login import current_user, login_required
+from ..extensions import csrf
+from ..services.data_service import DataService, YFINANCE_AVAILABLE, FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
+from ..services.analysis_service import AnalysisService
+from ..services.usage_tracker import usage_tracker 
+from ..utils.access_control import access_required, demo_access, subscription_required
+from ..models.favorites import Favorites
+from ..services.notification_service import NotificationService
+from ..utils.exchange_utils import get_exchange_url
+
+logger = logging.getLogger(__name__)
 
 def calculate_rsi(prices, periods=14):
     """Calculate RSI for a price series"""
@@ -220,36 +233,77 @@ def list_oslo():
                                  market_status={'status': 'Ukjent'},
                                  error=True)
 
-@stocks.route('/list/global')
-@subscription_required
-def global_list():
-    """Global stocks"""
+@stocks.route('/compare')
+@access_required
+def compare():
+    """Compare multiple stocks"""
     try:
-        # Get global stocks with guaranteed fallback
-        stocks_raw = DataService.get_global_stocks_overview() or DataService._get_guaranteed_global_data() or []
-        # Convert list to dict if needed
-        if isinstance(stocks_raw, list):
-            stocks_data = {s.get('symbol', s.get('ticker', f'GLOBAL_{i}')): s for i, s in enumerate(stocks_raw) if isinstance(s, dict)}
-        elif isinstance(stocks_raw, dict):
-            stocks_data = stocks_raw
-        else:
-            stocks_data = {}
-        top_gainers = DataService.get_top_gainers('global') or []
-        top_losers = DataService.get_top_losers('global') or []
-        most_active = DataService.get_most_active('global') or []
-        insider_trades = DataService.get_insider_trades('global') or []
-        ai_recommendations = DataService.get_ai_recommendations('global') or []
+        tickers = request.args.getlist('tickers')
+        period = request.args.get('period', '6mo')
+        interval = request.args.get('interval', '1d')
+        normalize = request.args.get('normalize', '1') == '1'
         
-        return render_template('stocks/global_dedicated.html',
-                             stocks_data=stocks_data,
-                             top_gainers=top_gainers,
-                             top_losers=top_losers,
-                             most_active=most_active,
-                             insider_trades=insider_trades,
-                             ai_recommendations=ai_recommendations,
-                             market='Globale aksjer',
-                             market_type='global',
-                             category='global')
+        if not tickers or len(tickers) < 1:
+            return render_template('stocks/compare.html')
+            
+        chart_data = {}
+        metrics = {}
+        
+        # Get historical data for each ticker
+        for ticker in tickers:
+            try:
+                # Get historical data from DataService
+                history = DataService.get_historical_data(ticker, period=period, interval=interval)
+                if not history:
+                    continue
+                    
+                # Convert to list of dictionaries
+                ticker_data = []
+                base_price = None
+                
+                for date, row in history.iterrows():
+                    price = float(row['Close'])
+                    if normalize:
+                        if base_price is None:
+                            base_price = price
+                        price = ((price / base_price) - 1) * 100
+                        
+                    ticker_data.append({
+                        'date': date.strftime('%Y-%m-%d'),
+                        'close': price,
+                        'volume': int(row['Volume'])
+                    })
+                
+                chart_data[ticker] = ticker_data
+                
+                # Get current metrics
+                stock_info = DataService.get_stock_info(ticker)
+                if stock_info:
+                    metrics[ticker] = {
+                        'price': stock_info.get('regularMarketPrice', 0),
+                        'change': stock_info.get('regularMarketChangePercent', 0),
+                        'volume': stock_info.get('regularMarketVolume', 0),
+                        'marketCap': stock_info.get('marketCap', 0),
+                        'pe_ratio': stock_info.get('trailingPE', 0),
+                        'eps': stock_info.get('trailingEps', 0)
+                    }
+                    
+            except Exception as e:
+                logger.error(f"Error getting data for {ticker}: {e}")
+                continue
+                
+        return render_template('stocks/compare.html',
+                             tickers=tickers,
+                             chart_data=chart_data,
+                             metrics=metrics,
+                             period=period,
+                             interval=interval,
+                             normalize=normalize)
+                             
+    except Exception as e:
+        logger.error(f"Error in compare route: {e}")
+        return render_template('stocks/compare.html', 
+                             error_message="Det oppsto en feil ved sammenligning av aksjene. Prøv igjen senere.")
     except Exception as e:
         current_app.logger.error(f"Error loading global stocks: {e}")
         # Use guaranteed fallback data even on exception
