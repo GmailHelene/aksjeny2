@@ -48,52 +48,6 @@ def get_time_ago(dt):
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from sqlalchemy import text
-
-# Professional dashboard route
-@main.route('/professional-dashboard')
-def professional_dashboard():
-    """Professional trading dashboard inspired by CMC Markets"""
-    try:
-        # Get market data with fallbacks
-        market_data = {
-            'market_open': is_oslo_bors_open(),
-            'osebx': {'value': 1234.5, 'change_percent': 0.8, 'change': 9.8},
-            'sp500': {'value': 4567.8, 'change_percent': -0.3, 'change': -13.7},
-            'btc': {'price': 43210, 'change_percent': 2.1, 'change': 888},
-            'usd_nok': {'rate': 10.85, 'change': 0.12}
-        }
-        
-        # Get user favorites if logged in
-        user_favorites = []
-        if current_user.is_authenticated:
-            try:
-                favorites = db.session.execute(
-                    text("SELECT symbol, name, current_price, change_percent FROM favorites WHERE user_id = :user_id LIMIT 8"),
-                    {'user_id': current_user.id}
-                ).fetchall()
-                
-                user_favorites = [
-                    {
-                        'symbol': fav[0],
-                        'name': fav[1],
-                        'current_price': fav[2] or 0,
-                        'change_percent': fav[3] or 0
-                    }
-                    for fav in favorites
-                ]
-            except Exception as e:
-                logger.error(f"Error fetching user favorites: {e}")
-                user_favorites = []
-        
-        return render_template('professional_dashboard.html',
-                             market_data=market_data,
-                             user_favorites=user_favorites)
-    
-    except Exception as e:
-        logger.error(f"Error in professional dashboard: {e}")
-        return render_template('professional_dashboard.html',
-                             market_data={'market_open': False},
-                             user_favorites=[])
 from ..extensions import db, login_manager
 
 def has_active_subscription():
@@ -233,6 +187,8 @@ def get_pytz():
     except ImportError:
         current_app.logger.warning("pytz not available - import failed")
         return None
+
+main = Blueprint('main', __name__)
 
 EXEMPT_EMAILS = {'helene@luxushair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
 
@@ -454,229 +410,90 @@ def before_request():
 @main.route('/')
 @main.route('/index')
 def index():
-    """Homepage - main dashboard for both authenticated and anonymous users"""
+    """Homepage - redirects logged-in users to stocks page, shows landing page for anonymous users"""
     
+    # If user is logged in, redirect to stocks page
+    if current_user.is_authenticated:
+        return redirect(url_for('stocks.index'))
+    
+    # For anonymous users, show the landing page
+    investments = {
+        'total_invested': 0,
+        'total_value': 0,
+        'total_gain': 0,
+        'total_gain_percent': 0,
+        'portfolio_count': 0
+    }
+    activities = []
+    portfolio_performance = {
+        'best_performing': None,
+        'worst_performing': None,
+        'recent_transactions': []
+    }
+    market_data = {
+        'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
+        'usd_nok': {'rate': 0, 'change': 0},
+        'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+        'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
+        'market_open': is_oslo_bors_open(),
+        'last_update': datetime.now().isoformat()
+    }
+    recommendations = []
+    user_stats = {
+        'portfolios': 0,
+        'watchlist_items': 0,
+        'recent_activities': []
+    }
+
     try:
-        # For authenticated users, show the main dashboard
         if current_user.is_authenticated:
-            try:
-                # Get user's portfolio data
-                investments = {
-                    'total_invested': 0,
-                    'total_value': 0,
-                    'total_gain': 0,
-                    'total_gain_percent': 0,
-                    'portfolio_count': 0
-                }
-                
-                # Get recent activities
-                activities = []
-                
-                # Get market data
-                market_data = {
-                    'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8},
-                    'usd_nok': {'rate': 10.85, 'change': 0.12},
-                    'btc': {'price': 43210, 'change': 888, 'change_percent': 2.1},
-                    'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-                    'market_open': is_oslo_bors_open(),
-                    'last_update': datetime.now().isoformat()
-                }
-                
-                # Get user stats
-                user_stats = {
-                    'portfolios': 0,
-                    'watchlist_items': 0,
-                    'alerts': 0,
-                    'total_trades': 0
-                }
-                
-                return render_template('index.html',
-                                     investments=investments,
-                                     activities=activities,
-                                     market_data=market_data,
-                                     user_stats=user_stats,
-                                     recommendations=[])
-                                     
-            except Exception as e:
-                logger.error(f"Error in authenticated dashboard: {e}")
-                # Fallback for authenticated users
-                return render_template('index.html')
-        
-        # For anonymous users, show the landing page
-        investments = {
-            'total_invested': 0,
-            'total_value': 0,
-            'total_gain': 0,
-            'total_gain_percent': 0,
-            'portfolio_count': 0
-        }
-        activities = []
-        portfolio_performance = {
-            'best_performing': None,
-            'worst_performing': None,
-            'recent_transactions': []
-        }
-        market_data = {
-            'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
-            'usd_nok': {'rate': 0, 'change': 0},
-            'btc': {'price': 0, 'change': 0, 'change_percent': 0},
-            'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-            'market_open': is_oslo_bors_open(),
-            'last_update': datetime.now().isoformat()
-        }
-        recommendations = []
-        user_stats = {
-            'portfolios': 0,
-            'watchlist_items': 0,
-            'recent_activities': []
-        }
-
-        return render_template('index.html',
-                             investments=investments,
-                             activities=activities,
-                             portfolio_performance=portfolio_performance,
-                             market_data=market_data,
-                             recommendations=recommendations,
-                             user_stats=user_stats)
-                             
-    except Exception as e:
-        logger.error(f"Critical error in index route: {e}")
-        return render_template('index.html',
-                             investments={'total_invested': 0, 'total_value': 0, 'total_gain': 0, 'total_gain_percent': 0, 'portfolio_count': 0},
-                             activities=[],
-                             portfolio_performance={'best_performing': None, 'worst_performing': None, 'recent_transactions': []},
-                             market_data={'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8}, 'market_open': False, 'last_update': datetime.now().isoformat()},
-                             recommendations=[],
-                             user_stats={'portfolios': 0, 'watchlist_items': 0, 'recent_activities': []})
-
-@main.route('/demo')
-def demo():
-    """
-    Demo page with safe access control - prevents redirect loops
-    Available to all users (authenticated and unauthenticated)
-    """
-    try:
-        # Prevent redirect loops by always allowing demo access
-        from ..utils.access_control_unified import get_access_level, log_access_attempt
-        
-        access_level = get_access_level()
-        log_access_attempt('main.demo', 
-                          getattr(current_user, 'id', None) if current_user.is_authenticated else None,
-                          access_level)
-        
-        # Get real data for demo stocks
-        data_service = get_data_service()
-        oslo_stocks = ['EQNR.OL', 'DNB.OL', 'TEL.OL']
-        
-        stocks_data = []
-        for symbol in oslo_stocks:
-            try:
-                stock_info = data_service.get_stock_info(symbol)
-                if stock_info:
-                    current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
-                    previous_close = stock_info.get('previousClose', current_price)
-                    
-                    # Calculate change
-                    if previous_close and previous_close > 0:
-                        change_abs = current_price - previous_close
-                        change_percent = (change_abs / previous_close) * 100
-                        change_str = f"{'+' if change_abs >= 0 else ''}{change_percent:.1f}%"
-                    else:
-                        change_percent = 0.0
-                        change_str = "0.0%"
-                    
-                    # Simple signal logic
-                    if change_percent > 1:
-                        signal = 'KJØP'
-                        analysis = 'Positiv momentum'
-                    elif change_percent < -1:
-                        signal = 'SELG'
-                        analysis = 'Svak utvikling'
-                    else:
-                        signal = 'HOLD'
-                        analysis = 'Stabil utvikling'
-                    
-                    stocks_data.append({
-                        'symbol': symbol,
-                        'name': stock_info.get('longName', stock_info.get('shortName', symbol)),
-                        'price': current_price,
-                        'change': change_str,
-                        'signal': signal,
-                        'analysis': analysis
-                    })
-            except Exception as e:
-                logger.warning(f"Error getting data for {symbol}: {e}")
-        
-        # If no real data available, show error instead of fake data
-        if not stocks_data:
-            logger.warning("No real stock data available for demo")
-            demo_data = {
-                'demo_mode': True,
-                'context': {'is_authenticated': current_user.is_authenticated},
-                'error': 'Markedsdata er ikke tilgjengelig for øyeblikket. Prøv igjen senere.',
-                'stocks': [],
-                'analysis': None,
-                'portfolio': None
+            # Initialize with fallback data in case of service errors
+            investments = {
+                'total_invested': 0,
+                'total_value': 0,
+                'total_gain': 0,
+                'total_gain_percent': 0,
+                'portfolio_count': 0
             }
-            return render_template('demo.html', **demo_data)
-        
-        # Determine user context for demo experience
-        demo_context = {
-            'is_authenticated': current_user.is_authenticated,
-            'access_level': access_level,
-            'can_upgrade': access_level in ['demo', 'none'],
-            'show_trial_message': not current_user.is_authenticated,
-            'trial_expired': False
-        }
-        
-        demo_data = {
-            'demo_mode': True,
-            'context': demo_context,
-            'stocks': stocks_data,
-            'analysis': {
-                'recommendation': 'N/A',
-                'confidence': 'Data ikke tilgjengelig',
-                'target_price': 'N/A',
-                'risk_level': 'N/A',
-                'time_horizon': 'N/A',
-                'signals': [
-                    'Markedsdata ikke tilgjengelig',
-                    'Kontakt support for hjelp', 
-                    'Prøv igjen senere'
-                ]
-            },
-            'portfolio': {
-                'total_value': 'Data ikke tilgjengelig',
-                'daily_change': 'Data ikke tilgjengelig',
-                'daily_change_percent': 'N/A',
-                'holdings': []
+            activities = []
+            portfolio_performance = {
+                'best_performing': None,
+                'worst_performing': None,
+                'recent_transactions': []
             }
-        }
-        
-        return render_template('demo.html', **demo_data)
-        
-    except Exception as e:
-        logger.error(f"Error in demo route: {e}")
-        
-        # Error fallback with clear indication of service issues
-        fallback_context = {
-            'is_authenticated': current_user.is_authenticated if current_user else False,
-            'access_level': 'none',
-            'can_upgrade': True,
-            'show_trial_message': True,
-            'trial_expired': False
-        }
-        
-        demo_data = {
-            'demo_mode': True,
-            'context': fallback_context,
-            'error': 'Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.',
-            'stocks': [],
-            'analysis': None,
-            'portfolio': None
-        }
-        
-        return render_template('demo.html', **demo_data)
+            market_data = {
+                'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
+                'usd_nok': {'rate': 0, 'change': 0},
+                'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
+                'market_open': False,
+                'last_update': datetime.now().isoformat()
+            }
+            recommendations = []
+            
+            try:
+                # Get all dashboard data from services
+                from ..services.dashboard_service import DashboardService
+                dashboard_service = DashboardService()
+                
+                # Get user data with individual error handling
+                try:
+                    investments = dashboard_service.get_user_investments(current_user.id)
+                except Exception as e:
+                    logger.warning(f"Error getting user investments: {e}")
+                
+                try:
+                    activities = dashboard_service.get_user_activities(current_user.id)
+                except Exception as e:
+                    logger.warning(f"Error getting user activities: {e}")
+                
+                try:
+                    portfolio_performance = dashboard_service.get_portfolio_performance(current_user.id)
+                except Exception as e:
+                    logger.warning(f"Error getting portfolio performance: {e}")
+                
+                try:
+                    # Get basic market data
                     market_data = dashboard_service.get_market_data()
                     
                     # Add detailed stock lists that the template expects
@@ -879,12 +696,6 @@ def demo():
                                 market_data=market_data,
                                 recommendations=recommendations,
                                 user_stats=user_stats)
-    
-    except Exception as e:
-        logger.error(f"Error in authenticated user dashboard: {e}")
-        # Fallback for authenticated users
-        if current_user.is_authenticated:
-            return render_template('index.html')
             
         # For non-authenticated users, show public homepage with market data
         try:
@@ -1037,18 +848,6 @@ def demo():
                             market_data=market_data,
                             recommendations=recommendations,
                             user_stats=user_stats)
-    
-    except Exception as critical_error:
-        logger.error(f"CRITICAL ERROR in index route: {critical_error}")
-        # Emergency fallback for 500 errors
-        return render_template('index.html',
-                             investments={'total_invested': 0, 'total_value': 0, 'total_gain': 0, 'total_gain_percent': 0, 'portfolio_count': 0},
-                             activities=[],
-                             portfolio_performance={'best_performing': None, 'worst_performing': None, 'recent_transactions': []},
-                             market_data={'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8}, 'market_open': False, 'last_update': datetime.now().isoformat()},
-                             recommendations=[],
-                             user_stats={'portfolios': 0, 'watchlist_items': 0, 'recent_activities': []},
-                             error_mode=True)
 
 @main.route('/demo')
 def demo():
@@ -1261,7 +1060,7 @@ def demo():
     from sqlalchemy.exc import OperationalError, ProgrammingError
     
     if current_user.is_authenticated:
-        return redirect('/')
+        return redirect(url_for('main.index'))
     
     form = LoginForm()
     
@@ -1285,7 +1084,7 @@ def demo():
                 
                 next_page = request.args.get('next')
                 if not next_page or urlparse(next_page).netloc != '':
-                    next_page = '/'
+                    next_page = url_for('main.index')
                 
                 current_app.logger.info(f'Successful login for user: {user.email}')
                 flash('Innlogging vellykket!', 'success')
@@ -1307,7 +1106,7 @@ def demo():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     """Login page - redirect to auth blueprint"""
-    return redirect('/login')
+    return redirect(url_for('auth.login'))
 
 @main.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -1326,7 +1125,7 @@ def logout():
     flash('Du er nå utlogget.', 'success')
     
     # Create simple response with minimal headers
-    response = make_response(redirect('/'))
+    response = make_response(redirect(url_for('main.index')))
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
@@ -1340,7 +1139,7 @@ def logout():
 
 def unauthorized_handler():
     flash('Du må logge inn for å få tilgang til denne siden.', 'warning')
-    return redirect('/login')
+    return redirect(url_for('main.login', next=request.url))
 
 # Register unauthorized handler
 login_manager.unauthorized_handler(unauthorized_handler)
@@ -1355,7 +1154,7 @@ def register():
     from werkzeug.security import generate_password_hash
     
     if current_user.is_authenticated:
-        return redirect('/')
+        return redirect(url_for('main.index'))
     
     form = RegistrationForm()
     
@@ -1396,10 +1195,10 @@ def handle_share():
     
     # Hvis delt innhold ser ut som en aksjeticker (f.eks. "AAPL")
     if shared_text and len(shared_text.strip()) < 10 and shared_text.strip().isalpha():
-        return redirect(f'/stocks/details/{shared_text.strip()}')
+        return redirect(url_for('stocks.details', ticker=shared_text.strip()))
     
     # Ellers, bruk søkefunksjonen
-    return redirect(f'/stocks/search?query={shared_text.strip()}')
+    return redirect(url_for('stocks.search', query=shared_text.strip()))
 
 # Market overview route moved to analysis.py to avoid conflicts
 
@@ -1485,11 +1284,11 @@ def subscription():
     """Subscription management page"""
     try:
         # Redirect to pricing page for subscription plans
-        return redirect('/pricing')
+        return redirect(url_for('pricing.index'))
     except Exception as e:
         current_app.logger.error(f"Error redirecting to pricing: {e}")
         flash('Kunne ikke laste prissiden.', 'error')
-        return redirect('/')
+        return redirect(url_for('main.index'))
 
 @main.route('/subscription/plans')
 @login_required
@@ -1497,11 +1296,11 @@ def subscription_plans():
     """Subscription plans page"""
     try:
         # Redirect to pricing page since that's where plans are shown
-        return redirect('/pricing')
+        return redirect(url_for('pricing.index'))
     except Exception as e:
         current_app.logger.error(f"Error redirecting to pricing: {e}")
         flash('Kunne ikke laste prissiden.', 'error')
-        return redirect('/')
+        return redirect(url_for('main.index'))
 
 @main.route('/roi-kalkulator')
 @main.route('/roi')
@@ -1516,13 +1315,13 @@ def roi_kalkulator():
     except Exception as e:
         current_app.logger.error(f"Error loading ROI calculator: {e}")
         flash('Kunne ikke laste ROI-kalkulatoren.', 'error')
-        return redirect('/')
+        return redirect(url_for('main.index'))
 
 @main.route('/dashboard')
 @access_required  
 def dashboard():
     """Main dashboard redirect to financial dashboard"""
-    return redirect('/dashboard/financial')
+    return redirect(url_for('dashboard.financial_dashboard'))
 
 @main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -1571,7 +1370,7 @@ Aksjeradar-teamet'''
             # Don't reveal if email exists or not
             flash('Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner.', 'info')
         
-        return redirect('/login')
+        return redirect(url_for('main.login'))
     
     return render_template('forgot_password.html', form=form)
 
@@ -1579,7 +1378,7 @@ Aksjeradar-teamet'''
 def reset_password(token):
     """Reset password with token"""
     if current_user.is_authenticated:
-        return redirect('/')
+        return redirect(url_for('main.index'))
     
     LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, ReferralForm = get_forms()
     form = ResetPasswordForm()
@@ -1589,7 +1388,7 @@ def reset_password(token):
         email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour expiry
     except:
         flash('Ugyldig eller utløpt lenke for tilbakestilling av passord.', 'error')
-        return redirect('/login')
+        return redirect(url_for('main.login'))
     
     if form.validate_on_submit():
         User = get_user_model()
@@ -1619,7 +1418,7 @@ def referrals():
     stats = ReferralService.get_referral_stats(current_user)
     
     # Generate referral link
-    referral_link = f"https://aksjeradar.trade/register?ref={referral_code}"
+    referral_link = url_for('main.register', ref=referral_code, _external=True)
     
     return render_template('referrals.html',
                          referral_code=referral_code,
@@ -1634,11 +1433,11 @@ def send_referral():
     
     if not email:
         flash('E-postadresse er påkrevd.', 'error')
-        return redirect('/referrals')
+        return redirect(url_for('main.referrals'))
     
     ReferralService = get_referral_service()
     referral_code = ReferralService.get_or_create_referral_code(current_user)
-    referral_link = f"https://aksjeradar.trade/register?ref={referral_code}"
+    referral_link = url_for('main.register', ref=referral_code, _external=True)
     
     try:
         msg = EmailMessage(
@@ -1670,7 +1469,7 @@ Aksjeradar-teamet'''
         current_app.logger.error(f"Failed to send referral email: {e}")
         flash('Kunne ikke sende invitasjon. Vennligst prøv igjen senere.', 'error')
     
-    return redirect('/referrals')
+    return redirect(url_for('main.referrals'))
 
 @main.route('/terms')
 def terms():
@@ -1768,7 +1567,6 @@ def internal_error(error):
 @login_required
 def profile():
     """User profile page with proper error handling"""
-    # EMERGENCY: Enhanced error handling to prevent 500 errors
     try:
         # Allow all authenticated users to access profile page
         subscription = None
@@ -1837,25 +1635,6 @@ def profile():
                      referral_earnings=0,
                      referral_code='REF001',
                      error=True)
-                             
-    except Exception as critical_profile_error:
-        logger.error(f"CRITICAL ERROR in profile route: {critical_profile_error}")
-        # Emergency fallback for profile 500 errors
-        return render_template('profile.html',
-                     user=current_user,
-                     subscription=None,
-                     subscription_status='free',
-                     user_stats={'member_since': datetime.now()},
-                     user_language='nb',
-                     user_display_mode='light',
-                     user_number_format='norwegian',
-                     user_dashboard_widgets='[]',
-                     user_favorites=[],
-                     referrals_made=0,
-                     referral_earnings=0,
-                     referral_code='REF001',
-                     error=True,
-                     error_message='Midlertidig feil - prøv igjen senere')
 
 @main.route('/mitt-abonnement')
 @main.route('/my-subscription')
@@ -2356,240 +2135,54 @@ def update_notifications():
 @main.route('/watchlist')
 @access_required
 def watchlist():
-    """Main watchlist route - fallback implementation"""
+    """Main watchlist route - redirect to portfolio watchlist"""
     try:
-        # Try to redirect to portfolio watchlist first
-        return redirect('/portfolio/watchlist')
+        return redirect(url_for('portfolio.watchlist'))
     except Exception as e:
         logger.error(f"Error redirecting to portfolio watchlist: {e}")
-        # Direct fallback implementation
-        try:
-            from ..models.favorites import Favorites
-            user_favorites = Favorites.get_user_favorites(current_user.id) if current_user.is_authenticated else []
-            return render_template('portfolio/watchlist.html', 
-                                 stocks=user_favorites, 
-                                 message="Watchlist vises med begrensede funksjoner")
-        except Exception as fallback_error:
-            logger.error(f"Fallback watchlist failed: {fallback_error}")
-            return render_template('error.html', 
-                                 error="Watchlist er midlertidig utilgjengelig. Prøv igjen senere.")
+        # Fallback: render a simple watchlist page
+        return render_template('portfolio/watchlist.html', 
+                             stocks=[], 
+                             message="Watchlist er midlertidig utilgjengelig")
 
 @main.route('/portfolio/watchlist')
 @login_required
 def portfolio_watchlist():
-    """Portfolio watchlist route - fallback implementation"""
+    """Portfolio watchlist route - redirect to portfolio watchlist"""
     try:
-        # Try to redirect to portfolio watchlist first
         return redirect(url_for('portfolio.watchlist'))
     except Exception as e:
         logger.error(f"Error redirecting to portfolio watchlist: {e}")
-        # Direct fallback implementation
-        try:
-            from ..models.favorites import Favorites
-            user_favorites = Favorites.get_user_favorites(current_user.id) if current_user.is_authenticated else []
-            return render_template('portfolio/watchlist.html', 
-                                 stocks=user_favorites, 
-                                 message="Portfolio watchlist vises med begrensede funksjoner")
-        except Exception as fallback_error:
-            logger.error(f"Fallback portfolio watchlist failed: {fallback_error}")
-            return render_template('error.html', 
-                                 error="Portfolio watchlist er midlertidig utilgjengelig. Prøv igjen senere.")
+        # Fallback: render a simple watchlist page
+        return render_template('portfolio/watchlist.html', 
+                             stocks=[], 
+                             message="Watchlist er midlertidig utilgjengelig")
 
 @main.route('/norwegian-intel/government-impact')
 @login_required
 def norwegian_intel_government_impact():
-    """Norwegian intel government impact route - fallback implementation"""
+    """Norwegian intel government impact route"""
     try:
         return redirect(url_for('norwegian_intel.government_impact'))
     except Exception as e:
         logger.error(f"Error redirecting to norwegian intel government impact: {e}")
-        # Fallback: render a simple analysis page
-        return render_template('analysis/norwegian_intel.html', 
-                             title="Norsk Politisk Påvirkning",
-                             message="Denne analysen er midlertidig utilgjengelig")
+        # Fallback: render error page or redirect to main
+        return redirect(url_for('main.index'))
 
 @main.route('/advanced/crypto-dashboard')
 @access_required
 def advanced_crypto_dashboard():
-    """Advanced crypto dashboard route - fallback implementation"""
+    """Advanced crypto dashboard route"""
     try:
         return redirect(url_for('advanced_features.crypto_dashboard'))
     except Exception as e:
         current_app.logger.error(f"Error redirecting to crypto dashboard: {e}")
-        # Fallback: render crypto dashboard directly
-        try:
-            return render_template('advanced/crypto_dashboard.html',
-                                 title="Crypto Dashboard", 
-                                 crypto_data=[],
-                                 message="Crypto dashboard er i vedlikehold")
-        except Exception as template_error:
-            logger.error(f"Crypto dashboard template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/stocks/compare')
-@login_required  
-def stocks_compare():
-    """Stocks compare route - fallback implementation"""
-    try:
-        return redirect(url_for('stocks.compare'))
-    except Exception as e:
-        logger.error(f"Error redirecting to stocks compare: {e}")
-        # Fallback: render compare page directly
-        try:
-            return render_template('stocks/compare.html',
-                                 title="Sammenlign Aksjer",
-                                 stocks=[],
-                                 message="Sammenligning er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Stocks compare template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Aksjsammenligning er midlertidig utilgjengelig. Prøv igjen senere.")
+        # Fallback: render simple message
+        return render_template('error.html', 
+                             error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
 
 @main.route('/analysis/warren-buffett')
 @login_required
 def analysis_warren_buffett():
-    """Analysis Warren Buffett route - fixed redirect loop"""
-    ticker = request.args.get('ticker', '')
-    
-    # Prevent redirect loops by checking if we're already in the warren_buffett route
-    if request.endpoint == 'main.analysis_warren_buffett':
-        try:
-            return render_template('analysis/warren_buffett.html',
-                                 title="Warren Buffett Analyse",
-                                 ticker=ticker,
-                                 analysis_data={},
-                                 message="Warren Buffett analyse er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Warren Buffett template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Warren Buffett analyse er midlertidig utilgjengelig. Prøv igjen senere.")
-    
-    try:
-        return redirect(url_for('analysis.warren_buffett', **request.args))
-    except Exception as e:
-        logger.error(f"Error redirecting to Warren Buffett analysis: {e}")
-        # Fallback: render analysis page directly  
-        try:
-            return render_template('analysis/warren_buffett.html',
-                                 title="Warren Buffett Analyse",
-                                 ticker=ticker,
-                                 analysis_data={},
-                                 message="Warren Buffett analyse er i vedlikehold")
-        except Exception as template_error:
-            logger.error(f"Warren Buffett template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Warren Buffett analyse er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/analysis/sentiment')
-@login_required
-def analysis_sentiment():
-    """Analysis sentiment route - fallback implementation"""
-    symbol = request.args.get('symbol', '')
-    
-    try:
-        return redirect(url_for('analysis.sentiment', **request.args))
-    except Exception as e:
-        logger.error(f"Error redirecting to sentiment analysis: {e}")
-        # Fallback: render sentiment page directly
-        try:
-            return render_template('analysis/sentiment.html',
-                                 title="Sentiment Analyse", 
-                                 symbol=symbol,
-                                 sentiment_data={},
-                                 message="Sentiment analyse er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Sentiment analysis template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Sentiment analyse er midlertidig utilgjengelig. Prøv igjen senere.")
-
-# Additional fallback routes for missing endpoints
-@main.route('/forum')
-@demo_access
-def forum_fallback():
-    """Forum fallback route"""
-    try:
-        return redirect(url_for('forum.index'))
-    except Exception as e:
-        logger.error(f"Error redirecting to forum: {e}")
-        try:
-            return render_template('forum/index.html',
-                                 title="Forum", 
-                                 posts=[],
-                                 message="Forum er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Forum template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Forum er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/norsk-intel')
-@demo_access
-def norsk_intel_fallback():
-    """Norwegian Intel fallback route"""
-    try:
-        return redirect(url_for('news_intelligence.norwegian_intel'))
-    except Exception as e:
-        logger.error(f"Error redirecting to norwegian intel: {e}")
-        try:
-            return render_template('norwegian_intel/index.html',
-                                 title="Norsk Intel", 
-                                 intelligence_data={},
-                                 message="Norsk intel er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Norwegian intel template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Norsk intel er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/advanced')
-@demo_access
-def advanced_fallback():
-    """Advanced features fallback route"""
-    try:
-        return redirect(url_for('portfolio.advanced'))
-    except Exception as e:
-        logger.error(f"Error redirecting to advanced: {e}")
-        try:
-            return render_template('advanced_features/dashboard.html',
-                                 title="Avanserte Funksjoner", 
-                                 features=[],
-                                 message="Avanserte funksjoner er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Advanced features template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Avanserte funksjoner er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/comparison')
-@demo_access
-def comparison_fallback():
-    """Stock comparison fallback route"""
-    try:
-        return redirect(url_for('resources_bp.comparison'))
-    except Exception as e:
-        logger.error(f"Error redirecting to comparison: {e}")
-        try:
-            return render_template('resources/index.html',
-                                 title="Aksje Sammenligning", 
-                                 stocks=[],
-                                 message="Aksje sammenligning er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Comparison template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Aksje sammenligning er midlertidig utilgjengelig. Prøv igjen senere.")
-
-@main.route('/crypto-dashboard')
-@demo_access
-def crypto_dashboard_fallback():
-    """Crypto dashboard fallback route"""
-    try:
-        return redirect(url_for('advanced_features.crypto_dashboard'))
-    except Exception as e:
-        logger.error(f"Error redirecting to crypto dashboard: {e}")
-        try:
-            return render_template('advanced_features/crypto_dashboard.html',
-                                 title="Crypto Dashboard", 
-                                 crypto_data={},
-                                 message="Crypto dashboard er midlertidig utilgjengelig")
-        except Exception as template_error:
-            logger.error(f"Crypto dashboard template error: {template_error}")
-            return render_template('error.html', 
-                                 error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
+    """Analysis Warren Buffett route"""
+    return redirect(url_for('analysis.warren_buffett', **request.args))

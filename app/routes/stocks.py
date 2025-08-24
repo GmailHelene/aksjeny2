@@ -287,7 +287,7 @@ def list_currency():
 @demo_access
 def stock_symbol(symbol):
     """Direct stock access via symbol - redirects to details"""
-    return redirect(f'/stocks/details/{symbol}')
+    return redirect(url_for('stocks.details', symbol=symbol))
 
 @stocks.route('/details/<symbol>')
 @demo_access

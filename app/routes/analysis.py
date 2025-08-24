@@ -6,9 +6,6 @@ from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
 from datetime import datetime, timedelta
 import logging
-import random
-import traceback
-import logging
 import requests
 import threading
 import random
@@ -41,228 +38,11 @@ try:
 except ImportError:
     FinnhubAPI = None
 
-# Add missing import
-import logging
-
 # Set up logger
 logger = logging.getLogger(__name__)
 
 # Create analysis blueprint
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
-
-@analysis.route('/technical')
-def technical():
-    """Advanced technical analysis with pattern recognition"""
-    try:
-        # Simulate pattern recognition data (in real app, would use AI/ML)
-        patterns = [
-            {
-                'symbol': 'EQUI.OL',
-                'name': 'Equinor ASA',
-                'pattern': 'Ascending Triangle',
-                'confidence': 87,
-                'timeframe': '1D',
-                'status': 'Bullish',
-                'target_price': 385.50,
-                'probability': 'High'
-            },
-            {
-                'symbol': 'TEL.OL',
-                'name': 'Telenor ASA',
-                'pattern': 'Head & Shoulders',
-                'confidence': 72,
-                'timeframe': '4H',
-                'status': 'Bearish',
-                'target_price': 145.20,
-                'probability': 'Medium'
-            },
-            {
-                'symbol': 'AKER.OL',
-                'name': 'Aker ASA',
-                'pattern': 'Bullish Flag',
-                'confidence': 91,
-                'timeframe': '1H',
-                'status': 'Bullish',
-                'target_price': 728.00,
-                'probability': 'Very High'
-            },
-            {
-                'symbol': 'DNB.OL',
-                'name': 'DNB Bank ASA',
-                'pattern': 'Double Bottom',
-                'confidence': 78,
-                'timeframe': '1D',
-                'status': 'Bullish',
-                'target_price': 198.50,
-                'probability': 'High'
-            }
-        ]
-        
-        # Technical indicators summary
-        indicators = {
-            'moving_averages': {
-                'ma20_above_ma50': 65,  # Percentage of stocks
-                'ma50_above_ma200': 58,
-                'golden_cross_signals': 12
-            },
-            'momentum': {
-                'rsi_overbought': 23,  # Number of stocks
-                'rsi_oversold': 8,
-                'macd_bullish': 145,
-                'macd_bearish': 89
-            },
-            'volume': {
-                'high_volume_breakouts': 34,
-                'volume_confirmation': 78,
-                'accumulation_stocks': 67
-            }
-        }
-        
-        return render_template('analysis/technical.html', 
-                             patterns=patterns,
-                             indicators=indicators)
-    
-    except Exception as e:
-        logger.error(f"Error in technical analysis: {e}")
-        return render_template('analysis/technical.html', 
-                             patterns=[],
-                             indicators={})
-
-@analysis.route('/sentiment')
-def sentiment():
-    """AI-powered sentiment analysis"""
-    try:
-        # Simulate sentiment data (would use real AI/NLP in production)
-        sentiment_data = {
-            'overall_market': {
-                'sentiment': 'Bullish',
-                'score': 72,
-                'confidence': 85,
-                'trend': 'Improving'
-            },
-            'sectors': [
-                {'name': 'Teknologi', 'sentiment': 78, 'change': '+5'},
-                {'name': 'Energi', 'sentiment': 65, 'change': '+2'},
-                {'name': 'Finans', 'sentiment': 58, 'change': '-3'},
-                {'name': 'Helse', 'sentiment': 71, 'change': '+8'},
-                {'name': 'Industri', 'sentiment': 62, 'change': '-1'},
-                {'name': 'Materialer', 'sentiment': 55, 'change': '-4'}
-            ],
-            'top_mentioned': [
-                {'symbol': 'EQUI.OL', 'mentions': 2847, 'sentiment': 82, 'trending': True},
-                {'symbol': 'TEL.OL', 'mentions': 1956, 'sentiment': 58, 'trending': False},
-                {'symbol': 'AKER.OL', 'mentions': 1523, 'sentiment': 75, 'trending': True},
-                {'symbol': 'DNB.OL', 'mentions': 1234, 'sentiment': 62, 'trending': False},
-                {'symbol': 'SALM.OL', 'mentions': 987, 'sentiment': 69, 'trending': True}
-            ],
-            'news_sentiment': [
-                {
-                    'headline': 'Equinor rapporterer sterke kvartalstall',
-                    'sentiment': 89,
-                    'source': 'E24',
-                    'time': '2 timer siden',
-                    'impact': 'High'
-                },
-                {
-                    'headline': 'Fed signaliserer mulige rentekutt',
-                    'sentiment': 75,
-                    'source': 'DN',
-                    'time': '4 timer siden',
-                    'impact': 'Medium'
-                },
-                {
-                    'headline': 'OSEBX stiger på oljepriser',
-                    'sentiment': 68,
-                    'source': 'Finansavisen',
-                    'time': '6 timer siden',
-                    'impact': 'Medium'
-                }
-            ]
-        }
-        
-        return render_template('analysis/sentiment.html', 
-                             sentiment_data=sentiment_data)
-    
-    except Exception as e:
-        logger.error(f"Error in sentiment analysis: {e}")
-        return render_template('analysis/sentiment.html', 
-                             sentiment_data={})
-
-@analysis.route('/backtest')
-def backtest():
-    """Strategy backtesting interface"""
-    try:
-        # Sample backtesting results
-        strategies = [
-            {
-                'name': 'Moving Average Crossover',
-                'description': 'Kjøp når 20-dagers MA krysser over 50-dagers MA',
-                'return': 15.4,
-                'sharpe_ratio': 1.23,
-                'max_drawdown': -8.7,
-                'win_rate': 58.3,
-                'total_trades': 47
-            },
-            {
-                'name': 'RSI Mean Reversion',
-                'description': 'Kjøp ved RSI < 30, selg ved RSI > 70',
-                'return': 12.8,
-                'sharpe_ratio': 1.05,
-                'max_drawdown': -12.3,
-                'win_rate': 61.2,
-                'total_trades': 73
-            },
-            {
-                'name': 'Momentum Strategy',
-                'description': 'Kjøp aksjer med høyest momentum siste 3 måneder',
-                'return': 18.9,
-                'sharpe_ratio': 1.41,
-                'max_drawdown': -15.6,
-                'win_rate': 54.7,
-                'total_trades': 32
-            }
-        ]
-        
-        return render_template('analysis/backtest.html', 
-                             strategies=strategies)
-    
-    except Exception as e:
-        logger.error(f"Error in backtest analysis: {e}")
-        return render_template('analysis/backtest.html', 
-                             strategies=[])
-
-@analysis.route('/api/run-backtest', methods=['POST'])
-@login_required
-def run_backtest():
-    """Run custom backtest strategy"""
-    try:
-        data = request.get_json()
-        strategy_name = data.get('strategy_name', 'Custom Strategy')
-        timeframe = data.get('timeframe', '1y')
-        
-        # Simulate backtesting (would use real historical data in production)
-        results = {
-            'strategy_name': strategy_name,
-            'timeframe': timeframe,
-            'total_return': round(random.uniform(-20, 30), 2),
-            'sharpe_ratio': round(random.uniform(0.5, 2.0), 2),
-            'max_drawdown': round(random.uniform(-25, -5), 2),
-            'win_rate': round(random.uniform(45, 70), 1),
-            'total_trades': random.randint(20, 100),
-            'monthly_returns': [round(random.uniform(-5, 5), 2) for _ in range(12)]
-        }
-        
-        return jsonify({
-            'success': True,
-            'results': results
-        })
-    
-    except Exception as e:
-        logger.error(f"Error running backtest: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Feil ved kjøring av backtest'
-        })
 
 @analysis.route('/api/sentiment')
 @access_required
@@ -858,7 +638,7 @@ def sentiment():
         # Validate the selected symbol
         if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
             flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
-            return redirect('/analysis/sentiment')
+            return redirect(url_for('analysis.sentiment'))
 
         sentiment_data = None
         error = None
@@ -1751,13 +1531,13 @@ def benjamin_graham():
 @access_required  
 def sentiment_view():
     """Sentiment analysis view"""
-    return redirect('/analysis/sentiment')
+    return redirect(url_for('analysis.sentiment'))
 
 @analysis.route('/insider-trading')
-@access_required
+@demo_access
 def insider_trading():
     """Redirect to dedicated insider trading page"""
-    return redirect('/market-intel/insider-trading')
+    return redirect(url_for('market_intel.insider_trading'))
 
 # API Endpoints
 @analysis.route('/api/technical/<symbol>')
@@ -1873,7 +1653,7 @@ def ai(ticker=None):
 
 @analysis.route('/short-analysis')
 @analysis.route('/short-analysis/<ticker>')
-@access_required
+@demo_access
 def short_analysis(ticker=None):
     """Short selling analysis"""
     try:
@@ -2093,7 +1873,7 @@ def fundamental():
 @access_required
 def technical_analysis(symbol):
     """Alternative route for technical analysis with symbol parameter"""
-    return redirect(f'/analysis/technical?ticker={symbol}')
+    return redirect(url_for('analysis.technical', ticker=symbol))
 
 @analysis.route('/screener-view')
 @access_required
@@ -2105,7 +1885,7 @@ def screener_view():
 @analysis.route('/recommendations')
 @analysis.route('/recommendation/<ticker>')
 @analysis.route('/recommendations/<ticker>')
-@access_required
+@demo_access
 def recommendation(ticker=None):
     """Investment recommendations page with comprehensive analysis"""
     from datetime import datetime, timedelta
@@ -2189,7 +1969,7 @@ def recommendation(ticker=None):
         except Exception as e:
             logger.error(f"Error generating recommendation for {ticker}: {e}")
             flash(f'Kunne ikke generere anbefaling for {ticker}. Viser generell oversikt.', 'warning')
-            return redirect('/analysis/recommendation')
+            return redirect(url_for('analysis.recommendation'))
     
     # Comprehensive investment recommendations data
     recommendations = {
@@ -2519,7 +2299,6 @@ def prediction():
                          predictions_global=predictions_global)
 
 @analysis.route('/currency-overview')
-@analysis.route('/currency_overview')
 @premium_required
 def currency_overview():
     """Currency market overview with error handling"""
@@ -2607,7 +2386,7 @@ def global_overview():
     return render_template('analysis/global_overview.html', title='Global Markeds Oversikt')
 
 @analysis.route('/tradingview')
-@access_required
+@demo_access
 def tradingview():
     """TradingView Charts Analysis - Enhanced with demo support"""
     symbol = request.args.get('symbol', 'AAPL')
@@ -2640,333 +2419,7 @@ def backtest():
     return render_template('analysis/backtest.html', title='Backtest Strategier')
 
 @analysis.route('/strategy-builder')
-@analysis.route('/strategy_builder')
 @access_required
 def strategy_builder():
     """Strategy builder functionality"""
     return render_template('analysis/strategy_builder.html', title='Strategibygger')
-
-# New missing routes that the user mentioned
-@analysis.route('/portfolio-tips')
-@access_required
-def portfolio_tips():
-    """Portfolio tips and recommendations"""
-    try:
-        # Generate portfolio tips
-        tips = [
-            {
-                'title': 'Diversifiser din portefølje',
-                'description': 'Spre investeringene dine på tvers av ulike sektorer og geografiske markeder for å redusere risiko.',
-                'category': 'Risk Management',
-                'importance': 'High'
-            },
-            {
-                'title': 'Langsiktig investering',
-                'description': 'Hold investeringene dine i minimum 3-5 år for å dra nytte av sammensatt avkastning.',
-                'category': 'Strategy',
-                'importance': 'High'
-            },
-            {
-                'title': 'Regelmessig rebalansering',
-                'description': 'Gjennomgå og juster porteføljen din hver 6-12 måned for å opprettholde ønsket allokering.',
-                'category': 'Maintenance',
-                'importance': 'Medium'
-            },
-            {
-                'title': 'Ikke følg trender blindt',
-                'description': 'Unngå å investere basert på kortsiktige markedstrender eller sosiale medier.',
-                'category': 'Psychology',
-                'importance': 'High'
-            }
-        ]
-        
-        return render_template('analysis/portfolio_tips.html', 
-                             title='Porteføljetips',
-                             tips=tips)
-    except Exception as e:
-        logger.error(f"Error loading portfolio tips: {e}")
-        return render_template('analysis/portfolio_tips.html', 
-                             title='Porteføljetips',
-                             tips=[],
-                             error="Kunne ikke laste porteføljetips")
-
-@analysis.route('/risk-analysis')
-@access_required
-def risk_analysis():
-    """Comprehensive risk analysis"""
-    try:
-        # Generate risk analysis data
-        risk_factors = {
-            'market_risk': {
-                'level': 'Medium',
-                'description': 'Generell markedsrisiko basert på makroøkonomiske faktorer',
-                'percentage': 65
-            },
-            'sector_risk': {
-                'level': 'Low',
-                'description': 'Risiko knyttet til spesifikke sektorer',
-                'percentage': 30
-            },
-            'currency_risk': {
-                'level': 'High',
-                'description': 'Valutarisiko for internasjonale investeringer',
-                'percentage': 85
-            },
-            'inflation_risk': {
-                'level': 'Medium',
-                'description': 'Risiko for inflasjon som påvirker kjøpekraft',
-                'percentage': 55
-            }
-        }
-        
-        return render_template('analysis/risk_analysis.html',
-                             title='Risikoanalyse',
-                             risk_factors=risk_factors)
-    except Exception as e:
-        logger.error(f"Error loading risk analysis: {e}")
-        return render_template('analysis/risk_analysis.html',
-                             title='Risikoanalyse',
-                             risk_factors={},
-                             error="Kunne ikke laste risikoanalyse")
-
-@analysis.route('/peer-comparison')
-@access_required
-def peer_comparison():
-    """Peer comparison analysis"""
-    try:
-        # Generate peer comparison data
-        symbol = request.args.get('symbol', 'EQNR.OL')
-        
-        comparison_data = {
-            'target_stock': {
-                'symbol': symbol,
-                'name': 'Equinor ASA',
-                'pe_ratio': 12.5,
-                'pb_ratio': 1.8,
-                'roe': 15.2,
-                'debt_ratio': 0.3
-            },
-            'peers': [
-                {
-                    'symbol': 'AKER.OL',
-                    'name': 'Aker ASA',
-                    'pe_ratio': 14.2,
-                    'pb_ratio': 2.1,
-                    'roe': 13.8,
-                    'debt_ratio': 0.4
-                },
-                {
-                    'symbol': 'YAR.OL',
-                    'name': 'Yara International ASA',
-                    'pe_ratio': 11.8,
-                    'pb_ratio': 1.6,
-                    'roe': 16.5,
-                    'debt_ratio': 0.25
-                }
-            ]
-        }
-        
-        return render_template('analysis/peer_comparison.html',
-                             title='Peer-sammenligning',
-                             comparison_data=comparison_data,
-                             symbol=symbol)
-    except Exception as e:
-        logger.error(f"Error loading peer comparison: {e}")
-        return render_template('analysis/peer_comparison.html',
-                             title='Peer-sammenligning',
-                             comparison_data={},
-                             error="Kunne ikke laste peer-sammenligning")
-
-@analysis.route('/options-screener')
-@access_required
-def options_screener():
-    """Options screener functionality"""
-    try:
-        # Generate options data (placeholder)
-        options_data = [
-            {
-                'symbol': 'EQNR.OL',
-                'strike': 250,
-                'expiry': '2024-03-15',
-                'type': 'CALL',
-                'premium': 15.50,
-                'volume': 1250,
-                'open_interest': 3400
-            },
-            {
-                'symbol': 'DNB.OL',
-                'strike': 180,
-                'expiry': '2024-02-16',
-                'type': 'PUT',
-                'premium': 8.75,
-                'volume': 890,
-                'open_interest': 2100
-            }
-        ]
-        
-        return render_template('analysis/options_screener.html',
-                             title='Opsjons-screener',
-                             options_data=options_data)
-    except Exception as e:
-        logger.error(f"Error loading options screener: {e}")
-        return render_template('analysis/options_screener.html',
-                             title='Opsjons-screener',
-                             options_data=[],
-                             error="Kunne ikke laste opsjons-screener")
-
-@analysis.route('/dividend-calendar')
-@access_required
-def dividend_calendar():
-    """Dividend calendar"""
-    try:
-        from datetime import datetime, timedelta
-        
-        # Generate comprehensive dividend calendar data
-        dividend_events = [
-            {
-                'symbol': 'EQNR.OL',
-                'company': 'Equinor ASA',
-                'ex_date': '2024-02-15',
-                'payment_date': '2024-03-01',
-                'amount': 12.50,
-                'currency': 'NOK',
-                'yield': 5.2
-            },
-            {
-                'symbol': 'DNB.OL',
-                'company': 'DNB Bank ASA',
-                'ex_date': '2024-02-20',
-                'payment_date': '2024-03-05',
-                'amount': 8.75,
-                'currency': 'NOK',
-                'yield': 6.1
-            },
-            {
-                'symbol': 'TEL.OL',
-                'company': 'Telenor ASA',
-                'ex_date': '2024-02-25',
-                'payment_date': '2024-03-10',
-                'amount': 7.00,
-                'currency': 'NOK',
-                'yield': 4.8
-            },
-            {
-                'symbol': 'MOWI.OL',
-                'company': 'Mowi ASA',
-                'ex_date': '2024-03-01',
-                'payment_date': '2024-03-15',
-                'amount': 5.25,
-                'currency': 'NOK',
-                'yield': 3.9
-            },
-            {
-                'symbol': 'AAPL',
-                'company': 'Apple Inc.',
-                'ex_date': '2024-02-28',
-                'payment_date': '2024-03-12',
-                'amount': 0.94,
-                'currency': 'USD',
-                'yield': 0.5
-            }
-        ]
-        
-        return render_template('analysis/dividend_calendar.html',
-                             title='Utbyttekalender',
-                             dividend_events=dividend_events)
-    except Exception as e:
-        logger.error(f"Error loading dividend calendar: {e}")
-        return render_template('analysis/dividend_calendar.html',
-                             title='Utbyttekalender',
-                             dividend_events=[],
-                             error="Kunne ikke laste utbyttekalender")
-
-@analysis.route('/earnings-calendar')
-@access_required
-def earnings_calendar():
-    """Earnings calendar"""
-    try:
-        from datetime import datetime, timedelta
-        
-        # Generate comprehensive earnings calendar data
-        earnings_events = [
-            {
-                'symbol': 'EQNR.OL',
-                'company': 'Equinor ASA',
-                'sector': 'Energi',
-                'date': '2024-02-10',
-                'quarter': 'Q4 2023',
-                'eps_estimate': 15.20,
-                'eps_previous': 14.85,
-                'eps_change': 2.4,
-                'currency': 'NOK',
-                'time_period': 'BMO',
-                'time_display': 'Før åpning'
-            },
-            {
-                'symbol': 'DNB.OL',
-                'company': 'DNB Bank ASA',
-                'sector': 'Finans',
-                'date': '2024-02-12',
-                'quarter': 'Q4 2023',
-                'eps_estimate': 8.50,
-                'eps_previous': 8.25,
-                'eps_change': 3.0,
-                'currency': 'NOK',
-                'time_period': 'AMC',
-                'time_display': 'Etter stenging'
-            },
-            {
-                'symbol': 'TEL.OL',
-                'company': 'Telenor ASA',
-                'sector': 'Telekom',
-                'date': '2024-02-14',
-                'quarter': 'Q4 2023',
-                'eps_estimate': 4.25,
-                'eps_previous': 4.35,
-                'eps_change': -2.3,
-                'currency': 'NOK',
-                'time_period': 'BMO',
-                'time_display': 'Før åpning'
-            },
-            {
-                'symbol': 'AAPL',
-                'company': 'Apple Inc.',
-                'sector': 'Teknologi',
-                'date': '2024-02-16',
-                'quarter': 'Q1 2024',
-                'eps_estimate': 2.18,
-                'eps_previous': 2.10,
-                'eps_change': 3.8,
-                'currency': 'USD',
-                'time_period': 'AMC',
-                'time_display': 'Etter stenging'
-            },
-            {
-                'symbol': 'MSFT',
-                'company': 'Microsoft Corporation',
-                'sector': 'Teknologi',
-                'date': '2024-02-18',
-                'quarter': 'Q2 2024',
-                'eps_estimate': 2.95,
-                'eps_previous': 2.80,
-                'eps_change': 5.4,
-                'currency': 'USD',
-                'time_period': 'AMC',
-                'time_display': 'Etter stenging'
-            }
-        ]
-        
-        # Notable earnings this week (subset of main data)
-        notable_earnings = earnings_events[:3]
-        
-        return render_template('analysis/earnings_calendar.html',
-                             title='Resultatkalender',
-                             earnings_events=earnings_events,
-                             notable_earnings=notable_earnings)
-    except Exception as e:
-        logger.error(f"Error loading earnings calendar: {e}")
-        return render_template('analysis/earnings_calendar.html',
-                             title='Resultatkalender',
-                             earnings_events=[],
-                             notable_earnings=[],
-                             error="Kunne ikke laste resultatkalender")

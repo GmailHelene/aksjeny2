@@ -583,11 +583,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/professional-dashboard">
-                            <i class="fas fa-chart-line"></i> Professional Dashboard
-                        </a>
-                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-chart-bar"></i> Aksjer
@@ -596,10 +591,10 @@
                             <li><a class="dropdown-item" href="{{ url_for('stocks.index') }}"><i class="fas fa-chart-bar"></i> Oversikt</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Markedsoversikt</h6></li>
-                            <li><a class="dropdown-item" href="/analysis/market-overview"><i class="fas fa-pie-chart"></i> Markedsoversikt</a></li>
-                            <li><a class="dropdown-item" href="/analysis/oslo_overview"><i class="fas fa-flag"></i> Oslo Børs Oversikt</a></li>
-                            <li><a class="dropdown-item" href="/analysis/global_overview"><i class="fas fa-globe"></i> Global Oversikt</a></li>
-                            <li><a class="dropdown-item" href="/analysis/currency_overview"><i class="fas fa-dollar-sign"></i> Valuta Oversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}"><i class="fas fa-pie-chart"></i> Markedsoversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.oslo_overview') }}"><i class="fas fa-flag"></i> Oslo Børs Oversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.global_overview') }}"><i class="fas fa-globe"></i> Global Oversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta Oversikt</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Aksjer & Markets</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}"><i class="fas fa-flag"></i> Oslo Børs</a></li>
@@ -616,44 +611,44 @@
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="/analysis/" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-brain"></i> Analyse
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/analysis/ai"><i class="fas fa-robot"></i> AI Analyser</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}"><i class="fas fa-robot"></i> AI Analyser</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Teknisk Analyse</h6></li>
-                            <li><a class="dropdown-item" href="/analysis/technical"><i class="fas fa-chart-line"></i> Teknisk analyse</a></li>
-                            <li><a class="dropdown-item" href="/analysis/fundamental"><i class="fas fa-calculator"></i> Fundamental analyse</a></li>
-                            <li><a class="dropdown-item" href="/analysis/sentiment"><i class="fas fa-smile"></i> Sentiment analyse</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}"><i class="fas fa-chart-line"></i> Teknisk analyse</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}"><i class="fas fa-calculator"></i> Fundamental analyse</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}"><i class="fas fa-smile"></i> Sentiment analyse</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Investeringsstrategier</h6></li>
-                            <li><a class="dropdown-item" href="/analysis/warren-buffett"><i class="fas fa-user-tie"></i> Warren Buffett</a></li>
-                            <li><a class="dropdown-item" href="/analysis/benjamin-graham"><i class="fas fa-book"></i> Benjamin Graham</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}"><i class="fas fa-user-tie"></i> Warren Buffett</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}"><i class="fas fa-book"></i> Benjamin Graham</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Verktøy & Screening</h6></li>
-                            <li><a class="dropdown-item" href="/analysis/screener"><i class="fas fa-filter"></i> Aksje-screener</a></li>
-                            <li><a class="dropdown-item" href="/analysis/strategy_builder"><i class="fas fa-tools"></i> Strategibygger</a></li>
-                            <li><a class="dropdown-item" href="/analysis/tradingview"><i class="fas fa-chart-line"></i> TradingView</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}"><i class="fas fa-filter"></i> Aksje-screener</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.strategy_builder') }}"><i class="fas fa-tools"></i> Strategibygger</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.tradingview') }}"><i class="fas fa-chart-line"></i> TradingView</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Anbefalinger & Prediksjoner</h6></li>
-                            <li><a class="dropdown-item" href="/analysis/recommendation"><i class="fas fa-star"></i> Anbefalinger</a></li>
-                            <li><a class="dropdown-item" href="/analysis/prediction"><i class="fas fa-crystal-ball"></i> Prediksjoner</a></li>
-                            <li><a class="dropdown-item" href="/analysis/market-overview"><i class="fas fa-chart-area"></i> Markedsoversikt</a></li>
-                            <li><a class="dropdown-item" href="/analysis/short_analysis"><i class="fas fa-chart-bar"></i> Short analyse</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}"><i class="fas fa-crystal-ball"></i> Prediksjoner</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}"><i class="fas fa-chart-area"></i> Markedsoversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}"><i class="fas fa-chart-bar"></i> Short analyse</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="/market-intel/" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('market_intel.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bolt"></i> Market Intel
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/market-intel/"><i class="fas fa-info-circle"></i> Oversikt</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.index') }}"><i class="fas fa-info-circle"></i> Oversikt</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/market-intel/insider_trading"><i class="fas fa-user-secret"></i> Insider Trading Analysis</a></li>
-                            <li><a class="dropdown-item" href="/market-intel/earnings_calendar"><i class="fas fa-calendar-alt"></i> Resultatkalender</a></li>
-                            <li><a class="dropdown-item" href="/market-intel/sector_analysis"><i class="fas fa-project-diagram"></i> Sektoranalyse</a></li>
-                            <li><a class="dropdown-item" href="/market-intel/economic_indicators"><i class="fas fa-chart-line"></i> Økonomiske indikatorer</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}"><i class="fas fa-user-secret"></i> Insider Trading Analysis</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.earnings_calendar') }}"><i class="fas fa-calendar-alt"></i> Resultatkalender</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.sector_analysis') }}"><i class="fas fa-project-diagram"></i> Sektoranalyse</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('market_intel.economic_indicators') }}"><i class="fas fa-chart-line"></i> Økonomiske indikatorer</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Nyheter & Intelligence</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}"><i class="fas fa-newspaper"></i> Finansnyheter</a></li>
@@ -686,19 +681,19 @@
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="/portfolio/" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-briefcase"></i> Portfolio
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/portfolio/"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
-                            <li><a class="dropdown-item" href="/portfolio/create"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/watchlist/"><i class="fas fa-eye"></i> Avansert Watchlist</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.index') }}"><i class="fas fa-eye"></i> Avansert Watchlist</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/portfolio/tips"><i class="fas fa-lightbulb"></i> Aksjetips</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}"><i class="fas fa-lightbulb"></i> Aksjetips</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/portfolio/advanced"><i class="fas fa-cogs"></i> Avansert portfolio</a></li>
-                            <li><a class="dropdown-item" href="/advanced/"><i class="fas fa-robot"></i> ML Analytics</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}"><i class="fas fa-cogs"></i> Avansert portfolio</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}"><i class="fas fa-robot"></i> ML Analytics</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
