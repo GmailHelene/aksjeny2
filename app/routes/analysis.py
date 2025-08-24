@@ -641,19 +641,17 @@ def warren_buffett():
                                 'price': stock_info.get('regularMarketPrice', 0),
                                 'change': stock_info.get('regularMarketChangePercent', 0)
                             }
-                    except Exception:
+                    except Exception as e:
+                        logger.error(f"Error fetching stock data: {e}")
+                        # Continue with empty data if needed
+                        stock_data = {
+                            'price': 0,
+                            'change': 0
+                        }
                         continue
-            except Exception as e:
-                logger.error(f"Error fetching stock data: {e}")
-                # Continue with empty data if needed
-                                'price': stock_info.get('regularMarketPrice', 0),
-                                'change': stock_info.get('regularMarketChangePercent', 0)
-                            }
-                    except Exception:
-                        continue
-
-            except Exception as e:
-                logger.warning(f"Error getting stock data: {e}")
+                except Exception as e:
+                    logger.warning(f"Error getting stock data: {e}")
+                    continue
 
         # Use fallback data if needed
         if not oslo_stocks:
