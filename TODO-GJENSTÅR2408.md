@@ -23,14 +23,18 @@
 - [ ] Fix currency overview volume and signal display
 - [ ] Fix favorite button success/error message issue (stocks list currency og crypto sidene)
 
-2. 500 Errors:
-- [ ] Fix /watchlist/ 500 error
-- [ ] Fix /profile 500 error  
-- [ ] Fix /analysis/sentiment 500 error
-- [ ] Fix /analysis/warren-buffett 500 error
-- [ ] Fix /advanced-analysis 500 error
-- [ ] Fix /pro-tools/alerts "Method Not Allowed" error
-- [ ] Fix /portfolio/portfolio/9/add 500 error
+## TODO List: Fix 500 Errors for 7 Endpoints
+
+- [x] **Fix get_data_service() Calling Patterns**: Fixed double parentheses issue in portfolio.py line 204
+- [ ] **Investigate Route Conflicts**: Check how /advanced-analysis maps to actual blueprints 
+- [ ] **Test /watchlist/ endpoint**: Verify watchlist route works after get_data_service() fix
+- [ ] **Test /profile endpoint**: Verify profile route functionality
+- [ ] **Test /analysis/sentiment endpoint**: Check sentiment analysis route
+- [ ] **Test /analysis/warren-buffett endpoint**: Check Warren Buffett analysis route
+- [ ] **Test /advanced-analysis endpoint**: Check all variations (/advanced-analysis, /analysis/advanced-analysis, /advanced/advanced-analysis)
+- [ ] **Test /pro-tools/alerts endpoint**: Check alerts functionality
+- [ ] **Test /portfolio/portfolio/9/add endpoint**: Verify portfolio add functionality
+- [ ] **Run comprehensive endpoint validation**: Execute test script to confirm all fixes
 
 3. Real Data & Functionality:
 - [ ] Fix TradingView chart integration
@@ -39,3 +43,7 @@
 - [ ] Fix missing company info on details pages
 - [ ] Fix RSI and MACD indicators
 </invoke>- [x] Fixed deployment error in analysis.py by adding missing except block to the try statement
+
+## **🟣 CMC MARKETS INSPIRERT FUNKSJONALITET**
+- [ ] Research what CMC Markets MT4 functionality was started
+- [ ] Continue/complete CMC Markets inspired features

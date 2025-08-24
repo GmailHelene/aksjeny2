@@ -332,54 +332,56 @@ def details(symbol):
                 current_app.logger.info(f"� DEMO FALLBACK: Using fallback data for demo user accessing {symbol}")
             
             # Check if we have fallback data for this ticker
-            if symbol in FALLBACK_GLOBAL_DATA:
-                fallback_data = FALLBACK_GLOBAL_DATA[symbol]
-                current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
-                stock_info = {
-                    'ticker': symbol,
-                    'name': fallback_data['name'],
-                    'longName': fallback_data['name'],
-                    'shortName': fallback_data['name'][:20],
-                    'regularMarketPrice': fallback_data['last_price'],
-                    'last_price': fallback_data['last_price'],
-                    'regularMarketChange': fallback_data['change'],
-                    'change': fallback_data['change'],
-                    'regularMarketChangePercent': fallback_data['change_percent'],
-                    'change_percent': fallback_data['change_percent'],
-                    'volume': fallback_data.get('volume', 1000000),
-                    'regularMarketVolume': fallback_data.get('volume', 1000000),
-                    'marketCap': fallback_data.get('market_cap', None),
-                    'sector': fallback_data['sector'],
-                    'currency': 'USD',
-                    'signal': fallback_data.get('signal', 'HOLD'),
-                    'rsi': fallback_data.get('rsi', 50.0),
-                    'data_source': 'FALLBACK DATA - Service temporarily unavailable',
-                }
-            elif symbol in FALLBACK_OSLO_DATA:
-                fallback_data = FALLBACK_OSLO_DATA[symbol]
-                current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
-                stock_info = {
-                    'ticker': symbol,
-                    'name': fallback_data['name'],
-                    'longName': fallback_data['name'],
-                    'shortName': fallback_data['name'][:20],
-                    'regularMarketPrice': fallback_data['last_price'],
-                    'last_price': fallback_data['last_price'],
-                    'regularMarketChange': fallback_data['change'],
-                    'change': fallback_data['change'],
-                    'regularMarketChangePercent': fallback_data['change_percent'],
-                    'change_percent': fallback_data['change_percent'],
-                    'volume': fallback_data.get('volume', 1000000),
-                    'regularMarketVolume': fallback_data.get('volume', 1000000),
-                    'marketCap': fallback_data.get('market_cap', None),
-                    'sector': fallback_data['sector'],
-                    'currency': 'NOK',
-                    'signal': fallback_data.get('signal', 'HOLD'),
-                    'rsi': fallback_data.get('rsi', 50.0),
-                    'data_source': 'FALLBACK DATA - Service temporarily unavailable',
-                }
-        except Exception as e:
-            current_app.logger.error(f"Error accessing fallback data for {symbol}: {e}")
+            try:
+                if symbol in FALLBACK_GLOBAL_DATA:
+                    fallback_data = FALLBACK_GLOBAL_DATA[symbol]
+                    current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
+                    stock_info = {
+                        'ticker': symbol,
+                        'name': fallback_data['name'],
+                        'longName': fallback_data['name'],
+                        'shortName': fallback_data['name'][:20],
+                        'regularMarketPrice': fallback_data['last_price'],
+                        'last_price': fallback_data['last_price'],
+                        'regularMarketChange': fallback_data['change'],
+                        'change': fallback_data['change'],
+                        'regularMarketChangePercent': fallback_data['change_percent'],
+                        'change_percent': fallback_data['change_percent'],
+                        'volume': fallback_data.get('volume', 1000000),
+                        'regularMarketVolume': fallback_data.get('volume', 1000000),
+                        'marketCap': fallback_data.get('market_cap', None),
+                        'sector': fallback_data['sector'],
+                        'currency': 'USD',
+                        'signal': fallback_data.get('signal', 'HOLD'),
+                        'rsi': fallback_data.get('rsi', 50.0),
+                        'data_source': 'FALLBACK DATA - Service temporarily unavailable',
+                    }
+                elif symbol in FALLBACK_OSLO_DATA:
+                    fallback_data = FALLBACK_OSLO_DATA[symbol]
+                    current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
+                    stock_info = {
+                        'ticker': symbol,
+                        'name': fallback_data['name'],
+                        'longName': fallback_data['name'],
+                        'shortName': fallback_data['name'][:20],
+                        'regularMarketPrice': fallback_data['last_price'],
+                        'last_price': fallback_data['last_price'],
+                        'regularMarketChange': fallback_data['change'],
+                        'change': fallback_data['change'],
+                        'regularMarketChangePercent': fallback_data['change_percent'],
+                        'change_percent': fallback_data['change_percent'],
+                        'volume': fallback_data.get('volume', 1000000),
+                        'regularMarketVolume': fallback_data.get('volume', 1000000),
+                        'marketCap': fallback_data.get('market_cap', None),
+                        'sector': fallback_data['sector'],
+                        'currency': 'NOK',
+                        'signal': fallback_data.get('signal', 'HOLD'),
+                        'rsi': fallback_data.get('rsi', 50.0),
+                        'data_source': 'FALLBACK DATA - Service temporarily unavailable',
+                    }
+            except Exception as e:
+                current_app.logger.error(f"Error accessing fallback data for {symbol}: {e}")
+                stock_info = None
         
         # If no fallback data available, use synthetic data
         if not stock_info:

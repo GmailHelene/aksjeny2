@@ -201,7 +201,7 @@ def overview():
         
         # Try to get data service with fallback
         try:
-            data_service = get_data_service()()
+            data_service = get_data_service()
         except Exception as data_service_error:
             current_app.logger.warning(f"Data service unavailable: {str(data_service_error)}")
             data_service = None
