@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', async function() {
             const ticker = this.dataset.ticker;
             try {
-                const response = await fetch('/api/watchlist/add', {
+                const response = await fetch('/stocks/api/favorites/add', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.add('btn-warning');
                     showToast('Lagt til i favoritter!', 'success');
                 } else {
-                    throw new Error('Failed to add to watchlist');
+                    throw new Error('Failed to add to favorites');
                 }
             } catch (error) {
                 console.error('Error:', error);

@@ -423,11 +423,14 @@ def warren_buffett():
                         'action': 'BUY',
                         'reasoning': f"Strong fundamentals indicate {ticker} is undervalued"
                     },
-                    'financial_metrics': {
+                    'metrics': {
                         'pe_ratio': 15.2,
                         'pb_ratio': 1.8,
                         'roe': 18.5,
-                        'debt_to_equity': 0.4
+                        'debt_to_equity': 0.4,
+                        'profit_margin': 12.5,
+                        'revenue_growth': 8.2,
+                        'debt_ratio': 25.0
                     }
                 }
             except Exception as e:
