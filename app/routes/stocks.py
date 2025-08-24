@@ -53,7 +53,6 @@ def calculate_rsi(prices, periods=14):
             return float(rsi[-1])
         except Exception:
             return 50.0
-                             compare_intervals=['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'])
 
     except Exception as e:
         logger.error(f"Error in compare route: {e}")
