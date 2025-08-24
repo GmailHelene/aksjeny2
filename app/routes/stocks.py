@@ -59,8 +59,8 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
         return {
             'macd': float(macd.iloc[-1]),
             'signal': float(signal_line.iloc[-1]),
-    else:
-        return 'HOLD'
+            'hist': float(histogram.iloc[-1])
+        }
 from flask import Response
 from flask_login import current_user, login_required
 from ..extensions import csrf
