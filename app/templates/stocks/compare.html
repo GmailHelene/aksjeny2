@@ -2,6 +2,12 @@
 
 {% block title %}Sammenlign aksjer | Aksjeradar{% endblock %}
 
+{% block head %}
+<!-- Chart.js and plugins -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Error message display -->
@@ -443,11 +449,29 @@
         }
         {% endif %}
         {% else %}
-        console.log('Chart rendering conditions NOT met');
-        console.log('Tickers:', {{ tickers|tojson }});
-        console.log('Chart data:', {{ chart_data|tojson }});
-        console.log('Tickers length:', {{ (tickers|length) if tickers else 0 }});
-        console.log('Chart data exists:', {{ chart_data is defined and chart_data }});
+        // Debug logging for troubleshooting
+        console.group('Chart Data Debug Info');
+        console.log('Tickers:', {{ tickers|tojson if tickers else '[]' }});
+        console.log('Chart Data:', {{ chart_data|tojson if chart_data else '{}' }});
+        console.log('Metrics:', {{ metrics|tojson if metrics else '{}' }});
+        console.log('Period:', '{{ period }}');
+        console.log('Interval:', '{{ interval }}');
+        console.log('Normalize:', {{ 'true' if normalize else 'false' }});
+        console.groupEnd();
+        
+        // Show diagnostic message in UI
+        const diagnosticDiv = document.createElement('div');
+        diagnosticDiv.className = 'alert alert-info mt-3';
+        diagnosticDiv.innerHTML = `
+            <h6>Diagnostisk informasjon:</h6>
+            <ul class="mb-0">
+                <li>Antall tickere: {{ (tickers|length) if tickers else 0 }}</li>
+                <li>Data tilgjengelig: {{ 'Ja' if chart_data and chart_data|length > 0 else 'Nei' }}</li>
+                <li>Periode: {{ period }}</li>
+                <li>Intervall: {{ interval }}</li>
+            </ul>
+        `;
+        document.querySelector('.chart-container').appendChild(diagnosticDiv);
         {% endif %}
         
         // Handle favorite buttons

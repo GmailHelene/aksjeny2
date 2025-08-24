@@ -234,17 +234,32 @@ def list_oslo():
                                  error=True)
 
 @stocks.route('/compare')
-@access_required
+@stocks.route('/compare/')
+@demo_access
 def compare():
     """Compare multiple stocks"""
     try:
-        tickers = request.args.getlist('tickers')
+        # Support both 'symbols' and 'tickers' parameters for backward compatibility
+        symbols_param = request.args.get('symbols') or request.args.get('tickers')
+        symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
+
+        # Handle both comma-separated string and multiple parameters
+        if symbols_param and ',' in symbols_param:
+            tickers = [s.strip().upper() for s in symbols_param.split(',') if s.strip()]
+        else:
+            tickers = [s.strip().upper() for s in symbols_list if s.strip()]
+
         period = request.args.get('period', '6mo')
         interval = request.args.get('interval', '1d')
         normalize = request.args.get('normalize', '1') == '1'
         
-        if not tickers or len(tickers) < 1:
-            return render_template('stocks/compare.html')
+        # Remove empty strings and filter valid tickers (max 4)
+        tickers = [t for t in tickers if t][:4]
+        
+        if not tickers:
+            # Show empty form with demo tickers suggestion
+            return render_template('stocks/compare.html',
+                                demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
             
         chart_data = {}
         metrics = {}
@@ -252,81 +267,107 @@ def compare():
         # Get historical data for each ticker
         for ticker in tickers:
             try:
-                # Get historical data from DataService
+                try:
+                # Get historical data and validate structure
                 history = DataService.get_historical_data(ticker, period=period, interval=interval)
-                if not history:
+                if not isinstance(history, pd.DataFrame) or history.empty:
+                    logger.warning(f"No historical data found for {ticker}")
                     continue
-                    
-                # Convert to list of dictionaries
+                
+                required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
+                if not all(col in history.columns for col in required_columns):
+                    logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
+                    continue
+                
+                # Get current stock info
+                stock_info = DataService.get_stock_info(ticker)
+                stock_name = stock_info.get('longName', ticker) if stock_info else ticker
+                
+                # Convert to list of dictionaries with proper validation
                 ticker_data = []
                 base_price = None
                 
                 for date, row in history.iterrows():
-                    price = float(row['Close'])
-                    if normalize:
-                        if base_price is None:
-                            base_price = price
-                        price = ((price / base_price) - 1) * 100
+                    try:
+                        price = float(row['Close'])
+                        if normalize:
+                            if base_price is None:
+                                base_price = price
+                            if base_price > 0:  # Prevent division by zero
+                                price = ((price / base_price) - 1) * 100
+                            else:
+                                price = 0
                         
-                    ticker_data.append({
-                        'date': date.strftime('%Y-%m-%d'),
-                        'close': price,
-                        'volume': int(row['Volume'])
-                    })
+                        # Ensure all values are valid numbers
+                        data_point = {
+                            'date': date.strftime('%Y-%m-%d'),
+                            'open': float(row['Open']),
+                            'high': float(row['High']),
+                            'low': float(row['Low']),
+                            'close': float(price),
+                            'volume': int(row['Volume'])
+                        }
+                        ticker_data.append(data_point)
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Invalid data point for {ticker} at {date}: {e}")
+                        continue
                 
-                chart_data[ticker] = ticker_data
-                
-                # Get current metrics
-                stock_info = DataService.get_stock_info(ticker)
-                if stock_info:
-                    metrics[ticker] = {
-                        'price': stock_info.get('regularMarketPrice', 0),
-                        'change': stock_info.get('regularMarketChangePercent', 0),
-                        'volume': stock_info.get('regularMarketVolume', 0),
-                        'marketCap': stock_info.get('marketCap', 0),
-                        'pe_ratio': stock_info.get('trailingPE', 0),
-                        'eps': stock_info.get('trailingEps', 0)
-                    }
+                if ticker_data:  # Only add if we have valid data
+                    chart_data[ticker] = ticker_data
                     
+                    # Add metrics if stock info is available
+                    if stock_info:
+                        metrics[ticker] = {
+                            'name': stock_name,
+                            'price': stock_info.get('regularMarketPrice', 0),
+                            'change': stock_info.get('regularMarketChangePercent', 0),
+                            'volume': stock_info.get('regularMarketVolume', 0),
+                            'marketCap': stock_info.get('marketCap', 0),
+                            'pe_ratio': stock_info.get('trailingPE', 0),
+                            'eps': stock_info.get('trailingEps', 0),
+                            'sector': stock_info.get('sector', 'N/A'),
+                            'exchange': stock_info.get('exchange', 'N/A')
+                        }
+                    else:
+                        metrics[ticker] = {
+                            'name': stock_name,
+                            'price': ticker_data[-1]['close'],
+                            'change': 0,
+                            'volume': ticker_data[-1]['volume'],
+                            'marketCap': 0,
+                            'pe_ratio': 0,
+                            'eps': 0,
+                            'sector': 'N/A',
+                            'exchange': 'N/A'
+                        }
+                
             except Exception as e:
-                logger.error(f"Error getting data for {ticker}: {e}")
+                logger.error(f"Error processing {ticker}: {e}")
+                logger.debug(traceback.format_exc())
                 continue
                 
+        # If we have no valid data for any tickers, show an error
+        if not chart_data:
+            return render_template('stocks/compare.html',
+                                error_message="Ingen data tilgjengelig for de valgte aksjene. Sjekk at ticker-symbolene er riktige.",
+                                tickers=tickers)
+
         return render_template('stocks/compare.html',
                              tickers=tickers,
                              chart_data=chart_data,
                              metrics=metrics,
                              period=period,
                              interval=interval,
-                             normalize=normalize)
-                             
+                             normalize=normalize,
+                             compare_periods=['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y'],
+                             compare_intervals=['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'])
+
     except Exception as e:
         logger.error(f"Error in compare route: {e}")
+        logger.debug(traceback.format_exc())
         return render_template('stocks/compare.html', 
-                             error_message="Det oppsto en feil ved sammenligning av aksjene. Prøv igjen senere.")
-    except Exception as e:
-        current_app.logger.error(f"Error loading global stocks: {e}")
-        # Use guaranteed fallback data even on exception
-        try:
-            stocks_data = DataService._get_guaranteed_global_data() or {}
-            return render_template('stocks/global_dedicated.html',
-                                 stocks_data=stocks_data,
-                                 top_gainers=[],
-                                 top_losers=[],
-                                 most_active=[],
-                                 insider_trades=[],
-                                 ai_recommendations=[],
-                                 market='Globale aksjer',
-                                 market_type='global',
-                                 category='global')
-        except:
-            flash('Kunne ikke laste globale aksjer. Prøv igjen senere.', 'error')
-            return render_template('stocks/global_dedicated.html',
-                                 stocks_data={},
-                                 market='Globale aksjer',
-                                 market_type='global',
-                                 category='global',
-                                 error=True)
+                             error_message="Det oppsto en feil ved sammenligning av aksjene. Prøv igjen senere.",
+                             demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
 
 @stocks.route('/list/crypto')
 @demo_access
