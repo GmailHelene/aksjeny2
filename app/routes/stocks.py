@@ -19,47 +19,61 @@ from ..utils.exchange_utils import get_exchange_url
 
 logger = logging.getLogger(__name__)
 
+# Create the stocks blueprint
+stocks = Blueprint('stocks', __name__, url_prefix='/stocks')
+
 def calculate_rsi(prices, periods=14):
-    # ...existing code...
-    # Indentation error fix: remove stray code and ensure function body is correct
-    # This function should only contain RSI calculation logic
+    """Calculate RSI (Relative Strength Index) for given prices"""
     try:
         deltas = np.diff(prices)
         seed = deltas[:periods+1]
         up = seed[seed >= 0].sum()/periods
-        try:
-            deltas = np.diff(prices)
-            seed = deltas[:periods+1]
-            up = seed[seed >= 0].sum()/periods
-            down = -seed[seed < 0].sum()/periods
+        down = -seed[seed < 0].sum()/periods
+        rs = up/down
+        rsi = np.zeros_like(prices)
+        rsi[:periods] = 100. - 100./(1. + rs)
+
+        for i in range(periods, len(prices)):
+            delta = deltas[i - 1]
+            if delta > 0:
+                upval = delta
+                downval = 0.
+            else:
+                upval = 0.
+                downval = -delta
+
+            up = (up * (periods - 1) + upval) / periods
+            down = (down * (periods - 1) + downval) / periods
             rs = up/down
-            rsi = np.zeros_like(prices)
-            rsi[:periods] = 100. - 100./(1. + rs)
+            rsi[i] = 100. - 100./(1. + rs)
 
-            for i in range(periods, len(prices)):
-                delta = deltas[i - 1]
-                if delta > 0:
-                    upval = delta
-                    downval = 0.
-                else:
-                    upval = 0.
-                    downval = -delta
+        return float(rsi[-1])
+    except Exception:
+        return 50.0
 
-                up = (up * (periods - 1) + upval) / periods
-                down = (down * (periods - 1) + downval) / periods
-                rs = up/down
-                rsi[i] = 100. - 100./(1. + rs)
-
-            return float(rsi[-1])
-        except Exception:
-            return 50.0
-
-    except Exception as e:
-        logger.error(f"Error in compare route: {e}")
-        logger.debug(traceback.format_exc())
-        return render_template('stocks/compare.html', 
-                             error_message="Det oppsto en feil ved sammenligning av aksjene. Prøv igjen senere.",
-                             demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
+def calculate_macd(prices, fast=12, slow=26, signal=9):
+    """Calculate MACD (Moving Average Convergence Divergence) for given prices"""
+    try:
+        if len(prices) < slow:
+            return 0.0, 0.0, 0.0
+        
+        prices = np.array(prices)
+        # Calculate exponential moving averages
+        ema_fast = pd.Series(prices).ewm(span=fast).mean()
+        ema_slow = pd.Series(prices).ewm(span=slow).mean()
+        
+        # Calculate MACD line
+        macd_line = ema_fast - ema_slow
+        
+        # Calculate signal line
+        signal_line = macd_line.ewm(span=signal).mean()
+        
+        # Calculate histogram
+        histogram = macd_line - signal_line
+        
+        return float(macd_line.iloc[-1]), float(signal_line.iloc[-1]), float(histogram.iloc[-1])
+    except Exception:
+        return 0.0, 0.0, 0.0
 
 @stocks.route('/list/crypto')
 @demo_access

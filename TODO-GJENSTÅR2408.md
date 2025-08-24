@@ -5,7 +5,7 @@
 - [ x] Step 4: Fix favorite button success/error message issue (stocks list currency and crypto pages)
 - [ x] Step 5: Fix /watchlist/ 500 errorf
 - x[ ] Step 6: Fix /profile 500 error
-- [ ] Step 7: Fix /analysis/sentiment 500 error
+- [ x] Step 7: Fix /analysis/sentiment 500 error
 - [ ] Step 8: Fix /analysis/warren-buffett 500 error
 - [ ] Step 9: Fix /advanced-analysis 500 error
 - [ ] Step 10: Fix /pro-tools/alerts "Method Not Allowed" error
