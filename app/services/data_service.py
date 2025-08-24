@@ -1580,7 +1580,13 @@ class DataService:
                         'signal': DataService._calculate_signal(real_data.get('change_percent', 0)),
                         'rsi': 50.0 + random.uniform(-25, 25),  # Simulated RSI
                         'market_cap': DataService._get_market_cap_estimate(ticker, real_data['last_price']),
-                        'sector': DataService._get_sector(ticker)
+                        'sector': DataService._get_sector(ticker),
+                        # STEP 15 FIX: Enhanced company information
+                        'industry': DataService._get_industry_info(ticker),
+                        'description': DataService._get_company_description_info(ticker),
+                        'website': DataService._get_company_website_info(ticker),
+                        'country': 'Norge' if ticker.endswith('.OL') else 'USA',
+                        'exchange': 'Oslo Børs' if ticker.endswith('.OL') else 'NASDAQ/NYSE'
                     }
                     
                     logger.info(f"✅ Got REAL data for {ticker}: ${real_data['last_price']} from {real_data['source']}")
@@ -5823,6 +5829,57 @@ class DataService:
         except Exception as e:
             logger.error(f"Error getting related news for {slug}: {e}")
             return []
+    
+    @staticmethod  
+    def _get_industry_info(ticker):
+        """Get industry for ticker - more specific than sector"""
+        industries = {
+            'EQNR.OL': 'Olje & Gass - Integrated',
+            'DNB.OL': 'Finansielle tjenester - Bank',
+            'TEL.OL': 'Telecom - Mobile Services',
+            'MOWI.OL': 'Havbruk - Lakseoppdrett', 
+            'NHY.OL': 'Aluminium & Metaller',
+            'AAPL': 'Consumer Electronics',
+            'MSFT': 'Software & Services',
+            'GOOGL': 'Internet Services',
+            'TSLA': 'Electric Vehicles',
+            'NVDA': 'Semiconductors'
+        }
+        return industries.get(ticker, 'Diverse')
+    
+    @staticmethod
+    def _get_company_description_info(ticker):
+        """Get company description for ticker"""
+        descriptions = {
+            'EQNR.OL': 'Equinor er et internasjonalt energiselskap som utvikler olje, gass og fornybar energi. Selskapet har hovedkontor i Stavanger og operasjoner i mer enn 30 land.',
+            'DNB.OL': 'DNB er Norges største finanskonsern og en av de største bankene i Norden. Banken tilbyr finansielle tjenester til privat- og bedriftskunder.',
+            'TEL.OL': 'Telenor er et ledende telekommunikasjonselskap som leverer mobile og faste tjenester til kunder i Norden og Asia.',
+            'MOWI.OL': 'Mowi er verdens største produsent av atlantisk laks, med oppdrett i Norge, Chile, Skottland, Canada, Færøyene og Irland.',
+            'NHY.OL': 'Norsk Hydro er et integrert aluminiumselskap med virksomhet innen bauxitt, alumina og aluminium, samt energiproduksjon.',
+            'AAPL': 'Apple Inc. designs, manufactures and markets consumer electronics, computer software and online services worldwide.',
+            'MSFT': 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
+            'GOOGL': 'Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.',
+            'TSLA': 'Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems.',
+            'NVDA': 'NVIDIA Corporation operates as a computing company worldwide. It operates in two segments, Graphics and Compute & Networking.'
+        }
+        return descriptions.get(ticker, 'Informasjon om selskapet er ikke tilgjengelig.')
+    
+    @staticmethod
+    def _get_company_website_info(ticker):
+        """Get company website for ticker"""
+        websites = {
+            'EQNR.OL': 'https://www.equinor.no',
+            'DNB.OL': 'https://www.dnb.no',
+            'TEL.OL': 'https://www.telenor.no',
+            'MOWI.OL': 'https://www.mowi.com',
+            'NHY.OL': 'https://www.hydro.com',
+            'AAPL': 'https://www.apple.com',
+            'MSFT': 'https://www.microsoft.com',
+            'GOOGL': 'https://www.alphabet.com',
+            'TSLA': 'https://www.tesla.com',
+            'NVDA': 'https://www.nvidia.com'
+        }
+        return websites.get(ticker)
 
 # Factory function for backwards compatibility
 def get_data_service():

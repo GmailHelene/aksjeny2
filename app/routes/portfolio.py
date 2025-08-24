@@ -91,8 +91,8 @@ def portfolio_index():
                 stock_data = data_service.get_stock_info(stock.ticker)
                 if stock_data:
                     current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', 0)))
-                    purchase_value = stock.purchase_price * stock.quantity
-                    current_value = current_price * stock.quantity
+                    purchase_value = stock.purchase_price * stock.shares
+                    current_value = current_price * stock.shares
                     profit_loss = current_value - purchase_value
                     profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
                     
@@ -100,7 +100,7 @@ def portfolio_index():
                     total_profit_loss += profit_loss
                     
                     stocks_data[stock.ticker] = {
-                        'shares': stock.quantity,
+                        'shares': stock.shares,
                         'purchase_price': stock.purchase_price,
                         'last_price': current_price,
                         'profit_loss': profit_loss,
@@ -109,11 +109,11 @@ def portfolio_index():
                     }
                 else:
                     # Fallback if no market data available
-                    purchase_value = stock.purchase_price * stock.quantity
+                    purchase_value = stock.purchase_price * stock.shares
                     total_value += purchase_value
                     
                     stocks_data[stock.ticker] = {
-                        'shares': stock.quantity,
+                        'shares': stock.shares,
                         'purchase_price': stock.purchase_price,
                         'last_price': 'Ikke tilgjengelig',
                         'profit_loss': 0,
@@ -229,8 +229,8 @@ def overview():
                             if stock_data_service:
                                 current_price = float(stock_data_service['last_price'])
 
-                        current_value = current_price * stock.quantity
-                        purchase_value = stock.purchase_price * stock.quantity
+                        current_value = current_price * stock.shares
+                        purchase_value = stock.purchase_price * stock.shares
                         profit_loss = current_value - purchase_value
 
                         portfolio_value += current_value
@@ -253,7 +253,7 @@ def overview():
 
                         stock_data.append({
                             'ticker': stock.ticker,
-                            'shares': stock.quantity,
+                            'shares': stock.shares,
                             'value': current_value
                         })
 
@@ -513,18 +513,18 @@ def index():
                                 current_price = stock.purchase_price
 
                         # Calculate gain/loss
-                        gain_loss = (current_price - stock.purchase_price) * stock.quantity
+                        gain_loss = (current_price - stock.purchase_price) * stock.shares
                         portfolio_gain_loss += gain_loss
 
                         stock_data.append({
                             'ticker': stock.ticker,
-                            'quantity': stock.quantity,
+                            'quantity': stock.shares,  # Display as 'quantity' but use stock.shares
                             'purchase_price': stock.purchase_price,
                             'current_price': current_price,
                             'gain_loss': gain_loss
                         })
 
-                        portfolio_value += current_price * stock.quantity
+                        portfolio_value += current_price * stock.shares
                     except Exception as stock_error:
                         logger.error(f"Error processing stock {stock.ticker}: {stock_error}")
 
@@ -735,8 +735,8 @@ def view_portfolio(id):
                 current_data = DataService.get_stock_data(stock.ticker)
                 if current_data:
                     current_price = current_data.get('last_price', stock.purchase_price)
-                    current_value = current_price * stock.quantity
-                    cost_value = stock.purchase_price * stock.quantity
+                    current_value = current_price * stock.shares
+                    cost_value = stock.purchase_price * stock.shares
                     gain_loss = current_value - cost_value
                     gain_loss_percent = (gain_loss / cost_value * 100) if cost_value > 0 else 0
                     
@@ -755,7 +755,7 @@ def view_portfolio(id):
             except Exception as e:
                 current_app.logger.error(f"Error getting data for {stock.ticker}: {e}")
                 # Use stored values as fallback
-                cost_value = stock.purchase_price * stock.quantity
+                cost_value = stock.purchase_price * stock.shares
                 portfolio_data.append({
                     'stock': stock,
                     'current_price': stock.purchase_price,
@@ -1263,7 +1263,7 @@ def export_portfolio():
                 data.append({
                     'Portefølje': p.name,
                     'Ticker': stock.ticker,
-                    'Antall': format_number_norwegian(stock.quantity),
+                    'Antall': format_number_norwegian(stock.shares),
                     'Kjøpspris': format_currency_norwegian(stock.purchase_price),
                     'Nåverdi': format_currency_norwegian(stock.current_value),
                     'Kjøpsdato': stock.purchase_date.strftime('%d.%m.%Y') if stock.purchase_date else ''

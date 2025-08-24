@@ -30,56 +30,64 @@ def index():
     return redirect(url_for('stocks.list_index'))
 
 def calculate_rsi(prices, periods=14):
-    """Calculate RSI (Relative Strength Index) for given prices"""
+    """Calculate RSI (Relative Strength Index) using Wilder's smoothing method"""
     try:
-        deltas = np.diff(prices)
-        seed = deltas[:periods+1]
-        up = seed[seed >= 0].sum()/periods
-        down = -seed[seed < 0].sum()/periods
-        rs = up/down
-        rsi = np.zeros_like(prices)
-        rsi[:periods] = 100. - 100./(1. + rs)
-
+        if len(prices) < periods + 1:
+            return 50.0
+            
+        # Convert to pandas Series for easier calculation
+        prices_series = pd.Series(prices)
+        
+        # Calculate price changes (deltas)
+        deltas = prices_series.diff()
+        
+        # Separate gains and losses
+        gains = deltas.where(deltas > 0, 0)
+        losses = -deltas.where(deltas < 0, 0)
+        
+        # Calculate initial averages (simple average for first period)
+        avg_gain = gains.rolling(window=periods).mean()
+        avg_loss = losses.rolling(window=periods).mean()
+        
+        # Use Wilder's smoothing for subsequent periods
         for i in range(periods, len(prices)):
-            delta = deltas[i - 1]
-            if delta > 0:
-                upval = delta
-                downval = 0.
-            else:
-                upval = 0.
-                downval = -delta
-
-            up = (up * (periods - 1) + upval) / periods
-            down = (down * (periods - 1) + downval) / periods
-            rs = up/down
-            rsi[i] = 100. - 100./(1. + rs)
-
-        return float(rsi[-1])
-    except Exception:
+            avg_gain.iloc[i] = (avg_gain.iloc[i-1] * (periods - 1) + gains.iloc[i]) / periods
+            avg_loss.iloc[i] = (avg_loss.iloc[i-1] * (periods - 1) + losses.iloc[i]) / periods
+        
+        # Calculate RS and RSI
+        rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+        
+        return float(rsi.iloc[-1])
+    except Exception as e:
+        current_app.logger.warning(f"RSI calculation failed: {e}")
         return 50.0
 
 def calculate_macd(prices, fast=12, slow=26, signal=9):
-    """Calculate MACD (Moving Average Convergence Divergence) for given prices"""
+    """Calculate MACD (Moving Average Convergence Divergence) using standard EMA method"""
     try:
         if len(prices) < slow:
             return 0.0, 0.0, 0.0
         
-        prices = np.array(prices)
-        # Calculate exponential moving averages
-        ema_fast = pd.Series(prices).ewm(span=fast).mean()
-        ema_slow = pd.Series(prices).ewm(span=slow).mean()
+        # Convert to pandas Series for consistent calculation
+        prices_series = pd.Series(prices)
         
-        # Calculate MACD line
+        # Calculate exponential moving averages
+        ema_fast = prices_series.ewm(span=fast, adjust=False).mean()
+        ema_slow = prices_series.ewm(span=slow, adjust=False).mean()
+        
+        # Calculate MACD line (difference between fast and slow EMA)
         macd_line = ema_fast - ema_slow
         
-        # Calculate signal line
-        signal_line = macd_line.ewm(span=signal).mean()
+        # Calculate signal line (EMA of MACD line)
+        signal_line = macd_line.ewm(span=signal, adjust=False).mean()
         
-        # Calculate histogram
+        # Calculate histogram (difference between MACD and signal line)
         histogram = macd_line - signal_line
         
         return float(macd_line.iloc[-1]), float(signal_line.iloc[-1]), float(histogram.iloc[-1])
-    except Exception:
+    except Exception as e:
+        current_app.logger.warning(f"MACD calculation failed: {e}")
         return 0.0, 0.0, 0.0
 
 @stocks.route('/list/crypto')
@@ -510,14 +518,129 @@ def details(symbol):
         # Get current price from the stock info (whether real or synthetic)
         current_price = stock_info.get('regularMarketPrice', stock_info.get('last_price', stock_info.get('price', 100.0)))
         
-        # Generate technical data based on symbol (consistent regardless of data source)
-        base_hash = hash(symbol) % 1000
-        import random
-        random.seed(base_hash)  # Consistent randomness per symbol
+        # STEP 16 FIX: Calculate real technical indicators using historical data
+        technical_data = {}
         
-        # Create comprehensive technical data with meaningful values
         try:
-            # Generate realistic technical indicators
+            # Get historical data for technical calculations
+            historical_data = DataService.get_historical_data(symbol, period='3mo', interval='1d')
+            
+            if historical_data is not None and not historical_data.empty and len(historical_data) >= 26:
+                # Extract closing prices for calculations
+                closing_prices = historical_data['Close'].values
+                
+                current_app.logger.info(f"🔧 STEP 16: Calculating real RSI and MACD for {symbol} using {len(closing_prices)} data points")
+                
+                # Calculate RSI using the real function
+                rsi = calculate_rsi(closing_prices)
+                current_app.logger.info(f"📊 Real RSI for {symbol}: {rsi:.1f}")
+                
+                # Calculate MACD using the real function  
+                macd_line, macd_signal, macd_histogram = calculate_macd(closing_prices)
+                current_app.logger.info(f"📈 Real MACD for {symbol}: Line={macd_line:.3f}, Signal={macd_signal:.3f}, Histogram={macd_histogram:.3f}")
+                
+                # Calculate moving averages
+                if len(closing_prices) >= 50:
+                    sma_20 = float(np.mean(closing_prices[-20:]))
+                    sma_50 = float(np.mean(closing_prices[-50:]))
+                else:
+                    sma_20 = float(np.mean(closing_prices[-min(20, len(closing_prices)):]))
+                    sma_50 = float(np.mean(closing_prices[-min(50, len(closing_prices)):]))
+                
+                # Calculate EMA 12
+                ema_12 = float(pd.Series(closing_prices).ewm(span=12).mean().iloc[-1])
+                
+                # Calculate Bollinger Bands (20-period)
+                sma_bb = float(np.mean(closing_prices[-20:]))
+                std_bb = float(np.std(closing_prices[-20:]))
+                bollinger_upper = sma_bb + (2 * std_bb)
+                bollinger_middle = sma_bb
+                bollinger_lower = sma_bb - (2 * std_bb)
+                
+                # Calculate Stochastic Oscillator
+                high_14 = float(np.max(historical_data['High'].values[-14:]))
+                low_14 = float(np.min(historical_data['Low'].values[-14:]))
+                current_close = float(closing_prices[-1])
+                
+                if high_14 != low_14:
+                    stochastic_k = ((current_close - low_14) / (high_14 - low_14)) * 100
+                else:
+                    stochastic_k = 50.0
+                    
+                # Simple 3-period moving average of %K for %D
+                if len(closing_prices) >= 3:
+                    recent_k_values = []
+                    for i in range(3):
+                        period_high = float(np.max(historical_data['High'].values[-(14+i):-(i) if i > 0 else None]))
+                        period_low = float(np.min(historical_data['Low'].values[-(14+i):-(i) if i > 0 else None]))
+                        period_close = float(closing_prices[-(i+1)])
+                        
+                        if period_high != period_low:
+                            period_k = ((period_close - period_low) / (period_high - period_low)) * 100
+                        else:
+                            period_k = 50.0
+                        recent_k_values.append(period_k)
+                    
+                    stochastic_d = float(np.mean(recent_k_values))
+                else:
+                    stochastic_d = stochastic_k
+                
+                # Determine signal based on real indicators
+                if rsi < 30 and macd_line > macd_signal:
+                    signal = 'KJØP'
+                    signal_strength = 'Strong'
+                    signal_reason = f'Oversold RSI ({rsi:.1f}) + Bullish MACD crossover'
+                elif rsi > 70 and macd_line < macd_signal:
+                    signal = 'SELG'
+                    signal_strength = 'Strong'
+                    signal_reason = f'Overbought RSI ({rsi:.1f}) + Bearish MACD crossover'
+                elif rsi < 40 and macd_line > 0:
+                    signal = 'KJØP'
+                    signal_strength = 'Medium'
+                    signal_reason = f'Low RSI ({rsi:.1f}) + Positive MACD'
+                elif rsi > 60 and macd_line < 0:
+                    signal = 'SELG'
+                    signal_strength = 'Medium'
+                    signal_reason = f'High RSI ({rsi:.1f}) + Negative MACD'
+                else:
+                    signal = 'HOLD'
+                    signal_strength = 'Weak'
+                    signal_reason = f'Neutral indicators: RSI ({rsi:.1f}), MACD ({macd_line:.3f})'
+                
+                technical_data = {
+                    'rsi': round(rsi, 1),
+                    'macd': round(macd_line, 3),
+                    'macd_signal': round(macd_signal, 3),
+                    'macd_histogram': round(macd_histogram, 3),
+                    'bollinger_upper': round(bollinger_upper, 2),
+                    'bollinger_middle': round(bollinger_middle, 2),
+                    'bollinger_lower': round(bollinger_lower, 2),
+                    'sma_20': round(sma_20, 2),
+                    'sma_50': round(sma_50, 2),
+                    'ema_12': round(ema_12, 2),
+                    'stochastic_k': round(stochastic_k, 1),
+                    'stochastic_d': round(stochastic_d, 1),
+                    'signal': signal,
+                    'signal_strength': signal_strength,
+                    'signal_reason': signal_reason,
+                    'data_source': 'REAL CALCULATIONS'
+                }
+                
+                current_app.logger.info(f"✅ STEP 16 SUCCESS: Real technical analysis complete for {symbol}")
+                
+            else:
+                current_app.logger.warning(f"⚠️ Insufficient historical data for {symbol}, using fallback calculations")
+                raise Exception("Insufficient historical data")
+                
+        except Exception as e:
+            current_app.logger.warning(f"⚠️ Technical analysis failed for {symbol}: {e}, using fallback synthetic data")
+            
+            # Fallback to improved synthetic data with consistent seeding
+            base_hash = hash(symbol) % 1000
+            import random
+            random.seed(base_hash)  # Consistent randomness per symbol
+            
+            # Generate realistic technical indicators as fallback
             rsi = 30.0 + (base_hash % 40)  # RSI between 30-70
             macd = -2.0 + (base_hash % 40) / 10  # MACD between -2 and 2
             macd_signal = macd * 0.8 + (random.random() - 0.5) * 0.5
@@ -556,30 +679,10 @@ def details(symbol):
                 'stochastic_d': round(stochastic_d, 1),
                 'signal': signal,
                 'signal_strength': signal_strength,
-                'signal_reason': f'Basert på RSI ({rsi:.1f}) og MACD ({macd:.2f})'
+                'signal_reason': f'Fallback: RSI ({rsi:.1f}) og MACD ({macd:.2f})',
+                'data_source': 'FALLBACK SYNTHETIC'
             }
-        except Exception as e:
-            logger.warning(f"Technical data generation failed for {symbol}: {e}")
-            # Ensure we always have some technical data with more realistic variations
-            base_hash = abs(hash(symbol)) % 1000
-            technical_data = {
-                'rsi': 20.0 + (base_hash % 60),
-                'macd': -2.0 + (base_hash % 40) / 10,
-                'macd_signal': -1.5 + (base_hash % 30) / 10,
-                'macd_histogram': -0.5 + (base_hash % 10) / 10,
-                'bollinger_upper': current_price * (1.05 + (base_hash % 5) / 100),
-                'bollinger_middle': current_price,
-                'bollinger_lower': current_price * (0.95 - (base_hash % 5) / 100),
-                'sma_20': current_price * (0.98 + (base_hash % 6) / 100),
-                'sma_50': current_price * (0.95 + (base_hash % 8) / 100),
-                'ema_12': current_price * (0.99 + (base_hash % 4) / 100),
-                'stochastic_k': 20.0 + (base_hash % 60),
-                'stochastic_d': 25.0 + (base_hash % 50),
-                'signal': stock_info.get('signal', 'HOLD'),
-                'signal_strength': 'Medium',
-                'signal_reason': 'Demo data - historical data unavailable'
-            }
-
+        
         # Create stock info for template
         currency = 'NOK' if symbol.endswith('.OL') else 'USD'
         template_stock_info = {

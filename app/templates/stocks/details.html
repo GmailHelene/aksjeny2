@@ -112,13 +112,123 @@
                                     </table>
                                 </div>
                                 <div class="col-md-6">
-                                    <h5>Informasjon</h5>
-                                    <p><strong>Sektor:</strong> {{ stock.sector or 'Energi' }}</p>
-                                    <p><strong>Industri:</strong> {{ stock.industry or 'Olje & Gass' }}</p>
-                                    <p><strong>Land:</strong> {{ stock.country or 'Norge' }}</p>
-                                    {% if stock.description %}
-                                    <p><strong>Beskrivelse:</strong></p>
-                                    <p class="text-muted">{{ stock.description[:200] }}{% if stock.description|length > 200 %}...{% endif %}</p>
+                                    <h5>Selskapsinfo</h5>
+                                    <div class="company-info">
+                                        <!-- Enhanced Sector & Industry Info -->
+                                        <div class="info-row mb-2">
+                                            <strong>Sektor:</strong> 
+                                            <span class="badge bg-primary ms-1">{{ stock.sector or 'Energi' }}</span>
+                                        </div>
+                                        
+                                        <div class="info-row mb-2">
+                                            <strong>Industri:</strong> 
+                                            <span class="text-muted">{{ stock.industry or stock.sub_sector or 'Olje & Gass' }}</span>
+                                        </div>
+                                        
+                                        <!-- Enhanced Country & Exchange Info -->
+                                        <div class="info-row mb-2">
+                                            <strong>Land:</strong> 
+                                            <span class="text-muted">
+                                                {% if stock.country %}
+                                                    {{ stock.country }}
+                                                {% elif stock.symbol.endswith('.OL') %}
+                                                    Norge
+                                                {% else %}
+                                                    USA
+                                                {% endif %}
+                                                {% if stock.exchange %}
+                                                    ({{ stock.exchange }})
+                                                {% elif stock.symbol.endswith('.OL') %}
+                                                    (Oslo Børs)
+                                                {% else %}
+                                                    (NASDAQ/NYSE)
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        
+                                        <!-- Enhanced Market Cap with Context -->
+                                        {% if stock.market_cap or stock.marketCap %}
+                                        <div class="info-row mb-2">
+                                            <strong>Markedsverdi:</strong>
+                                            {% set market_cap = stock.market_cap or stock.marketCap %}
+                                            {% if market_cap is number %}
+                                                {% if market_cap > 1000000000 %}
+                                                    <span class="text-success">{{ "%.1f"|format(market_cap / 1000000000) }} mrd NOK</span>
+                                                    <small class="text-muted">(Large cap)</small>
+                                                {% elif market_cap > 100000000 %}
+                                                    <span class="text-info">{{ "%.1f"|format(market_cap / 1000000) }} mill NOK</span>
+                                                    <small class="text-muted">(Mid cap)</small>
+                                                {% else %}
+                                                    <span class="text-warning">{{ "{:,}"|format(market_cap) }} NOK</span>
+                                                    <small class="text-muted">(Small cap)</small>
+                                                {% endif %}
+                                            {% else %}
+                                                {{ market_cap }}
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Employee Count (if available) -->
+                                        {% if stock.fullTimeEmployees %}
+                                        <div class="info-row mb-2">
+                                            <strong>Ansatte:</strong> 
+                                            <span class="text-muted">{{ "{:,}"|format(stock.fullTimeEmployees) }} personer</span>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- Website (if available) -->
+                                        {% if stock.website %}
+                                        <div class="info-row mb-2">
+                                            <strong>Nettside:</strong> 
+                                            <a href="{{ stock.website }}" target="_blank" class="text-primary">
+                                                {{ stock.website|replace('https://', '')|replace('http://', '') }}
+                                                <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- CEO (if available) -->
+                                        {% if stock.ceo or stock.companyOfficers %}
+                                        <div class="info-row mb-2">
+                                            <strong>CEO:</strong> 
+                                            <span class="text-muted">
+                                                {% if stock.ceo %}
+                                                    {{ stock.ceo }}
+                                                {% elif stock.companyOfficers and stock.companyOfficers|length > 0 %}
+                                                    {{ stock.companyOfficers[0].name }}
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Enhanced Description -->
+                                    {% if stock.description or stock.longBusinessSummary %}
+                                    <h6 class="mt-4">Om selskapet</h6>
+                                    <div class="company-description">
+                                        {% set description = stock.description or stock.longBusinessSummary %}
+                                        {% if description|length > 300 %}
+                                            <p class="text-muted">
+                                                <span id="short-description">{{ description[:300] }}...</span>
+                                                <span id="full-description" style="display: none;">{{ description }}</span>
+                                                <a href="#" onclick="toggleDescription(); return false;" class="text-primary">
+                                                    <span id="toggle-text">Les mer</span>
+                                                </a>
+                                            </p>
+                                        {% else %}
+                                            <p class="text-muted">{{ description }}</p>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <h6 class="mt-4">Om selskapet</h6>
+                                    <p class="text-muted">
+                                        {% if stock.symbol.endswith('.OL') %}
+                                            Norsk selskap notert på Oslo Børs.
+                                        {% else %}
+                                            Amerikansk selskap med internasjonale operasjoner.
+                                        {% endif %}
+                                        For mer informasjon, besøk selskapets offisielle nettsider.
+                                    </p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -1136,6 +1246,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block scripts %}
 <script>
+// Company description toggle functionality
+function toggleDescription() {
+    const shortDesc = document.getElementById('short-description');
+    const fullDesc = document.getElementById('full-description');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (fullDesc.style.display === 'none') {
+        shortDesc.style.display = 'none';
+        fullDesc.style.display = 'inline';
+        toggleText.textContent = 'Les mindre';
+    } else {
+        shortDesc.style.display = 'inline';
+        fullDesc.style.display = 'none';
+        toggleText.textContent = 'Les mer';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // External buy button functionality - redirect to external broker
     document.querySelectorAll('.external-buy-btn').forEach(btn => {
