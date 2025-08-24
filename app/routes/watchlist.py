@@ -1,8 +1,9 @@
+from datetime import datetime
 from flask import Blueprint, jsonify, current_app, render_template
 from flask_login import login_required, current_user
 from ..models.watchlist import Watchlist
 from ..extensions import db
-from ..utils.access_control import access_required
+from ..utils.access_control import access_required, demo_access
 
 watchlist = Blueprint('watchlist', __name__, url_prefix='/watchlist')
 
@@ -21,16 +22,17 @@ def index():
         
         # Add default watchlist data for demo users
         if not watchlists:
-            default_watchlist = {
-                'id': 0,
-                'name': 'Demo Watchlist',
-                'description': 'Eksempel på watchlist. Logg inn for å opprette din egen.',
-                'items': [],
-                'created_at': datetime.now(),
-                'updated_at': datetime.now(),
-                'price_alerts_enabled': True,
-                'technical_alerts_enabled': True
-            }
+            default_watchlist = Watchlist(
+                id=0,
+                name='Demo Watchlist',
+                description='Eksempel på watchlist. Logg inn for å opprette din egen.',
+                items=[],
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                price_alerts_enabled=True,
+                technical_alerts_enabled=True,
+                user_id=0
+            )
             watchlists = [default_watchlist]
             
         return render_template('watchlist/index.html', 

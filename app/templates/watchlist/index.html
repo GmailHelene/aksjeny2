@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Watchlist & Varsler                                <li><a class="dropdown-item" href="{{ url_for('watchlist.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">
-                                    <i class="bi bi-trash"></i> Slett
-                                </a></li>Aksjeradar{% endblock %}
+{% block title %}Watchlist & Varsler - Aksjeradar{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -66,7 +61,7 @@
                                 <i class="bi bi-three-dots"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('watchlist.index') }}">Vis detaljer</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">Slett</a></li>

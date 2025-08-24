@@ -1706,8 +1706,32 @@ def profile():
                 errors.append('subscription_info_failed')
                 
         else:
-            # Default values for unauthenticated users
-            return redirect('/login?next=/profile')
+            # Default values for demo/unauthenticated users
+            user_stats = {
+                'member_since': datetime.now(),
+                'last_login': datetime.now(),
+                'total_searches': 0,
+                'favorite_stocks': 0
+            }
+            user_favorites = []
+            user_preferences = {
+                'display_mode': 'light',
+                'number_format': 'norwegian',
+                'dashboard_widgets': '[]',
+                'email_notifications': True,
+                'price_alerts': True,
+                'market_news': True,
+                'portfolio_updates': True,
+                'ai_insights': True,
+                'weekly_reports': True
+            }
+            referral_stats = {
+                'referrals_made': 0,
+                'referral_earnings': 0,
+                'referral_code': 'REF-DEMO'
+            }
+            subscription = None
+            subscription_status = 'free'
         
         return render_template('profile.html',
             user=current_user,

@@ -62,18 +62,20 @@
                             <strong>Medlemskap:</strong>
                         </div>
                         <div class="col-sm-9">
-                            {% if user.has_subscription and user.subscription_type %}
-                                {% if user.subscription_type == 'yearly' %}
+                            {% if subscription_status == 'premium' %}
+                                {% if subscription and subscription.type == 'yearly' %}
                                     <span class="badge bg-success">Premium Årlig (2499,- /år)</span>
-                                {% elif user.subscription_type == 'monthly' %}
+                                {% elif subscription and subscription.type == 'monthly' %}
                                     <span class="badge bg-success">Premium Månedlig (249,- /måned)</span>
-                                {% elif user.subscription_type == 'lifetime' %}
+                                {% elif subscription and subscription.type == 'lifetime' %}
                                     <span class="badge bg-warning text-dark">Premium Livstid</span>
                                 {% else %}
                                     <span class="badge bg-success">Premium Abonnement</span>
                                 {% endif %}
+                            {% elif subscription_status == 'trial' %}
+                                <span class="badge bg-info">Prøveperiode</span>
                             {% else %}
-                                <span class="badge bg-primary">Premium Tilgang</span>
+                                <span class="badge bg-secondary">Gratis</span>
                             {% endif %}
                         </div>
                     </div>
