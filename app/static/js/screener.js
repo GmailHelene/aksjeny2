@@ -1,6 +1,118 @@
 // Screener functionality for watchlist management
 let currentScreenerState = {};
 
+// Available screener presets
+const screenerPresets = {
+    dividend: {
+        name: 'Dividendeaksjer',
+        description: 'Aksjer med høy og stabil dividendeutbetaling',
+        filters: {
+            dividend_yield: { min: 3.0 },
+            market_cap: { min: 1000000000 },
+            pe_ratio: { max: 20 },
+            debt_to_equity: { max: 2.0 }
+        }
+    },
+    growth: {
+        name: 'Vekstaksjer',
+        description: 'Aksjer med høy vekst og potensial',
+        filters: {
+            revenue_growth: { min: 15.0 },
+            profit_growth: { min: 10.0 },
+            market_cap: { min: 500000000 }
+        }
+    },
+    value: {
+        name: 'Verdiaksjer',
+        description: 'Undervurderte aksjer med god margin of safety',
+        filters: {
+            pe_ratio: { max: 15 },
+            price_to_book: { max: 1.5 },
+            debt_to_equity: { max: 1.5 },
+            current_ratio: { min: 1.5 }
+        }
+    },
+    momentum: {
+        name: 'Momentum',
+        description: 'Aksjer med sterk pristrend og momentum',
+        filters: {
+            price_change_1m: { min: 5.0 },
+            price_change_3m: { min: 10.0 },
+            volume_change: { min: 20.0 }
+        }
+    }
+};
+
+// Select and apply a screener preset
+async function selectPreset(presetName) {
+    try {
+        // Get the preset configuration
+        const preset = screenerPresets[presetName];
+        if (!preset) {
+            throw new Error('Ukjent preset');
+        }
+
+        // Show loading state
+        const loadingElement = document.getElementById('screener-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'block';
+        }
+
+        // Update UI to show selected preset
+        const presetButtons = document.querySelectorAll('.preset-button');
+        presetButtons.forEach(button => {
+            if (button.dataset.preset === presetName) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+
+        // Apply the filters from the preset
+        await applyFilters(preset.filters);
+
+        // Update filter inputs to match preset
+        Object.entries(preset.filters).forEach(([filter, values]) => {
+            const minInput = document.querySelector(`[data-filter="${filter}"][data-type="min"]`);
+            const maxInput = document.querySelector(`[data-filter="${filter}"][data-type="max"]`);
+            
+            if (minInput && values.min !== undefined) {
+                minInput.value = values.min;
+            }
+            if (maxInput && values.max !== undefined) {
+                maxInput.value = values.max;
+            }
+        });
+
+        // Update screener state
+        currentScreenerState = {
+            preset: presetName,
+            filters: { ...preset.filters }
+        };
+
+        // Show success message
+        showToast(`${preset.name} filter anvendt`, 'success');
+
+        // Hide loading state
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error applying preset:', error);
+        showToast('Kunne ikke anvende filter. Prøv igjen senere.', 'error');
+        
+        // Hide loading state
+        const loadingElement = document.getElementById('screener-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+
+        return false;
+    }
+}
+
 function showToast(message, type = 'info') {
     // Create toast container if it doesn't exist
     let toastContainer = document.querySelector('.toast-container');

@@ -420,11 +420,24 @@
     <meta name="apple-mobile-web-app-title" content="Aksjeradar">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo-192.png') }}">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <!-- Chart.js with Date Adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Chart.js Configuration -->
+    <script>
+        // Configure Chart.js defaults for time scales
+        Chart.defaults.scales.time = {
+            adapters: {
+                date: {
+                    locale: window.dateFns
+                }
+            }
+        };
+    </script>
 
     {% block head %}{% endblock %}
     

@@ -1,7 +1,136 @@
 /**
- * Watchlist State Management to prevent reload loops
+ * Watchlist functionality and state management
  */
 
+// Add stock to watchlist with enhanced error handling
+async function addToWatchlist(symbol, name) {
+    try {
+        // Show loading state
+        const button = document.querySelector(`[data-add-watchlist="${symbol}"]`);
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Legger til...';
+        }
+
+        // Call API to add to watchlist
+        const response = await fetch('/watchlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.csrfToken
+            },
+            body: JSON.stringify({ symbol, name })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Update UI
+            if (button) {
+                button.innerHTML = '<i class="fas fa-check"></i> Lagt til';
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+            }
+            
+            // Show success message
+            showToast('Aksjen er lagt til i din overvåkningsliste', 'success');
+            
+            // Update watchlist count if it exists
+            const countElement = document.querySelector('#watchlist-count');
+            if (countElement) {
+                const currentCount = parseInt(countElement.textContent) || 0;
+                countElement.textContent = currentCount + 1;
+            }
+
+            // Update achievement stats
+            fetch('/achievements/api/update_stat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken
+                },
+                body: JSON.stringify({
+                    type: 'favorites',
+                    increment: 1
+                })
+            });
+
+            return true;
+        } else {
+            throw new Error(data.error || 'Kunne ikke legge til i overvåkningsliste');
+        }
+    } catch (error) {
+        console.error('Error adding to watchlist:', error);
+        
+        // Reset button state
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-plus"></i> Legg til';
+        }
+        
+        // Show error message
+        showToast(error.message || 'Kunne ikke legge til i overvåkningsliste. Prøv igjen senere.', 'error');
+        
+        return false;
+    }
+}
+
+// Create price alert with enhanced validation
+async function createPriceAlert(symbol, currentPrice) {
+    try {
+        // Get price from user with validation
+        const price = parseFloat(prompt(`Sett prisvarsel for ${symbol}\nNåværende kurs: ${currentPrice} NOK\n\nAngi målpris:`));
+        
+        if (isNaN(price) || price <= 0) {
+            showToast('Vennligst angi en gyldig pris', 'warning');
+            return;
+        }
+
+        // Validate price is different enough from current
+        const priceDiff = Math.abs(price - currentPrice) / currentPrice;
+        if (priceDiff < 0.01) { // 1% minimum difference
+            showToast('Prisvarsel må være minst 1% forskjellig fra nåværende kurs', 'warning');
+            return;
+        }
+
+        // Create alert
+        const response = await fetch('/alerts/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.csrfToken
+            },
+            body: JSON.stringify({
+                symbol,
+                target_price: price,
+                type: price > currentPrice ? 'above' : 'below'
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showToast(`Prisvarsel opprettet for ${symbol} ved ${price} NOK`, 'success');
+            
+            // Update alert count if it exists
+            const countElement = document.querySelector('#alert-count');
+            if (countElement) {
+                const currentCount = parseInt(countElement.textContent) || 0;
+                countElement.textContent = currentCount + 1;
+            }
+            
+            return true;
+        } else {
+            throw new Error(data.error || 'Kunne ikke opprette prisvarsel');
+        }
+    } catch (error) {
+        console.error('Error creating price alert:', error);
+        showToast(error.message || 'Kunne ikke opprette prisvarsel. Prøv igjen senere.', 'error');
+        return false;
+    }
+}
+
+// Watchlist state management
 class WatchlistStateManager {
     constructor() {
         this.isLoading = false;

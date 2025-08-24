@@ -808,7 +808,19 @@ document.addEventListener('DOMContentLoaded', function() {
             x: {
                 type: 'time',
                 time: {
-                    unit: 'day'
+                    unit: 'day',
+                    parser: 'yyyy-MM-dd',
+                    tooltipFormat: 'PP',
+                    displayFormats: {
+                        day: 'MMM d',
+                        week: 'MMM d',
+                        month: 'MMM yyyy'
+                    },
+                    adapters: {
+                        date: {
+                            locale: window.dateFns 
+                        }
+                    }
                 },
                 grid: {
                     color: 'rgba(0, 0, 0, 0.05)',
@@ -816,6 +828,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 border: {
                     color: 'rgba(0, 0, 0, 0.1)'
+                },
+                adapters: {
+                    date: {
+                        locale: window.dateFns
+                    }
                 }
             },
             y: {
@@ -1092,7 +1109,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     x: {
                         type: 'time',
-                        time: { unit: 'day' },
+                        time: {
+                            unit: 'day',
+                            parser: 'yyyy-MM-dd',
+                            tooltipFormat: 'PP',
+                            displayFormats: {
+                                day: 'MMM d',
+                                week: 'MMM d',
+                                month: 'MMM yyyy'
+                            }
+                        },
+                        adapters: {
+                            date: {
+                                locale: window.dateFns
+                            }
+                        },
                         grid: { display: false }
                     },
                     y: {
@@ -1152,7 +1183,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     x: {
                         type: 'time',
-                        time: { unit: 'day' },
+                        time: {
+                            unit: 'day',
+                            parser: 'yyyy-MM-dd',
+                            tooltipFormat: 'PP',
+                            displayFormats: {
+                                day: 'MMM d',
+                                week: 'MMM d',
+                                month: 'MMM yyyy'
+                            }
+                        },
+                        adapters: {
+                            date: {
+                                locale: window.dateFns
+                            }
+                        },
                         grid: { display: false }
                     },
                     y: {
@@ -1220,7 +1265,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 date.setDate(date.getDate() - (periods - 1 - i));
             }
-            labels.push(date);
+            // Format as ISO string for Chart.js
+            labels.push(date.toISOString());
             
             // Generate realistic price movement with trend
             const volatility = 0.02;
