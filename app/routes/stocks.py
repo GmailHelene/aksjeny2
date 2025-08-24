@@ -273,6 +273,96 @@ def list_currency():
                              base_currency='NOK',
                              error=True)
 
+@stocks.route('/list/oslo')
+@demo_access
+def list_oslo():
+    """Oslo Børs stocks listing"""
+    try:
+        # Get Oslo Børs data with guaranteed fallback
+        stocks_raw = DataService.get_oslo_bors_overview() or DataService._get_guaranteed_oslo_data() or []
+        
+        # Convert list to dict if needed
+        if isinstance(stocks_raw, list):
+            stocks_data = {s.get('symbol', s.get('ticker', f'OSLO_{i}')): s for i, s in enumerate(stocks_raw) if isinstance(s, dict)}
+        elif isinstance(stocks_raw, dict):
+            stocks_data = stocks_raw
+        else:
+            stocks_data = {}
+            
+        return render_template('stocks/oslo.html',
+                             stocks=stocks_data,
+                             market='Oslo Børs',
+                             market_type='oslo',
+                             category='oslo',
+                             get_exchange_url=get_exchange_url,
+                             error=False)
+                             
+    except Exception as e:
+        current_app.logger.error(f"Critical error in Oslo Børs route: {e}")
+        # Use guaranteed fallback data even on exception
+        try:
+            stocks_data = DataService._get_guaranteed_oslo_data() or {}
+            return render_template('stocks/oslo.html',
+                                 stocks=stocks_data,
+                                 market='Oslo Børs',
+                                 market_type='oslo',
+                                 category='oslo',
+                                 get_exchange_url=get_exchange_url,
+                                 error=False)
+        except:
+            return render_template('stocks/oslo.html',
+                                 stocks={},
+                                 market='Oslo Børs',
+                                 market_type='oslo',
+                                 category='oslo',
+                                 get_exchange_url=get_exchange_url,
+                                 error=True)
+
+@stocks.route('/global')
+@demo_access
+def global_list():
+    """Global stocks listing"""
+    try:
+        # Get global stocks data with guaranteed fallback
+        stocks_raw = DataService.get_global_stocks_overview() or DataService._get_guaranteed_global_data() or []
+        
+        # Convert list to dict if needed
+        if isinstance(stocks_raw, list):
+            stocks_data = {s.get('symbol', s.get('ticker', f'GLOBAL_{i}')): s for i, s in enumerate(stocks_raw) if isinstance(s, dict)}
+        elif isinstance(stocks_raw, dict):
+            stocks_data = stocks_raw
+        else:
+            stocks_data = {}
+            
+        return render_template('stocks/global.html',
+                             stocks=stocks_data,
+                             market='Globale aksjer',
+                             market_type='global',
+                             category='global',
+                             get_exchange_url=get_exchange_url,
+                             error=False)
+                             
+    except Exception as e:
+        current_app.logger.error(f"Critical error in global stocks route: {e}")
+        # Use guaranteed fallback data even on exception
+        try:
+            stocks_data = DataService._get_guaranteed_global_data() or {}
+            return render_template('stocks/global.html',
+                                 stocks=stocks_data,
+                                 market='Globale aksjer',
+                                 market_type='global',
+                                 category='global',
+                                 get_exchange_url=get_exchange_url,
+                                 error=False)
+        except:
+            return render_template('stocks/global.html',
+                                 stocks={},
+                                 market='Globale aksjer',
+                                 market_type='global',
+                                 category='global',
+                                 get_exchange_url=get_exchange_url,
+                                 error=True)
+
 @stocks.route('/<symbol>')
 @demo_access
 def stock_symbol(symbol):
