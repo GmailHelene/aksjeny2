@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from ..models.user import User
 from ..models.watchlist import Watchlist, WatchlistItem
-from ..extensions import db, mail
+from ..extensions import db, mail, csrf
 from ..utils.access_control import demo_access
 from flask_mailman import EmailMessage
 from datetime import datetime, timedelta
@@ -92,7 +92,7 @@ def toggle_watchlist():
 
 
 @watchlist_bp.route('/api/watchlist/add', methods=['POST'])
-@login_required
+@csrf.exempt
 def add_to_watchlist():
     """Add aksje til favorittlisten (hoved-watchlist)"""
     try:
@@ -146,7 +146,7 @@ def add_to_watchlist():
         db.session.rollback()
         return jsonify({
             'success': False,
-            'error': 'Kunne ikke legge til i favoritter'
+            'error': 'Kunne inte legge til i favoritter'
         }), 500
 
 

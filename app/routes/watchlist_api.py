@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from ..extensions import csrf
 from ..services.watchlist_service import WatchlistService
-from ..utils.access_control import demo_access, access_required
+from ..utils.access_control import demo_access, access_required, api_access_required
 import logging
 
 watchlist_api = Blueprint('watchlist_api', __name__)
@@ -30,9 +30,9 @@ def get_watchlist_data():
 
 @watchlist_api.route('/api/watchlist/add', methods=['POST'])
 @csrf.exempt
-@access_required
-def add_to_watchlist():
-    """Add stock to watchlist"""
+@api_access_required
+def add_to_watchlist_via_service():
+    """Add stock to watchlist using WatchlistService (alternative endpoint)"""
     try:
         # Check if user is authenticated
         if not current_user.is_authenticated:

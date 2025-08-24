@@ -57,7 +57,7 @@
                                                 <small class="text-muted">{{ symbol }}</small>
                                             </td>
                                             <td>
-                                                <span class="fw-bold">{{ (data.get('price', 0) if data.get('price') is not none else 0)|round(4) }}</span>
+                                                <span class="fw-bold">{{ (data.get('last_price', 0) if data.get('last_price') is not none else 0)|round(4) }}</span>
                                             </td>
                                             <td>
                                                 <span class="{% if data.get('change', 0) > 0 %}text-success{% elif data.get('change', 0) < 0 %}text-danger{% else %}text-muted{% endif %}">

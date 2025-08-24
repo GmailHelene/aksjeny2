@@ -2117,6 +2117,12 @@ def update_notifications():
         price_alerts = request.form.get('price_alerts') == 'on'
         market_news = request.form.get('market_news') == 'on'
         
+        # Log the received form data
+        logger.info(f"Notification update for user {current_user.id}: email={email_notifications}, price={price_alerts}, news={market_news}")
+        
+        # Log current user state before update
+        logger.info(f"Current state before update: email={getattr(current_user, 'email_notifications', 'N/A')}, price={getattr(current_user, 'price_alerts', 'N/A')}, news={getattr(current_user, 'market_news', 'N/A')}")
+        
         # Update user attributes directly
         current_user.email_notifications = email_notifications
         current_user.price_alerts = price_alerts
@@ -2124,6 +2130,9 @@ def update_notifications():
         
         # Commit the changes
         db.session.commit()
+        
+        # Log state after update
+        logger.info(f"State after update: email={current_user.email_notifications}, price={current_user.price_alerts}, news={current_user.market_news}")
         
         flash('Varselinnstillinger oppdatert!', 'success')
         logger.info(f"Notification settings updated for user {current_user.id}")

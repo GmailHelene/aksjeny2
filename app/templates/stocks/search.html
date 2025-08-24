@@ -45,9 +45,8 @@
                                             <td>{{ result.name }}</td>
                                             <td><span class="badge bg-secondary">{{ result.market }}</span></td>
                                             <td>
-                                                {% if result.price != 'N/A' %}
-                                                    {{ "%.2f"|format(result.price) }}
-                                                    {% if result.market == 'Oslo Børs' %}NOK{% else %}USD{% endif %}
+                                                {% if result.price and result.price != 'N/A' %}
+                                                    {{ result.price }}
                                                 {% else %}
                                                     N/A
                                                 {% endif %}
