@@ -781,63 +781,98 @@ def view_portfolio(id):
         flash('Feil ved lasting av portefølje', 'error')
         return redirect(url_for('portfolio.index'))
 
-@portfolio.route('/portfolio/<int:id>/add', methods=['GET', 'POST'])
+@portfolio.route('/portfolio/portfolio/<int:id>/add', methods=['GET', 'POST'])
+@portfolio.route('/portfolio/<int:id>/add', methods=['GET', 'POST'])  # Keep old route for backward compatibility
 @login_required
 def add_stock_to_portfolio(id):
     """Add a stock to a specific portfolio"""
-    
-    # Validate CSRF token for POST requests
-    if request.method == 'POST':
+    try:
+        from flask_wtf.csrf import validate_csrf
+        # Import required models at function level to avoid circular imports
+        from ..models.portfolio import Portfolio, PortfolioStock
+        
+        # Get portfolio with error handling
         try:
-            validate_csrf(request.form.get('csrf_token'))
-        except ValidationError:
-            flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
-            return redirect(request.referrer or url_for('portfolio.portfolio_index'))
-    
-    portfolio_obj = Portfolio.query.get_or_404(id)
+            portfolio_obj = Portfolio.query.get_or_404(id)
+            
+            # Check ownership
+            if portfolio_obj.user_id != current_user.id:
+                flash('Du har ikke tilgang til denne porteføljen', 'danger')
+                return redirect(url_for('portfolio.index'))
+        except Exception as e:
+            logger.error(f"Error getting portfolio {id}: {e}")
+            flash('Kunne ikke hente porteføljen. Prøv igjen.', 'danger')
+            return redirect(url_for('portfolio.index'))
+        
+        if request.method == 'POST':
+            # Validate CSRF token if enabled
+            try:
+                csrf_token = request.form.get('csrf_token')
+                if csrf_token:  # Only validate if token was provided
+                    validate_csrf(csrf_token)
+            except Exception as csrf_error:
+                logger.warning(f"CSRF validation failed: {csrf_error}")
+                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
+                return redirect(request.referrer or url_for('portfolio.index'))
+                
+            # Get form data with validation
+            ticker = request.form.get('ticker', '').strip().upper()
+            quantity = request.form.get('quantity', '0').strip()
+            price = request.form.get('price', '0').strip()
 
-    # Sjekk eierskap
-    if portfolio_obj.user_id != current_user.id:
-        flash('Du har ikke tilgang til denne porteføljen', 'danger')
-        return redirect(url_for('portfolio.portfolio_index'))
+            # Validate required fields
+            if not ticker or not quantity or not price:
+                flash('Alle felt er påkrevd', 'danger')
+                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
 
-    if request.method == 'POST':
-        ticker = request.form.get('ticker')
-        quantity = request.form.get('quantity')
-        price = request.form.get('price')
+            try: 
+                quantity = float(quantity)
+                price = float(price)
+                if quantity <= 0 or price <= 0:
+                    raise ValueError("Must be positive numbers")
+            except ValueError:
+                flash('Antall og pris må være positive tall', 'danger')
+                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
 
-        if not ticker or not quantity or not price:
-            flash('Alle felt er påkrevd', 'danger')
-            return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
+            try:
+                # Check if stock exists in portfolio
+                existing_stock = PortfolioStock.query.filter_by(portfolio_id=id, ticker=ticker).first()
 
-        try: 
-            quantity = float(quantity)
-            price = float(price)
-        except ValueError:
-            flash('Antall og pris må være tall', 'danger')
-            return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
+                if existing_stock:
+                    # Update existing stock with weighted average price
+                    total_value = (existing_stock.shares * existing_stock.purchase_price) + (quantity * price)
+                    total_quantity = existing_stock.shares + quantity
+                    existing_stock.purchase_price = total_value / total_quantity if total_quantity > 0 else 0
+                    existing_stock.shares = total_quantity
+                else:
+                    # Add new stock
+                    stock = PortfolioStock(
+                        portfolio_id=id,
+                        ticker=ticker,
+                        shares=quantity,
+                        purchase_price=price
+                    )
+                    db.session.add(stock)
+            
+                db.session.commit()
+                flash('Aksje lagt til i porteføljen', 'success')
+                return redirect(url_for('portfolio.view_portfolio', id=id))
+                
+            except Exception as db_error:
+                logger.error(f"Database error adding stock: {db_error}")
+                db.session.rollback()
+                flash('Kunne ikke lagre aksjen. Prøv igjen.', 'danger')
+                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
 
-        existing_stock = PortfolioStock.query.filter_by(portfolio_id=id, ticker=ticker).first()
-
-        if existing_stock:
-            total_value = (existing_stock.shares * existing_stock.purchase_price) + (quantity * price)
-            total_quantity = existing_stock.shares + quantity
-            existing_stock.purchase_price = total_value / total_quantity if total_quantity > 0 else 0
-            existing_stock.shares = total_quantity
-        else:
-            stock = PortfolioStock(
-                portfolio_id=id,
-                ticker=ticker,
-                shares=quantity,
-                purchase_price=price
-            )
-            db.session.add(stock)
- 
-        db.session.commit()
-        flash('Aksje lagt til i porteføljen', 'success')
-        return redirect(url_for('portfolio.view_portfolio', id=id))
-
-    return render_template('portfolio/add_stock_to_portfolio.html', portfolio=portfolio)
+        # GET request - show add form
+        return render_template('portfolio/add_stock_to_portfolio.html', 
+                             portfolio=portfolio_obj,
+                             page_title="Legg til aksje")
+                             
+    except Exception as e:
+        logger.error(f"Critical error in add_stock_to_portfolio: {e}")
+        flash('En teknisk feil oppstod. Prøv igjen senere.', 'error')
+        return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/portfolio/<int:id>/remove/<int:stock_id>', methods=['POST'])
 @access_required

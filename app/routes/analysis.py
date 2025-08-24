@@ -403,61 +403,63 @@ def technical():
 @analysis.route('/warren-buffett', methods=['GET', 'POST'])
 @access_required
 def warren_buffett():
-    """Warren Buffett analysis with real market data"""
-    ticker = request.args.get('ticker') or request.form.get('ticker')
-
-    if ticker and request.method in ['GET', 'POST']:
-        ticker = ticker.strip().upper()
-        analysis_data = None
-        try:
-            from ..services.buffett_analyzer import BuffettAnalyzer
-            analysis_data = BuffettAnalyzer.analyze_stock(ticker)
-        except Exception as analyzer_error:
-            logger.warning(f"BuffettAnalyzer failed for {ticker}: {analyzer_error}")
-            analysis_data = None
-
-        # If no real analysis data available, show error instead of fake data
-        if not analysis_data or not isinstance(analysis_data, dict):
-            # Return demo analysis instead of error
-            try:
-                analysis_data = {
-                    'ticker': ticker,
-                    'company_name': f"Company Analysis for {ticker}",
-                    'buffett_score': 72.5,
-                    'intrinsic_value': 250.0,
-                    'current_price': 185.20,
-                    'margin_of_safety': 25.9,
-                    'criteria_met': ['Strong competitive moat', 'Consistent earnings growth', 'High return on equity'],
-                    'criteria_failed': ['High debt levels'],
-                    'recommendation': {
-                        'action': 'BUY',
-                        'reasoning': f"Strong fundamentals indicate {ticker} is undervalued"
-                    },
-                    'metrics': {
-                        'pe_ratio': 15.2,
-                        'pb_ratio': 1.8,
-                        'roe': 18.5,
-                        'debt_to_equity': 0.4,
-                        'profit_margin': 12.5,
-                        'revenue_growth': 8.2,
-                        'debt_ratio': 25.0
-                    }
-                }
-            except Exception as e:
-                logger.error(f"Error creating demo analysis for {ticker}: {e}")
-                return render_template('analysis/warren_buffett.html',
-                                     ticker=ticker,
-                                     analysis=None,
-                                     error_message=f"Kunne ikke laste Warren Buffett-analyse for {ticker}")
-        
-        # Return analysis with data
-        return render_template('analysis/warren_buffett.html',
-                             analysis=analysis_data,
-                             ticker=ticker)
-
-    # Show selection page with real stock data
+    """Warren Buffett analysis with enhanced error handling"""
     try:
-        from ..services.data_service import DataService
+        # Get ticker from either query parameters or form data
+        ticker = request.args.get('ticker') or request.form.get('ticker')
+        
+        if ticker:
+            # Normalize ticker
+            ticker = ticker.strip().upper()
+            
+            # Basic validation
+            if not ticker.replace('.', '').replace('-', '').isalnum():
+                flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
+                return redirect(url_for('analysis.warren_buffett'))
+                
+            # Import and validate BuffettAnalyzer
+            try:
+                from ..services.buffett_analyzer import BuffettAnalyzer
+                if not hasattr(BuffettAnalyzer, 'analyze_stock'):
+                    raise ImportError('BuffettAnalyzer mangler analyze_stock metode')
+            except ImportError as e:
+                logger.error(f"Failed to import BuffettAnalyzer: {e}")
+                return render_template('error.html',
+                                    title="Systemfeil",
+                                    message="Buffett-analyse er midlertidig utilgjengelig. Prøv igjen senere.")
+                                    
+            # Perform analysis
+            try:
+                analysis_data = BuffettAnalyzer.analyze_stock(ticker)
+                
+                # Validate analysis result
+                if not analysis_data:
+                    return render_template('analysis/warren_buffett.html',
+                                        ticker=ticker,
+                                        error_message=f"Kunne ikke analysere {ticker}. Prøv et annet symbol.")
+                
+                # Validate required fields
+                required_fields = ['buffett_score', 'metrics', 'recommendation']
+                if not all(field in analysis_data for field in required_fields):
+                    logger.error(f"Missing required fields in analysis for {ticker}")
+                    return render_template('analysis/warren_buffett.html',
+                                        ticker=ticker,
+                                        error_message="Ufullstendig analyse. Prøv igjen senere.")
+                
+                # Return successful analysis
+                return render_template('analysis/warren_buffett.html',
+                                    analysis=analysis_data,
+                                    ticker=ticker)
+                                    
+            except Exception as e:
+                logger.error(f"Error analyzing {ticker}: {e}")
+                return render_template('analysis/warren_buffett.html',
+                                    ticker=ticker,
+                                    error_message=f"En feil oppsto under analyse av {ticker}")
+
+        # Show selection page with popular stocks
+        try:
+            from ..services.data_service import DataService
         
         # Get real Norwegian stocks
         oslo_stocks = {}
@@ -507,15 +509,33 @@ def warren_buffett():
                 logger.warning(f"Error getting data for {ticker}: {e}")
 
         return render_template('analysis/warren_buffett.html',
-                              oslo_stocks=oslo_stocks,
-                              global_stocks=global_stocks,
-                              analysis=None)
+                              oslo_stocks={
+                                  'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
+                                  'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'},
+                                  'MOWI.OL': {'name': 'Mowi ASA', 'sector': 'Sjømat'},
+                                  'TEL.OL': {'name': 'Telenor ASA', 'sector': 'Telekom'},
+                                  'NHY.OL': {'name': 'Norsk Hydro ASA', 'sector': 'Materialer'},
+                                  'YAR.OL': {'name': 'Yara International ASA', 'sector': 'Materialer'},
+                                  'ORK.OL': {'name': 'Orkla ASA', 'sector': 'Forbruksvarer'}
+                              },
+                              global_stocks={
+                                  'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
+                                  'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'},
+                                  'GOOGL': {'name': 'Alphabet Inc.', 'sector': 'Teknologi'},
+                                  'BRK-B': {'name': 'Berkshire Hathaway', 'sector': 'Finans'},
+                                  'JNJ': {'name': 'Johnson & Johnson', 'sector': 'Helse'},
+                                  'PG': {'name': 'Procter & Gamble', 'sector': 'Forbruksvarer'},
+                                  'KO': {'name': 'The Coca-Cola Company', 'sector': 'Forbruksvarer'}
+                              },
+                              analysis=None,
+                              title="Warren Buffett Analyse",
+                              description="Analyser aksjer med Warren Buffetts investeringsprinsipper")
     except Exception as e:
         logger.error(f"Error loading Buffett selection page: {e}")
-        flash('Kunne ikke laste aksjeoversikt. Prøv igjen senere.', 'error')
         return render_template('analysis/warren_buffett.html',
                               oslo_stocks={},
                               global_stocks={},
+                              error_message="Kunne ikke laste aksjeoversikt. Prøv igjen senere.",
                               analysis=None)
 
 @analysis.route('/market-overview')
@@ -676,13 +696,14 @@ def sentiment():
         flash('En feil oppstod under analysen. Vennligst prøv igjen senere.', 'error')
         return render_template('error.html',
                            error="Sentiment-analyse er midlertidig utilgjengelig. Prøv igjen senere.")
-                # Enhanced error handling - try real data first, fallback if necessary
-                current_app.logger.info(f"Processing sentiment analysis for symbol: {selected_symbol}")
-                
-                # First attempt: Try to get real sentiment data
-                real_sentiment_data = None
-                try:
-                    from ..services.api_service import FinnhubAPI
+
+# Enhanced error handling - try real data first, fallback if necessary
+current_app.logger.info(f"Processing sentiment analysis for symbol: {selected_symbol}")
+
+# First attempt: Try to get real sentiment data
+real_sentiment_data = None
+try:
+    from ..services.api_service import FinnhubAPI
                     finnhub_api = FinnhubAPI()
                     real_sentiment_data = finnhub_api.get_sentiment(selected_symbol)
                     if real_sentiment_data and isinstance(real_sentiment_data, dict):

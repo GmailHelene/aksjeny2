@@ -1,18 +1,7 @@
 /* Ultimate Contrast Fix - Final Override for All Text Visibility Issues */
 
 /* Global text visibility rules */
-.bg-dark, .bg-dark *, .card-header.bg-dark, .card-header.bg-dark * {
-    color: #ffffff !important;
-}
-
-.bg-primary, .bg-primary *, .card-header.bg-primary, .card-header.bg-primary * {
-    color: #ffffff !important;
-}
-
-/* Card header span elements with dark backgrounds */
-.card-header span {
-    color: #ffffff !important;
-}
+/* Card header styles moved to card-header-override.css */
 
 /* Navigation menu fixes */
 .dropdown-header {
@@ -23,10 +12,7 @@
     color: #adb5bd !important;
 }
 
-/* Card header text should be visible */
-.card-header h5, .card-header h6, .card-header span, .card-header .small {
-    color: inherit !important;
-}
+/* Card header styles moved to card-header-override.css */
 
 /* Override any problematic Bootstrap variables */
 .text-primary {

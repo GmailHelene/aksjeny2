@@ -26,6 +26,9 @@ def create_database():
             Notification, PriceAlert, NotificationSettings, 
             AIModel, PredictionLog
         )
+        from app.models.achievements import (
+            Achievement, UserAchievement, UserStats
+        )
         
         print("Creating database tables...")
         db.create_all()

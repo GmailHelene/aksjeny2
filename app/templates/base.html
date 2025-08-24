@@ -11,6 +11,7 @@
     <link href="{{ url_for('static', filename='css/comprehensive-fixes.css') }}?v=20250822" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}?v=20250822" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/master-styling-fixes.css') }}?v=20250823" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/card-header-override.css') }}?v=20250823" rel="stylesheet">
     
     <!-- Simple navbar styling -->
     <style>
@@ -217,33 +218,7 @@
         }
     }
     
-    /* Enhanced text contrast fixes */
-    .card-header h5,
-    .card-header .bi {
-        color: #ffffff !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Fix gray submenu headers - make them white */
-    .card-header {
-        background-color: #ffffff !important;
-        border-bottom: 1px solid #dee2e6;
-        color: #212529 !important;
-    }
-    
-    .card-header h5,
-    .card-header h6,
-    .card-header .btn,
-    .card-header a {
-        color: #212529 !important;
-    }
-    
-    .card-header.bg-success,
-    .card-header.bg-success h5,
-    .card-header.bg-success h6 {
-        background-color: #198754 !important;
-        color: #ffffff !important;
-    }
+    /* Text styling moved to card-header-override.css */
     
     .badge.bg-success {
         background: linear-gradient(135deg, #28a745, #20c997) !important;
@@ -976,69 +951,13 @@
     <!-- Achievement Tracking System -->
     {% if current_user.is_authenticated %}
     <script>
-    // Global achievement tracking function
-    window.trackAchievement = function(type, increment = 1) {
-        fetch('/achievements/api/update_stat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                type: type,
-                increment: increment
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.new_achievements.length > 0) {
-                // Show achievement notifications
-                data.new_achievements.forEach(achievement => {
-                    showAchievementNotification(achievement);
-                });
-            }
-        })
-        .catch(error => console.error('Achievement tracking error:', error));
-    };
-    
-    // Achievement notification function
-    function showAchievementNotification(achievement) {
-        // Create toast notification
-        const toast = document.createElement('div');
-        toast.className = 'toast achievement-toast';
-        toast.innerHTML = `
-            <div class="toast-header bg-warning">
-                <i class="bi bi-trophy-fill text-dark me-2"></i>
-                <strong class="me-auto">Ny oppnåelse!</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                <div class="d-flex align-items-center">
-                    <i class="bi ${achievement.icon} text-${achievement.badge_color} me-2" style="font-size: 1.5rem;"></i>
-                    <div>
-                        <strong>${achievement.name}</strong><br>
-                        <small>${achievement.description}</small><br>
-                        <span class="badge bg-${achievement.badge_color}">+${achievement.points} poeng</span>
-                    </div>
-                </div>
-            </div>
-        `;
+        // Make achievementTracking.trackAchievement available globally
+        window.trackAchievement = achievementTracking.trackAchievement.bind(achievementTracking);
         
-        // Add to page and show
-        document.body.appendChild(toast);
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        // Remove after shown
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
-    }
-    
-    // Track page visits for analytics
-    if (window.location.pathname.includes('/analysis/')) {
-        trackAchievement('page_visits');
-    }
+        // Track page visits for analytics
+        if (window.location.pathname.includes('/analysis/')) {
+            window.trackAchievement('page_visits');
+        }
     </script>
     {% endif %}
     

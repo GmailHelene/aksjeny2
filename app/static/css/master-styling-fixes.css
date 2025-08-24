@@ -47,16 +47,7 @@
     background-image: none !important;
 }
 
-/* 3. Remove .card-header .bi white color rules that cause visibility issues */
-.card-header .bi {
-    color: inherit !important;
-    text-shadow: none !important;
-}
-
-.card-header i {
-    color: inherit !important;
-    text-shadow: none !important;
-}
+/* Card header styles moved to card-header-override.css */
 
 /* 4. Fix button active background rule */
 .btn-check:checked+.btn, 
@@ -80,28 +71,7 @@
     color: inherit !important;
 }
 
-/* 7. Ensure all card headers have consistent styling */
-.card-header h6,
-.card-header span,
-.card-header .small {
-    color: #ffffff !important;
-}
-
-/* 8. Market card headers specific fixes */
-.market-card-oslo .card-header,
-.market-card-global .card-header,
-.market-card-crypto .card-header,
-.market-card-currency .card-header {
-    background: #222222 !important;
-    background-color: #222222 !important;
-    background-image: none !important;
-    color: #ffffff !important;
-}
-
-/* 9. Ensure text contrast is maintained */
-.card-header * {
-    color: #ffffff !important;
-}
+/* Card header styles moved to card-header-override.css */
 
 /* 10. Currency page header styling to match crypto page */
 .currency-header h1,
@@ -122,9 +92,4 @@
     background-image: none !important;
 }
 
-/* 13. Ensure card headers with border-0 class still get solid background */
-.card-header.border-0 {
-    background: #222222 !important;
-    background-color: #222222 !important;
-    color: #ffffff !important;
-}
+/* Card header styles moved to card-header-override.css */

@@ -76,55 +76,108 @@ def get_progress():
 @access_required
 def update_stat():
     """Update user stat and check for new achievements"""
-    data = request.json
+    # Check if user is authenticated
+    if not current_user.is_authenticated:
+        return jsonify({
+            'success': False,
+            'error': 'Please log in to track achievements',
+            'demo_mode': True
+        }), 401
+    
+    # Parse input data
+    try:
+        data = request.json
+    except Exception as e:
+        return jsonify({
+            'success': False, 
+            'error': 'Invalid JSON data'
+        }), 400
+        
     stat_type = data.get('type')
     increment = data.get('increment', 1)
     
     if not stat_type:
-        return jsonify({'success': False, 'error': 'Missing stat type'})
+        return jsonify({
+            'success': False, 
+            'error': 'Missing stat type'
+        }), 400
     
-    # Get or create user stats
-    user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
-    if not user_stats:
-        user_stats = UserStats(user_id=current_user.id)
-        db.session.add(user_stats)
-        db.session.flush()
+    # Get or create user stats in a transaction
+    try:
+        user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+        if not user_stats:
+            user_stats = UserStats(user_id=current_user.id)
+            db.session.add(user_stats)
+            db.session.flush()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': 'Database error while accessing user stats'
+        }), 500
     
-    # Update the appropriate stat
-    if stat_type == 'favorites':
-        user_stats.favorites_added += increment
-        new_value = user_stats.favorites_added
-    elif stat_type == 'stocks_analyzed':
-        user_stats.stocks_analyzed += increment
-        new_value = user_stats.stocks_analyzed
-    elif stat_type == 'portfolios':
-        user_stats.portfolios_created += increment
-        new_value = user_stats.portfolios_created
-    elif stat_type == 'forum_posts':
-        user_stats.forum_posts += increment
-        new_value = user_stats.forum_posts
-    elif stat_type == 'login':
-        user_stats.update_consecutive_logins()
-        new_value = user_stats.consecutive_login_days
-        stat_type = 'consecutive_logins'  # For achievement checking
-    else:
-        return jsonify({'success': False, 'error': 'Unknown stat type'})
-    
-    db.session.commit()
-    
-    # Check for new achievements
-    new_achievements = check_user_achievements(current_user.id, stat_type, new_value)
-    
-    return jsonify({
-        'success': True,
-        'new_achievements': [{
-            'name': ach.name,
-            'description': ach.description,
-            'icon': ach.icon,
-            'badge_color': ach.badge_color,
-            'points': ach.points
-        } for ach in new_achievements]
-    })
+    # Update the appropriate stat in a try block
+    try:
+        # Update the appropriate stat
+        if stat_type == 'favorites':
+            user_stats.favorites_added += increment
+            new_value = user_stats.favorites_added
+        elif stat_type == 'stocks_analyzed':
+            user_stats.stocks_analyzed += increment
+            new_value = user_stats.stocks_analyzed
+        elif stat_type == 'portfolios':
+            user_stats.portfolios_created += increment
+            new_value = user_stats.portfolios_created
+        elif stat_type == 'forum_posts':
+            user_stats.forum_posts += increment
+            new_value = user_stats.forum_posts
+        elif stat_type == 'login':
+            user_stats.update_consecutive_logins()
+            new_value = user_stats.consecutive_login_days
+            stat_type = 'consecutive_logins'  # For achievement checking
+        else:
+            return jsonify({
+                'success': False, 
+                'error': 'Unknown stat type'
+            }), 400
+        
+        # Commit changes
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'error': 'Database error while updating stats'
+            }), 500
+        
+        # Check for new achievements
+        try:
+            new_achievements = check_user_achievements(current_user.id, stat_type, new_value)
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': 'Error checking achievements'
+            }), 500
+        
+        # Return success with any new achievements
+        return jsonify({
+            'success': True,
+            'new_achievements': [{
+                'name': ach.name,
+                'description': ach.description,
+                'icon': ach.icon,
+                'badge_color': ach.badge_color,
+                'points': ach.points
+            } for ach in new_achievements] if new_achievements else []
+        })
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error while updating stats'
+        }), 500
 
 @achievements_bp.route('/init')
 def init_achievements():

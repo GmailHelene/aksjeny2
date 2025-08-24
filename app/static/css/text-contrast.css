@@ -168,37 +168,7 @@
     border: 0 !important;
 }
 
-.card-header {
-    padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x);
-    margin-bottom: 0;
-    /* Remove Bootstrap's default card header color - removed problematic color: inherit !important */
-    background-color: var(--bs-card-cap-bg);
-    border-bottom: var(--bs-card-border-width) solid rgb(105 48 48 / 18%);
-}
-
-/* Specific overrides for card headers with colored backgrounds */
-.card-header.bg-dark {
-    color: #ffffff !important;
-    background-color: #343a40 !important;
-}
-
-.card-header.bg-success {
-    color: #ffffff !important;
-    background-color: #198754 !important;
-}
-
-.card-header.bg-gradient {
-    background-color: #1e5ed0!important;
-}
-
-/* text-white inherit rule removed per requirements */
-
-/* Override for any h5, span, i elements in card headers */
-.card-header h5,
-.card-header span,
-.card-header i {
-    color: #333 !important; /* Changed from 'inherit' to specific dark color */
-}
+/* Card header styles moved to card-header-override.css */
 
 /* Fix for small.text-muted to be white on dark backgrounds */
 .bg-dark small.text-muted,
