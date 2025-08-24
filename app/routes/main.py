@@ -468,36 +468,36 @@ def index():
                     'total_gain': 0,
                     'total_gain_percent': 0,
                     'portfolio_count': 0
-            }
-            
-            # Get recent activities
-            activities = []
-            
-            # Get market data
-            market_data = {
-                'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8},
-                'usd_nok': {'rate': 10.85, 'change': 0.12},
-                'btc': {'price': 43210, 'change': 888, 'change_percent': 2.1},
-                'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-                'market_open': is_oslo_bors_open(),
-                'last_update': datetime.now().isoformat()
-            }
-            
-            # Get user stats
-            user_stats = {
-                'portfolios': 0,
-                'watchlist_items': 0,
-                'alerts': 0,
-                'total_trades': 0
-            }
-            
-            return render_template('index.html',
-                                 investments=investments,
-                                 activities=activities,
-                                 market_data=market_data,
-                                 user_stats=user_stats,
-                                 recommendations=[])
-                                 
+                }
+                
+                # Get recent activities
+                activities = []
+                
+                # Get market data
+                market_data = {
+                    'osebx': {'value': 1234.5, 'change': 9.8, 'change_percent': 0.8},
+                    'usd_nok': {'rate': 10.85, 'change': 0.12},
+                    'btc': {'price': 43210, 'change': 888, 'change_percent': 2.1},
+                    'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
+                    'market_open': is_oslo_bors_open(),
+                    'last_update': datetime.now().isoformat()
+                }
+                
+                # Get user stats
+                user_stats = {
+                    'portfolios': 0,
+                    'watchlist_items': 0,
+                    'alerts': 0,
+                    'total_trades': 0
+                }
+                
+                return render_template('index.html',
+                                     investments=investments,
+                                     activities=activities,
+                                     market_data=market_data,
+                                     user_stats=user_stats,
+                                     recommendations=[])
+                                     
             except Exception as e:
                 logger.error(f"Error in authenticated dashboard: {e}")
                 # Fallback for authenticated users
@@ -508,29 +508,29 @@ def index():
             'total_invested': 0,
             'total_value': 0,
             'total_gain': 0,
-        'total_gain_percent': 0,
-        'portfolio_count': 0
-    }
-    activities = []
-    portfolio_performance = {
-        'best_performing': None,
-        'worst_performing': None,
-        'recent_transactions': []
-    }
-    market_data = {
-        'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
-        'usd_nok': {'rate': 0, 'change': 0},
-        'btc': {'price': 0, 'change': 0, 'change_percent': 0},
-        'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
-        'market_open': is_oslo_bors_open(),
-        'last_update': datetime.now().isoformat()
-    }
-    recommendations = []
-    user_stats = {
-        'portfolios': 0,
-        'watchlist_items': 0,
-        'recent_activities': []
-    }
+            'total_gain_percent': 0,
+            'portfolio_count': 0
+        }
+        activities = []
+        portfolio_performance = {
+            'best_performing': None,
+            'worst_performing': None,
+            'recent_transactions': []
+        }
+        market_data = {
+            'osebx': {'value': 0, 'change': 0, 'change_percent': 0},
+            'usd_nok': {'rate': 0, 'change': 0},
+            'btc': {'price': 0, 'change': 0, 'change_percent': 0},
+            'sp500': {'value': 4567.89, 'change': 18.5, 'change_percent': 0.8},
+            'market_open': is_oslo_bors_open(),
+            'last_update': datetime.now().isoformat()
+        }
+        recommendations = []
+        user_stats = {
+            'portfolios': 0,
+            'watchlist_items': 0,
+            'recent_activities': []
+        }
 
     try:
         if current_user.is_authenticated:
@@ -783,6 +783,12 @@ def index():
                                 market_data=market_data,
                                 recommendations=recommendations,
                                 user_stats=user_stats)
+    
+    except Exception as e:
+        logger.error(f"Error in authenticated user dashboard: {e}")
+        # Fallback for authenticated users
+        if current_user.is_authenticated:
+            return render_template('index.html')
             
         # For non-authenticated users, show public homepage with market data
         try:
