@@ -651,7 +651,7 @@ def warren_buffett():
                         continue
             except Exception as e:
                 logger.warning(f"Error getting stock data: {e}")
-                continue
+                pass
 
         # Use fallback data if needed
         if not oslo_stocks:

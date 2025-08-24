@@ -1,9 +1,9 @@
 
 1. Critical Page Fixes:
-- [x? må sjekkes ] Fix /stocks/compare - not showing proper template/functionality
-- [ x] Fix CSS rules removals (card-header related)
-- [x ] Fix JavaScript errors on /analysis/screener
-- [x ] Fix currency overview volume and signal display
+- [? må sjekkes ] Fix /stocks/compare - not showing proper template/functionality
+- [ ] Fix CSS rules removals (card-header related)
+- [] Fix JavaScript errors on /analysis/screener
+- [ ] Fix currency overview volume and signal display
 - [ ] Fix favorite button success/error message issue (stocks list currency og crypto sidene)
 
 2. 500 Errors:
