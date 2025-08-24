@@ -112,6 +112,8 @@ Kryptovaluta
                                                                     {% endif %}
                                                                     <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" onclick="toggleFavorite('{{ ticker }}', this)">
                                                                         <i class="bi bi-star"></i>
+                                                                        <!-- Ensure data-ticker is present for JS -->
+                                                                    </button>
                                                                     </button>
                                                                 <!-- Patch: ensure color contrast and favorite button logic -->
                                                             </div>
@@ -129,34 +131,7 @@ Kryptovaluta
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Favorite button functionality
-    document.querySelectorAll('.btn-star-favorite').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const ticker = this.dataset.ticker;
-            try {
-                const response = await fetch('/stocks/api/favorites/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                
-                if (response.ok) {
-                    this.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    this.classList.remove('btn-outline-warning');
-                    this.classList.add('btn-warning');
-                    showToast('Lagt til i favoritter!', 'success');
-                } else {
-                    throw new Error('Failed to add to favorites');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Kunne ikke legge til i favoritter', 'error');
-            }
-        });
-    });
+    // Favorite button logic is now handled by window.toggleFavorite from portfolio-actions-enhanced.js
     
     // External buy button functionality for crypto
     document.querySelectorAll('.external-buy-btn').forEach(btn => {

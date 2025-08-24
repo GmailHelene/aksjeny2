@@ -72,7 +72,7 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <small class="text-muted">{{ data.get('volume', 'N/A') }}</small>
+                                                <small class="text-muted">{{ (data.get('volume', 0)|float)|round(0)|int }}</small>
                                             </td>
                                             <td>
                                                 <small class="text-muted">
@@ -81,12 +81,13 @@
                                                 </small>
                                             </td>
                                             <td>
-                                                {% if data.get('change_percent', 0) > 0.1 %}
-                                                <span class="badge bg-success">STYRKET</span>
-                                                {% elif data.get('change_percent', 0) < -0.1 %}
-                                                <span class="badge bg-danger">SVEKKET</span>
+                                                {% set change_pct = (data.get('change_percent', 0)|float if data.get('change_percent') is not none else 0) %}
+                                                {% if change_pct > 0.1 %}
+                                                    <span class="badge bg-success">STYRKET</span>
+                                                {% elif change_pct < -0.1 %}
+                                                    <span class="badge bg-danger">SVEKKET</span>
                                                 {% else %}
-                                                <span class="badge bg-secondary">STABIL</span>
+                                                    <span class="badge bg-secondary">STABIL</span>
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -102,6 +103,8 @@
                                                         </button>
                                                         <button class="btn btn-sm btn-outline-warning btn-star-favorite text-white" style="background: #007bff; border: none;" title="Legg til favoritt" onclick="toggleFavorite('{{ symbol }}', this)">
                                                             <i class="bi bi-star"></i>
+                                                            <!-- Ensure data-ticker is present for JS -->
+                                                        </button>
                                                         </button>
                                                     <!-- Patch: ensure color contrast and favorite button logic -->
                                                 </div>
@@ -224,38 +227,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Favorite button functionality
-    document.querySelectorAll('.btn-star-favorite').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const ticker = this.dataset.ticker;
-            try {
-                // Get CSRF token from meta tag
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-                
-                const response = await fetch('/stocks/api/favorites/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                
-                if (response.ok) {
-                    this.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    this.classList.remove('btn-outline-warning');
-                    this.classList.add('btn-warning');
-                    showToast('Lagt til i favoritter!', 'success');
-                } else {
-                    throw new Error('Failed to add to favorites');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Kunne ikke legge til i favoritter', 'error');
-            }
-        });
-    });
+    // Favorite button logic is now handled by window.toggleFavorite from portfolio-actions-enhanced.js
     
     // External buy button functionality - redirect to external broker
     document.querySelectorAll('.external-buy-btn').forEach(btn => {
