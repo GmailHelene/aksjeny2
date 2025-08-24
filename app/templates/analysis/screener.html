@@ -313,8 +313,34 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Make sure Bootstrap and its dependencies are loaded -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+<!-- Load our custom screener JS -->
 <script src="{{ url_for('static', filename='js/screener.js') }}"></script>
+
 <script>
+// Ensure Bootstrap is available
+if (typeof bootstrap === 'undefined') {
+    console.error('Bootstrap JS is not loaded. Some features may not work.');
+}
+
+// Initialize tooltips and popovers
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Initialize all popovers
+    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function(popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
+});
+
 // Filter display names mapping
 const filterDisplayNames = {
     'cap_mega': 'Mega Cap (>$200B)',
@@ -370,33 +396,70 @@ function getFilterDisplayName(filterKey) {
 function selectPreset(preset) {
     if (!preset) return;
     
-    // Clear all checkboxes first
-    document.querySelectorAll('input[name="filters"]').forEach(cb => cb.checked = false);
-    
-    // Get preset screens data from the server  
-    const presetScreens = {{ preset_screens|tojson|safe }};
-    
-    // Select the correct filters for this preset
-    if (presetScreens && presetScreens[preset]) {
-        const filters = presetScreens[preset];
-        filters.forEach(filterKey => {
-            const checkbox = document.querySelector(`input[name="filters"][value="${filterKey}"]`);
-            if (checkbox) {
-                checkbox.checked = true;
+    try {
+        // Clear all checkboxes first
+        document.querySelectorAll('input[name="filters"]').forEach(cb => cb.checked = false);
+        
+        // Get preset screens data from the server  
+        const presetScreens = {{ preset_screens|tojson|safe }};
+        
+        if (!presetScreens) {
+            console.error('Preset screens data not available');
+            showToast('Kunne ikke laste preset-data', 'error');
+            return;
+        }
+        
+        // Select the correct filters for this preset
+        if (presetScreens[preset]) {
+            const filters = presetScreens[preset];
+            let appliedFilters = 0;
+            
+            filters.forEach(filterKey => {
+                const checkbox = document.querySelector(`input[name="filters"][value="${filterKey}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    appliedFilters++;
+                } else {
+                    console.warn(`Filter not found: ${filterKey}`);
+                }
+            });
+            
+            if (appliedFilters === 0) {
+                showToast('Ingen filtere funnet for dette presetet', 'warning');
+                return;
             }
-        });
+        } else {
+            showToast('Ugyldig preset valgt', 'error');
+            return;
+        }
+        
+        // Show loading indicator
+        const btn = document.querySelector('button[type="submit"]');
+        if (!btn) {
+            console.error('Submit button not found');
+            return;
+        }
+        
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Laster preset...';
+        btn.disabled = true;
+        
+        // Auto-submit form after brief delay
+        setTimeout(() => {
+            const form = document.querySelector('form');
+            if (form) {
+                form.submit();
+            } else {
+                console.error('Form not found');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast('Teknisk feil ved lasting av preset', 'error');
+            }
+        }, 500);
+    } catch (error) {
+        console.error('Error in selectPreset:', error);
+        showToast('Teknisk feil ved valg av preset', 'error');
     }
-    
-    // Show loading indicator
-    const btn = document.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Laster preset...';
-    btn.disabled = true;
-    
-    // Auto-submit form after brief delay
-    setTimeout(() => {
-        document.querySelector('form').submit();
-    }, 500);
 }
 
 function exportResults() {
@@ -492,105 +555,258 @@ function selectPreset(presetName) {
 }
 
 function clearFilters() {
-    // Clear preset selection
-    document.querySelector('select[name="preset"]').value = '';
-    
-    // Clear all checkboxes
-    document.querySelectorAll('input[name="filters"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-}
-
-function addToWatchlist(ticker, event) {
-    // Prevent any default button action
-    event?.preventDefault();
-    
-    // Get the button element
-    const btn = event?.target?.closest('button') || document.querySelector(`button[onclick*="${ticker}"]`);
-    if (!btn) return;
-    
-    // Disable button and show loading state
-    btn.disabled = true;
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
-    
-    // AJAX call to add to watchlist
-    fetch('/stocks/api/favorites/add', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        },
-        body: JSON.stringify({ 
-            symbol: ticker,
-            source: 'screener'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success message
-            btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-            btn.classList.replace('btn-outline-success', 'btn-success');
-            btn.title = 'Lagt til i favoritter';
-            showToast(`${ticker} lagt til i favoritter`, 'success');
-        } else {
-            // Show error and restore button
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
-            showToast(data.message || 'Kunne ikke legge til i favoritter', 'error');
+    try {
+        // Clear preset selection
+        const presetSelect = document.querySelector('select[name="preset"]');
+        if (presetSelect) {
+            presetSelect.value = '';
         }
-    })
-    .catch(error => {
-        console.error('Error adding to watchlist:', error);
-        // Restore button state
-        btn.innerHTML = originalContent;
-        btn.disabled = false;
-        showToast('Teknisk feil ved tillegg til favoritter', 'error');
-    });
+        
+        // Clear all checkboxes
+        document.querySelectorAll('input[name="filters"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Clear any applied styling classes
+        document.querySelectorAll('.filter-applied').forEach(el => {
+            el.classList.remove('filter-applied');
+        });
+        
+        // Reset any custom inputs
+        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(input => {
+            if (input.name.startsWith('custom_')) {
+                input.value = '';
+            }
+        });
+        
+        // Show feedback
+        showToast('Alle filtere nullstilt', 'info');
+        
+        // Optional: Auto-submit to refresh results
+        const shouldAutoSubmit = document.querySelector('input[name="auto_submit"]')?.checked;
+        if (shouldAutoSubmit) {
+            document.querySelector('form')?.submit();
+        }
+    } catch (error) {
+        console.error('Error clearing filters:', error);
+        showToast('Feil ved nullstilling av filtere', 'error');
+    }
 }
 
-// Add toast function if not already defined in base template
+async function addToWatchlist(ticker, event) {
+    try {
+        // Prevent any default button action and event bubbling
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        // Input validation
+        if (!ticker || typeof ticker !== 'string') {
+            console.error('Invalid ticker:', ticker);
+            showToast('Ugyldig ticker-symbol', 'error');
+            return;
+        }
+        
+        // Get the button element with fallbacks
+        const btn = event?.target?.closest('button') || 
+                   document.querySelector(`button[onclick*="${ticker}"]`) ||
+                   document.querySelector(`button[data-ticker="${ticker}"]`);
+                   
+        if (!btn) {
+            console.error('Button not found for ticker:', ticker);
+            showToast('Teknisk feil: Knapp ikke funnet', 'error');
+            return;
+        }
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!csrfToken) {
+            console.error('CSRF token not found');
+            showToast('Sikkerhetsfeil: Mangler CSRF token', 'error');
+            return;
+        }
+        
+        // Save original button state
+        const originalContent = btn.innerHTML;
+        const originalDisabled = btn.disabled;
+        
+        // Update button to loading state
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        
+        try {
+            // Make API call
+            const response = await fetch('/stocks/api/favorites/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ 
+                    symbol: ticker,
+                    source: 'screener'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success UI
+                btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                btn.classList.remove('btn-outline-success');
+                btn.classList.add('btn-success');
+                btn.title = 'Lagt til i favoritter';
+                btn.setAttribute('data-favorited', 'true');
+                showToast(`${ticker} lagt til i favoritter`, 'success');
+                
+                // Update any matching buttons for the same ticker
+                document.querySelectorAll(`button[data-ticker="${ticker}"]`).forEach(otherBtn => {
+                    if (otherBtn !== btn) {
+                        otherBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                        otherBtn.classList.remove('btn-outline-success');
+                        otherBtn.classList.add('btn-success');
+                        otherBtn.title = 'Lagt til i favoritter';
+                        otherBtn.setAttribute('data-favorited', 'true');
+                    }
+                });
+            } else {
+                throw new Error(data.message || 'Unknown error');
+            }
+        } catch (error) {
+            console.error('Error adding to watchlist:', error);
+            
+            // Restore button state
+            btn.innerHTML = originalContent;
+            btn.disabled = originalDisabled;
+            
+            // Show error with specific message if available
+            const errorMessage = error.message && error.message !== 'Unknown error'
+                ? error.message
+                : 'Kunne ikke legge til i favoritter';
+            showToast(errorMessage, 'error');
+        }
+    } catch (error) {
+        console.error('Critical error in addToWatchlist:', error);
+        showToast('Kritisk feil ved tillegg til favoritter', 'error');
+    }
+}
+
+// Enhanced toast notification system
 if (typeof showToast !== 'function') {
-    function showToast(message, type = 'info') {
-        // Create toast container if it doesn't exist
+    const toastQueue = [];
+    let isShowingToast = false;
+    
+    function showToast(message, type = 'info', duration = 3000) {
+        if (!message) {
+            console.warn('Toast message is required');
+            return;
+        }
+        
+        // Validate type
+        const validTypes = ['info', 'success', 'warning', 'error', 'danger'];
+        if (!validTypes.includes(type)) {
+            console.warn(`Invalid toast type: ${type}. Defaulting to 'info'`);
+            type = 'info';
+        }
+        
+        // Map 'error' to bootstrap's 'danger' class
+        const bsClass = type === 'error' ? 'danger' : type;
+        
+        // Create toast container if needed
         let container = document.querySelector('.toast-container');
         if (!container) {
             container = document.createElement('div');
             container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            container.style.zIndex = '1050';
             document.body.appendChild(container);
+        }
+        
+        // Queue management function
+        function showNextToast() {
+            if (toastQueue.length === 0) {
+                isShowingToast = false;
+                return;
+            }
+            
+            isShowingToast = true;
+            const { toastEl, duration } = toastQueue.shift();
+            
+            try {
+                if (typeof bootstrap === 'undefined') {
+                    console.error('Bootstrap is not loaded');
+                    toastEl.remove();
+                    showNextToast();
+                    return;
+                }
+                
+                container.appendChild(toastEl);
+                
+                const toast = new bootstrap.Toast(toastEl, {
+                    animation: true,
+                    autohide: true,
+                    delay: duration
+                });
+                
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                    showNextToast();
+                });
+                
+                toast.show();
+            } catch (error) {
+                console.error('Error showing toast:', error);
+                toastEl.remove();
+                showNextToast();
+            }
         }
         
         // Create toast element
         const toastEl = document.createElement('div');
-        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastEl.className = `toast align-items-center text-white bg-${bsClass} border-0`;
         toastEl.setAttribute('role', 'alert');
         toastEl.setAttribute('aria-live', 'assertive');
         toastEl.setAttribute('aria-atomic', 'true');
         
+        // Add icons based on type
+        const icon = type === 'success' ? 'bi-check-circle' :
+                    type === 'error' || type === 'danger' ? 'bi-exclamation-triangle' :
+                    type === 'warning' ? 'bi-exclamation-circle' :
+                    'bi-info-circle';
+                    
         toastEl.innerHTML = `
             <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <div class="toast-body">
+                    <i class="bi ${icon} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                        data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
         
-        container.appendChild(toastEl);
+        // Queue the toast
+        toastQueue.push({ toastEl, duration });
         
-        // Initialize and show toast
-        const toast = new bootstrap.Toast(toastEl, {
-            animation: true,
-            autohide: true,
-            delay: 3000
-        });
-        
-        toast.show();
-        
-        // Remove toast element after it's hidden
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
-        });
+        // Show toast if none is currently showing
+        if (!isShowingToast) {
+            showNextToast();
+        }
     }
+    
+    // Expose queue clear function
+    window.clearToasts = function() {
+        const container = document.querySelector('.toast-container');
+        if (container) {
+            container.innerHTML = '';
+        }
+        toastQueue.length = 0;
+        isShowingToast = false;
+    };
 }
 </script>
 {% endblock %}

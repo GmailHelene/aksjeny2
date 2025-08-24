@@ -131,7 +131,12 @@
                                 </td>
                                 <td>
                                     <small class="text-muted">
-                                        {{ "{:,.0f}".format(data.get('volume', 0)|int) if data.get('volume') else '0' }}
+                                        {% set vol = data.get('volume', '0M') %}
+                                        {% if vol|string and 'M' in vol|string %}
+                                            {{ vol }}
+                                        {% else %}
+                                            {{ "{:.1f}M".format(vol|float / 1000000) if vol and vol != '0M' else '0M' }}
+                                        {% endif %}
                                     </small>
                                 </td>
                                 <td>
@@ -141,9 +146,29 @@
                                     <span class="text-danger">{{ "{:.4f}".format(data.get('low', 0)|float) if data.get('low') is not none else '0.0000' }}</span>
                                 </td>
                                 <td>
-                                    <span class="badge {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}">
-                                        {{ data.signal }}
-                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {% if data.signal == 'BUY' %}
+                                                <i class="fas fa-arrow-up me-1"></i>
+                                            {% elif data.signal == 'SELL' %}
+                                                <i class="fas fa-arrow-down me-1"></i>
+                                            {% else %}
+                                                <i class="fas fa-minus me-1"></i>
+                                            {% endif %}
+                                            {{ data.signal }}
+                                        </span>
+                                        {% if data.get('signal_confidence') %}
+                                            <div class="progress" style="width: 60px; height: 6px;" title="Signal styrke: {{ data.signal_confidence }}%">
+                                                <div class="progress-bar {% if data.signal == 'BUY' %}bg-success{% elif data.signal == 'SELL' %}bg-danger{% else %}bg-warning{% endif %}"
+                                                     role="progressbar"
+                                                     style="width: {{ data.signal_confidence }}%"
+                                                     aria-valuenow="{{ data.signal_confidence }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
