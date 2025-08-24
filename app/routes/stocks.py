@@ -27,110 +27,32 @@ def calculate_rsi(prices, periods=14):
         deltas = np.diff(prices)
         seed = deltas[:periods+1]
         up = seed[seed >= 0].sum()/periods
-        down = -seed[seed < 0].sum()/periods
-        rs = up/down
-        rsi = np.zeros_like(prices)
-        rsi[:periods] = 100. - 100./(1. + rs)
-
-        for i in range(periods, len(prices)):
-            delta = deltas[i - 1]
-            if delta > 0:
-                upval = delta
-                downval = 0.
-            else:
-                upval = 0.
-                downval = -delta
-
-            up = (up * (periods - 1) + upval) / periods
-            down = (down * (periods - 1) + downval) / periods
+        try:
+            deltas = np.diff(prices)
+            seed = deltas[:periods+1]
+            up = seed[seed >= 0].sum()/periods
+            down = -seed[seed < 0].sum()/periods
             rs = up/down
-            rsi[i] = 100. - 100./(1. + rs)
+            rsi = np.zeros_like(prices)
+            rsi[:periods] = 100. - 100./(1. + rs)
 
-        return float(rsi[-1])
-    except Exception:
-        return 50.0
-                                'volume': stock_info.get('regularMarketVolume', 0),
-                                'marketCap': stock_info.get('marketCap', 0),
-                                'pe_ratio': stock_info.get('trailingPE', 0),
-                                'eps': stock_info.get('trailingEps', 0),
-                                'sector': stock_info.get('sector', 'N/A'),
-                                'exchange': stock_info.get('exchange', 'N/A')
-                            }
-                        else:
-                            metrics[ticker] = {
-                                'name': stock_name,
-                                'price': closes[-1] if closes else 0,
-                                'change': 0,
-                                'volume': volumes_list[-1] if volumes_list else 0,
-                                'marketCap': 0,
-                                'pe_ratio': 0,
-                                'eps': 0,
-                                'sector': 'N/A',
-                                'exchange': 'N/A'
-                            }
-                except Exception as inner_e:
-                    logger.error(f"Inner error processing {ticker}: {inner_e}")
-                    continue
-            except Exception as e:
-                logger.error(f"Error processing {ticker}: {e}")
-                logger.debug(traceback.format_exc())
-                continue
-
-        # Calculate correlations and betas
-        if price_series:
-            tickers_list = list(price_series.keys())
-            ref_ticker = tickers_list[0] if tickers_list else None
-            for ticker in tickers_list:
-                correlations[ticker] = {}
-                for other in tickers_list:
-                    try:
-                        arr1 = np.array(price_series[ticker])
-                        arr2 = np.array(price_series[other])
-                        if len(arr1) == len(arr2) and len(arr1) > 1:
-                            corr = float(np.corrcoef(arr1, arr2)[0, 1])
-                        else:
-                            corr = 1.0 if ticker == other else 0.0
-                        correlations[ticker][other] = corr
-                    except Exception:
-                        correlations[ticker][other] = 0.0
-                # Beta calculation vs. reference ticker
-                if ref_ticker and ticker != ref_ticker:
-                    try:
-                        arr1 = np.array(price_series[ticker])
-                        arr2 = np.array(price_series[ref_ticker])
-                        if len(arr1) == len(arr2) and len(arr1) > 1:
-                            cov = np.cov(arr1, arr2)[0, 1]
-                            var = np.var(arr2)
-                            beta = float(cov / var) if var != 0 else 1.0
-                        else:
-                            beta = 1.0
-                        betas[ticker] = beta
-                    except Exception:
-                        betas[ticker] = 1.0
+            for i in range(periods, len(prices)):
+                delta = deltas[i - 1]
+                if delta > 0:
+                    upval = delta
+                    downval = 0.
                 else:
-                    betas[ticker] = 1.0
+                    upval = 0.
+                    downval = -delta
 
-        # If we have no valid data for any tickers, show an error
-        if not chart_data:
-            return render_template('stocks/compare.html',
-                                error_message="Ingen data tilgjengelig for de valgte aksjene. Sjekk at ticker-symbolene er riktige.",
-                                tickers=tickers)
+                up = (up * (periods - 1) + upval) / periods
+                down = (down * (periods - 1) + downval) / periods
+                rs = up/down
+                rsi[i] = 100. - 100./(1. + rs)
 
-        return render_template('stocks/compare.html',
-                             tickers=tickers,
-                             chart_data=chart_data,
-                             metrics=metrics,
-                             period=period,
-                             interval=interval,
-                             normalize=normalize,
-                             ticker_names=ticker_names,
-                             current_prices=current_prices,
-                             price_changes=price_changes,
-                             volatility=volatility,
-                             volumes=volumes,
-                             correlations=correlations,
-                             betas=betas,
-                             compare_periods=['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y'],
+            return float(rsi[-1])
+        except Exception:
+            return 50.0
                              compare_intervals=['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'])
 
     except Exception as e:
