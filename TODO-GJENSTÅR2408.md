@@ -1,3 +1,65 @@
+https://aksjeradar.trade/analysis/warren-buffett 500 error her enda
+-
+⚠️ Profil Utilgjengelig
+Beklager, det oppsto en feil ved lasting av profilsiden. Vennligst prøv igjen senere.
+Får denne beskjeden her.. /profile
+
+-
+
+Kunne ikke laste TradingView chart
+Vennligst prøv å laste siden på nytt
+står det her i alle seksjoner,ingen chart vises.. dette må fikses
+https://aksjeradar.trade/analysis/tradingview
+
+-
+
+https://aksjeradar.trade/norwegian-intel/government-impact
+Her får jeg beskjeden:  Denne siden fungerer ikke
+aksjeradar.trade viderekoblet deg for mange ganger.
+-
+Sentimentanalyse er midlertidig utilgjengelig. Prøv igjen senere.
+får jeg her:
+https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL
+
+-
+https://aksjeradar.trade/watchlist/
+Her er det build error
+BuildError
+werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'watchlist.index'. Did you mean 'watchlist_advanced.index' instead?
+
+Traceback (most recent call last)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1498, in __call__
+return self.wsgi_app(environ, start_response)
+File "/usr/local/lib/python3.10/site-packages/flask_socketio/__init__.py", line 43, in __call__
+return super(_SocketIOMiddleware, self).__call__(environ,
+File "/usr/local/lib/python3.10/site-packages/engineio/middleware.py", line 74, in __call__
+return self.wsgi_app(environ, start_response)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1476, in wsgi_app
+response = self.handle_exception(e)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+response = self.full_dispatch_request()
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+rv = self.handle_user_exception(e)
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+rv = self.dispatch_request()
+File "/usr/local/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+File "/app/app/utils/access_control.py", line 193, in decorated_function
+-
+https://aksjeradar.trade/stocks/list/oslo
+500 error både her og https://aksjeradar.trade/stocks/list/global 
+her også...
+-
+.navbar, .navbar-nav, .dropdown-menu, .navbar-brand, .nav-link, .dropdown-item {
+     color: #ffffff !important; 
+} MÅ Fjernes som regel (står i css filen som heter compre--noe)
+-
+" Oslo Børs" overskriften her https://aksjeradar.trade/stocks/prices ,og disse overskrifene på andre sider (mb h5 eller h6) har en regel som måfjernes/endres, da disse overskriftene er hvite på hvit bakgrunn...dettwe må fikses...
+
+
+
+----
+
 
 - [x] Step 1: Fix CSS rules removals (card-header related)
 - [x ] Step 2: Fix JavaScript errors on /analysis/screener

@@ -340,6 +340,7 @@ def register_blueprints(app):
         ('.routes.seo_content', 'seo_content', '/content'),
         ('.routes.portfolio_advanced', 'portfolio_advanced', '/portfolio-advanced'),
         ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
+        ('.professional_analytics', 'analytics_bp', '/analytics'),
         ('.routes.pricing', 'pricing', '/pricing'),
         ('.routes.news', 'news_bp', '/news'),
         ('.routes.health', 'health', '/health'),
