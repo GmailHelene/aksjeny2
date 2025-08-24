@@ -199,3 +199,28 @@
 .card-header i {
     color: #333 !important; /* Changed from 'inherit' to specific dark color */
 }
+
+/* Fix for small.text-muted to be white on dark backgrounds */
+.bg-dark small.text-muted,
+.bg-primary small.text-muted,
+.bg-secondary small.text-muted,
+.bg-success small.text-muted,
+.bg-danger small.text-muted,
+.bg-info small.text-muted,
+small.text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Remove transparent background from card headers */
+.card-header.bg-primary {
+    background-color: #007bff !important; /* Restore primary color instead of transparent */
+}
+
+/* Navbar fixes for dark background */
+.navbar-collapse {
+    background-color: #333333 !important;
+}
+
+.navbar-nav .dropdown-menu {
+    background-color: #333333 !important;
+}
