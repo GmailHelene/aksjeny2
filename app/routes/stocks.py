@@ -3,71 +3,12 @@ import pandas as pd
 import random
 import time
 import traceback
-import numpy as np
-import logging
-from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, Response
-from flask_login import current_user, login_required
-from ..extensions import csrf
-from ..services.data_service import DataService, YFINANCE_AVAILABLE, FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
-from ..services.analysis_service import AnalysisService
-from ..services.usage_tracker import usage_tracker 
-from ..utils.access_control import access_required, demo_access, subscription_required
-from ..models.favorites import Favorites
-from ..services.notification_service import NotificationService
-from ..utils.exchange_utils import get_exchange_url
-
-logger = logging.getLogger(__name__)
-
-def calculate_rsi(prices, periods=14):
-    """Calculate RSI for a price series"""
-    try:
-        deltas = np.diff(prices)
-        seed = deltas[:periods+1]
-        up = seed[seed >= 0].sum()/periods
-        down = -seed[seed < 0].sum()/periods
-        rs = up/down
-        rsi = np.zeros_like(prices)
-        rsi[:periods] = 100. - 100./(1. + rs)
-
-        for i in range(periods, len(prices)):
-            delta = deltas[i - 1]
-            if delta > 0:
-                upval = delta
-                downval = 0.
-            else:
-                upval = 0.
-                downval = -delta
-
-            up = (up * (periods - 1) + upval) / periods
-            down = (down * (periods - 1) + downval) / periods
-            rs = up/down
-            rsi[i] = 100. - 100./(1. + rs)
-
-        return float(rsi[-1])
-    except Exception:
-        return 50.0
-
-def calculate_macd(prices, fast=12, slow=26, signal=9):
-    """Calculate MACD for a price series"""
-    try:
-        exp1 = prices.ewm(span=fast, adjust=False).mean()
-        exp2 = prices.ewm(span=slow, adjust=False).mean()
-        macd = exp1 - exp2
-        signal_line = macd.ewm(span=signal, adjust=False).mean()
-        histogram = macd - signal_line
-        return {
-            'macd': float(macd.iloc[-1]),
-            'signal': float(signal_line.iloc[-1]),
-            'hist': float(histogram.iloc[-1])
-        }
-    except Exception:
-        return {'macd': 0.0, 'signal': 0.0, 'hist': 0.0}
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
 from flask import Response
 from flask_login import current_user, login_required
-from ..extensions import csrf
+from flask_wtf.csrf import exempt as csrf_exempt
 from datetime import datetime, timedelta
-from ..services.data_service import DataService, YFINANCE_AVAILABLE, FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
+from ..services.data_service import DataService, YFINANCE_AVAILABLE
 from ..services.analysis_service import AnalysisService
 from ..services.usage_tracker import usage_tracker
 from ..utils.access_control import access_required, demo_access, subscription_required
@@ -153,181 +94,59 @@ def list_oslo():
                                  market_status={'status': 'Ukjent'},
                                  error=True)
 
-@stocks.route('/compare')
-@stocks.route('/compare/')
-@demo_access
-def compare():
-    """Compare multiple stocks"""
+@stocks.route('/list/global')
+@subscription_required
+def global_list():
+    """Global stocks"""
     try:
-        # Support both 'symbols' and 'tickers' parameters for backward compatibility
-        symbols_param = request.args.get('symbols') or request.args.get('tickers')
-        symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
-
-        # Handle both comma-separated string and multiple parameters
-        if symbols_param and ',' in symbols_param:
-            tickers = [s.strip().upper() for s in symbols_param.split(',') if s.strip()]
+        # Get global stocks with guaranteed fallback
+        stocks_raw = DataService.get_global_stocks_overview() or DataService._get_guaranteed_global_data() or []
+        # Convert list to dict if needed
+        if isinstance(stocks_raw, list):
+            stocks_data = {s.get('symbol', s.get('ticker', f'GLOBAL_{i}')): s for i, s in enumerate(stocks_raw) if isinstance(s, dict)}
+        elif isinstance(stocks_raw, dict):
+            stocks_data = stocks_raw
         else:
-            tickers = [s.strip().upper() for s in symbols_list if s.strip()]
-
-        period = request.args.get('period', '6mo')
-        interval = request.args.get('interval', '1d')
-        normalize = request.args.get('normalize', '1') == '1'
+            stocks_data = {}
+        top_gainers = DataService.get_top_gainers('global') or []
+        top_losers = DataService.get_top_losers('global') or []
+        most_active = DataService.get_most_active('global') or []
+        insider_trades = DataService.get_insider_trades('global') or []
+        ai_recommendations = DataService.get_ai_recommendations('global') or []
         
-        # Remove empty strings and filter valid tickers (max 4)
-        tickers = [t for t in tickers if t][:4]
-        
-        if not tickers:
-            # Show empty form with demo tickers suggestion
-            return render_template('stocks/compare.html',
-                                demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
-            
-        import numpy as np
-        chart_data = {}
-        metrics = {}
-        price_series = {}
-        volume_series = {}
-        ticker_names = {}
-        current_prices = {}
-        price_changes = {}
-        volatility = {}
-        volumes = {}
-        correlations = {}
-        betas = {}
-
-        # Get historical data for each ticker
-        for ticker in tickers:
-            try:
-                try:
-                    history = DataService.get_historical_data(ticker, period=period, interval=interval)
-                    if not isinstance(history, pd.DataFrame) or history.empty:
-                        logger.warning(f"No historical data found for {ticker}")
-                        continue
-                    required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
-                    if not all(col in history.columns for col in required_columns):
-                        logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
-                        continue
-                    stock_info = DataService.get_stock_info(ticker)
-                    stock_name = stock_info.get('longName', ticker) if stock_info else ticker
-                    ticker_names[ticker] = stock_name
-                    ticker_data = []
-                    base_price = None
-                    closes = []
-                    volumes_list = []
-                    for date, row in history.iterrows():
-                        try:
-                            price = float(row['Close'])
-                            if normalize:
-                                if base_price is None:
-                                    base_price = price
-                                if base_price > 0:
-                                    price = ((price / base_price) - 1) * 100
-                                else:
-                                    try:
-                                        exp1 = prices.ewm(span=fast, adjust=False).mean()
-                                        exp2 = prices.ewm(span=slow, adjust=False).mean()
-                                        macd = exp1 - exp2
-                                        signal_line = macd.ewm(span=signal, adjust=False).mean()
-                                        histogram = macd - signal_line
-                                        return {
-                                            'macd': float(macd.iloc[-1]),
-                                            'signal': float(signal_line.iloc[-1]),
-                                            'hist': float(histogram.iloc[-1])
-                                        }
-                                    except Exception:
-                                        return {'macd': 0.0, 'signal': 0.0, 'hist': 0.0}
-                                'name': stock_name,
-                                'price': stock_info.get('regularMarketPrice', 0),
-                                'change': stock_info.get('regularMarketChangePercent', 0),
-                                'volume': stock_info.get('regularMarketVolume', 0),
-                                'marketCap': stock_info.get('marketCap', 0),
-                                'pe_ratio': stock_info.get('trailingPE', 0),
-                                'eps': stock_info.get('trailingEps', 0),
-                                'sector': stock_info.get('sector', 'N/A'),
-                                'exchange': stock_info.get('exchange', 'N/A')
-                            }
-                        else:
-                            metrics[ticker] = {
-                                'name': stock_name,
-                                'price': closes[-1] if closes else 0,
-                                'change': 0,
-                                'volume': volumes_list[-1] if volumes_list else 0,
-                                'marketCap': 0,
-                                'pe_ratio': 0,
-                                'eps': 0,
-                                'sector': 'N/A',
-                                'exchange': 'N/A'
-                            }
-                except Exception as inner_e:
-                    logger.error(f"Inner error processing {ticker}: {inner_e}")
-                    continue
-            except Exception as e:
-                logger.error(f"Error processing {ticker}: {e}")
-                logger.debug(traceback.format_exc())
-                continue
-
-        # Calculate correlations and betas
-        if price_series:
-            tickers_list = list(price_series.keys())
-            ref_ticker = tickers_list[0] if tickers_list else None
-            for ticker in tickers_list:
-                correlations[ticker] = {}
-                for other in tickers_list:
-                    try:
-                        arr1 = np.array(price_series[ticker])
-                        arr2 = np.array(price_series[other])
-                        if len(arr1) == len(arr2) and len(arr1) > 1:
-                            corr = float(np.corrcoef(arr1, arr2)[0, 1])
-                        else:
-                            corr = 1.0 if ticker == other else 0.0
-                        correlations[ticker][other] = corr
-                    except Exception:
-                        correlations[ticker][other] = 0.0
-                # Beta calculation vs. reference ticker
-                if ref_ticker and ticker != ref_ticker:
-                    try:
-                        arr1 = np.array(price_series[ticker])
-                        arr2 = np.array(price_series[ref_ticker])
-                        if len(arr1) == len(arr2) and len(arr1) > 1:
-                            cov = np.cov(arr1, arr2)[0, 1]
-                            var = np.var(arr2)
-                            beta = float(cov / var) if var != 0 else 1.0
-                        else:
-                            beta = 1.0
-                        betas[ticker] = beta
-                    except Exception:
-                        betas[ticker] = 1.0
-                else:
-                    betas[ticker] = 1.0
-
-        # If we have no valid data for any tickers, show an error
-        if not chart_data:
-            return render_template('stocks/compare.html',
-                                error_message="Ingen data tilgjengelig for de valgte aksjene. Sjekk at ticker-symbolene er riktige.",
-                                tickers=tickers)
-
-        return render_template('stocks/compare.html',
-                             tickers=tickers,
-                             chart_data=chart_data,
-                             metrics=metrics,
-                             period=period,
-                             interval=interval,
-                             normalize=normalize,
-                             ticker_names=ticker_names,
-                             current_prices=current_prices,
-                             price_changes=price_changes,
-                             volatility=volatility,
-                             volumes=volumes,
-                             correlations=correlations,
-                             betas=betas,
-                             compare_periods=['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y'],
-                             compare_intervals=['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d', '5d', '1wk', '1mo', '3mo'])
-
+        return render_template('stocks/global_dedicated.html',
+                             stocks_data=stocks_data,
+                             top_gainers=top_gainers,
+                             top_losers=top_losers,
+                             most_active=most_active,
+                             insider_trades=insider_trades,
+                             ai_recommendations=ai_recommendations,
+                             market='Globale aksjer',
+                             market_type='global',
+                             category='global')
     except Exception as e:
-        logger.error(f"Error in compare route: {e}")
-        logger.debug(traceback.format_exc())
-        return render_template('stocks/compare.html', 
-                             error_message="Det oppsto en feil ved sammenligning av aksjene. Prøv igjen senere.",
-                             demo_tickers=['EQNR.OL', 'DNB.OL', 'TEL.OL', 'MOWI.OL'])
+        current_app.logger.error(f"Error loading global stocks: {e}")
+        # Use guaranteed fallback data even on exception
+        try:
+            stocks_data = DataService._get_guaranteed_global_data() or {}
+            return render_template('stocks/global_dedicated.html',
+                                 stocks_data=stocks_data,
+                                 top_gainers=[],
+                                 top_losers=[],
+                                 most_active=[],
+                                 insider_trades=[],
+                                 ai_recommendations=[],
+                                 market='Globale aksjer',
+                                 market_type='global',
+                                 category='global')
+        except:
+            flash('Kunne ikke laste globale aksjer. Prøv igjen senere.', 'error')
+            return render_template('stocks/global_dedicated.html',
+                                 stocks_data={},
+                                 market='Globale aksjer',
+                                 market_type='global',
+                                 category='global',
+                                 error=True)
 
 @stocks.route('/list/crypto')
 @demo_access
@@ -377,34 +196,10 @@ def list_crypto():
 def list_index():
     """Main stock listing index page"""
     try:
-        # For authenticated users, prioritize real data
-        if current_user.is_authenticated:
-            current_app.logger.info("🔐 AUTHENTICATED USER: Getting REAL market data for main page")
-            try:
-                # Try to get real data first for authenticated users
-                oslo_raw = DataService.get_oslo_bors_overview()
-                global_raw = DataService.get_global_stocks_overview()
-                crypto_raw = DataService.get_crypto_overview()
-                
-                # If any real data exists, use it
-                if oslo_raw or global_raw or crypto_raw:
-                    current_app.logger.info("✅ REAL DATA: Using live market data for authenticated user")
-                else:
-                    current_app.logger.warning("⚠️ REAL DATA FAILED: Falling back to fallback data for authenticated user")
-                    oslo_raw = DataService._get_guaranteed_oslo_data() or []
-                    global_raw = DataService._get_guaranteed_global_data() or []
-                    crypto_raw = DataService._get_guaranteed_crypto_data() or []
-            except Exception as e:
-                current_app.logger.error(f"❌ REAL DATA ERROR for authenticated user: {e}")
-                oslo_raw = DataService._get_guaranteed_oslo_data() or []
-                global_raw = DataService._get_guaranteed_global_data() or []
-                crypto_raw = DataService._get_guaranteed_crypto_data() or []
-        else:
-            # For guest users, use fallback data directly
-            current_app.logger.info("👤 GUEST USER: Using fallback data for main page")
-            oslo_raw = DataService._get_guaranteed_oslo_data() or []
-            global_raw = DataService._get_guaranteed_global_data() or []
-            crypto_raw = DataService._get_guaranteed_crypto_data() or []
+        # Get combined market overview data
+        oslo_raw = DataService.get_oslo_bors_overview() or DataService._get_guaranteed_oslo_data() or []
+        global_raw = DataService.get_global_stocks_overview() or DataService._get_guaranteed_global_data() or []
+        crypto_raw = DataService.get_crypto_overview() or DataService._get_guaranteed_crypto_data() or []
 
         # Convert lists to dicts if needed
         def to_dict(raw, prefix):
@@ -432,37 +227,13 @@ def list_index():
             if global_count < 5:
                 popular_stocks[symbol] = data
                 global_count += 1
-        
-        # For authenticated users, try to get real market insights
-        if current_user.is_authenticated:
-            try:
-                top_gainers = DataService.get_top_gainers('global') or []
-                top_losers = DataService.get_top_losers('global') or []
-                most_active = DataService.get_most_active('global') or []
-                insider_trades = DataService.get_insider_trades('global') or []
-                ai_recommendations = DataService.get_ai_recommendations('global') or []
-            except:
-                # Fallback for authenticated users if real data fails
-                top_gainers = []
-                top_losers = []
-                most_active = []
-                insider_trades = []
-                ai_recommendations = []
-        else:
-            # Empty for guest users
-            top_gainers = []
-            top_losers = []
-            most_active = []
-            insider_trades = []
-            ai_recommendations = []
-        
         return render_template('stocks/main_overview.html',
                              stocks=popular_stocks,
-                             top_gainers=top_gainers,
-                             top_losers=top_losers,
-                             most_active=most_active,
-                             insider_trades=insider_trades,
-                             ai_recommendations=ai_recommendations,
+                             top_gainers=DataService.get_top_gainers('global') or [],
+                             top_losers=DataService.get_top_losers('global') or [],
+                             most_active=DataService.get_most_active('global') or [],
+                             insider_trades=DataService.get_insider_trades('global') or [],
+                             ai_recommendations=DataService.get_ai_recommendations('global') or [],
                              market='Populære aksjer',
                              market_type='index',
                              category='index')
@@ -525,103 +296,13 @@ def details(symbol):
     try:
         current_app.logger.info(f"Accessing details route for symbol: {symbol}")
         
-        # PRIORITY FIX: Always try to get real data first (for all users)
-        # CRITICAL: For authenticated users, use real data. For guests, use fallback.
-        current_app.logger.info(f"PRIORITY FIX: Fetching data for {symbol} - User authenticated: {current_user.is_authenticated}")
-        stock_info = None
+        # Get stock data from DataService with fallback
+        stock_info = DataService.get_stock_info(symbol)
         
-        try:
-            # For authenticated users, always try to get REAL data first
-            if current_user.is_authenticated:
-                current_app.logger.info(f"🔐 AUTHENTICATED USER: Getting REAL data for {symbol}")
-                try:
-                    stock_info = DataService.get_stock_info(symbol)
-                    if stock_info and 'data_source' not in stock_info:
-                        stock_info['data_source'] = 'REAL DATA SERVICE'
-                        current_app.logger.info(f"✅ REAL DATA: Retrieved live data for {symbol} - Price: {stock_info.get('last_price', 'N/A')}")
-                except Exception as e:
-                    current_app.logger.warning(f"⚠️ DataService failed for authenticated user {symbol}: {e}")
-                    stock_info = None
-            
-            # For guest users OR if real data failed, use fallback data
-            if not stock_info:
-                from ..services.data_service import FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
-                
-                if current_user.is_authenticated:
-                    current_app.logger.error(f"❌ FALLBACK: Real data failed for authenticated user, using fallback for {symbol}")
-                else:
-                    current_app.logger.info(f"👤 GUEST USER: Using fallback data for {symbol}")
-                
-                # Check if we have fallback data for this ticker
-                if symbol in FALLBACK_GLOBAL_DATA:
-                    fallback_data = FALLBACK_GLOBAL_DATA[symbol]
-                    current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'USD',
-                        'signal': fallback_data.get('signal', 'HOLD'),
-                        'rsi': fallback_data.get('rsi', 50.0),
-                        'data_source': 'FALLBACK DATA' if not current_user.is_authenticated else 'FALLBACK (REAL DATA FAILED)',
-                    }
-                elif symbol in FALLBACK_OSLO_DATA:
-                    fallback_data = FALLBACK_OSLO_DATA[symbol]
-                    current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'NOK',
-                    'signal': fallback_data.get('signal', 'HOLD'),
-                    'rsi': fallback_data.get('rsi', 50.0),
-                    'data_source': 'REAL FALLBACK DATA - PRIORITY FIX',
-                }
-        except Exception as e:
-            current_app.logger.error(f"PRIORITY FIX: Error accessing fallback data for {symbol}: {e}")
-        
-        # If no real fallback data available, use DataService
-        if not stock_info:
-            current_app.logger.info(f"PRIORITY FIX: No fallback data for {symbol}, using DataService")
-            stock_info = DataService.get_stock_info(symbol)
-            
-            # PRIORITY FIX: If DataService returns the problematic $100.00, override it
-            if stock_info and stock_info.get('regularMarketPrice') == 100.0:
-                current_app.logger.warning(f"PRIORITY FIX: DataService returned synthetic $100 for {symbol}, generating realistic data")
-                # Generate realistic price based on symbol
-                import hashlib
-                hash_value = int(hashlib.md5(symbol.encode()).hexdigest(), 16) % 1000
-                realistic_price = 50 + (hash_value % 300)  # Price between $50-$350
-                stock_info['regularMarketPrice'] = realistic_price
-                stock_info['last_price'] = realistic_price
-                stock_info['data_source'] = 'PRIORITY FIX - REALISTIC GENERATED'
-        
-        # Check if we have real data from the API or fallback
+        # Check if we have real data from the API
         if stock_info and isinstance(stock_info, dict) and stock_info.get('regularMarketPrice'):
             # Use real API data when available
-            current_app.logger.info(f"PRIORITY FIX: Using real data for {symbol}: ${stock_info.get('regularMarketPrice')}")
+            current_app.logger.info(f"Using real API data for {symbol}")
             current_price = stock_info.get('regularMarketPrice', stock_info.get('last_price', 0))
             
             # Ensure all the financial metrics exist in the real data
@@ -634,7 +315,7 @@ def details(symbol):
                     
         else:
             # Fallback to synthetic data when API is not available
-            current_app.logger.warning(f"No real data available for {symbol}, using synthetic data")
+            current_app.logger.warning(f"API data not available for {symbol}, using synthetic data")
             
             # Generate realistic consistent data based on symbol
             base_hash = hash(symbol) % 1000
@@ -878,13 +559,6 @@ def details(symbol):
         # Get ticker-specific AI recommendation
         ai_recommendations = DataService.get_ticker_specific_ai_recommendation(symbol)
 
-        # Debug: Print what we're passing to template
-        print(f"DEBUG: Passing to template for {symbol}:")
-        print(f"  template_stock_info volume: {template_stock_info.get('volume')}")
-        print(f"  template_stock_info marketCap: {template_stock_info.get('marketCap')}")
-        print(f"  template_stock_info longName: {template_stock_info.get('longName')}")
-        print(f"  Keys in template_stock_info: {list(template_stock_info.keys())}")
-
         # Return the stock details template with all data
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
@@ -908,42 +582,12 @@ def details(symbol):
         except:
             ai_recommendations = {'summary': 'Feil ved lasting av data - ingen AI-analyse tilgjengelig', 'recommendation': 'HOLD', 'confidence': 0}
         
-        # Create realistic fallback stock_info for error case to prevent "-" displays
-        error_fallback_stock_info = {
-            'symbol': symbol,
-            'longName': symbol,
-            'shortName': symbol[:20],
-            'regularMarketPrice': 100.0,
-            'regularMarketChange': 0.0,
-            'regularMarketChangePercent': 0.0,
-            'volume': 1000000,  # 1M volume fallback
-            'regularMarketVolume': 1000000,
-            'marketCap': 10000000000,  # 10B NOK fallback market cap
-            'currency': 'NOK' if symbol.endswith('.OL') else 'USD',
-            'sector': 'Technology' if not symbol.endswith('.OL') else 'Industrials',
-            'dayHigh': 103.0,
-            'dayLow': 97.0,
-            'trailingPE': 15.0,
-            'trailingEps': 6.67,
-            'dividendYield': 0.03,
-            'forwardPE': 14.25,
-            'bookValue': 70.0,
-            'priceToBook': 1.43,
-            'industry': 'Technology',
-            'fiftyTwoWeekHigh': 115.0,
-            'fiftyTwoWeekLow': 85.0,
-            'returnOnEquity': 0.15,
-            'returnOnAssets': 0.08,
-            'grossMargins': 0.35,
-            'enterpriseToEbitda': 12.5,
-        }
-        
         # Return the details template with error rather than redirect
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
                              ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
-                             stock={'symbol': symbol, 'name': symbol, 'price': 100.0, 'volume': 1000000, 'market_cap': 10000000000},
-                             stock_info=error_fallback_stock_info,
+                             stock={'symbol': symbol, 'name': symbol},
+                             stock_info={'symbol': symbol, 'longName': symbol},
                              technical_data={
                                  'rsi': 50.0,
                                  'macd': 0.0,
@@ -969,122 +613,70 @@ def details(symbol):
 @stocks.route('/search')
 @demo_access  
 def search():
-    """Search stocks page with robust search functionality"""
+    """Search stocks page"""
     query = request.args.get('q', '').strip()
     
     if not query:
         return render_template('stocks/search.html', results=[], query='')
     
     try:
-        current_app.logger.info(f"Search request for: '{query}'")
+        # Get search results from DataService
+        results = DataService.search_stocks(query)
         
-        # Use the imported fallback data
-        # Create our own comprehensive search logic
+        # Add realistic demo data for symbols that might not have full data
         all_results = []
-        query_lower = query.lower()
-        query_upper = query.upper()
-        
-        # Enhanced name mappings
-        name_mappings = {
-            'tesla': 'TSLA',
-            'dnb': 'DNB.OL', 
-            'apple': 'AAPL',
-            'microsoft': 'MSFT',
-            'equinor': 'EQNR.OL',
-            'telenor': 'TEL.OL',
-            'amazon': 'AMZN',
-            'google': 'GOOGL',
-            'alphabet': 'GOOGL',
-            'meta': 'META',
-            'facebook': 'META',
-            'nvidia': 'NVDA'
-        }
-        
-        # Check direct name mapping first
-        mapped_ticker = name_mappings.get(query_lower)
-        if mapped_ticker:
-            current_app.logger.info(f"Found direct mapping: '{query}' -> '{mapped_ticker}'")
-            if mapped_ticker in FALLBACK_GLOBAL_DATA:
-                data = FALLBACK_GLOBAL_DATA[mapped_ticker]
-                all_results.append({
-                    'ticker': mapped_ticker,
-                    'symbol': mapped_ticker,
-                    'name': data['name'],
-                    'market': 'NASDAQ',
-                    'price': f"{data['last_price']:.2f} USD",
-                    'change_percent': round(data['change_percent'], 2),
-                    'sector': data['sector']
-                })
-            elif mapped_ticker in FALLBACK_OSLO_DATA:
-                data = FALLBACK_OSLO_DATA[mapped_ticker]
-                all_results.append({
-                    'ticker': mapped_ticker,
-                    'symbol': mapped_ticker,
-                    'name': data['name'],
-                    'market': 'Oslo Børs',
-                    'price': f"{data['last_price']:.2f} NOK",
-                    'change_percent': round(data['change_percent'], 2),
-                    'sector': data['sector']
-                })
-        
-        # Search through Oslo Børs data
-        for ticker, data in FALLBACK_OSLO_DATA.items():
-            # Skip if already found via mapping
-            if any(r['ticker'] == ticker for r in all_results):
-                continue
+        for result in results[:10]:  # Limit to 10 results
+            symbol = result.get('symbol', result.get('ticker', ''))
+            if symbol:
+                # Generate realistic data based on symbol
+                base_hash = abs(hash(symbol)) % 1000
                 
-            if (query_upper in ticker or 
-                query_lower in data['name'].lower() or
-                query_upper in data['name'].upper()):
-                all_results.append({
-                    'ticker': ticker,
-                    'symbol': ticker,
-                    'name': data['name'],
-                    'market': 'Oslo Børs',
-                    'price': f"{data['last_price']:.2f} NOK",
-                    'change_percent': round(data['change_percent'], 2),
-                    'sector': data['sector']
-                })
-        
-        # Search through global data
-        for ticker, data in FALLBACK_GLOBAL_DATA.items():
-            # Skip if already found via mapping
-            if any(r['ticker'] == ticker for r in all_results):
-                continue
+                # Determine market based on symbol
+                if symbol.endswith('.OL'):
+                    market = 'Oslo Børs'
+                    base_price = 50 + (base_hash % 450)  # 50-500 NOK
+                    currency = 'NOK'
+                elif symbol in ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX']:
+                    market = 'NASDAQ'
+                    base_price = 100 + (base_hash % 400)  # 100-500 USD
+                    currency = 'USD'
+                elif symbol in ['BTC-USD', 'ETH-USD', 'BNB-USD']:
+                    market = 'Krypto'
+                    base_price = 1000 + (base_hash % 49000)  # Crypto prices
+                    currency = 'USD'
+                else:
+                    market = 'NYSE'
+                    base_price = 20 + (base_hash % 280)  # 20-300 USD
+                    currency = 'USD'
                 
-            if (query_upper in ticker or 
-                query_lower in data['name'].lower() or
-                query_upper in data['name'].upper()):
+                # Generate price change
+                change_percent = -5.0 + (base_hash % 100) / 10.0  # -5% to +5%
+                
                 all_results.append({
-                    'ticker': ticker,
-                    'symbol': ticker,
-                    'name': data['name'],
-                    'market': 'NASDAQ',
-                    'price': f"{data['last_price']:.2f} USD",
-                    'change_percent': round(data['change_percent'], 2),
-                    'sector': data['sector']
+                    'symbol': symbol,
+                    'name': result.get('name', symbol),
+                    'market': market,
+                    'price': f"{base_price:.2f} {currency}",
+                    'change_percent': round(change_percent, 2),
+                    'category': result.get('category', 'other')
                 })
-        
-        # Limit results to top 20
+
+        # Limit results
         all_results = all_results[:20]
-        
-        current_app.logger.info(f"Search for '{query}' found {len(all_results)} results")
         
         return render_template('stocks/search.html', 
                              results=all_results, 
                              query=query)
         
     except Exception as e:
-        current_app.logger.error(f"Error in stock search for '{query}': {e}")
-        import traceback
-        current_app.logger.error(f"Stack trace: {traceback.format_exc()}")
+        current_app.logger.error(f"Error in stock search: {e}")
         return render_template('stocks/search.html', 
                              results=[], 
                              query=query,
                              error="Søket kunne ikke fullføres. Prøv igjen senere.")
 
 @stocks.route('/api/search')
-@demo_access
+@access_required
 def api_search():
     """API endpoint for stock search"""
     query = request.args.get('q', '').strip()
@@ -1108,7 +700,7 @@ def api_search():
         }), 500
 
 @stocks.route('/api/stocks/search')
-@demo_access
+@access_required
 def api_stocks_search():
     """API endpoint for stock search - alternate URL"""
     query = request.args.get('q', '').strip()
@@ -1177,8 +769,8 @@ def api_stocks_search():
         }), 500
 
 @stocks.route('/api/favorites/add', methods=['POST'])
-@csrf.exempt
-@access_required
+@csrf_exempt
+@demo_access
 def add_to_favorites():
     """Add stock to favorites"""
     try:
@@ -1250,7 +842,7 @@ def add_to_favorites():
         }), 200
 
 @stocks.route('/api/favorites/remove', methods=['POST'])
-@access_required
+@demo_access
 def remove_from_favorites():
     """Remove stock from favorites"""
     try:
@@ -1327,95 +919,76 @@ def toggle_favorite(symbol):
         # Check current status
         is_favorited = Favorites.is_favorite(current_user.id, symbol)
         
-        # Set up the response
-        response = None
-        
-        # Use a transaction to ensure consistency
-        from ..extensions import db
-        from ..models.activity import UserActivity
-        
-        try:
-            if is_favorited:
-                # Remove from favorites
-                removed = Favorites.remove_favorite(current_user.id, symbol)
-                if removed:
+        if is_favorited:
+            # Remove from favorites
+            removed = Favorites.remove_favorite(current_user.id, symbol)
+            if removed:
+                try:
                     current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
+                    from ..models.activity import UserActivity
                     UserActivity.create_activity(
                         user_id=current_user.id,
                         activity_type='favorite_remove',
                         description=f'Fjernet {symbol} fra favoritter'
                     )
+                    from ..extensions import db
                     db.session.commit()
-                    response = {
-                        'success': True,
-                        'favorited': False,
-                        'message': f'{symbol} fjernet fra favoritter'
-                    }
-                else:
-                    response = {'success': False, 'error': 'Failed to remove from favorites'}, 500
+                except Exception as e:
+                    logger.error(f"Error updating activity: {e}")
+                
+                return jsonify({
+                    'success': True,
+                    'favorited': False,
+                    'message': f'{symbol} fjernet fra favoritter'
+                })
             else:
-                # Add to favorites
-                # Get stock info for name
-                stock_info = DataService.get_stock_info(symbol)
-                name = stock_info.get('name', symbol) if stock_info else symbol
-                
-                # Determine exchange based on symbol
-                if symbol.endswith('.OL'):
-                    exchange = 'Oslo Børs'
-                elif '-USD' in symbol or any(crypto in symbol for crypto in ['BTC', 'ETH']):
-                    exchange = 'Crypto'
-                elif '/' in symbol:
-                    exchange = 'Currency'
-                elif len(symbol) <= 5 and symbol.isupper():
-                    exchange = 'NASDAQ/NYSE'
-                else:
-                    exchange = 'Global'
-                
-                favorite = Favorites.add_favorite(
-                    user_id=current_user.id,
-                    symbol=symbol,
-                    name=name,
-                    exchange=exchange
-                )
-                
+                return jsonify({'error': 'Failed to remove from favorites'}), 500
+        else:
+            # Add to favorites
+            # Get stock info for name
+            stock_info = DataService.get_stock_info(symbol)
+            name = stock_info.get('name', symbol) if stock_info else symbol
+            exchange = 'Oslo Børs' if symbol.endswith('.OL') else 'Global'
+            
+            favorite = Favorites.add_favorite(
+                user_id=current_user.id,
+                symbol=symbol,
+                name=name,
+                exchange=exchange
+            )
+            
+            try:
                 current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
+                from ..models.activity import UserActivity
                 UserActivity.create_activity(
                     user_id=current_user.id,
                     activity_type='favorite_add',
                     description=f'La til {symbol} i favoritter',
                     details=f'Navn: {name}, Exchange: {exchange}'
                 )
+                from ..extensions import db
                 db.session.commit()
-                response = {
-                    'success': True,
-                    'favorited': True,
-                    'message': f'{symbol} lagt til i favoritter'
-                }
-        except Exception as e:
-            db.session.rollback()
-            logger.error(f"Database error while toggling favorite: {e}")
-            response = {
-                'success': False,
-                'error': 'database_error',
-                'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
-            }, 500
+            except Exception as e:
+                logger.error(f"Error updating activity: {e}")
+            
+            return jsonify({
+                'success': True,
+                'favorited': True,
+                'message': f'{symbol} lagt til i favoritter'
+            })
+            
     except Exception as e:
         logger.error(f"Error toggling favorite: {e}")
-        response = {
-            'success': False,
-            'error': 'temporary_unavailable',
-            'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
-        }, 500
-    
-    # Return the prepared response
-    if isinstance(response, tuple):
-        return jsonify(response[0]), response[1]
-    return jsonify(response)
+        return jsonify({
+            'success': False, 
+            'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.',
+            'error': 'temporary_unavailable'
+        }), 200
 
 @stocks.route('/compare')
 @demo_access
 def compare():
-    """Stock comparison page - Enhanced with better error handling"""
+    """Stock comparison page - Simplified and robust version"""
     try:
         # Support both 'symbols' and 'tickers' parameters for backward compatibility
         symbols_param = request.args.get('symbols') or request.args.get('tickers')
@@ -1425,242 +998,125 @@ def compare():
         if symbols_param and ',' in symbols_param:
             symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()]
         else:
-            symbols = [s.strip().upper() for s in symbols_list if s.strip()]
+            symbols = symbols_list
 
         period = request.args.get('period', '6mo')
         interval = request.args.get('interval', '1d')
         normalize = request.args.get('normalize', '1') == '1'
 
-        # Remove empty strings and filter valid symbols (max 4)
-        symbols = [s for s in symbols if s][:4]
+        # Remove empty strings and filter valid symbols
+        symbols = [s.strip().upper() for s in symbols if s.strip()][:4]  # Max 4 stocks
 
         logger.info(f"Stock comparison requested for symbols: {symbols}")
 
+        # Initialize empty data structures
+        template_data = {
+            'tickers': symbols,
+            'stocks': [],
+            'ticker_names': {},
+            'comparison_data': {},
+            'current_prices': {},
+            'price_changes': {},
+            'volatility': {},
+            'volumes': {},
+            'correlations': {},
+            'betas': {},
+            'rsi': {},
+            'macd': {},
+            'bb': {},
+            'sma200': {},
+            'sma50': {},
+            'signals': {},
+            'chart_data': {},
+            'period': period,
+            'interval': interval,
+            'normalize': normalize
+        }
+
+        # If no symbols provided, show empty form
         if not symbols:
             logger.info("No symbols provided, showing empty comparison form")
-            # Default demo stocks
-            symbols = ['EQNR.OL', 'DNB.OL']
-            chart_data = {
-                'EQNR.OL': generate_demo_data('EQNR.OL', 180),
-                'DNB.OL': generate_demo_data('DNB.OL', 180)
+            return render_template('stocks/compare.html', **template_data)
+
+        # Try to get real data, but fallback to demo data on error
+        try:
+            historical_data = DataService.get_comparative_data(symbols, period=period, interval=interval)
+            if historical_data:
+                logger.info(f"Successfully fetched real data for {len(historical_data)} symbols")
+                # Process real data here if needed
+            else:
+                raise Exception("No real data available")
+        except Exception as e:
+            logger.warning(f"Failed to get real data: {e}, using demo data")
+            historical_data = {}
+
+        # Generate demo data for all symbols (either as fallback or primary)
+        for symbol in symbols:
+            # Get basic stock info
+            try:
+                info = DataService.get_stock_info(symbol)
+                template_data['ticker_names'][symbol] = info.get('name', symbol) if info else symbol
+            except:
+                template_data['ticker_names'][symbol] = symbol
+                
+            # Generate demo values
+            import random
+            base_price = 100.0 + (abs(hash(symbol)) % 500)
+            template_data['current_prices'][symbol] = round(base_price, 2)
+            template_data['price_changes'][symbol] = round(random.uniform(-15, 15), 2)
+            template_data['volatility'][symbol] = round(15.0 + (abs(hash(symbol)) % 20), 2)
+            template_data['volumes'][symbol] = 500000 + (abs(hash(symbol)) % 2000000)
+            template_data['betas'][symbol] = round(0.8 + (abs(hash(symbol)) % 8) / 10, 2)
+            template_data['rsi'][symbol] = 30 + (abs(hash(symbol)) % 40)
+            template_data['macd'][symbol] = {
+                'macd': round(random.uniform(-2, 2), 2), 
+                'signal': round(random.uniform(-1.5, 1.5), 2),
+                'histogram': round(random.uniform(-1, 1), 2)
             }
-            ticker_names = {'EQNR.OL': 'Equinor', 'DNB.OL': 'DNB Bank'}
-        else:
-            chart_data = {}
-            ticker_names = {}
-            
-            # Get data service instance
-            try:
-                data_service = DataService()
-            except Exception as e:
-                logger.error(f"Error initializing DataService: {e}")
-                data_service = None
+            template_data['bb'][symbol] = {
+                'upper': round(base_price * 1.1, 2), 
+                'lower': round(base_price * 0.9, 2), 
+                'middle': round(base_price, 2), 
+                'position': random.choice(['upper', 'middle', 'lower'])
+            }
+            template_data['sma200'][symbol] = round(random.uniform(-10, 10), 2)
+            template_data['sma50'][symbol] = round(random.uniform(-5, 8), 2)
+            template_data['signals'][symbol] = random.choice(['BUY', 'HOLD', 'SELL'])
 
-            # Process each symbol
-            for symbol in symbols:
-                try:
-                    # Get stock info and historical data
-                    if data_service:
-                        info = data_service.get_stock_info(symbol)
-                        hist_data = data_service.get_stock_data(symbol, period=period, interval=interval)
-                    else:
-                        info = None
-                        hist_data = None
-                        
-                    # Use demo data if no real data available
-                    if not info or not hist_data or hist_data.empty:
-                        chart_data[symbol] = generate_demo_data(symbol, 180)
-                        ticker_names[symbol] = symbol
-                    else:
-                        chart_data[symbol] = [
-                            {
-                                'date': idx.strftime('%Y-%m-%d'),
-                                'open': float(row.get('Open', 0)),
-                                'high': float(row.get('High', 0)),
-                                'low': float(row.get('Low', 0)),
-                                'close': float(row.get('Close', 0)),
-                                'volume': int(row.get('Volume', 0))
-                            }
-                            for idx, row in hist_data.iterrows()
-                        ]
-                        ticker_names[symbol] = info.get('name', symbol)
-                except Exception as e:
-                    logger.error(f"Error processing {symbol}: {e}")
-                    chart_data[symbol] = generate_demo_data(symbol, 180)
-                    ticker_names[symbol] = symbol
-
-        # Calculate metrics for each symbol
-        current_prices = {}
-        price_changes = {}
-        volatility = {}
-        volumes = {}
-        correlations = {}
-        betas = {}
-        rsi = {}
-        macd = {}
-        bb = {}
-        sma200 = {}
-        sma50 = {}
-        signals = {}
-
-        # Helper for correlation matrix
-        price_matrix = {}
-
-        for symbol in symbols:
-            try:
-                # Extract closing prices
-                closes = [day['close'] for day in chart_data[symbol]]
-                prices = pd.Series(closes)
-                volumes_data = [day['volume'] for day in chart_data[symbol]]
-
-                # Calculate basic metrics
-                current_prices[symbol] = prices.iloc[-1] if not prices.empty else 0
-                start_price = prices.iloc[0] if not prices.empty else 0
-                end_price = prices.iloc[-1] if not prices.empty else 0
-                price_changes[symbol] = ((end_price - start_price) / start_price * 100) if start_price > 0 else 0
-                
-                # Calculate technical indicators
-                rsi[symbol] = calculate_rsi(prices)
-                macd[symbol] = calculate_macd(prices)
-                bb[symbol] = calculate_bollinger_bands(prices)
-                sma200[symbol] = calculate_sma(prices, 200)
-                sma50[symbol] = calculate_sma(prices, 50)
-                signals[symbol] = generate_signals(
-                    end_price, rsi[symbol], macd[symbol], bb[symbol], sma200[symbol], sma50[symbol]
-                )
-                
-                # Calculate volatility
-                returns = prices.pct_change().dropna()
-                volatility[symbol] = returns.std() * (252 ** 0.5) * 100 if len(returns) > 0 else 0
-                
-                # Calculate volume metrics
-                volumes[symbol] = sum(volumes_data) / len(volumes_data) if volumes_data else 0
-                
-                # Store price series for correlation
-                price_matrix[symbol] = prices
-                
-                # Calculate beta relative to first stock
-                if symbol != symbols[0] and symbols[0] in price_matrix:
-                    returns1 = price_matrix[symbol].pct_change().dropna()
-                    returns0 = price_matrix[symbols[0]].pct_change().dropna()
-                    if len(returns0) > 0 and len(returns1) > 0:
-                        cov = returns1.cov(returns0)
-                        var = returns0.var()
-                        betas[symbol] = cov / var if var != 0 else 1.0
-                    else:
-                        betas[symbol] = 1.0
-                else:
-                    betas[symbol] = 1.0
-                    
-            except Exception as e:
-                logger.error(f"Error calculating metrics for {symbol}: {e}")
-                current_prices[symbol] = 0
-                price_changes[symbol] = 0
-                volatility[symbol] = 0
-                volumes[symbol] = 0
-                betas[symbol] = 1.0
-                rsi[symbol] = 50
-                macd[symbol] = {'macd': 0, 'signal': 0, 'hist': 0}
-                bb[symbol] = {'upper': 0, 'middle': 0, 'lower': 0, 'position': 'middle'}
-                sma200[symbol] = 0
-                sma50[symbol] = 0
-                signals[symbol] = 'HOLD'
-
-        # Calculate correlation matrix
-        correlations = {}
-        for symbol in symbols:
-            correlations[symbol] = {}
-            for other in symbols:
-                try:
-                    if symbol in price_matrix and other in price_matrix:
-                        corr = price_matrix[symbol].corr(price_matrix[other])
-                        correlations[symbol][other] = corr if not pd.isna(corr) else 1.0
-                    else:
-                        correlations[symbol][other] = 1.0
-                except Exception:
-                    correlations[symbol][other] = 1.0
-
-        # Add demo data generation function
-        def generate_demo_data(symbol, days=180):
-            """Generate sample stock data"""
+            # Generate simple chart data
+            chart_data = []
             from datetime import datetime, timedelta
+            current_date = datetime.now() - timedelta(days=30)
+            price = base_price
             
-            base_price = 150 if '.OL' in symbol else 300
-            trend = random.uniform(-0.2, 0.2)
-            volatility = 0.02
-            data = []
-            
-            end_date = datetime.now()
-            for i in range(days):
-                date = end_date - timedelta(days=days-i)
-                # Generate price with trend and random walk
-                if i == 0:
-                    close = base_price
-                else:
-                    close = data[-1]['close'] * (1 + trend/days + random.uniform(-volatility, volatility))
-                    
-                # Generate OHLC values around close
-                open_price = close * (1 + random.uniform(-0.01, 0.01))
-                high = max(open_price, close) * (1 + random.uniform(0, 0.01))
-                low = min(open_price, close) * (1 - random.uniform(0, 0.01))
-                volume = int(random.uniform(50000, 500000))
-                
-                data.append({
-                    'date': date.strftime('%Y-%m-%d'),
-                    'open': round(open_price, 2),
-                    'high': round(high, 2),
-                    'low': round(low, 2),
-                    'close': round(close, 2),
-                    'volume': volume
+            for i in range(30):
+                change = random.uniform(-0.03, 0.03)
+                price = max(10, price * (1 + change))
+                chart_data.append({
+                    'date': current_date.strftime('%Y-%m-%d'),
+                    'close': round(price, 2),
+                    'volume': random.randint(100000, 1000000)
                 })
+                current_date += timedelta(days=1)
             
-            return data
+            template_data['chart_data'][symbol] = chart_data
 
-        logger.info(f"Processed {len(symbols)} symbols successfully")
-
-        return render_template('stocks/compare.html', 
-                             tickers=symbols,
-                             ticker_names=ticker_names,
-                             current_prices=current_prices,
-                             price_changes=price_changes,
-                             volatility=volatility,
-                             volumes=volumes,
-                             correlations=correlations,
-                             betas=betas,
-                             rsi=rsi,
-                             macd=macd,
-                             bb=bb,
-                             sma200=sma200,
-                             sma50=sma50,
-                             signals=signals,
-                             chart_data=chart_data,
-                             period=period,
-                             interval=interval,
-                             normalize=normalize)
+        logger.info(f"Returning comparison page with data for {len(symbols)} symbols")
+        return render_template('stocks/compare.html', **template_data)
 
     except Exception as e:
-        logger.error(f"Critical error in stock comparison: {e}")
+        logger.error(f"Error in compare route: {str(e)}")
         import traceback
-        traceback.print_exc()
-        flash('Det oppstod en teknisk feil ved sammenligning av aksjer.', 'error')
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        # Return empty template with error message
         return render_template('stocks/compare.html', 
                              tickers=[], 
                              stocks=[], 
-                             ticker_names={},
                              comparison_data={},
-                             current_prices={},
-                             price_changes={},
-                             volatility={},
-                             volumes={},
-                             correlations={},
-                             betas={},
-                             rsi={},
-                             macd={},
-                             bb={},
-                             sma200={},
-                             sma50={},
-                             signals={},
-                             chart_data={})
+                             error_message="En feil oppstod ved sammenligning av aksjer. Prøv igjen.",
+                             period='6mo',
+                             interval='1d',
+                             normalize=True)
 
 
 # Helper route for demo data generation
