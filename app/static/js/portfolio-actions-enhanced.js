@@ -84,105 +84,30 @@ if (typeof PortfolioActionsManager === 'undefined') {
      */
     async toggleFavorite(ticker, button) {
         try {
-            // Check current status
-            const isFavorite = await this.checkFavoriteStatus(ticker);
-            
-            if (isFavorite) {
-                await this.removeFromFavorites(ticker, button);
+            button.disabled = true;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Oppdaterer...';
+
+            const response = await fetch(`/api/favorites/toggle/${ticker}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.updateFavoriteButtonState(button, data.favorited);
+                this.showNotification(data.message, 'success');
             } else {
-                await this.addToFavorites(ticker, button);
+                throw new Error(data.error || 'Failed to toggle favorite status');
             }
         } catch (error) {
             console.error('Error toggling favorite:', error);
             this.showNotification('Feil ved endring av favoritt-status', 'error');
-        }
-    }
-
-    /**
-     * Add stock to favorites
-     */
-    async addToFavorites(ticker, button) {
-        try {
-            button.disabled = true;
-            button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Legger til...';
-
-            // Determine exchange and name based on ticker format
-            let exchange = 'Unknown';
-            let name = ticker;
-            
-            if (ticker.includes('-USD') || ticker.includes('BTC') || ticker.includes('ETH')) {
-                exchange = 'Crypto';
-                name = ticker.replace('-USD', '');
-            } else if (ticker.includes('/')) {
-                exchange = 'Currency';
-                name = ticker;
-            } else if (ticker.includes('.OL')) {
-                exchange = 'Oslo Børs';
-                name = ticker.replace('.OL', '');
-            } else if (ticker.length <= 5 && /^[A-Z]+$/.test(ticker)) {
-                exchange = 'NASDAQ/NYSE';
-                name = ticker;
-            }
-
-            const response = await fetch('/stocks/api/favorites/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: JSON.stringify({ 
-                    symbol: ticker,
-                    name: name,
-                    exchange: exchange
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                this.updateFavoriteButton(button, true);
-                this.showNotification(`${ticker} lagt til i favoritter!`, 'success');
-            } else {
-                throw new Error(data.error || 'Failed to add to favorites');
-            }
-        } catch (error) {
-            console.error('Error adding to favorites:', error);
-            this.showNotification('Feil ved tillegging til favoritter', 'error');
-            this.updateFavoriteButton(button, false);
-        } finally {
-            button.disabled = false;
-        }
-    }
-
-    /**
-     * Remove stock from favorites
-     */
-    async removeFromFavorites(ticker, button) {
-        try {
-            button.disabled = true;
-            button.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Fjerner...';
-
-            const response = await fetch('/stocks/api/favorites/remove', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: JSON.stringify({ symbol: ticker })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                this.updateFavoriteButton(button, false);
-                this.showNotification(`${ticker} fjernet fra favoritter!`, 'success');
-            } else {
-                throw new Error(data.error || 'Failed to remove from favorites');
-            }
-        } catch (error) {
-            console.error('Error removing from favorites:', error);
-            this.showNotification('Feil ved fjerning fra favoritter', 'error');
-            this.updateFavoriteButton(button, true);
+            button.innerHTML = originalText;
         } finally {
             button.disabled = false;
         }

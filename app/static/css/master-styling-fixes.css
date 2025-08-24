@@ -60,7 +60,6 @@
 
 /* 4. Fix button active background rule */
 .btn-check:checked+.btn, 
-.btn.active, 
 .btn.show, 
 .btn:first-child:active, 
 :not(.btn-check)+.btn:active {
@@ -82,7 +81,6 @@
 }
 
 /* 7. Ensure all card headers have consistent styling */
-.card-header h5,
 .card-header h6,
 .card-header span,
 .card-header .small {

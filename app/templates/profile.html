@@ -8,9 +8,31 @@
         <div class="col-lg-8 mx-auto">
             <h1 class="mb-4">Min Profil</h1>
             
-            {% if error %}
+            {% if errors %}
             <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle"></i> Kunne ikke laste all profilinformasjon.
+                <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Noen data kunne ikke lastes</h4>
+                <p class="mb-0">Deler av profilinformasjonen er ikke tilgjengelig akkurat nå:</p>
+                <ul class="mb-0 mt-2">
+                    {% if 'subscription_check_failed' in errors %}
+                    <li>Abonnementsstatus kunne ikke verifiseres</li>
+                    {% endif %}
+                    {% if 'referral_stats_failed' in errors %}
+                    <li>Referral-statistikk er midlertidig utilgjengelig</li>
+                    {% endif %}
+                    {% if 'preferences_failed' in errors %}
+                    <li>Brukerpreferanser kunne ikke lastes</li>
+                    {% endif %}
+                    {% if 'favorites_failed' in errors %}
+                    <li>Favoritter kunne ikke lastes</li>
+                    {% endif %}
+                    {% if 'subscription_info_failed' in errors %}
+                    <li>Abonnementsdetaljer er utilgjengelige</li>
+                    {% endif %}
+                </ul>
+                <hr>
+                <p class="mb-0">
+                    <small>Prøv å laste siden på nytt eller kom tilbake senere.</small>
+                </p>
             </div>
             {% endif %}
             

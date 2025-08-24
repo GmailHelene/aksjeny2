@@ -240,7 +240,8 @@
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             <button class="btn btn-outline-success btn-sm" 
-                                                    onclick="addToWatchlist('{{ stock.get('ticker', 'N/A') }}')">
+                                                    onclick="addToWatchlist('{{ stock.get('ticker', 'N/A') }}', event)"
+                                                    title="Legg til i favoritter">
                                                 <i class="bi bi-heart"></i>
                                             </button>
                                         </div>
@@ -440,10 +441,40 @@ function saveAsWatchlist() {
         if (ticker) tickers.push(ticker);
     });
     
-    if (tickers.length === 0) return;
+    if (tickers.length === 0) {
+        showToast('Ingen aksjer å legge til watchlist', 'error');
+        return;
+    }
     
-    // Show modal or redirect to create watchlist with tickers
-    alert(`Vil opprette watchlist med ${tickers.length} aksjer: ${tickers.slice(0, 5).join(', ')}${tickers.length > 5 ? '...' : ''}`);
+    // Create watchlist with selected tickers
+    fetch('/watchlist/api/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            name: 'Screener Watchlist',
+            description: `Screener resultater fra ${new Date().toLocaleString()}`,
+            symbols: tickers
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Opprettet watchlist med ${tickers.length} aksjer`, 'success');
+            // Redirect to the new watchlist
+            if (data.watchlist_id) {
+                window.location.href = `/watchlist/${data.watchlist_id}`;
+            }
+        } else {
+            showToast(data.message || 'Kunne ikke opprette watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating watchlist:', error);
+        showToast('Teknisk feil ved opprettelse av watchlist', 'error');
+    });
 }
 
 function selectPreset(presetName) {
@@ -469,7 +500,19 @@ function clearFilters() {
     });
 }
 
-function addToWatchlist(ticker) {
+function addToWatchlist(ticker, event) {
+    // Prevent any default button action
+    event?.preventDefault();
+    
+    // Get the button element
+    const btn = event?.target?.closest('button') || document.querySelector(`button[onclick*="${ticker}"]`);
+    if (!btn) return;
+    
+    // Disable button and show loading state
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+    
     // AJAX call to add to watchlist
     fetch('/stocks/api/favorites/add', {
         method: 'POST',
@@ -477,21 +520,76 @@ function addToWatchlist(ticker) {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         },
-        body: JSON.stringify({ symbol: ticker })
+        body: JSON.stringify({ 
+            symbol: ticker,
+            source: 'screener'
+        })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             // Show success message
-            const btn = event.target.closest('button');
             btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
             btn.classList.replace('btn-outline-success', 'btn-success');
-            btn.disabled = true;
+            btn.title = 'Lagt til i favoritter';
+            showToast(`${ticker} lagt til i favoritter`, 'success');
+        } else {
+            // Show error and restore button
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            showToast(data.message || 'Kunne ikke legge til i favoritter', 'error');
         }
     })
     .catch(error => {
         console.error('Error adding to watchlist:', error);
+        // Restore button state
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        showToast('Teknisk feil ved tillegg til favoritter', 'error');
     });
+}
+
+// Add toast function if not already defined in base template
+if (typeof showToast !== 'function') {
+    function showToast(message, type = 'info') {
+        // Create toast container if it doesn't exist
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        // Create toast element
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        container.appendChild(toastEl);
+        
+        // Initialize and show toast
+        const toast = new bootstrap.Toast(toastEl, {
+            animation: true,
+            autohide: true,
+            delay: 3000
+        });
+        
+        toast.show();
+        
+        // Remove toast element after it's hidden
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            toastEl.remove();
+        });
+    }
 }
 </script>
 {% endblock %}

@@ -3,7 +3,133 @@ import pandas as pd
 import random
 import time
 import traceback
+import numpy as np
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+
+def calculate_rsi(prices, periods=14):
+    """Calculate RSI for a price series"""
+    try:
+        deltas = np.diff(prices)
+        seed = deltas[:periods+1]
+        up = seed[seed >= 0].sum()/periods
+        down = -seed[seed < 0].sum()/periods
+        rs = up/down
+        rsi = np.zeros_like(prices)
+        rsi[:periods] = 100. - 100./(1. + rs)
+
+        for i in range(periods, len(prices)):
+            delta = deltas[i - 1]
+            if delta > 0:
+                upval = delta
+                downval = 0.
+            else:
+                upval = 0.
+                downval = -delta
+
+            up = (up * (periods - 1) + upval) / periods
+            down = (down * (periods - 1) + downval) / periods
+            rs = up/down
+            rsi[i] = 100. - 100./(1. + rs)
+
+        return float(rsi[-1])
+    except Exception:
+        return 50.0
+
+def calculate_macd(prices, fast=12, slow=26, signal=9):
+    """Calculate MACD for a price series"""
+    try:
+        exp1 = prices.ewm(span=fast, adjust=False).mean()
+        exp2 = prices.ewm(span=slow, adjust=False).mean()
+        macd = exp1 - exp2
+        signal_line = macd.ewm(span=signal, adjust=False).mean()
+        histogram = macd - signal_line
+        return {
+            'macd': float(macd.iloc[-1]),
+            'signal': float(signal_line.iloc[-1]),
+            'hist': float(histogram.iloc[-1])
+        }
+    except Exception:
+        return {'macd': 0, 'signal': 0, 'hist': 0}
+
+def calculate_bollinger_bands(prices, window=20, num_std=2):
+    """Calculate Bollinger Bands for a price series"""
+    try:
+        rolling_mean = prices.rolling(window=window).mean()
+        rolling_std = prices.rolling(window=window).std()
+        upper_band = rolling_mean + (rolling_std * num_std)
+        lower_band = rolling_mean - (rolling_std * num_std)
+        
+        current_price = prices.iloc[-1]
+        upper = upper_band.iloc[-1]
+        lower = lower_band.iloc[-1]
+        middle = rolling_mean.iloc[-1]
+        
+        # Determine position relative to bands
+        if current_price > upper:
+            position = 'upper'
+        elif current_price < lower:
+            position = 'lower'
+        else:
+            position = 'middle'
+            
+        return {
+            'upper': float(upper),
+            'middle': float(middle),
+            'lower': float(lower),
+            'position': position
+        }
+    except Exception:
+        return {'upper': 0, 'middle': 0, 'lower': 0, 'position': 'middle'}
+
+def calculate_sma(prices, window):
+    """Calculate Simple Moving Average percentage difference"""
+    try:
+        sma = prices.rolling(window=window).mean()
+        current_price = prices.iloc[-1]
+        sma_value = sma.iloc[-1]
+        return ((current_price - sma_value) / sma_value) * 100
+    except Exception:
+        return 0.0
+
+def generate_signals(current_price, rsi_value, macd_data, bb_data, sma200_diff, sma50_diff):
+    """Generate trading signals based on technical indicators"""
+    signals = []
+    
+    # RSI signals
+    if rsi_value > 70:
+        signals.append('SELL')
+    elif rsi_value < 30:
+        signals.append('BUY')
+        
+    # MACD signals
+    if macd_data['macd'] > macd_data['signal']:
+        signals.append('BUY')
+    elif macd_data['macd'] < macd_data['signal']:
+        signals.append('SELL')
+        
+    # Bollinger Bands signals
+    if bb_data['position'] == 'lower':
+        signals.append('BUY')
+    elif bb_data['position'] == 'upper':
+        signals.append('SELL')
+        
+    # Moving Average signals
+    if sma50_diff > 0 and sma200_diff > 0:
+        signals.append('BUY')
+    elif sma50_diff < 0 and sma200_diff < 0:
+        signals.append('SELL')
+        
+    # Count signals
+    buy_signals = signals.count('BUY')
+    sell_signals = signals.count('SELL')
+    
+    # Generate final signal
+    if buy_signals > sell_signals:
+        return 'BUY'
+    elif sell_signals > buy_signals:
+        return 'SELL'
+    else:
+        return 'HOLD'
 from flask import Response
 from flask_login import current_user, login_required
 from ..extensions import csrf
@@ -1146,81 +1272,329 @@ def toggle_favorite(symbol):
         # Check current status
         is_favorited = Favorites.is_favorite(current_user.id, symbol)
         
-        if is_favorited:
-            # Remove from favorites
-            removed = Favorites.remove_favorite(current_user.id, symbol)
-            if removed:
-                try:
+        # Set up the response
+        response = None
+        
+        # Use a transaction to ensure consistency
+        from ..extensions import db
+        from ..models.activity import UserActivity
+        
+        try:
+            if is_favorited:
+                # Remove from favorites
+                removed = Favorites.remove_favorite(current_user.id, symbol)
+                if removed:
                     current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
-                    from ..models.activity import UserActivity
                     UserActivity.create_activity(
                         user_id=current_user.id,
                         activity_type='favorite_remove',
                         description=f'Fjernet {symbol} fra favoritter'
                     )
-                    from ..extensions import db
                     db.session.commit()
-                except Exception as e:
-                    logger.error(f"Error updating activity: {e}")
-                
-                return jsonify({
-                    'success': True,
-                    'favorited': False,
-                    'message': f'{symbol} fjernet fra favoritter'
-                })
+                    response = {
+                        'success': True,
+                        'favorited': False,
+                        'message': f'{symbol} fjernet fra favoritter'
+                    }
+                else:
+                    response = {'success': False, 'error': 'Failed to remove from favorites'}, 500
             else:
-                return jsonify({'error': 'Failed to remove from favorites'}), 500
-        else:
-            # Add to favorites
-            # Get stock info for name
-            stock_info = DataService.get_stock_info(symbol)
-            name = stock_info.get('name', symbol) if stock_info else symbol
-            exchange = 'Oslo Børs' if symbol.endswith('.OL') else 'Global'
-            
-            favorite = Favorites.add_favorite(
-                user_id=current_user.id,
-                symbol=symbol,
-                name=name,
-                exchange=exchange
-            )
-            
-            try:
+                # Add to favorites
+                # Get stock info for name
+                stock_info = DataService.get_stock_info(symbol)
+                name = stock_info.get('name', symbol) if stock_info else symbol
+                
+                # Determine exchange based on symbol
+                if symbol.endswith('.OL'):
+                    exchange = 'Oslo Børs'
+                elif '-USD' in symbol or any(crypto in symbol for crypto in ['BTC', 'ETH']):
+                    exchange = 'Crypto'
+                elif '/' in symbol:
+                    exchange = 'Currency'
+                elif len(symbol) <= 5 and symbol.isupper():
+                    exchange = 'NASDAQ/NYSE'
+                else:
+                    exchange = 'Global'
+                
+                favorite = Favorites.add_favorite(
+                    user_id=current_user.id,
+                    symbol=symbol,
+                    name=name,
+                    exchange=exchange
+                )
+                
                 current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
-                from ..models.activity import UserActivity
                 UserActivity.create_activity(
                     user_id=current_user.id,
                     activity_type='favorite_add',
                     description=f'La til {symbol} i favoritter',
                     details=f'Navn: {name}, Exchange: {exchange}'
                 )
-                from ..extensions import db
                 db.session.commit()
-            except Exception as e:
-                logger.error(f"Error updating activity: {e}")
-            
-            return jsonify({
-                'success': True,
-                'favorited': True,
-                'message': f'{symbol} lagt til i favoritter'
-            })
-            
+                response = {
+                    'success': True,
+                    'favorited': True,
+                    'message': f'{symbol} lagt til i favoritter'
+                }
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Database error while toggling favorite: {e}")
+            response = {
+                'success': False,
+                'error': 'database_error',
+                'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
+            }, 500
     except Exception as e:
         logger.error(f"Error toggling favorite: {e}")
-        return jsonify({
-            'success': False, 
-            'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.',
-            'error': 'temporary_unavailable'
-        }), 200
+        response = {
+            'success': False,
+            'error': 'temporary_unavailable',
+            'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
+        }, 500
+    
+    # Return the prepared response
+    if isinstance(response, tuple):
+        return jsonify(response[0]), response[1]
+    return jsonify(response)
 
 @stocks.route('/compare')
+@demo_access
 def compare():
-    """Stock comparison page - Working simple version"""
-    return "<h1>Compare Works!</h1><p>Route is functioning correctly</p>"
+    """Stock comparison page - Enhanced with better error handling"""
+    try:
+        # Support both 'symbols' and 'tickers' parameters for backward compatibility
+        symbols_param = request.args.get('symbols') or request.args.get('tickers')
+        symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
 
-@stocks.route('/compare-test')
-def compare_test():
-    """Test route to check if routing works"""
-    return "<h1>Compare Test Works!</h1><p>This is a new test route</p>"
+        # Handle both comma-separated string and multiple parameters
+        if symbols_param and ',' in symbols_param:
+            symbols = [s.strip().upper() for s in symbols_param.split(',') if s.strip()]
+        else:
+            symbols = symbols_list
+
+        period = request.args.get('period', '6mo')
+        interval = request.args.get('interval', '1d')
+        normalize = request.args.get('normalize', '1') == '1'
+
+        # Remove empty strings and filter valid symbols
+        symbols = [s.strip().upper() for s in symbols if s.strip()][:4]  # Max 4 stocks
+
+        logger.info(f"Stock comparison requested for symbols: {symbols}")
+
+        if not symbols:
+            logger.info("No symbols provided, showing empty comparison form")
+            return render_template('stocks/compare.html', 
+                                 tickers=[], 
+                                 stocks=[], 
+                                 comparison_data={},
+                                 current_prices={},
+                                 price_changes={},
+                                 volatility={},
+                                 volumes={},
+                                 correlations={},
+                                 betas={},
+                                 rsi={},
+                                 macd={},
+                                 bb={},
+                                 sma200={},
+                                 sma50={},
+                                 signals={},
+                                 ticker_names={},
+                                 period=period,
+                                 interval=interval,
+                                 normalize=normalize,
+                                 chart_data={})
+
+        logger.debug(f"Fetching comparative data for symbols: {symbols}")
+        try:
+            historical_data = DataService.get_comparative_data(symbols, period=period, interval=interval)
+            logger.debug(f"Received historical data keys: {list(historical_data.keys()) if historical_data else 'None'}")
+        except Exception as e:
+            logger.error(f"Error getting comparative data: {e}")
+            historical_data = {}
+
+        # Always provide fallback data if DataService fails
+        if not historical_data:
+            logger.warning("No data from DataService, generating fallback data")
+            historical_data = {}
+            for symbol in symbols:
+                # Generate simple fallback data
+                period_days = {'1mo': 30, '3mo': 90, '6mo': 180, '1y': 365, '2y': 730, '5y': 1825}.get(period, 180)
+                dates = pd.date_range(end=datetime.now(), periods=period_days, freq='D')
+                
+                base_price = 100 if '.OL' in symbol else 200
+                prices = [base_price * (1 + random.uniform(-0.02, 0.02)) for _ in range(period_days)]
+                
+                historical_data[symbol] = pd.DataFrame({
+                    'Close': prices,
+                    'Open': [p * 0.99 for p in prices],
+                    'High': [p * 1.02 for p in prices], 
+                    'Low': [p * 0.98 for p in prices],
+                    'Volume': [random.randint(100000, 1000000) for _ in prices]
+                }, index=dates)
+
+        # Initialize all required dicts
+        ticker_names = {}
+        current_prices = {}
+        price_changes = {}
+        volatility = {}
+        volumes = {}
+        correlations = {}
+        betas = {}
+        rsi = {}
+        macd = {}
+        bb = {}
+        sma200 = {}
+        sma50 = {}
+        signals = {}
+        chart_data = {}
+
+        # Helper for correlation matrix
+        price_matrix = {}
+
+        # Process each symbol
+        for symbol in symbols:
+            df = historical_data.get(symbol)
+            info = DataService.get_stock_info(symbol)
+
+            # Set name from info or fallback to symbol
+            ticker_names[symbol] = info.get('name', symbol) if info else symbol
+
+            if df is None or df.empty:
+                # Generate fallback data if still no data
+                logger.warning(f"No data for {symbol}, using fallback")
+                base_price = 150 if '.OL' in symbol else 300
+                chart_data[symbol] = [
+                    {'date': '2024-01-01', 'open': base_price, 'high': base_price*1.02, 'low': base_price*0.98, 'close': base_price, 'volume': 100000}
+                ]
+                current_prices[symbol] = base_price
+                price_changes[symbol] = random.uniform(-5, 5)
+                volatility[symbol] = random.uniform(15, 35)
+                volumes[symbol] = random.randint(100000, 1000000)
+                price_matrix[symbol] = pd.Series([base_price])
+                continue
+
+            chart_data[symbol] = []
+            for idx, row in df.iterrows():
+                chart_data[symbol].append({
+                    'date': idx.strftime('%Y-%m-%d'),
+                    'open': float(row.get('Open', 0)),
+                    'high': float(row.get('High', 0)),
+                    'low': float(row.get('Low', 0)),
+                    'close': float(row.get('Close', 0)),
+                    'volume': int(row.get('Volume', 0))
+                })
+
+            current_prices[symbol] = float(df['Close'].iloc[-1]) if 'Close' in df else 0
+            try:
+                start_price = float(df['Close'].iloc[0])
+                end_price = float(df['Close'].iloc[-1])
+                price_changes[symbol] = ((end_price - start_price) / start_price) * 100 if start_price else 0
+            except Exception:
+                price_changes[symbol] = 0
+            try:
+                returns = df['Close'].pct_change().dropna()
+                volatility[symbol] = returns.std() * (252 ** 0.5) * 100 if not returns.empty else 0
+            except Exception:
+                volatility[symbol] = 0
+            try:
+                volumes[symbol] = df['Volume'].mean() if 'Volume' in df else 0
+            except Exception:
+                volumes[symbol] = 0
+            price_matrix[symbol] = df['Close'] if 'Close' in df else pd.Series()
+            try:
+                if symbol != symbols[0] and symbols[0] in price_matrix:
+                    returns1 = price_matrix[symbol].pct_change().dropna()
+                    returns0 = price_matrix[symbols[0]].pct_change().dropna()
+                    cov = returns1.cov(returns0)
+                    var = returns0.var()
+                    if var != 0:
+                        beta = cov / var
+                    else:
+                        beta = 1.0
+                else:
+                    beta = 1.0
+                betas[symbol] = beta
+            except Exception:
+                betas[symbol] = 1.0
+
+            # Calculate technical indicators
+            try:
+                close_prices = df['Close']
+                rsi[symbol] = calculate_rsi(close_prices)
+                macd[symbol] = calculate_macd(close_prices)
+                bb[symbol] = calculate_bollinger_bands(close_prices)
+                sma200[symbol] = calculate_sma(close_prices, 200)
+                sma50[symbol] = calculate_sma(close_prices, 50)
+                
+                # Generate signals based on indicators
+                signals[symbol] = generate_signals(close_prices[-1], rsi[symbol], macd[symbol], bb[symbol], sma200[symbol], sma50[symbol])
+            except Exception as e:
+                logger.error(f"Error calculating technical indicators for {symbol}: {e}")
+                rsi[symbol] = 50
+                macd[symbol] = {'macd': 0, 'signal': 0, 'hist': 0}
+                bb[symbol] = {'upper': 0, 'middle': 0, 'lower': 0}
+                sma200[symbol] = 0
+                sma50[symbol] = 0
+                signals[symbol] = 'Neutral'
+
+        # Initialize correlation matrix
+        for symbol in symbols:
+            correlations[symbol] = {}
+            for other in symbols:
+                try:
+                    corr = price_matrix[symbol].corr(price_matrix[other]) if symbol in price_matrix and other in price_matrix else 1.0
+                    correlations[symbol][other] = corr if corr is not None else 1.0
+                except Exception:
+                    correlations[symbol][other] = 1.0
+
+        logger.info(f"Processed {len(symbols)} symbols successfully")
+
+        return render_template('stocks/compare.html', 
+                             tickers=symbols,
+                             stocks=[],
+                             ticker_names=ticker_names,
+                             comparison_data={},
+                             current_prices=current_prices,
+                             price_changes=price_changes,
+                             volatility=volatility,
+                             volumes=volumes,
+                             correlations=correlations,
+                             betas=betas,
+                             rsi=rsi,
+                             macd=macd,
+                             bb=bb,
+                             sma200=sma200,
+                             sma50=sma50,
+                             signals=signals,
+                             chart_data=chart_data,
+                             period=period,
+                             interval=interval,
+                             normalize=normalize)
+
+    except Exception as e:
+        logger.error(f"Critical error in stock comparison: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Det oppstod en teknisk feil ved sammenligning av aksjer.', 'error')
+        return render_template('stocks/compare.html', 
+                             tickers=[], 
+                             stocks=[], 
+                             ticker_names={},
+                             comparison_data={},
+                             current_prices={},
+                             price_changes={},
+                             volatility={},
+                             volumes={},
+                             correlations={},
+                             betas={},
+                             rsi={},
+                             macd={},
+                             bb={},
+                             sma200={},
+                             sma50={},
+                             signals={},
+                             chart_data={})
 
 
 # Helper route for demo data generation

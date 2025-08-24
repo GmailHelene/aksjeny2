@@ -50,14 +50,24 @@ def api_sentiment():
     """API endpoint for market sentiment analysis"""
     try:
         selected_symbol = (request.args.get('symbol') or request.args.get('ticker', '')).strip().upper()
-        if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
+        if not selected_symbol:
+            return make_response(jsonify(AnalysisService.get_market_sentiment_overview()), 200)
+            
+        if not selected_symbol.replace('.', '').replace('-', '').isalnum():
             return make_response(jsonify({
                 'success': False,
                 'error': 'Ugyldig aksjesymbol.'
             }), 400)
 
-        from ..services.api_service import FinnhubAPI
-        finnhub_api = FinnhubAPI()
+        sentiment_data = AnalysisService.get_sentiment_analysis(selected_symbol)
+        return make_response(jsonify(sentiment_data), 200)
+
+    except Exception as e:
+        print(f"Error in sentiment API: {e}")
+        return make_response(jsonify({
+            'success': False,
+            'error': 'En feil oppstod under analysen. Vennligst prøv igjen senere.'
+        }), 500)
         sentiment_data = None
         if selected_symbol:
             try:
@@ -638,16 +648,34 @@ def sentiment():
         # Support both 'symbol' and 'ticker' parameters
         selected_symbol = (request.args.get('symbol') or request.args.get('ticker', '')).strip().upper()
 
-        # Validate the selected symbol
+        # Get market overview data
+        market_overview = AnalysisService.get_market_sentiment_overview()
+
+        # Validate the selected symbol if provided
         if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
             flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
             return redirect(url_for('analysis.sentiment'))
 
+        # Get stock-specific sentiment data if symbol is provided
         sentiment_data = None
-        error = None
-        
         if selected_symbol:
             try:
+                sentiment_data = AnalysisService.get_sentiment_analysis(selected_symbol)
+            except Exception as e:
+                print(f"Error getting sentiment for {selected_symbol}: {e}")
+                flash('Beklager, kunne ikke hente sentiment-analyse for dette symbolet. Prøv igjen senere.', 'error')
+                return redirect(url_for('analysis.sentiment'))
+            
+        return render_template('analysis/sentiment.html',
+                            selected_symbol=selected_symbol,
+                            sentiment_data=sentiment_data,
+                            market_overview=market_overview)
+
+    except Exception as e:
+        print(f"Error in sentiment route: {e}")
+        flash('En feil oppstod under analysen. Vennligst prøv igjen senere.', 'error')
+        return render_template('error.html',
+                           error="Sentiment-analyse er midlertidig utilgjengelig. Prøv igjen senere.")
                 # Enhanced error handling - try real data first, fallback if necessary
                 current_app.logger.info(f"Processing sentiment analysis for symbol: {selected_symbol}")
                 

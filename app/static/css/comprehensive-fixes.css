@@ -34,11 +34,7 @@
     color: #212529 !important;
 }
 
-/* 6. Remove problematic card-header background color */
-.card-header.bg-primary, .card-header.bg-primary h5, .card-header.bg-primary h6 {
-    /* Remove the problematic background-color rule */
-    background-color: transparent !important;
-}
+
 
 /* 7. Remove problematic card-header text color rules */
 .card-header {

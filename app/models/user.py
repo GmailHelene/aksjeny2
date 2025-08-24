@@ -88,16 +88,52 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
     
     def __getattribute__(self, name):
-        """Handle missing database columns gracefully"""
+        """Handle missing database columns gracefully with comprehensive fallbacks"""
         try:
             return super().__getattribute__(name)
         except AttributeError:
             # Provide fallback values for missing columns
             fallback_values = {
+                # Basic user info
+                'username': 'Guest',
+                'email': None,
+                'first_name': None,
+                'last_name': None,
+                
+                # Authentication
                 'reset_token': None,
                 'reset_token_expires': None,
+                'two_factor_enabled': False,
+                'two_factor_secret': None,
+                'email_verified': True,
+                'is_locked': False,
+                'last_login': datetime.utcnow(),
+                'login_count': 0,
+                
+                # Subscription
+                'has_subscription': False,
+                'subscription_type': 'free',
+                'subscription_start': None,
+                'subscription_end': None,
+                'trial_used': False,
+                'trial_start': None,
+                'stripe_customer_id': None,
+                'reports_used_this_month': 0,
+                'last_reset_date': datetime.utcnow(),
+                'is_admin': False,
+                
+                # Preferences
                 'language': 'no',
                 'notification_settings': None,
+                'email_notifications': True,
+                'price_alerts': True,
+                'market_news': True,
+                'email_notifications_enabled': True,
+                'price_alerts_enabled': True,
+                'market_news_enabled': True,
+                'portfolio_updates_enabled': True,
+                'ai_insights_enabled': True,
+                'weekly_reports_enabled': True,
                 'email_notifications_enabled': True,
                 'price_alerts_enabled': True,
                 'market_news_enabled': True,

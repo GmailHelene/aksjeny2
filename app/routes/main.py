@@ -1564,80 +1564,175 @@ def internal_error(error):
     return render_template('errors/500.html'), 500
 
 @main.route('/profile')
-@login_required
+@demo_access  # Changed to demo_access to allow access while checking authentication
 def profile():
-    """User profile page with simplified error handling"""
+    """User profile page with comprehensive error handling and fallbacks"""
     try:
-        # Basic user information that always exists
-        user_stats = {
-            'member_since': getattr(current_user, 'created_at', datetime.now()),
-            'last_login': getattr(current_user, 'last_login', datetime.now()),
-            'total_searches': 0,
-            'favorite_stocks': 0
-        }
+        # Initialize empty error list to track any issues
+        errors = []
         
-        # Basic subscription info
+        # Determine user authentication and subscription status
+        is_authenticated = current_user.is_authenticated
         subscription_status = 'free'
-        if current_user.email in EXEMPT_EMAILS:
-            subscription_status = 'premium'
         
-        # Safe referral stats
-        referral_stats = {
-            'referrals_made': 0,
-            'referral_earnings': 0,
-            'referral_code': f'REF{getattr(current_user, "id", "001")}'
-        }
-        
-        # Safe user preferences
-        user_preferences = {
-            'display_mode': 'light',
-            'number_format': 'norwegian',
-            'dashboard_widgets': '[]'
-        }
-        
-        # Try to get favorites but don't fail if it doesn't work
-        user_favorites = []
-        try:
-            if hasattr(current_user, 'id'):
-                # Simple query instead of using model method
-                favorites_query = db.session.execute(
-                    text("SELECT symbol FROM favorites WHERE user_id = :user_id"), 
-                    {'user_id': current_user.id}
-                )
-                user_favorites = [{'symbol': row[0]} for row in favorites_query.fetchall()]
-        except Exception as fav_error:
-            logger.warning(f"Could not load favorites: {fav_error}")
-            user_favorites = []
+        if is_authenticated:
+            # Get basic user information with fallbacks
+            user_stats = {
+                'member_since': getattr(current_user, 'created_at', datetime.now()),
+                'last_login': getattr(current_user, 'last_login', datetime.now()),
+                'total_searches': getattr(current_user, 'total_searches', 0),
+                'favorite_stocks': 0  # Will be updated if favorites can be loaded
+            }
+            
+            # Enhanced subscription status check
+            try:
+                if current_user.email in EXEMPT_EMAILS:
+                    subscription_status = 'premium'
+                elif current_user.has_subscription:
+                    subscription_status = current_user.subscription_type or 'premium'
+                elif current_user.trial_start and not current_user.trial_used:
+                    subscription_status = 'trial'
+            except Exception as sub_error:
+                logger.warning(f"Error checking subscription status: {sub_error}")
+                errors.append('subscription_check_failed')
+            
+            # Enhanced referral stats with error handling
+            try:
+                from ..models.referral import Referral
+                referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
+                referral_stats = {
+                    'referrals_made': referrals,
+                    'referral_earnings': referrals * 100,  # 100 NOK per referral
+                    'referral_code': f'REF{current_user.id}'
+                }
+            except Exception as ref_error:
+                logger.warning(f"Error loading referral stats: {ref_error}")
+                referral_stats = {
+                    'referrals_made': 0,
+                    'referral_earnings': 0,
+                    'referral_code': f'REF{getattr(current_user, "id", "001")}'
+                }
+                errors.append('referral_stats_failed')
+            
+            # Get user preferences with defaults
+            try:
+                import json
+                notification_settings = getattr(current_user, 'notification_settings', None)
+                if notification_settings:
+                    notification_settings = json.loads(notification_settings)
+                else:
+                    notification_settings = {}
+                    
+                user_preferences = {
+                    'display_mode': notification_settings.get('display_mode', 'light'),
+                    'number_format': notification_settings.get('number_format', 'norwegian'),
+                    'dashboard_widgets': notification_settings.get('dashboard_widgets', '[]'),
+                    'email_notifications': getattr(current_user, 'email_notifications_enabled', True),
+                    'price_alerts': getattr(current_user, 'price_alerts_enabled', True),
+                    'market_news': getattr(current_user, 'market_news_enabled', True),
+                    'portfolio_updates': getattr(current_user, 'portfolio_updates_enabled', True),
+                    'ai_insights': getattr(current_user, 'ai_insights_enabled', True),
+                    'weekly_reports': getattr(current_user, 'weekly_reports_enabled', True)
+                }
+            except Exception as pref_error:
+                logger.warning(f"Error loading user preferences: {pref_error}")
+                user_preferences = {
+                    'display_mode': 'light',
+                    'number_format': 'norwegian',
+                    'dashboard_widgets': '[]',
+                    'email_notifications': True,
+                    'price_alerts': True,
+                    'market_news': True,
+                    'portfolio_updates': True,
+                    'ai_insights': True,
+                    'weekly_reports': True
+                }
+                errors.append('preferences_failed')
+            
+            # Enhanced favorites loading with stock info
+            try:
+                if hasattr(current_user, 'id'):
+                    # Use the Favorites model
+                    from ..models.favorites import Favorites
+                    favorites = Favorites.query.filter_by(user_id=current_user.id).all()
+                    user_favorites = []
+                    
+                    for fav in favorites:
+                        favorite_info = {
+                            'symbol': fav.symbol,
+                            'name': fav.name or fav.symbol,
+                            'exchange': fav.exchange or 'Unknown',
+                            'created_at': fav.created_at
+                        }
+                        
+                        # Try to get current price if available
+                        try:
+                            from ..services.data_service import DataService
+                            stock_info = DataService.get_stock_info(fav.symbol)
+                            if stock_info:
+                                favorite_info.update({
+                                    'price': stock_info.get('last_price'),
+                                    'change': stock_info.get('change'),
+                                    'change_percent': stock_info.get('change_percent')
+                                })
+                        except Exception as price_error:
+                            logger.debug(f"Could not get price for {fav.symbol}: {price_error}")
+                            
+                        user_favorites.append(favorite_info)
+                        
+                    # Update favorite_stocks count
+                    user_stats['favorite_stocks'] = len(user_favorites)
+                    
+            except Exception as fav_error:
+                logger.warning(f"Error loading favorites: {fav_error}")
+                user_favorites = []
+                errors.append('favorites_failed')
+            
+            # Try to get subscription info
+            try:
+                if subscription_status != 'free':
+                    subscription = {
+                        'type': current_user.subscription_type,
+                        'start_date': current_user.subscription_start,
+                        'end_date': current_user.subscription_end,
+                        'is_trial': bool(current_user.trial_start and not current_user.trial_used),
+                        'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
+                    }
+                else:
+                    subscription = None
+            except Exception as sub_info_error:
+                logger.warning(f"Error getting subscription info: {sub_info_error}")
+                subscription = None
+                errors.append('subscription_info_failed')
+                
+        else:
+            # Default values for unauthenticated users
+            return redirect('/login?next=/profile')
         
         return render_template('profile.html',
             user=current_user,
-            subscription=None,
+            subscription=subscription,
             subscription_status=subscription_status,
             user_stats=user_stats,
-            user_language='nb',
+            user_language=getattr(current_user, 'language', 'nb'),
             user_display_mode=user_preferences['display_mode'],
             user_number_format=user_preferences['number_format'],
             user_dashboard_widgets=user_preferences['dashboard_widgets'],
             user_favorites=user_favorites,
-            **referral_stats)
+            **user_preferences,
+            **referral_stats,
+            errors=errors if errors else None)
                              
     except Exception as e:
-        logger.error(f"Error in profile page: {e}")
-        # Ultra-safe fallback
-        return render_template('profile.html',
-                     user=current_user,
-                     subscription=None,
-                     subscription_status='free',
-                     user_stats={'member_since': datetime.now()},
-                     user_language='nb',
-                     user_display_mode='light',
-                     user_number_format='norwegian',
-                     user_dashboard_widgets='[]',
-                     user_favorites=[],
-                     referrals_made=0,
-                     referral_earnings=0,
-                     referral_code='REF001',
-                     error=True)
+        logger.error(f"Critical error in profile page: {e}")
+        # Ultra-safe fallback with error message
+        try:
+            return render_template('errors/error.html',
+                title="Profil Utilgjengelig",
+                message="Beklager, det oppsto en feil ved lasting av profilsiden. Vennligst prøv igjen senere.",
+                error_details=str(e) if current_app.debug else None), 200
+        except Exception:
+            return "Beklager, profilsiden er midlertidig utilgjengelig. Prøv igjen senere.", 200
 
 @main.route('/mitt-abonnement')
 @main.route('/my-subscription')
