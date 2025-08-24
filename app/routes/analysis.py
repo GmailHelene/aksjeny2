@@ -458,9 +458,6 @@ def warren_buffett():
                                     error_message=f"En feil oppsto under analyse av {ticker}")
 
         # Show selection page with popular stocks
-        try:
-            from ..services.data_service import DataService
-        
         # Get real Norwegian stocks
         oslo_stocks = {}
         global_stocks = {}
@@ -468,9 +465,11 @@ def warren_buffett():
         oslo_tickers = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'YAR.OL', 'MOWI.OL']
         global_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN']
         
-        for ticker in oslo_tickers:
-            try:
-                stock_info = DataService.get_stock_info(ticker)
+        try:
+            from ..services.data_service import DataService
+            for ticker in oslo_tickers:
+                try:
+                    stock_info = DataService.get_stock_info(ticker)
                 if stock_info:
                     current_price = stock_info.get('regularMarketPrice', stock_info.get('currentPrice', 0))
                     previous_close = stock_info.get('previousClose', current_price)

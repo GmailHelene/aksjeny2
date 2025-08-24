@@ -3714,8 +3714,21 @@ class DataService:
                         change_pct = currency_info.get('change_percent', 0)
                         volume = currency_info.get('volume', None)
                         
-                        # Calculate signal based on multiple technical indicators
-                        signal = DataService._calculate_currency_signal(
+                        # Normalize volume to millions
+                        normalized_volume = DataService._normalize_volume(volume, pair)
+                        
+                        # Calculate enhanced technical indicators
+                        indicators = DataService._calculate_technical_indicators(
+                            price=price,
+                            change_pct=change_pct,
+                            high=currency_info.get('high', price),
+                            low=currency_info.get('low', price),
+                            open_price=currency_info.get('open', price),
+                            volume=normalized_volume
+                        )
+                        
+                        # Calculate signal with confidence based on indicators
+                        signal, confidence = DataService._calculate_currency_signal(
                             price=price,
                             change_pct=change_pct,
                             high=currency_info.get('high', price),
@@ -3742,15 +3755,18 @@ class DataService:
                             'open': currency_info.get('open', price),
                             'high': currency_info.get('high', price * 1.01),
                             'low': currency_info.get('low', price * 0.99),
-                            'volume': volume,
+                            'volume': normalized_volume,
                             'signal': signal,
+                            'signal_confidence': confidence,
                             'trend': trend,
+                            'trend_strength': indicators['trend_strength'],
                             'bid': price * 0.9998,
                             'ask': price * 1.0002,
                             'spread': price * 0.0004,
                             'support': price * 0.98,
                             'resistance': price * 1.02,
-                            'volatility': abs(change_pct) * 1.2,
+                            'volatility': indicators.get('volatility', abs(change_pct) * 1.2),
+                            'volume_trend': indicators.get('volume_trend', 50),
                             'source': 'REAL DATA',
                             'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         }
@@ -3790,40 +3806,121 @@ class DataService:
         return names.get(pair, pair.replace('=X', ''))
     
     @staticmethod
-    def _calculate_currency_signal(price, change_pct, high, low, open_price):
-        """Calculate trading signal based on multiple technical indicators"""
-        # Initialize score for weighted decision
+    def _normalize_volume(volume, pair):
+        """Normalize volume to millions and ensure consistent format"""
+        if not volume:
+            return DataService._generate_realistic_volume(pair)
+            
+        try:
+            # Convert to float if string with M/K suffix
+            if isinstance(volume, str):
+                if volume.endswith('M'):
+                    volume = float(volume[:-1])
+                elif volume.endswith('K'):
+                    volume = float(volume[:-1]) / 1000
+                else:
+                    volume = float(volume)
+            
+            # Convert to millions
+            volume_in_millions = volume / 1_000_000
+            
+            # Format consistently with M suffix
+            return f"{round(volume_in_millions)}M"
+        except (ValueError, TypeError):
+            # Fallback to generated volume
+            return DataService._generate_realistic_volume(pair)
+            
+    @staticmethod 
+    def _calculate_technical_indicators(price, change_pct, high, low, open_price, volume):
+        """Calculate advanced technical indicators for currency analysis"""
+        indicators = {
+            'rsi': None,          # Relative Strength Index
+            'trend_strength': 0,   # Trend Strength Indicator
+            'volume_trend': None,  # Volume Trend Analysis
+            'price_level': None,   # Price Level Analysis
+            'volatility': None,    # Volatility Indicator
+        }
+        
+        # Basic trend strength (-100 to +100)
+        indicators['trend_strength'] = min(100, max(-100, change_pct * 10))
+        
+        # Price level analysis (-100 to +100)
+        price_range = high - low if high and low else 0
+        if price_range > 0:
+            pos = (price - low) / price_range
+            indicators['price_level'] = (pos - 0.5) * 200
+        
+        # Volatility (0 to 100)
+        if price:
+            indicators['volatility'] = min(100, (price_range / price) * 1000)
+            
+        # Volume trend analysis
+        try:
+            vol_number = float(volume.rstrip('M'))
+            indicators['volume_trend'] = vol_number
+        except (ValueError, AttributeError):
+            indicators['volume_trend'] = 50  # Neutral
+            
+        return indicators
+            
+    @staticmethod
+    def _calculate_currency_signal(price, change_pct, high, low, open_price, indicators=None):
+        """Calculate trading signal and confidence based on technical analysis"""
         buy_score = 0
         sell_score = 0
+        confidence = 0
         
-        # 1. Trend Analysis (40% weight)
-        if change_pct < -1.0:  # Strong downward trend
-            buy_score += 4
-        elif change_pct > 1.0:  # Strong upward trend
-            sell_score += 4
-        
-        # 2. Price Level Analysis (30% weight)
-        if price < open_price:  # Price below opening
-            buy_score += 3
-        elif price > open_price:  # Price above opening
-            sell_score += 3
+        if not indicators:
+            indicators = {}
             
-        # 3. Range Analysis (30% weight)
+        # 1. Trend Analysis (30% weight)
+        trend_strength = indicators.get('trend_strength', change_pct * 10)
+        if trend_strength < -20:  # Strong downward trend
+            buy_score += 3
+            confidence += 10
+        elif trend_strength > 20:  # Strong upward trend
+            sell_score += 3
+            confidence += 10
+        
+        # 2. Price Level Analysis (25% weight)
+        price_level = indicators.get('price_level', 0)
+        if price_level < -50:  # Price significantly below average
+            buy_score += 2.5
+            confidence += 7.5
+        elif price_level > 50:  # Price significantly above average
+            sell_score += 2.5
+            confidence += 7.5
+            
+        # 3. Range Analysis (25% weight)
         price_range = high - low
         if price_range > 0:
             position_in_range = (price - low) / price_range
             if position_in_range > 0.8:  # Price near high
-                sell_score += 3
+                sell_score += 2.5
+                confidence += 7.5
             elif position_in_range < 0.2:  # Price near low
-                buy_score += 3
+                buy_score += 2.5
+                confidence += 7.5
+                
+        # 4. Volume Analysis (20% weight)
+        volume_trend = indicators.get('volume_trend', 50)
+        if volume_trend > 75:  # High volume
+            confidence += 5
+            if trend_strength > 0:
+                sell_score += 2
+            else:
+                buy_score += 2
+                
+        # Normalize confidence score
+        confidence = min(100, max(0, confidence))
         
         # Calculate final signal
         if buy_score > sell_score and buy_score >= 4:
-            return 'BUY'
+            return 'BUY', confidence
         elif sell_score > buy_score and sell_score >= 4:
-            return 'SELL'
+            return 'SELL', confidence
         else:
-            return 'HOLD'
+            return 'HOLD', confidence
             
     @staticmethod
     def _generate_realistic_volume(pair):
@@ -3873,6 +3970,27 @@ class DataService:
         base_rate = base_rates.get(pair, 5.0 + (hash_seed % 500) / 100)
         change_percent = ((hash_seed % 201) - 100) / 50  # -2% to +2%
         change = base_rate * (change_percent / 100)
+        volume = f'{500 + (hash_seed % 2000)}M'
+        
+        # Calculate technical indicators
+        indicators = DataService._calculate_technical_indicators(
+            price=base_rate,
+            change_pct=change_percent,
+            high=base_rate * 1.005,
+            low=base_rate * 0.995,
+            open_price=base_rate * (1 - change_percent/200),  # Slight offset from current price
+            volume=volume
+        )
+        
+        # Calculate signal with confidence
+        signal, confidence = DataService._calculate_currency_signal(
+            price=base_rate,
+            change_pct=change_percent,
+            high=base_rate * 1.005,
+            low=base_rate * 0.995,
+            open_price=base_rate * (1 - change_percent/200),
+            indicators=indicators
+        )
         
         return {
             'ticker': pair,
@@ -3881,17 +3999,21 @@ class DataService:
             'last_price': round(base_rate, 4),
             'change': round(change, 4),
             'change_percent': round(change_percent, 2),
-            'volume': f'{500 + (hash_seed % 2000)}M',
+            'volume': volume,
             'high': round(base_rate * 1.005, 4),
             'low': round(base_rate * 0.995, 4),
             'bid': round(base_rate * 0.9998, 4),
             'ask': round(base_rate * 1.0002, 4),
             'spread': round(base_rate * 0.0004, 4),
-            'volatility': round(abs(change_percent) * 1.2, 2),
-            'signal': ['BUY', 'HOLD', 'SELL'][hash_seed % 3],
-            'trend': ['Bullish', 'Neutral', 'Bearish'][hash_seed % 3],
+            'volatility': indicators.get('volatility', round(abs(change_percent) * 1.2, 2)),
+            'signal': signal,
+            'signal_confidence': confidence,
+            'trend': 'Bullish' if change_percent > 0.5 else ('Bearish' if change_percent < -0.5 else 'Neutral'),
+            'trend_strength': indicators['trend_strength'],
             'support': round(base_rate * 0.98, 4),
             'resistance': round(base_rate * 1.02, 4),
+            'volume_trend': indicators.get('volume_trend', 50),
+            'source': 'ENHANCED FALLBACK',
             'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
     

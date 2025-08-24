@@ -291,6 +291,11 @@ def register_blueprints(app):
         app.register_blueprint(portfolio, url_prefix='/portfolio')
         blueprints_registered.append('portfolio')
         
+        # Register stocks blueprint
+        from .routes.stocks import stocks
+        app.register_blueprint(stocks, url_prefix='/stocks')
+        blueprints_registered.append('stocks')
+        
         # Register Stripe blueprint
         try:
             from .routes.stripe_routes import stripe_bp
