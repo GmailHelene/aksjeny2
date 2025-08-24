@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="cache-bust" content="20250822_v2">
-    <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/text-contrast.css') }}?v=20250822" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/text-contrast-improvements.css') }}?v=20250822" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/comprehensive-fixes.css') }}?v=20250822" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/ultimate-contrast-fix.css') }}?v=20250822" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/master-styling-fixes.css') }}?v=20250823" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/card-header-override.css') }}?v=20250823" rel="stylesheet">
+    <meta name="cache-bust" content="20250824_v1">
+    <!-- Core styling -->
+    <link href="{{ url_for('static', filename='css/master-styling-fixes.css') }}?v=20250824" rel="stylesheet">
+    
+    <!-- Theme fixes in correct order -->
+    <link href="{{ url_for('static', filename='css/comprehensive-theme-fixes.css') }}?v=20250824" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/contrast-fixes.css') }}?v=20250824" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/text-contrast.css') }}?v=20250824" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/card-header-override.css') }}?v=20250824" rel="stylesheet">
     
     <!-- Simple navbar styling -->
     <style>

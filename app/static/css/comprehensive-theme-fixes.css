@@ -1,0 +1,107 @@
+/* Comprehensive Theme Fixes - August 24, 2025 */
+
+/* Unified background color #282828 for all dark backgrounds */
+.navbar,
+.navbar-nav,
+.dropdown-menu,
+.navbar-collapse,
+.navbar-nav .dropdown-menu {
+    background-color: #282828 !important;
+    background: #282828 !important;
+}
+
+/* Text colors for dark backgrounds */
+.navbar,
+.navbar-nav,
+.dropdown-menu,
+.navbar-brand,
+.nav-link,
+.dropdown-item {
+    color: #ffffff !important;
+}
+
+/* Card header styling - removing problematic rules */
+.card-header {
+    /* Remove forced background colors */
+    background: none !important;
+    background-color: transparent !important;
+}
+
+.card-header h5,
+.card-header h6,
+.card-header span,
+.card-header .small {
+    /* Color inherited from parent */
+    color: inherit !important;
+}
+
+.card-header .btn,
+.card-header a {
+    /* Color inherited from parent */
+    color: inherit !important;
+}
+
+.card-header .bi {
+    /* Icons inherit color from parent */
+    color: inherit !important;
+}
+
+/* Text muted color fixes */
+.dark-bg small.text-muted,
+.dark-bg .small.text-muted,
+[class*="bg-dark"] small.text-muted,
+[class*="bg-dark"] .small.text-muted,
+.bg-primary small.text-muted,
+.bg-primary .small.text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Alert and card text-muted fixes */
+.alert .text-muted,
+.card.bg-light .text-muted,
+.card-body .text-muted {
+    /* Remove forced colors */
+    color: inherit !important;
+}
+
+/* Coverage header styling */
+.coverage-header {
+    background: steelblue !important;
+}
+
+/* Remove forced background colors from card headers */
+.card-header.bg-primary {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Hover states */
+.nav-link:hover,
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark theme text contrast fixes */
+.dark-theme .text-muted,
+[class*="bg-dark"] .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Card header colors in dark theme */
+.dark-theme .card-header,
+[class*="bg-dark"] .card-header {
+    background-color: #282828 !important;
+    color: #ffffff !important;
+}
+
+/* Ensure all dark backgrounds use #282828 */
+[class*="bg-dark"],
+.bg-dark,
+.dark-bg,
+.dark-theme,
+.navbar-dark,
+[style*="background-color: #1"],
+[style*="background-color: #2"],
+[style*="background-color: #3"] {
+    background-color: #282828 !important;
+}
