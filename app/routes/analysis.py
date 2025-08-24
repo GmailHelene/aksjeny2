@@ -8,39 +8,47 @@ from datetime import datetime, timedelta
 import logging
 import requests
 import threading
-import random
+    try:
+        selected_symbol = request.args.get('symbol', '').strip().upper()
 
-# Safe imports for services that might not exist
-try:
-    from ..services.analysis_service import AnalysisService
-except ImportError:
-    AnalysisService = None
+        # Validate the selected symbol
+        if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
+            flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
+            return redirect(url_for('analysis.sentiment'))
 
-try:
-    from ..services.advanced_technical_service import AdvancedTechnicalService
-except ImportError:
-    AdvancedTechnicalService = None
-
-try:
-    from ..services.ai_service import AIService
-except ImportError:
-    AIService = None
-
-try:
-    from ..services.data_service import DataService, OSLO_BORS_TICKERS, GLOBAL_TICKERS
-except ImportError:
-    DataService = None
-    OSLO_BORS_TICKERS = ['EQNR.OL', 'DNB.OL', 'TEL.OL', 'YAR.OL', 'MOWI.OL']
-    GLOBAL_TICKERS = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN']
-
-try:
-    from ..services.api_service import FinnhubAPI
-except ImportError:
-    FinnhubAPI = None
-
-# Set up logger
-logger = logging.getLogger(__name__)
-
+        sentiment_data = None
+        error = None
+        if selected_symbol:
+            # Use real sentiment data if available, fallback if missing or None
+            try:
+                if DataService and hasattr(DataService, 'get_sentiment_data'):
+                    sentiment_data = DataService.get_sentiment_data(selected_symbol)
+            except Exception as e:
+                logger.error(f"Error loading real sentiment data for {selected_symbol}: {e}")
+                sentiment_data = None
+                error = f"Kunne ikke laste sentimentdata for {selected_symbol}. Viser demo-data."
+            if not sentiment_data:
+                sentiment_data = _generate_demo_sentiment_data(selected_symbol)
+        # Always define template variables
+        return render_template(
+            'analysis/sentiment.html',
+            sentiment_data=sentiment_data or {},
+            error=error,
+            popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
+            selected_symbol=selected_symbol
+        )
+    except Exception as e:
+        logger.error(f"Critical error in sentiment analysis: {e}")
+        import traceback
+        logger.error(f"Sentiment analysis traceback: {traceback.format_exc()}")
+        # Always define error variable for template
+        return render_template(
+            'analysis/sentiment.html',
+            sentiment_data={},
+            error="Sentimentanalyse er midlertidig utilgjengelig. Prøv igjen senere.",
+            popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
+            selected_symbol=None
+        )
 # Create analysis blueprint
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 
