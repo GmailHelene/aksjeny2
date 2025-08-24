@@ -52,6 +52,7 @@ def register_blueprints(app):
     app.register_blueprint(pricing, url_prefix='/pricing')
     app.register_blueprint(insider_trading, url_prefix='/insider-trading')
     app.register_blueprint(market_intel, url_prefix='/market-intel')
+    app.register_blueprint(pro_tools, url_prefix='/pro-tools')
     
     # Add insider trading to analysis blueprint instead of separate
     # app.register_blueprint(insider_trading, url_prefix='/insider-trading')

@@ -84,11 +84,13 @@ def portfolio_index():
         
         for stock in portfolio_stocks:
             try:
-                # Get current market data for the stock
+                # STEP 14 FIX: Use consistent data access for authenticated users
                 data_service = get_data_service()
-                stock_data = data_service.get_single_stock_data(stock.ticker)
+                
+                # Prefer get_stock_info for better compatibility
+                stock_data = data_service.get_stock_info(stock.ticker)
                 if stock_data:
-                    current_price = float(stock_data.get('last_price', 0))
+                    current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', 0)))
                     purchase_value = stock.purchase_price * stock.quantity
                     current_value = current_price * stock.quantity
                     profit_loss = current_value - purchase_value
@@ -320,9 +322,10 @@ def watchlist():
             watchlist_stocks = WatchlistStock.query.filter_by(watchlist_id=watchlist.id).all()
             for ws in watchlist_stocks:
                 try:
-                    # For authenticated users, prioritize real data
+                    # STEP 14 FIX: Use consistent data access for watchlist
                     current_app.logger.info(f"🎯 Getting REAL data for watchlist stock: {ws.ticker}")
-                    stock_data = DataService.get_single_stock_data(ws.ticker)
+                    data_service = get_data_service()
+                    stock_data = data_service.get_stock_info(ws.ticker)
                     
                     if stock_data and stock_data.get('last_price') and stock_data.get('last_price') != 'N/A':
                         current_app.logger.info(f"✅ REAL DATA: {ws.ticker} - Price: {stock_data.get('last_price')}")
@@ -781,8 +784,7 @@ def view_portfolio(id):
         flash('Feil ved lasting av portefølje', 'error')
         return redirect(url_for('portfolio.index'))
 
-@portfolio.route('/portfolio/portfolio/<int:id>/add', methods=['GET', 'POST'])
-@portfolio.route('/portfolio/<int:id>/add', methods=['GET', 'POST'])  # Keep old route for backward compatibility
+@portfolio.route('/<int:id>/add', methods=['GET', 'POST'])
 @login_required
 def add_stock_to_portfolio(id):
     """Add a stock to a specific portfolio"""

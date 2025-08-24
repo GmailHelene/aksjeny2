@@ -269,100 +269,121 @@ def stock_symbol(symbol):
 def details(symbol):
     """Stock details page with complete analysis data"""
     try:
-        current_app.logger.info(f"Accessing details route for symbol: {symbol}")
+        # Import helper for proper data access control
+        from ..utils.data_access_helper import get_data_service_for_user, should_provide_real_data, log_data_access
         
-        # PRIORITY FIX: Always try to get real data first (for all users)
-        # CRITICAL: For authenticated users, use real data. For guests, use fallback.
-        current_app.logger.info(f"PRIORITY FIX: Fetching data for {symbol} - User authenticated: {current_user.is_authenticated}")
+        current_app.logger.info(f"Accessing details route for symbol: {symbol}")
+        log_data_access('stocks.details', ticker=symbol, data_type="stock_details")
+        
+        # STEP 13 FIX: Ensure authenticated users get real data, demo users get appropriate access
+        if current_user.is_authenticated:
+            current_app.logger.info(f"🔐 AUTHENTICATED USER: Getting REAL data for {symbol}")
+            data_service = DataService
+            use_real_data = True
+        else:
+            current_app.logger.info(f"👤 DEMO USER: Getting demo access for {symbol}")
+            data_service = DataService  # Demo users still get real DataService but with usage tracking
+            use_real_data = False
+        
         stock_info = None
         
         try:
-            # For authenticated users, always try to get REAL data first
-            if current_user.is_authenticated:
-                current_app.logger.info(f"🔐 AUTHENTICATED USER: Getting REAL data for {symbol}")
-                try:
-                    stock_info = DataService.get_stock_info(symbol)
-                    if stock_info and 'data_source' not in stock_info:
-                        stock_info['data_source'] = 'REAL DATA SERVICE'
-                        current_app.logger.info(f"✅ REAL DATA: Retrieved live data for {symbol} - Price: {stock_info.get('last_price', 'N/A')}")
-                except Exception as e:
-                    current_app.logger.warning(f"⚠️ DataService failed for authenticated user {symbol}: {e}")
-                    stock_info = None
+            # Get stock info using appropriate service
+            stock_info = data_service.get_stock_info(symbol)
             
-            # For guest users OR if real data failed, use fallback data
-            if not stock_info:
-                from ..services.data_service import FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
-                
-                if current_user.is_authenticated:
-                    current_app.logger.error(f"❌ FALLBACK: Real data failed for authenticated user, using fallback for {symbol}")
+            if stock_info and stock_info.get('last_price', 0) > 0:
+                # Mark data source based on user type
+                if use_real_data:
+                    stock_info['data_source'] = 'REAL DATA - Premium Access'
+                    current_app.logger.info(f"✅ REAL DATA: Retrieved live data for authenticated user - {symbol} - Price: {stock_info.get('last_price', 'N/A')}")
                 else:
-                    current_app.logger.info(f"👤 GUEST USER: Using fallback data for {symbol}")
+                    stock_info['data_source'] = 'REAL DATA - Demo Access'
+                    current_app.logger.info(f"📊 DEMO ACCESS: Retrieved real data for demo user - {symbol} - Price: {stock_info.get('last_price', 'N/A')}")
+            else:
+                current_app.logger.warning(f"⚠️ DataService returned invalid data for {symbol}")
+                stock_info = None
                 
-                # Check if we have fallback data for this ticker
-                if symbol in FALLBACK_GLOBAL_DATA:
-                    fallback_data = FALLBACK_GLOBAL_DATA[symbol]
-                    current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'USD',
-                        'signal': fallback_data.get('signal', 'HOLD'),
-                        'rsi': fallback_data.get('rsi', 50.0),
-                        'data_source': 'FALLBACK DATA' if not current_user.is_authenticated else 'FALLBACK (REAL DATA FAILED)',
-                    }
-                elif symbol in FALLBACK_OSLO_DATA:
-                    fallback_data = FALLBACK_OSLO_DATA[symbol]
-                    current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'NOK',
+        except Exception as e:
+            current_app.logger.warning(f"⚠️ DataService failed for {symbol}: {e}")
+            stock_info = None
+        
+        # If DataService failed, use fallback data
+        if not stock_info:
+            from ..services.data_service import FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
+            
+            if use_real_data:
+                current_app.logger.error(f"❌ FALLBACK: Real data failed for authenticated user, using fallback for {symbol}")
+            else:
+                current_app.logger.info(f"� DEMO FALLBACK: Using fallback data for demo user accessing {symbol}")
+            
+            # Check if we have fallback data for this ticker
+            if symbol in FALLBACK_GLOBAL_DATA:
+                fallback_data = FALLBACK_GLOBAL_DATA[symbol]
+                current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
+                stock_info = {
+                    'ticker': symbol,
+                    'name': fallback_data['name'],
+                    'longName': fallback_data['name'],
+                    'shortName': fallback_data['name'][:20],
+                    'regularMarketPrice': fallback_data['last_price'],
+                    'last_price': fallback_data['last_price'],
+                    'regularMarketChange': fallback_data['change'],
+                    'change': fallback_data['change'],
+                    'regularMarketChangePercent': fallback_data['change_percent'],
+                    'change_percent': fallback_data['change_percent'],
+                    'volume': fallback_data.get('volume', 1000000),
+                    'regularMarketVolume': fallback_data.get('volume', 1000000),
+                    'marketCap': fallback_data.get('market_cap', None),
+                    'sector': fallback_data['sector'],
+                    'currency': 'USD',
                     'signal': fallback_data.get('signal', 'HOLD'),
                     'rsi': fallback_data.get('rsi', 50.0),
-                    'data_source': 'REAL FALLBACK DATA - PRIORITY FIX',
+                    'data_source': 'FALLBACK DATA - Service temporarily unavailable',
+                }
+            elif symbol in FALLBACK_OSLO_DATA:
+                fallback_data = FALLBACK_OSLO_DATA[symbol]
+                current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
+                stock_info = {
+                    'ticker': symbol,
+                    'name': fallback_data['name'],
+                    'longName': fallback_data['name'],
+                    'shortName': fallback_data['name'][:20],
+                    'regularMarketPrice': fallback_data['last_price'],
+                    'last_price': fallback_data['last_price'],
+                    'regularMarketChange': fallback_data['change'],
+                    'change': fallback_data['change'],
+                    'regularMarketChangePercent': fallback_data['change_percent'],
+                    'change_percent': fallback_data['change_percent'],
+                    'volume': fallback_data.get('volume', 1000000),
+                    'regularMarketVolume': fallback_data.get('volume', 1000000),
+                    'marketCap': fallback_data.get('market_cap', None),
+                    'sector': fallback_data['sector'],
+                    'currency': 'NOK',
+                    'signal': fallback_data.get('signal', 'HOLD'),
+                    'rsi': fallback_data.get('rsi', 50.0),
+                    'data_source': 'FALLBACK DATA - Service temporarily unavailable',
                 }
         except Exception as e:
-            current_app.logger.error(f"PRIORITY FIX: Error accessing fallback data for {symbol}: {e}")
+            current_app.logger.error(f"Error accessing fallback data for {symbol}: {e}")
         
-        # If no real fallback data available, use DataService
+        # If no fallback data available, use synthetic data
         if not stock_info:
-            current_app.logger.info(f"PRIORITY FIX: No fallback data for {symbol}, using DataService")
-            stock_info = DataService.get_stock_info(symbol)
-            
-            # PRIORITY FIX: If DataService returns the problematic $100.00, override it
-            if stock_info and stock_info.get('regularMarketPrice') == 100.0:
-                current_app.logger.warning(f"PRIORITY FIX: DataService returned synthetic $100 for {symbol}, generating realistic data")
-                # Generate realistic price based on symbol
-                import hashlib
-                hash_value = int(hashlib.md5(symbol.encode()).hexdigest(), 16) % 1000
-                realistic_price = 50 + (hash_value % 300)  # Price between $50-$350
-                stock_info['regularMarketPrice'] = realistic_price
-                stock_info['last_price'] = realistic_price
-                stock_info['data_source'] = 'PRIORITY FIX - REALISTIC GENERATED'
+            current_app.logger.info(f"No fallback data for {symbol}, using last resort DataService call")
+            try:
+                stock_info = DataService.get_stock_info(symbol)
+                
+                # Validate data quality
+                if stock_info and stock_info.get('last_price', 0) > 0:
+                    if use_real_data:
+                        stock_info['data_source'] = 'REAL DATA - Premium Access (Last Resort)'
+                    else:
+                        stock_info['data_source'] = 'REAL DATA - Demo Access (Last Resort)'
+                else:
+                    current_app.logger.warning(f"DataService returned invalid data for {symbol}")
+                    stock_info = None
+            except Exception as e:
+                current_app.logger.error(f"Last resort DataService call failed for {symbol}: {e}")
+                stock_info = None
         
         # Check if we have real data from the API or fallback
         if stock_info and isinstance(stock_info, dict) and stock_info.get('regularMarketPrice'):
@@ -583,6 +604,10 @@ def details(symbol):
             'returnOnAssets': stock_info.get('returnOnAssets', 0.08),  # 8% default ROA  
             'grossMargins': stock_info.get('grossMargins', 0.35),     # 35% default gross margin
             'enterpriseToEbitda': stock_info.get('enterpriseToEbitda', 12.5),  # 12.5x default EV/EBITDA
+            # STEP 13: Add data source and user context information
+            'data_source': stock_info.get('data_source', 'DataService'),
+            'user_has_real_access': use_real_data,
+            'access_level': 'premium' if use_real_data else 'demo'
         }
         
         stock = {
@@ -631,6 +656,10 @@ def details(symbol):
         print(f"  template_stock_info longName: {template_stock_info.get('longName')}")
         print(f"  Keys in template_stock_info: {list(template_stock_info.keys())}")
 
+        # Get user context for template
+        from ..utils.data_access_helper import get_user_context
+        user_context = get_user_context()
+        
         # Return the stock details template with all data
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
@@ -642,6 +671,7 @@ def details(symbol):
                              news=[],
                              earnings=[],
                              competitors=[],
+                             user_context=user_context,  # STEP 13: User authentication context
                              error=None)
         
     except Exception as e:
@@ -684,6 +714,10 @@ def details(symbol):
             'enterpriseToEbitda': 12.5,
         }
         
+        # Get user context for error template
+        from ..utils.data_access_helper import get_user_context
+        user_context = get_user_context()
+        
         # Return the details template with error rather than redirect
         return render_template('stocks/details_enhanced.html',
                              symbol=symbol,
@@ -710,6 +744,7 @@ def details(symbol):
                              news=[],
                              earnings=[],
                              competitors=[],
+                             user_context=user_context,  # STEP 13: User authentication context
                              error=f"Could not load data for {symbol}")
 
 @stocks.route('/search')
