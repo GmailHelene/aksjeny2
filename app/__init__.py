@@ -288,7 +288,7 @@ def register_blueprints(app):
         
         # Explicitly import and register portfolio blueprint
         from .routes.portfolio import portfolio
-        app.register_blueprint(portfolio, url_prefix='/portfolio')
+        app.register_blueprint(portfolio)
         blueprints_registered.append('portfolio')
         
         # Register stocks blueprint
