@@ -2289,16 +2289,7 @@ def portfolio_watchlist():
                              stocks=[], 
                              message="Watchlist er midlertidig utilgjengelig")
 
-@main.route('/norwegian-intel/government-impact')
-@login_required
-def norwegian_intel_government_impact():
-    """Norwegian intel government impact route"""
-    try:
-        return redirect(url_for('norwegian_intel.government_impact'))
-    except Exception as e:
-        logger.error(f"Error redirecting to norwegian intel government impact: {e}")
-        # Fallback: render error page or redirect to main
-        return redirect(url_for('main.index'))
+# Government impact route moved to norwegian_intel blueprint to avoid redirect loops
 
 @main.route('/advanced/crypto-dashboard')
 @access_required
