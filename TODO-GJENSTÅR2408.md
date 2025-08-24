@@ -2,8 +2,8 @@
 - [x] Step 1: Fix CSS rules removals (card-header related)
 - [x ] Step 2: Fix JavaScript errors on /analysis/screener
 - [x ] Step 3: Fix currency overview volume and signal display
-- [ ] Step 4: Fix favorite button success/error message issue (stocks list currency and crypto pages)
-- [ ] Step 5: Fix /watchlist/ 500 errorf
+- [ x] Step 4: Fix favorite button success/error message issue (stocks list currency and crypto pages)
+- [ x] Step 5: Fix /watchlist/ 500 errorf
 - [ ] Step 6: Fix /profile 500 error
 - [ ] Step 7: Fix /analysis/sentiment 500 error
 - [ ] Step 8: Fix /analysis/warren-buffett 500 error

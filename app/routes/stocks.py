@@ -20,44 +20,35 @@ from ..utils.exchange_utils import get_exchange_url
 logger = logging.getLogger(__name__)
 
 def calculate_rsi(prices, periods=14):
-    ## Removed duplicate /compare route definition
-                        continue
-                    required_columns = {'Open', 'High', 'Low', 'Close', 'Volume'}
-                    if not all(col in history.columns for col in required_columns):
-                        logger.error(f"Missing required columns for {ticker}: {required_columns - set(history.columns)}")
-                        continue
-                    stock_info = DataService.get_stock_info(ticker)
-                    stock_name = stock_info.get('longName', ticker) if stock_info else ticker
-                    ticker_names[ticker] = stock_name
-                    ticker_data = []
-                    base_price = None
-                    closes = []
-                    volumes_list = []
-                    for date, row in history.iterrows():
-                        try:
-                            price = float(row['Close'])
-                            if normalize:
-                                if base_price is None:
-                                    base_price = price
-                                if base_price > 0:
-                                    price = ((price / base_price) - 1) * 100
-                                else:
-                                    try:
-                                        exp1 = prices.ewm(span=fast, adjust=False).mean()
-                                        exp2 = prices.ewm(span=slow, adjust=False).mean()
-                                        macd = exp1 - exp2
-                                        signal_line = macd.ewm(span=signal, adjust=False).mean()
-                                        histogram = macd - signal_line
-                                        return {
-                                            'macd': float(macd.iloc[-1]),
-                                            'signal': float(signal_line.iloc[-1]),
-                                            'hist': float(histogram.iloc[-1])
-                                        }
-                                    except Exception:
-                                        return {'macd': 0.0, 'signal': 0.0, 'hist': 0.0}
-                                'name': stock_name,
-                                'price': stock_info.get('regularMarketPrice', 0),
-                                'change': stock_info.get('regularMarketChangePercent', 0),
+    # ...existing code...
+    # Indentation error fix: remove stray code and ensure function body is correct
+    # This function should only contain RSI calculation logic
+    try:
+        deltas = np.diff(prices)
+        seed = deltas[:periods+1]
+        up = seed[seed >= 0].sum()/periods
+        down = -seed[seed < 0].sum()/periods
+        rs = up/down
+        rsi = np.zeros_like(prices)
+        rsi[:periods] = 100. - 100./(1. + rs)
+
+        for i in range(periods, len(prices)):
+            delta = deltas[i - 1]
+            if delta > 0:
+                upval = delta
+                downval = 0.
+            else:
+                upval = 0.
+                downval = -delta
+
+            up = (up * (periods - 1) + upval) / periods
+            down = (down * (periods - 1) + downval) / periods
+            rs = up/down
+            rsi[i] = 100. - 100./(1. + rs)
+
+        return float(rsi[-1])
+    except Exception:
+        return 50.0
                                 'volume': stock_info.get('regularMarketVolume', 0),
                                 'marketCap': stock_info.get('marketCap', 0),
                                 'pe_ratio': stock_info.get('trailingPE', 0),
