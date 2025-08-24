@@ -8,6 +8,28 @@ from datetime import datetime, timedelta
 import logging
 import requests
 import threading
+
+# Safe imports for optional services
+try:
+    from ..services.analysis_service import AnalysisService
+except ImportError:
+    AnalysisService = None
+
+try:
+    from ..services.data_service import DataService
+except ImportError:
+    DataService = None
+
+# Create analysis blueprint
+analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
+@analysis.route('/sentiment')
+@access_required
+def sentiment():
+    """Market sentiment analysis page"""
     try:
         selected_symbol = request.args.get('symbol', '').strip().upper()
 
@@ -49,8 +71,85 @@ import threading
             popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
             selected_symbol=None
         )
-# Create analysis blueprint
-analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
+
+def _generate_demo_sentiment_data(symbol):
+    """Generate demo sentiment data for a given symbol"""
+    import random
+    return {
+        'symbol': symbol,
+        'sentiment_score': random.uniform(0.3, 0.8),
+        'sentiment_label': random.choice(['Positiv', 'Nøytral', 'Negativ']),
+        'news_sentiment': random.uniform(0.2, 0.9),
+        'social_sentiment': random.uniform(0.1, 0.8),
+        'analyst_sentiment': random.uniform(0.4, 0.9),
+        'overall_score': random.uniform(0.3, 0.8),
+        'confidence': random.uniform(0.6, 0.9),
+        'demo': True
+    }
+
+@analysis.route('/advanced-analysis')
+@access_required
+def advanced_analysis():
+    """Advanced analysis page with multiple tools and indicators"""
+    try:
+        # Get the selected symbol if any
+        selected_symbol = request.args.get('symbol', '').strip().upper()
+        
+        # Validate the selected symbol
+        if selected_symbol and not selected_symbol.replace('.', '').replace('-', '').isalnum():
+            flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
+            return redirect(url_for('analysis.advanced_analysis'))
+        
+        # Default data for the advanced analysis page
+        analysis_data = {
+            'selected_symbol': selected_symbol,
+            'technical_indicators': {},
+            'fundamental_data': {},
+            'risk_metrics': {},
+            'chart_data': {},
+            'recommendations': []
+        }
+        
+        # If a symbol is selected, try to get real data
+        if selected_symbol:
+            try:
+                if DataService:
+                    # Try to get comprehensive analysis data
+                    stock_info = DataService.get_stock_info(selected_symbol)
+                    if stock_info:
+                        analysis_data.update({
+                            'stock_info': stock_info,
+                            'price': stock_info.get('price', 0),
+                            'change': stock_info.get('change', 0),
+                            'change_percent': stock_info.get('change_percent', 0)
+                        })
+            except Exception as e:
+                logger.error(f"Error loading advanced analysis data for {selected_symbol}: {e}")
+                flash(f"Kunne ikke laste fullstendig data for {selected_symbol}. Viser tilgjengelig informasjon.", 'info')
+        
+        # Popular symbols for the selector
+        popular_stocks = ['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']
+        
+        return render_template(
+            'analysis/advanced.html',
+            analysis_data=analysis_data,
+            popular_stocks=popular_stocks,
+            selected_symbol=selected_symbol
+        )
+        
+    except Exception as e:
+        logger.error(f"Critical error in advanced analysis: {e}")
+        import traceback
+        logger.error(f"Advanced analysis traceback: {traceback.format_exc()}")
+        
+        # Return error page with fallback data
+        return render_template(
+            'analysis/advanced.html',
+            analysis_data={'selected_symbol': None},
+            popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
+            selected_symbol=None,
+            error="Avansert analyse er midlertidig utilgjengelig. Prøv igjen senere."
+        )
 
 @analysis.route('/api/sentiment')
 @access_required

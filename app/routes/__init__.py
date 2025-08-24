@@ -34,6 +34,7 @@ from .norwegian_intel import norwegian_intel
 from .pricing import pricing
 from .insider_trading import insider_trading
 from .market_intel import market_intel
+from .pro_tools import pro_tools
 
 # Remove these if they exist as separate files but are duplicates:
 # from .dashboard import dashboard  # Consolidate into main
