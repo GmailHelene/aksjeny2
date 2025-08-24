@@ -61,6 +61,8 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
             'signal': float(signal_line.iloc[-1]),
             'hist': float(histogram.iloc[-1])
         }
+    except Exception:
+        return {'macd': 0.0, 'signal': 0.0, 'hist': 0.0}
 from flask import Response
 from flask_login import current_user, login_required
 from ..extensions import csrf
@@ -220,31 +222,19 @@ def compare():
                                 if base_price > 0:
                                     price = ((price / base_price) - 1) * 100
                                 else:
-                                    price = 0
-                            closes.append(price)
-                            volumes_list.append(float(row['Volume']))
-                            data_point = {
-                                'date': date.strftime('%Y-%m-%d'),
-                                'open': float(row['Open']),
-                                'high': float(row['High']),
-                                'low': float(row['Low']),
-                                'close': float(price),
-                                'volume': int(row['Volume'])
-                            }
-                            ticker_data.append(data_point)
-                        except (ValueError, TypeError) as e:
-                            logger.warning(f"Invalid data point for {ticker} at {date}: {e}")
-                            continue
-                    if ticker_data:
-                        chart_data[ticker] = ticker_data
-                        price_series[ticker] = closes
-                        volume_series[ticker] = volumes_list
-                        current_prices[ticker] = closes[-1] if closes else 0
-                        price_changes[ticker] = ((closes[-1] - closes[0]) / closes[0] * 100) if closes and closes[0] != 0 else 0
-                        volatility[ticker] = float(np.std(np.diff(closes)) if len(closes) > 1 else 0)
-                        volumes[ticker] = float(np.mean(volumes_list)) if volumes_list else 0
-                        if stock_info:
-                            metrics[ticker] = {
+                                    try:
+                                        exp1 = prices.ewm(span=fast, adjust=False).mean()
+                                        exp2 = prices.ewm(span=slow, adjust=False).mean()
+                                        macd = exp1 - exp2
+                                        signal_line = macd.ewm(span=signal, adjust=False).mean()
+                                        histogram = macd - signal_line
+                                        return {
+                                            'macd': float(macd.iloc[-1]),
+                                            'signal': float(signal_line.iloc[-1]),
+                                            'hist': float(histogram.iloc[-1])
+                                        }
+                                    except Exception:
+                                        return {'macd': 0.0, 'signal': 0.0, 'hist': 0.0}
                                 'name': stock_name,
                                 'price': stock_info.get('regularMarketPrice', 0),
                                 'change': stock_info.get('regularMarketChangePercent', 0),
