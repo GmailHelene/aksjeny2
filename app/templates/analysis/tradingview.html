@@ -126,31 +126,30 @@
                     <h6 class="mb-0">Teknisk Analyse</h6>
                 </div>
                 <div class="card-body p-0">
-                    <div id="tradingview_technical_analysis" style="height: 400px;">
+                    <div id="tradingview_technical_analysis" style="height: 350px;">
                         <div class="text-center p-4">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Laster...</span>
+                                <span class="visually-hidden">Laster teknisk analyse...</span>
                             </div>
                             <p class="text-muted mt-3">Laster teknisk analyse...</p>
-                        </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Technical Analysis Widget -->
+        <!-- Market Overview Widget -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm">
                 <div class="card-header">
-                    <h6 class="mb-0">Teknisk Analyse Sammendrag</h6>
+                    <h6 class="mb-0">Markedsoversikt</h6>
                 </div>
                 <div class="card-body p-0">
-                    <div id="tradingview_technical_analysis" style="height: 300px;">
+                    <div id="tradingview_market_overview" style="height: 350px;">
                         <div class="text-center p-4">
-                            <i class="fas fa-chart-line text-primary mb-2" style="font-size: 2rem;"></i>
-                            <h6>Teknisk Analyse</h6>
-                            <p class="text-muted small">Avanserte indikatorer laster...</p>
+                            <i class="bi bi-graph-up text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Markedsoversikt</h6>
+                            <p class="text-muted small">Laster markeds-indikatorer...</p>
                             <div class="spinner-border spinner-border-sm text-primary" role="status">
                                 <span class="visually-hidden">Laster...</span>
                             </div>
@@ -383,6 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         loadMainChart(currentSymbol);
                         loadTechnicalAnalysis(currentSymbol);
+                        loadMarketOverview();
                     } catch (error) {
                         console.error('Error initializing charts:', error);
                         handleTradingViewError(error);
@@ -629,20 +629,6 @@ function loadMainChart(symbol) {
     }
     
     initChart();
-                });
-                
-                console.log('✅ TradingView main chart loaded for ' + formattedSymbol);
-            } catch (error) {
-                console.error('❌ Error loading main chart:', error);
-                showFallbackChart(container, symbol);
-            }
-        } else {
-            // TradingView not ready, try again
-            setTimeout(initChart, 500);
-        }
-    }
-    
-    initChart();
 }
 
 // Technical analysis widget
@@ -659,7 +645,7 @@ function loadTechnicalAnalysis(symbol) {
                     "interval": "1D",
                     "width": "100%",
                     "isTransparent": false,
-                    "height": "400",
+                    "height": "350",
                     "symbol": formattedSymbol,
                     "showIntervalTabs": true,
                     "locale": "no",
@@ -678,6 +664,60 @@ function loadTechnicalAnalysis(symbol) {
     }
     
     initTechAnalysis();
+}
+
+// Market overview widget
+function loadMarketOverview() {
+    const container = document.getElementById('tradingview_market_overview');
+    if (!container) return;
+    
+    function initMarketOverview() {
+        if (typeof TradingView !== 'undefined' && TradingView.MarketOverviewWidget) {
+            try {
+                widgets.marketOverview = new TradingView.MarketOverviewWidget({
+                    "colorTheme": "light",
+                    "dateRange": "12M",
+                    "showChart": true,
+                    "locale": "no",
+                    "width": "100%",
+                    "height": "350",
+                    "plotLineColorGrowing": "rgba(41, 98, 255, 1)",
+                    "plotLineColorFalling": "rgba(41, 98, 255, 1)",
+                    "gridLineColor": "rgba(240, 243, 250, 0)",
+                    "scaleFontColor": "rgba(120, 123, 134, 1)",
+                    "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+                    "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+                    "belowLineFillColorGrowingBottom": "rgba(41, 98, 255, 0)",
+                    "belowLineFillColorFallingBottom": "rgba(41, 98, 255, 0)",
+                    "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+                    "tabs": [
+                        {
+                            "title": "Indekser",
+                            "symbols": [
+                                {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
+                                {"s": "FOREXCOM:NSXUSD", "d": "US 100"},
+                                {"s": "FOREXCOM:DJI", "d": "Dow 30"},
+                                {"s": "INDEX:OSEBX", "d": "OSEBX"},
+                                {"s": "FOREXCOM:UKXGBP", "d": "UK 100"},
+                                {"s": "INDEX:DAX", "d": "DAX Index"}
+                            ],
+                            "originalTitle": "Indices"
+                        }
+                    ],
+                    "container_id": "tradingview_market_overview"
+                });
+                
+                console.log('✅ Market overview widget loaded');
+            } catch (error) {
+                console.error('❌ Error loading market overview:', error);
+                container.innerHTML = '<div class="text-center p-4 text-muted">Markedsoversikt ikke tilgjengelig</div>';
+            }
+        } else {
+            setTimeout(initMarketOverview, 500);
+        }
+    }
+    
+    initMarketOverview();
 }
 
 // Fallback chart display
@@ -707,6 +747,7 @@ function loadSymbol(symbol) {
     document.getElementById('symbolSearch').value = symbol;
     loadMainChart(symbol);
     loadTechnicalAnalysis(symbol);
+    loadMarketOverview();
     
     // Update URL
     const url = new URL(window.location);

@@ -234,12 +234,6 @@ main {
     border: 1px solid #dee2e6 !important;
 }
 
-.card-header {
-    background-color: #f8f9fa !important;
-    color: #212529 !important;
-    border-bottom: 1px solid #dee2e6 !important;
-}
-
 .card-body {
     background-color: #fff !important;
     color: #212529 !important;

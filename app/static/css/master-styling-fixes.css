@@ -1,20 +1,5 @@
 /* Master CSS fixes for all styling issues */
 
-/* 1. Fix card-header to use solid #222222 background instead of gradients */
-.card-header {
-    background: #222222 !important;
-    background-color: #222222 !important;
-    background-image: none !important;
-    border: 0 !important;
-    color: #ffffff !important;
-}
-
-.card-header.bg-gradient {
-    background: #222222 !important;
-    background-color: #222222 !important;
-    background-image: none !important;
-}
-
 /* UNIFIED NAVIGATION STYLING - ALL #333333 */
 .navbar,
 .navbar-nav,

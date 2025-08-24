@@ -694,3 +694,24 @@ def register_template_filters(app):
             return f"{formatted} %"
         except (ValueError, TypeError):
             return str(value) if value is not None else "—"
+
+    @app.template_filter('format_number')
+    def format_number_filter(value):
+        """Format number for display"""
+        if value is None:
+            return "—"
+        try:
+            if isinstance(value, str):
+                value = float(value)
+            
+            # Handle very large numbers (millions, billions)
+            if abs(value) >= 1e9:
+                return f"{value/1e9:.1f}B"
+            elif abs(value) >= 1e6:
+                return f"{value/1e6:.1f}M"
+            elif abs(value) >= 1e3:
+                return f"{value/1e3:.1f}K"
+            else:
+                return f"{value:,.0f}"
+        except (ValueError, TypeError):
+            return str(value) if value is not None else "—"

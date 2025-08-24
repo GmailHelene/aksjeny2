@@ -1,11 +1,6 @@
 /* Contrast Fixes for Accessibility */
 
 /* Ensure good contrast for all text elements */
-.card-header {
-    background-color: #f8f9fa !important;
-    color: #212529 !important;
-}
-
 .card-header.bg-dark {
     background-color: #212529 !important;
     color: #ffffff !important;

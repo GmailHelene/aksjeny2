@@ -110,11 +110,11 @@
                     <div class="mt-3">
                         <div class="alert alert-{% if announcement.impact_score > 0 %}success{% else %}warning{% endif %} mb-0">
                             <strong>Analyse:</strong>
-                            {% if announcement.title | lower | search('fornybar energi') %}
+                            {% if 'fornybar energi' in announcement.title.lower() %}
                                 Økt satsing på fornybar energi kan påvirke tradisjonelle energiselskaper negativt, men skape muligheter for rene energiselskaper.
-                            {% elif announcement.title | lower | search('skatt') %}
+                            {% elif 'skatt' in announcement.title.lower() %}
                                 Skatteendringer kan ha direkte påvirkning på berørte selskapers lønnsomhet og aksjekurs.
-                            {% elif announcement.title | lower | search('støtte') %}
+                            {% elif 'støtte' in announcement.title.lower() %}
                                 Statlig støtte til næringer kan styrke konkurranseevnen og fremtidsutsiktene for berørte selskaper.
                             {% else %}
                                 Regjeringens beslutninger har ofte omfattende konsekvenser for berørte sektorer og enkeltselskaper.

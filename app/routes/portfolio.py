@@ -310,6 +310,8 @@ def watchlist():
         from ..models import Watchlist, WatchlistStock
         from ..services.data_service import DataService
         
+        current_app.logger.info(f"🔐 AUTHENTICATED USER: Loading watchlist with REAL data for user {current_user.id}")
+        
         # Get user's watchlists and their stocks
         user_watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
         stocks = []
@@ -318,30 +320,49 @@ def watchlist():
             watchlist_stocks = WatchlistStock.query.filter_by(watchlist_id=watchlist.id).all()
             for ws in watchlist_stocks:
                 try:
-                    # Get current stock data
+                    # For authenticated users, prioritize real data
+                    current_app.logger.info(f"🎯 Getting REAL data for watchlist stock: {ws.ticker}")
                     stock_data = DataService.get_single_stock_data(ws.ticker)
-                    if stock_data:
+                    
+                    if stock_data and stock_data.get('last_price') and stock_data.get('last_price') != 'N/A':
+                        current_app.logger.info(f"✅ REAL DATA: {ws.ticker} - Price: {stock_data.get('last_price')}")
                         stocks.append({
                             'ticker': ws.ticker,
-                            'name': stock_data.get('shortName', ws.ticker),
+                            'name': stock_data.get('shortName', stock_data.get('name', ws.ticker)),
                             'last_price': stock_data.get('last_price', 0),
                             'change': stock_data.get('change', 0),
                             'change_percent': stock_data.get('change_percent', 0),
                             'watchlist_name': watchlist.name,
-                            'watchlist_id': watchlist.id
+                            'watchlist_id': watchlist.id,
+                            'data_source': 'REAL DATA'
+                        })
+                    else:
+                        current_app.logger.warning(f"⚠️ REAL DATA FAILED: No valid data for {ws.ticker}, using placeholder")
+                        stocks.append({
+                            'ticker': ws.ticker,
+                            'name': ws.ticker,
+                            'last_price': 'Ikke tilgjengelig',
+                            'change': 0,
+                            'change_percent': 0,
+                            'watchlist_name': watchlist.name,
+                            'watchlist_id': watchlist.id,
+                            'data_source': 'NO DATA AVAILABLE'
                         })
                 except Exception as stock_error:
-                    current_app.logger.warning(f"Error getting data for watchlist stock {ws.ticker}: {stock_error}")
-                    # Add stock with fallback data
+                    current_app.logger.error(f"❌ ERROR getting real data for watchlist stock {ws.ticker}: {stock_error}")
+                    # Add stock with placeholder data for authenticated users
                     stocks.append({
                         'ticker': ws.ticker,
                         'name': ws.ticker,
-                        'last_price': 'Ikke tilgjengelig',
+                        'last_price': 'Feil ved henting',
                         'change': 0,
                         'change_percent': 0,
                         'watchlist_name': watchlist.name,
-                        'watchlist_id': watchlist.id
+                        'watchlist_id': watchlist.id,
+                        'data_source': 'ERROR'
                     })
+        
+        current_app.logger.info(f"📊 WATCHLIST LOADED: {len(stocks)} stocks for authenticated user")
         
         return render_template('portfolio/watchlist.html', 
                              stocks=stocks, 

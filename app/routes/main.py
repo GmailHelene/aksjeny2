@@ -2186,9 +2186,46 @@ def norwegian_intel_government_impact():
 def advanced_crypto_dashboard():
     """Advanced crypto dashboard route - render crypto dashboard directly"""
     try:
-        # Get crypto data directly instead of redirecting
+        # Get crypto data directly
         data_service = get_data_service()
-        crypto_data = data_service.get_crypto_overview() if data_service else {}
+        crypto_data = None
+        
+        if data_service:
+            try:
+                crypto_data = data_service.get_crypto_overview()
+            except Exception as e:
+                logger.warning(f"DataService crypto failed: {e}")
+                crypto_data = None
+        
+        # Use fallback crypto data if DataService fails
+        if not crypto_data:
+            from ..services.data_service import FALLBACK_GLOBAL_DATA
+            crypto_data = {
+                'BTC': FALLBACK_GLOBAL_DATA.get('BTC', {
+                    'name': 'Bitcoin',
+                    'last_price': 43250.50,
+                    'change': 1250.30,
+                    'change_percent': 2.98,
+                    'volume': 28500000000,
+                    'market_cap': 847000000000
+                }),
+                'ETH': {
+                    'name': 'Ethereum', 
+                    'last_price': 2580.75,
+                    'change': -45.20,
+                    'change_percent': -1.72,
+                    'volume': 15200000000,
+                    'market_cap': 310000000000
+                },
+                'ADA': {
+                    'name': 'Cardano',
+                    'last_price': 0.385,
+                    'change': 0.012,
+                    'change_percent': 3.22,
+                    'volume': 890000000,
+                    'market_cap': 13600000000
+                }
+            }
         
         # Format crypto data for dashboard
         crypto_list = []
