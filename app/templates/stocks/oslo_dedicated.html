@@ -87,6 +87,31 @@
         </div>
     </div>
 
+    <!-- Data Source Information -->
+    {% if data_info %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert {% if data_info.data_quality == 'real' %}alert-success{% else %}alert-info{% endif %} d-flex align-items-center">
+                <i class="bi {% if data_info.data_quality == 'real' %}bi-check-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                <div class="flex-grow-1">
+                    <strong>Datakilde:</strong>
+                    {% if data_info.real_data_stocks > 0 %}
+                        {{ data_info.real_data_stocks }} av {{ data_info.total_stocks }} aksjer har sanntidsdata
+                        {% if data_info.user_authenticated %}
+                            <span class="badge bg-success ms-2"><i class="bi bi-shield-check"></i> Autentisert bruker</span>
+                        {% endif %}
+                    {% else %}
+                        Bruker demo data - logg inn for sanntidsdata
+                        {% if not data_info.user_authenticated %}
+                            <a href="{{ url_for('main.login') }}" class="btn btn-sm btn-outline-primary ms-2">Logg inn</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Quick Search -->
     <div class="row mb-4">
         <div class="col-12">

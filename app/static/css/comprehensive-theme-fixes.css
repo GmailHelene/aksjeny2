@@ -10,15 +10,7 @@
     background: #282828 !important;
 }
 
-/* Text colors for dark backgrounds */
-.navbar,
-.navbar-nav,
-.dropdown-menu,
-.navbar-brand,
-.nav-link,
-.dropdown-item {
-    color: #ffffff !important;
-}
+
 
 /* Card header styling - removing problematic rules */
 .card-header {

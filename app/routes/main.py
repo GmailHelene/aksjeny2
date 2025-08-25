@@ -1564,37 +1564,45 @@ def internal_error(error):
     return render_template('errors/500.html'), 500
 
 @main.route('/profile')
-@demo_access  # Changed to demo_access to allow access while checking authentication
+@login_required  # Require authentication for profile access
 def profile():
     """User profile page with comprehensive error handling and fallbacks"""
     try:
         # Initialize empty error list to track any issues
         errors = []
         
-        # Determine user authentication and subscription status
-        is_authenticated = current_user.is_authenticated
+        # User is guaranteed to be authenticated due to @login_required
+        is_authenticated = True
         subscription_status = 'free'
         
-        if is_authenticated:
-            # Get basic user information with fallbacks
-            user_stats = {
-                'member_since': getattr(current_user, 'created_at', datetime.now()),
-                'last_login': getattr(current_user, 'last_login', datetime.now()),
-                'total_searches': getattr(current_user, 'total_searches', 0),
-                'favorite_stocks': 0  # Will be updated if favorites can be loaded
-            }
-            
-            # Enhanced subscription status check
-            try:
-                if current_user.email in EXEMPT_EMAILS:
-                    subscription_status = 'premium'
-                elif current_user.has_subscription:
-                    subscription_status = current_user.subscription_type or 'premium'
-                elif current_user.trial_start and not current_user.trial_used:
-                    subscription_status = 'trial'
-            except Exception as sub_error:
-                logger.warning(f"Error checking subscription status: {sub_error}")
-                errors.append('subscription_check_failed')
+        # Process authenticated user data:
+        # Process authenticated user data:
+        # Get basic user information with fallbacks
+        user_stats = {
+            'member_since': getattr(current_user, 'created_at', datetime.now()),
+            'last_login': getattr(current_user, 'last_login', datetime.now()),
+            'total_searches': getattr(current_user, 'total_searches', 0),
+            'favorite_stocks': 0  # Will be updated if favorites can be loaded
+        }
+        
+        # Enhanced subscription status check for authenticated users
+        try:
+            # Check if user is in exempt emails (admin users)
+            if current_user.email in EXEMPT_EMAILS:
+                subscription_status = 'premium'
+            # Check if user has active subscription
+            elif getattr(current_user, 'has_subscription', False):
+                subscription_status = getattr(current_user, 'subscription_type', 'premium')
+            # Check trial status
+            elif getattr(current_user, 'trial_start', None) and not getattr(current_user, 'trial_used', True):
+                subscription_status = 'trial'
+            # For any authenticated user, give them at least basic access
+            else:
+                subscription_status = 'basic'  # Changed from 'free' to ensure real data
+        except Exception as sub_error:
+            logger.warning(f"Error checking subscription status: {sub_error}")
+            subscription_status = 'basic'  # Default to basic for authenticated users
+            errors.append('subscription_check_failed')
             
             # Enhanced referral stats with error handling
             try:
@@ -1704,34 +1712,6 @@ def profile():
                 logger.warning(f"Error getting subscription info: {sub_info_error}")
                 subscription = None
                 errors.append('subscription_info_failed')
-                
-        else:
-            # Default values for demo/unauthenticated users
-            user_stats = {
-                'member_since': datetime.now(),
-                'last_login': datetime.now(),
-                'total_searches': 0,
-                'favorite_stocks': 0
-            }
-            user_favorites = []
-            user_preferences = {
-                'display_mode': 'light',
-                'number_format': 'norwegian',
-                'dashboard_widgets': '[]',
-                'email_notifications': True,
-                'price_alerts': True,
-                'market_news': True,
-                'portfolio_updates': True,
-                'ai_insights': True,
-                'weekly_reports': True
-            }
-            referral_stats = {
-                'referrals_made': 0,
-                'referral_earnings': 0,
-                'referral_code': 'REF-DEMO'
-            }
-            subscription = None
-            subscription_status = 'free'
         
         # Ensure all variables are defined
         user_stats = user_stats or {}
@@ -1740,11 +1720,11 @@ def profile():
         referral_stats = referral_stats or {}
         
         return render_template('profile.html',
-            user=current_user if current_user.is_authenticated else None,
+            user=current_user,  # Always authenticated user
             subscription=subscription,
             subscription_status=subscription_status,
             user_stats=user_stats,
-            user_language=getattr(current_user, 'language', 'nb') if current_user.is_authenticated else 'nb',
+            user_language=getattr(current_user, 'language', 'nb'),
             user_display_mode=user_preferences.get('display_mode', 'light'),
             user_number_format=user_preferences.get('number_format', 'norwegian'),
             user_dashboard_widgets=user_preferences.get('dashboard_widgets', '[]'),
@@ -1754,15 +1734,15 @@ def profile():
             errors=errors if 'errors' in locals() and errors else None)
                              
     except Exception as e:
-        logger.error(f"Critical error in profile page: {e}")
-        # Always provide demo profile data instead of error message
-        demo_user_stats = {
-            'member_since': datetime.now(),
-            'last_login': datetime.now(),
+        logger.error(f"Error in profile page for user {current_user.id}: {e}")
+        # Provide basic fallback profile data for authenticated users
+        fallback_user_stats = {
+            'member_since': getattr(current_user, 'created_at', datetime.now()),
+            'last_login': getattr(current_user, 'last_login', datetime.now()),
             'total_searches': 0,
             'favorite_stocks': 0
         }
-        demo_preferences = {
+        fallback_preferences = {
             'display_mode': 'light',
             'number_format': 'norwegian',
             'dashboard_widgets': '[]',
@@ -1773,28 +1753,41 @@ def profile():
             'ai_insights': True,
             'weekly_reports': True
         }
-        demo_referral_stats = {
+        fallback_referral_stats = {
             'referrals_made': 0,
             'referral_earnings': 0,
-            'referral_code': 'REF-DEMO'
+            'referral_code': f'REF{getattr(current_user, "id", "001")}'
         }
+        
+        # Determine basic subscription status for authenticated user
+        fallback_subscription_status = 'basic'
+        try:
+            if current_user.email in EXEMPT_EMAILS:
+                fallback_subscription_status = 'premium'
+            elif getattr(current_user, 'has_subscription', False):
+                fallback_subscription_status = 'premium'
+        except:
+            pass
         
         try:
             return render_template('profile.html',
-                user=current_user if current_user.is_authenticated else None,
+                user=current_user,
                 subscription=None,
-                subscription_status='free',
-                user_stats=demo_user_stats,
-                user_language='nb',
+                subscription_status=fallback_subscription_status,
+                user_stats=fallback_user_stats,
+                user_language=getattr(current_user, 'language', 'nb'),
                 user_display_mode='light',
                 user_number_format='norwegian',
                 user_dashboard_widgets='[]',
                 user_favorites=[],
-                **demo_preferences,
-                **demo_referral_stats,
-                errors=None)
-        except Exception:
-            return "Demo profil lastet - noen funksjoner kan være begrenset.", 200
+                **fallback_preferences,
+                **fallback_referral_stats,
+                errors=['general_error'])
+        except Exception as template_error:
+            logger.error(f"Template error in profile: {template_error}")
+            # Final fallback with flash message instead of direct return
+            flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
+            return redirect(url_for('main.index'))
 
 @main.route('/mitt-abonnement')
 @main.route('/my-subscription')
