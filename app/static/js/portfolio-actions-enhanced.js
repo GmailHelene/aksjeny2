@@ -102,7 +102,7 @@ if (typeof PortfolioActionsManager === 'undefined') {
             }
 
             // Make API request
-            const response = await fetch(`/api/favorites/toggle/${ticker}`, {
+            const response = await fetch(`/stocks/api/favorites/toggle/${ticker}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

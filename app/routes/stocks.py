@@ -1438,12 +1438,16 @@ def check_favorite(symbol):
 def toggle_favorite(symbol):
     """Toggle stock in/out of favorites"""
     try:
+        logger.info(f"Toggle favorite request for symbol: {symbol}")
+        
         if not current_user.is_authenticated:
             # Demo users - show success message but don't actually save
+            logger.info(f"Demo user toggle favorite for {symbol}")
             return jsonify({'success': True, 'favorited': True, 'message': f'{symbol} lagt til i favoritter (demo-modus)'})
             
         # Check current status
         is_favorited = Favorites.is_favorite(current_user.id, symbol)
+        logger.info(f"Current favorite status for {symbol}: {is_favorited}")
         
         # Set up the response
         response = None
@@ -1455,27 +1459,41 @@ def toggle_favorite(symbol):
         try:
             if is_favorited:
                 # Remove from favorites
+                logger.info(f"Removing {symbol} from favorites for user {current_user.id}")
                 removed = Favorites.remove_favorite(current_user.id, symbol)
                 if removed:
-                    current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
-                    UserActivity.create_activity(
-                        user_id=current_user.id,
-                        activity_type='favorite_remove',
-                        description=f'Fjernet {symbol} fra favoritter'
-                    )
-                    db.session.commit()
+                    # Update favorite count
+                    try:
+                        current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
+                        db.session.commit()
+                        logger.info(f"Successfully removed {symbol} from favorites")
+                    except Exception as e:
+                        logger.warning(f"Could not update favorite_count: {e}")
+                        # Don't fail the operation for this
+                        pass
+                    
                     response = {
                         'success': True,
                         'favorited': False,
                         'message': f'{symbol} fjernet fra favoritter'
                     }
                 else:
+                    logger.error(f"Failed to remove {symbol} from favorites")
                     response = {'success': False, 'error': 'Failed to remove from favorites'}, 500
             else:
                 # Add to favorites
-                # Get stock info for name
-                stock_info = DataService.get_stock_info(symbol)
-                name = stock_info.get('name', symbol) if stock_info else symbol
+                # Get stock info for name with better error handling for crypto
+                try:
+                    stock_info = DataService.get_stock_info(symbol)
+                    name = stock_info.get('name', symbol) if stock_info else symbol
+                except Exception as e:
+                    # Fallback for crypto and other symbols where DataService might fail
+                    logger.warning(f"DataService.get_stock_info failed for {symbol}: {e}")
+                    if '-USD' in symbol:
+                        # Crypto symbol fallback
+                        name = symbol.replace('-USD', '').replace('BTC', 'Bitcoin').replace('ETH', 'Ethereum').replace('XRP', 'XRP').replace('LTC', 'Litecoin').replace('ADA', 'Cardano')
+                    else:
+                        name = symbol
                 
                 # Determine exchange based on symbol
                 if symbol.endswith('.OL'):
@@ -1489,6 +1507,8 @@ def toggle_favorite(symbol):
                 else:
                     exchange = 'Global'
                 
+                logger.info(f"Adding {symbol} to favorites for user {current_user.id}, name: {name}, exchange: {exchange}")
+                
                 favorite = Favorites.add_favorite(
                     user_id=current_user.id,
                     symbol=symbol,
@@ -1496,14 +1516,16 @@ def toggle_favorite(symbol):
                     exchange=exchange
                 )
                 
-                current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
-                UserActivity.create_activity(
-                    user_id=current_user.id,
-                    activity_type='favorite_add',
-                    description=f'La til {symbol} i favoritter',
-                    details=f'Navn: {name}, Exchange: {exchange}'
-                )
-                db.session.commit()
+                # Update favorite count
+                try:
+                    current_user.favorite_count = Favorites.query.filter_by(user_id=current_user.id).count()
+                    db.session.commit()
+                    logger.info(f"Successfully added {symbol} to favorites")
+                except Exception as e:
+                    logger.warning(f"Could not update favorite_count: {e}")
+                    # Don't fail the operation for this
+                    pass
+                
                 response = {
                     'success': True,
                     'favorited': True,
@@ -1511,18 +1533,20 @@ def toggle_favorite(symbol):
                 }
         except Exception as e:
             db.session.rollback()
-            logger.error(f"Database error while toggling favorite: {e}")
+            logger.error(f"Database error while toggling favorite for {symbol}: {e}")
+            logger.error(f"Database error details: {traceback.format_exc()}")
             response = {
                 'success': False,
                 'error': 'database_error',
-                'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
+                'message': f'Kunne ikke oppdatere favoritt-status for {symbol}. Database feil.'
             }, 500
     except Exception as e:
-        logger.error(f"Error toggling favorite: {e}")
+        logger.error(f"Error toggling favorite for {symbol}: {e}")
+        logger.error(f"Error details: {traceback.format_exc()}")
         response = {
             'success': False,
-            'error': 'temporary_unavailable',
-            'message': 'Kunne ikke oppdatere favoritt-status akkurat nå. Prøv igjen senere.'
+            'error': 'general_error',
+            'message': f'Kunne ikke oppdatere favoritt-status for {symbol}. Prøv igjen senere.'
         }, 500
     
     # Return the prepared response

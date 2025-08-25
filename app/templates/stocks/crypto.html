@@ -216,50 +216,59 @@ window.toggleFavorite = async function(ticker, btn) {
     if (!ticker || !btn) return;
     
     try {
-        // Check current state
-        const isFavorited = btn.classList.contains('btn-warning') || btn.querySelector('.bi-star-fill');
-        const url = isFavorited ? '/stocks/api/favorites/remove' : '/stocks/api/favorites/add';
+        // Disable button and show loading state
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Oppdaterer...';
         
         // Get CSRF token from meta tag
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         
-        const response = await fetch(url, {
+        // Use the toggle endpoint which is more reliable
+        const response = await fetch(`/stocks/api/favorites/toggle/${ticker}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({ 
-                symbol: ticker,
-                name: ticker,
-                exchange: 'Crypto'
-            })
+                'X-CSRFToken': csrfToken || ''
+            }
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         
         const data = await response.json();
         
         if (data.success) {
             const starIcon = btn.querySelector('i');
-            if (isFavorited) {
-                // Remove from favorites
-                starIcon.className = 'bi bi-star';
-                btn.classList.remove('btn-warning');
-                btn.classList.add('btn-outline-warning');
-                showToast(data.message || `${ticker} fjernet fra favoritter`, 'success');
-            } else {
-                // Add to favorites  
+            if (data.favorited) {
+                // Added to favorites
                 starIcon.className = 'bi bi-star-fill';
                 btn.classList.remove('btn-outline-warning');
                 btn.classList.add('btn-warning');
+                btn.title = 'Fjern fra favoritter';
                 showToast(data.message || `${ticker} lagt til i favoritter`, 'success');
+            } else {
+                // Removed from favorites
+                starIcon.className = 'bi bi-star';
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-warning');
+                btn.title = 'Legg til favoritt';
+                showToast(data.message || `${ticker} fjernet fra favoritter`, 'success');
             }
         } else {
-            showToast(data.message || 'Kunne ikke oppdatere favoritter', 'error');
+            throw new Error(data.error || data.message || 'Kunne ikke oppdatere favoritt-status');
         }
     } catch (error) {
         console.error('Error toggling favorite:', error);
-        showToast('Kunne ikke oppdatere favoritter', 'error');
+        showToast(error.message || 'Kunne ikke oppdatere favoritt-status. Prøv igjen senere.', 'error');
+    } finally {
+        // Restore button state
+        btn.disabled = false;
+        if (btn.innerHTML.includes('spinner-border')) {
+            btn.innerHTML = '<i class="bi bi-star"></i>';
+        }
     }
 };
 </script>
