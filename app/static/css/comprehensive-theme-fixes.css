@@ -67,10 +67,29 @@
     background-color: transparent !important;
 }
 
-/* Hover states */
-.nav-link:hover,
-.dropdown-item:hover {
+/* Dropdown item styling - white text for both normal and hover states */
+.dropdown-item {
+    color: #ffffff !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    color: #ffffff !important;
     background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Navigation hover states */
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Remove problematic button active background */
+.btn-check:checked+.btn, 
+.btn.active, 
+.btn.show, 
+.btn:first-child:active, 
+:not(.btn-check)+.btn:active {
+    background-color: transparent !important;
 }
 
 /* Dark theme text contrast fixes */

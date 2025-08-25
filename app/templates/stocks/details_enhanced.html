@@ -72,9 +72,6 @@
                                 <button class="btn btn-outline-warning" id="add-to-watchlist" data-ticker="{{ ticker }}">
                                     <i class="bi bi-star"></i> Favoritt
                                 </button>
-                                <button class="btn btn-outline-success" id="add-to-portfolio" data-ticker="{{ ticker }}">
-                                    <i class="bi bi-briefcase"></i> Portefølje
-                                </button>
                                 <button class="btn btn-success external-buy-btn" data-ticker="{{ ticker }}">
                                     <i class="bi bi-cart-plus"></i> Kjøp
                                 </button>
@@ -527,9 +524,9 @@
                             <div class="card bg-light">
                                 <div class="card-body text-center">
                                     <h6>Kursmål</h6>
-                                    {% if ai_recommendations.get('price_target') and stock_info.get('current_price') %}
+                                    {% if ai_recommendations.get('price_target') and stock_info.get('regularMarketPrice') %}
                                         {% set target = ai_recommendations.get('price_target') %}
-                                        {% set current = stock_info.get('current_price') %}
+                                        {% set current = stock_info.get('regularMarketPrice') %}
                                         {% set percentage = ((target - current) / current * 100) %}
                                         <h4 class="{{ 'text-success' if percentage > 0 else 'text-danger' }}">
                                             {{ '+' if percentage > 0 else '' }}{{ "{:.1f}".format(percentage).replace('.', ',') }}%
@@ -546,7 +543,7 @@
                     
                     <div class="mt-4">
                         <div class="d-grid gap-2">
-                            <a href="{{ url_for('analysis.recommendation', ticker=ticker) }}" class="btn btn-primary">
+                            <a href="/analysis/ai-{{ ticker }}" class="btn btn-primary">
                                 <i class="bi bi-chart-bar"></i> Se fullstendig anbefaling for {{ ticker }}
                             </a>
                         </div>
@@ -785,8 +782,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const loadingElement = document.getElementById('chart-loading');
         const chartCanvas = document.getElementById('priceChart');
         
+        // Set a timeout to show chart even if fetch fails
+        const chartTimeout = setTimeout(() => {
+            console.log('Chart loading timeout - showing fallback chart');
+            if (loadingElement) loadingElement.style.display = 'none';
+            if (chartCanvas) chartCanvas.style.display = 'block';
+            showFallbackChart(ctx);
+        }, 5000); // 5 second timeout
+        
         fetch(`/stocks/api/demo/chart-data/{{ ticker }}?period=30d`)
             .then(response => {
+                clearTimeout(chartTimeout); // Cancel timeout since we got a response
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -894,6 +900,80 @@ document.addEventListener('DOMContentLoaded', function() {
     // Note: Portfolio actions are handled by the global PortfolioActionsManager
     // loaded in base.html from portfolio-actions-enhanced.js
     // No additional event listeners needed here as they're automatically setup
+
+    // Fallback chart function for when API fails or times out
+    function showFallbackChart(ctx) {
+        // Generate some sample data for demonstration
+        const sampleData = [];
+        const now = new Date();
+        const basePrice = {{ stock_info.get('regularMarketPrice', 100) }};
+        
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            // Create realistic price variation around base price
+            const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
+            const price = basePrice * (1 + variation);
+            sampleData.push({
+                x: date.toISOString().split('T')[0],
+                y: Math.round(price * 100) / 100
+            });
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Pris (NOK)',
+                    data: sampleData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM DD'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Dato'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Pris (NOK)'
+                        },
+                        beginAtZero: false
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Kursutvikiling (demo data)',
+                        color: '#6c757d'
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    }
 
     // Load technical analysis data and charts
     function loadTechnicalAnalysis() {
