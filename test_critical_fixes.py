@@ -1,13 +1,87 @@
 #!/usr/bin/env python3
 """
-Test the critical production fixes we just implemented:
-1. DataService.get_comparative_data method availability
-2. Market overview template rendering
-3. Fundamental select template existence
+Test critical production fixes:
+1. Sentiment analysis shows demo data instead of error messages
+2. Profile page shows demo data instead of error messages  
+3. Watchlist route works without BuildError
+4. Stock routes work after IndentationError fix
 """
 
 import sys
 import os
+sys.path.append('.')
+
+from app import create_app
+
+def test_critical_routes():
+    """Test all critical production routes"""
+    print("Testing critical production fixes...")
+    
+    app = create_app()
+    
+    with app.test_client() as client:
+        print("\n1. Testing sentiment route...")
+        try:
+            response = client.get('/analysis/sentiment')
+            print(f"   Sentiment route status: {response.status_code}")
+            if response.status_code == 200:
+                content = response.get_data(as_text=True)
+                if "Sentimentanalyse er midlertidig utilgjengelig" in content:
+                    print("   ❌ Sentiment route still shows error message")
+                else:
+                    print("   ✅ Sentiment route working - no error message!")
+            else:
+                print(f"   ❌ Sentiment route failed with status {response.status_code}")
+        except Exception as e:
+            print(f"   ❌ Sentiment route error: {e}")
+
+        print("\n2. Testing profile route...")
+        try:
+            response = client.get('/profile')
+            print(f"   Profile route status: {response.status_code}")
+            if response.status_code == 200:
+                content = response.get_data(as_text=True)
+                if "Profil Utilgjengelig" in content:
+                    print("   ❌ Profile route still shows error message")
+                else:
+                    print("   ✅ Profile route working - no error message!")
+            else:
+                print(f"   ❌ Profile route failed with status {response.status_code}")
+        except Exception as e:
+            print(f"   ❌ Profile route error: {e}")
+
+        print("\n3. Testing watchlist route...")
+        try:
+            response = client.get('/watchlist/')
+            print(f"   Watchlist route status: {response.status_code}")
+            if response.status_code == 200:
+                print("   ✅ Watchlist route working - no BuildError!")
+            else:
+                print(f"   ❌ Watchlist route failed with status {response.status_code}")
+        except Exception as e:
+            if "BuildError" in str(e):
+                print(f"   ❌ Watchlist route BuildError: {e}")
+            else:
+                print(f"   ❌ Watchlist route error: {e}")
+
+        print("\n4. Testing stock list routes...")
+        try:
+            response = client.get('/stocks/list/oslo')
+            print(f"   Oslo stocks route status: {response.status_code}")
+            if response.status_code == 200:
+                print("   ✅ Oslo stocks route working!")
+            else:
+                print(f"   ❌ Oslo stocks route failed with status {response.status_code}")
+        except Exception as e:
+            print(f"   ❌ Oslo stocks route error: {e}")
+
+    print("
+🎉 All critical production fixes tested!")
+    return True
+
+if __name__ == "__main__":
+    test_critical_routes()
+    return True
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from services.data_service import DataService

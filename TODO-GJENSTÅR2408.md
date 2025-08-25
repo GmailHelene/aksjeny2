@@ -1,3 +1,32 @@
+også kan du fortette med:
+"I've located the stock list and details routes and templates. The Oslo and Global list routes use multiple fallbacks, so the 500 error is likely due to a missing or broken data source. The details template expects real data for price, company info, fundamentals, and technicals, but is currently showing placeholders or demo data.
+
+Next steps:
+
+Fix the data source for Oslo and Global stock lists to ensure real data loads, and add robust fallbacks to prevent 500 errors.
+Remove any problematic navbar CSS rules if found in templates or inline styles.
+Fix the details route to ensure real data is loaded for price, company info, fundamentals, and technicals.
+Address JS errors in the details page (require is not defined, SyntaxError).
+(https://aksjeradar.trade/stocks/list/oslo fortsatt 500 error her)
+-
+https://aksjeradar.trade/stocks/global
+Her står det fprtsatt ingen data tilgjengelig i tabellen for globale aksjer
+-
+https://aksjeradar.trade/profile
+-
+Fortsatt feilmeld. her.
+https://aksjeradar.trade/watchlist/ her står det: Laster varsler.... i evigheten
+
+-
+ .nav-link, .dropdown-item {
+    color: #ffffff !important;
+}
+Dette må fjernes som regel!
+-
+https://aksjeradar.trade/stocks/details/TEL.OL
+Det står fortsatt ikke tilgjengelig på alle punkt under "om selskapet",
+Og under Kursutvikling så står det fortsatt bare å  laster "henter kursdata" i evigheten...og det virker som at prisen øverst på disse tickers er fake/demo,for det står 100 på alle sammen. Det MÅ brukes KUN utelukkende ekte data på innloggede brukere!
+
 Fortsatt problem med stocks details sidene:https://aksjeradar.trade/stocks/details/GOOGL (eksempel)
 Porteføljeknappen bare laster i evigheten
 Diagrammene under Kursutvikling bare laster i evigheten
