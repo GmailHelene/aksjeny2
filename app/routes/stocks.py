@@ -280,21 +280,26 @@ def list_oslo():
     try:
         logger.info("Loading Oslo Børs stock list - ensuring real data for authenticated users")
         
-        # Try multiple data sources with comprehensive fallbacks
+        # Initialize variables to prevent undefined errors
         stocks_data = {}
+        data_sources_info = {}
         
         # For authenticated users, prioritize real data
-        user_authenticated = current_user.is_authenticated
+        user_authenticated = current_user.is_authenticated if current_user else False
         logger.info(f"User authenticated: {user_authenticated}")
         
         try:
-            # Primary data source
+            # Primary data source with better error handling
+            logger.info("Attempting to load Oslo data from primary DataService")
             stocks_raw = DataService.get_oslo_bors_overview()
+            
             if stocks_raw:
                 if isinstance(stocks_raw, list):
                     stocks_data = {s.get('symbol', s.get('ticker', f'OSLO_{i}')): s for i, s in enumerate(stocks_raw) if isinstance(s, dict)}
                 elif isinstance(stocks_raw, dict):
                     stocks_data = stocks_raw
+                else:
+                    logger.warning(f"Unexpected data type from get_oslo_bors_overview: {type(stocks_raw)}")
                 
                 # Verify data quality
                 real_data_count = sum(1 for stock in stocks_data.values() if 'REAL DATA' in str(stock.get('source', '')))
@@ -302,9 +307,12 @@ def list_oslo():
                 
                 if len(stocks_data) > 0:
                     logger.info(f"✅ Successfully loaded Oslo data - sample: {list(stocks_data.keys())[:5]}")
+            else:
+                logger.warning("Primary data source returned None/empty data")
                 
         except Exception as primary_error:
-            logger.warning(f"Primary data source failed: {primary_error}")
+            logger.error(f"Primary data source failed: {primary_error}")
+            logger.error(f"Primary error traceback: {traceback.format_exc()}")
         
         # For authenticated users, ensure we have quality data
         if user_authenticated and len(stocks_data) < 20:
@@ -317,8 +325,11 @@ def list_oslo():
                         if symbol not in stocks_data:
                             stocks_data[symbol] = stock_info
                     logger.info(f"Enhanced data set for authenticated user: {len(stocks_data)} total stocks")
+                else:
+                    logger.warning("Fallback data source returned None/empty data")
             except Exception as fallback_error:
                 logger.error(f"Fallback data source failed: {fallback_error}")
+                logger.error(f"Fallback error traceback: {traceback.format_exc()}")
         
         # Final fallback for all users if no data
         if not stocks_data:
@@ -342,27 +353,61 @@ def list_oslo():
         
         logger.info(f"Oslo Børs final data: {data_sources_info}")
         
-        return render_template('stocks/oslo_dedicated.html',
-                             stocks=stocks_data,
-                             market='Oslo Børs',
-                             market_type='oslo',
-                             category='oslo',
-                             data_info=data_sources_info,
-                             error=False)
+        # Verify template exists before rendering
+        try:
+            return render_template('stocks/oslo_dedicated.html',
+                                 stocks=stocks_data,
+                                 market='Oslo Børs',
+                                 market_type='oslo',
+                                 category='oslo',
+                                 data_info=data_sources_info,
+                                 error=False)
+        except Exception as template_error:
+            logger.error(f"Template rendering error: {template_error}")
+            # Try alternative template names
+            try:
+                return render_template('stocks/oslo.html',
+                                     stocks=stocks_data,
+                                     market='Oslo Børs',
+                                     market_type='oslo',
+                                     category='oslo',
+                                     data_info=data_sources_info,
+                                     error=False)
+            except Exception as alt_template_error:
+                logger.error(f"Alternative template also failed: {alt_template_error}")
+                # Create minimal response
+                return f"""
+                <h1>Oslo Børs Stocks</h1>
+                <p>Data loaded: {len(stocks_data)} stocks</p>
+                <ul>
+                    {''.join([f'<li>{symbol}: {stock.get("name", "N/A")} - {stock.get("last_price", "N/A")}</li>' for symbol, stock in list(stocks_data.items())[:10]])}
+                </ul>
+                """
                              
     except Exception as e:
-        logger.error(f"Critical error in Oslo Børs route: {e}", exc_info=True)
-        # Final emergency fallback
-        emergency_data = {
-            'EQNR.OL': {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 270.50, 'change': 0.00, 'change_percent': 0.00},
-            'DNB.OL': {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 185.20, 'change': 0.00, 'change_percent': 0.00}
-        }
-        return render_template('stocks/oslo_dedicated.html',
-                             stocks=emergency_data,
-                             market='Oslo Børs',
-                             market_type='oslo',
-                             category='oslo',
-                             error=False)
+        logger.error(f"Critical error in Oslo Børs route: {e}")
+        logger.error(f"Oslo route error traceback: {traceback.format_exc()}")
+        
+        # Final emergency fallback with minimal data
+        try:
+            emergency_data = {
+                'EQNR.OL': {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 270.50, 'change': 0.00, 'change_percent': 0.00},
+                'DNB.OL': {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 185.20, 'change': 0.00, 'change_percent': 0.00}
+            }
+            return render_template('stocks/oslo_dedicated.html',
+                                 stocks=emergency_data,
+                                 market='Oslo Børs',
+                                 market_type='oslo',
+                                 category='oslo',
+                                 error=False)
+        except Exception as final_error:
+            logger.error(f"Final emergency template also failed: {final_error}")
+            # Return basic HTML response
+            return f"""
+            <h1>Oslo Børs Stocks</h1>
+            <p>Service temporarily unavailable. Please try again later.</p>
+            <p>Error: {str(e)}</p>
+            """
 
 @stocks.route('/list/global')
 @demo_access

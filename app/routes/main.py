@@ -11,6 +11,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from urllib.parse import urlparse, urljoin
+import traceback
 import hashlib
 import time
 
@@ -1568,15 +1569,18 @@ def internal_error(error):
 def profile():
     """User profile page with comprehensive error handling and fallbacks"""
     try:
-        # Initialize empty error list to track any issues
+        # Initialize all required variables first to prevent undefined variable errors
         errors = []
-        
-        # User is guaranteed to be authenticated due to @login_required
         is_authenticated = True
         subscription_status = 'free'
+        user_stats = {}
+        user_favorites = []
+        user_preferences = {}
+        referral_stats = {}
+        subscription = None
         
-        # Process authenticated user data:
-        # Process authenticated user data:
+        logger.info(f"Loading profile for user ID: {getattr(current_user, 'id', 'Unknown')}")
+        
         # Get basic user information with fallbacks
         user_stats = {
             'member_since': getattr(current_user, 'created_at', datetime.now()),
@@ -1613,8 +1617,9 @@ def profile():
                     'referral_earnings': referrals * 100,  # 100 NOK per referral
                     'referral_code': f'REF{current_user.id}'
                 }
+                logger.info(f"Successfully loaded referral stats for user {current_user.id}: {referrals} referrals")
             except Exception as ref_error:
-                logger.warning(f"Error loading referral stats: {ref_error}")
+                logger.error(f"Error loading referral stats for user {current_user.id}: {ref_error}")
                 referral_stats = {
                     'referrals_made': 0,
                     'referral_earnings': 0,
@@ -1729,47 +1734,50 @@ def profile():
             user_number_format=user_preferences.get('number_format', 'norwegian'),
             user_dashboard_widgets=user_preferences.get('dashboard_widgets', '[]'),
             user_favorites=user_favorites,
-            **user_preferences,
-            **referral_stats,
-            errors=errors if 'errors' in locals() and errors else None)
+            email_notifications=user_preferences.get('email_notifications', True),
+            price_alerts=user_preferences.get('price_alerts', True),
+            market_news=user_preferences.get('market_news', True),
+            portfolio_updates=user_preferences.get('portfolio_updates', True),
+            ai_insights=user_preferences.get('ai_insights', True),
+            weekly_reports=user_preferences.get('weekly_reports', True),
+            referrals_made=referral_stats.get('referrals_made', 0),
+            referral_earnings=referral_stats.get('referral_earnings', 0),
+            referral_code=referral_stats.get('referral_code', f'REF{getattr(current_user, "id", "001")}'),
+            errors=errors if errors else None)
                              
     except Exception as e:
-        logger.error(f"Error in profile page for user {current_user.id}: {e}")
+        logger.error(f"Critical error in profile page for user {getattr(current_user, 'id', 'Unknown')}: {e}")
+        logger.error(f"Profile error traceback: {traceback.format_exc()}")
+        
         # Provide basic fallback profile data for authenticated users
-        fallback_user_stats = {
-            'member_since': getattr(current_user, 'created_at', datetime.now()),
-            'last_login': getattr(current_user, 'last_login', datetime.now()),
-            'total_searches': 0,
-            'favorite_stocks': 0
-        }
-        fallback_preferences = {
-            'display_mode': 'light',
-            'number_format': 'norwegian',
-            'dashboard_widgets': '[]',
-            'email_notifications': True,
-            'price_alerts': True,
-            'market_news': True,
-            'portfolio_updates': True,
-            'ai_insights': True,
-            'weekly_reports': True
-        }
-        fallback_referral_stats = {
-            'referrals_made': 0,
-            'referral_earnings': 0,
-            'referral_code': f'REF{getattr(current_user, "id", "001")}'
-        }
-        
-        # Determine basic subscription status for authenticated user
-        fallback_subscription_status = 'basic'
         try:
-            if current_user.email in EXEMPT_EMAILS:
-                fallback_subscription_status = 'premium'
-            elif getattr(current_user, 'has_subscription', False):
-                fallback_subscription_status = 'premium'
-        except:
-            pass
-        
-        try:
+            fallback_user_stats = {
+                'member_since': getattr(current_user, 'created_at', datetime.now()),
+                'last_login': getattr(current_user, 'last_login', datetime.now()),
+                'total_searches': 0,
+                'favorite_stocks': 0
+            }
+            fallback_preferences = {
+                'display_mode': 'light',
+                'number_format': 'norwegian',
+                'dashboard_widgets': '[]'
+            }
+            fallback_referral_stats = {
+                'referrals_made': 0,
+                'referral_earnings': 0,
+                'referral_code': f'REF{getattr(current_user, "id", "001")}'
+            }
+            
+            # Determine basic subscription status for authenticated user
+            fallback_subscription_status = 'basic'
+            try:
+                if hasattr(current_user, 'email') and current_user.email in EXEMPT_EMAILS:
+                    fallback_subscription_status = 'premium'
+                elif getattr(current_user, 'has_subscription', False):
+                    fallback_subscription_status = 'premium'
+            except:
+                pass
+            
             return render_template('profile.html',
                 user=current_user,
                 subscription=None,
@@ -1780,11 +1788,19 @@ def profile():
                 user_number_format='norwegian',
                 user_dashboard_widgets='[]',
                 user_favorites=[],
-                **fallback_preferences,
-                **fallback_referral_stats,
+                email_notifications=True,
+                price_alerts=True,
+                market_news=True,
+                portfolio_updates=True,
+                ai_insights=True,
+                weekly_reports=True,
+                referrals_made=0,
+                referral_earnings=0,
+                referral_code=f'REF{getattr(current_user, "id", "001")}',
                 errors=['general_error'])
+                
         except Exception as template_error:
-            logger.error(f"Template error in profile: {template_error}")
+            logger.error(f"Template error in profile fallback: {template_error}")
             # Final fallback with flash message instead of direct return
             flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
             return redirect(url_for('main.index'))

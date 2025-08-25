@@ -23,9 +23,13 @@ https://aksjeradar.trade/watchlist/ her står det: Laster varsler.... i evighete
 }
 Dette må fjernes som regel!
 -
-https://aksjeradar.trade/stocks/details/TEL.OL
-Det står fortsatt ikke tilgjengelig på alle punkt under "om selskapet",
-Og under Kursutvikling så står det fortsatt bare å  laster "henter kursdata" i evigheten...og det virker som at prisen øverst på disse tickers er fake/demo,for det står 100 på alle sammen. Det MÅ brukes KUN utelukkende ekte data på innloggede brukere!
+
+ https://aksjeradar.trade/stocks/details/AAPL
+ Fortsatt står det "henter kursdata" i evigheten her... 
+ og det står forsatt ingen informasjon tilgjengelig" overalt under "selskap" tabben
+ Og prisen øverst, 100 står det på ALLE tickers, derte er jio tydelgivis ikke ekte data som det må være
+ Og knappen på disse sidene fir å legge til i portefølje,fungerer heller ikke. Det står bare "legger til" i evigheten. Du kan fjerne denne knappen fra details tickers sidene..
+ Og knappen, se fullstendig anbeafling for AAPL (eksemel) skal lenke til /analysis/ai-tickernavn ikke som den gjør nå til recommendations
 
 Fortsatt problem med stocks details sidene:https://aksjeradar.trade/stocks/details/GOOGL (eksempel)
 Porteføljeknappen bare laster i evigheten
