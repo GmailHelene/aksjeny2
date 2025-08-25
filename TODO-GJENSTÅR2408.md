@@ -1,5 +1,28 @@
+Fortsatt problem med stocks details sidene:https://aksjeradar.trade/stocks/details/GOOGL (eksempel)
+Porteføljeknappen bare laster i evigheten
+Diagrammene under Kursutvikling bare laster i evigheten
+"kke tilgjengelig"står det overalt på tabben "Selskap"
+På tabben fundamental står det også bare masse -
+Og på teknisk analsye tabben er det helt tomt under RSI indikator og MACD indikator, nå må dette fikses på ordentlig, alt dette på stocks/details   tickers sidene!
+også står det pris 100 øverst på alle sammen, som tyder
+på at dette ikke er ekte data som det MÅ være
+index.js:3 Uncaught ReferenceError: require is not defined
+GOOGL:2068 Uncaught SyntaxError: Unexpected token '}'
+GOOGL:2490 Uncaught SyntaxError: missing ) after argument list
+-
 
+
+https://aksjeradar.trade/stocks/list/oslo 500 error her
+Og nå står det Ingen data tilgjengelig i tabellen  for globale aksjer her
+https://aksjeradar.trade/stocks/list/global
 --
+-
+.navbar, .navbar-nav, .dropdown-menu, .navbar-brand, .nav-link, .dropdown-item {
+    color: #ffffff !important; 
+}Må fjernes som regel!!
+
+-
+
 https://aksjeradar.trade/notifications/api/settings
 her står det bare "sjekker push notifikasjonsstatus" i evigheten, og Prisvarsler, står bare å "Laster.." i evigheten.
 -

@@ -9,18 +9,6 @@
     color: #212529;
 }
 
-/* Text elements in card header inherit color for accessibility */
-.card-header h5,
-.card-header h6,
-.card-header span,
-.card-header i,
-.card-header .bi,
-.card-header .btn,
-.card-header a,
-.card-header .small {
-    color: inherit !important;
-}
-
 /* Themed card headers - background and text color for all variants */
 .card-header.bg-primary {
     background-color: #0d47a1 !important;

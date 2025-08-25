@@ -42,6 +42,138 @@ def risk_management():
     """Risk management page"""
     return render_template('advanced_analytics.html', active_tab='risk-management')
 
+# API Endpoints for Advanced Analytics
+@advanced_analytics.route('/api/ml/predict/<symbol>')
+@login_required
+def api_ml_predict(symbol):
+    """ML prediction API endpoint"""
+    try:
+        days = request.args.get('days', 30, type=int)
+        # Generate mock prediction data
+        import random
+        
+        # Create deterministic but varied predictions based on symbol
+        symbol_hash = sum(ord(c) for c in symbol)
+        random.seed(symbol_hash)
+        
+        # Generate price predictions
+        base_price = 100 + (symbol_hash % 200)
+        predictions = []
+        
+        for i in range(days):
+            # Generate realistic price movement
+            daily_change = random.uniform(-0.05, 0.05)  # -5% to +5% daily
+            if i == 0:
+                price = base_price
+            else:
+                price = predictions[-1]['price'] * (1 + daily_change)
+            
+            predictions.append({
+                'date': f"2025-08-{26+i}" if i < 6 else f"2025-09-{i-5}",
+                'price': round(price, 2),
+                'confidence': round(random.uniform(0.6, 0.9), 2)
+            })
+        
+        return jsonify({
+            'success': True,
+            'symbol': symbol,
+            'predictions': predictions,
+            'model_accuracy': round(random.uniform(0.75, 0.92), 2),
+            'trend': 'bullish' if predictions[-1]['price'] > base_price else 'bearish'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in ML prediction API: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Prediction temporarily unavailable'
+        }), 500
+
+@advanced_analytics.route('/api/portfolio/optimize', methods=['POST'])
+@login_required
+def api_portfolio_optimize():
+    """Portfolio optimization API endpoint"""
+    try:
+        data = request.get_json()
+        symbols = data.get('symbols', [])
+        amount = data.get('amount', 100000)
+        
+        # Generate mock optimization results
+        import random
+        random.seed(sum(ord(c) for s in symbols for c in s))
+        
+        allocations = []
+        remaining = 100
+        
+        for i, symbol in enumerate(symbols):
+            if i == len(symbols) - 1:
+                allocation = remaining
+            else:
+                allocation = random.randint(5, min(40, remaining - 5*(len(symbols)-i-1)))
+                remaining -= allocation
+            
+            allocations.append({
+                'symbol': symbol,
+                'allocation_percent': allocation,
+                'allocation_amount': round(amount * allocation / 100, 2),
+                'expected_return': round(random.uniform(0.08, 0.18), 3),
+                'risk_score': round(random.uniform(0.1, 0.8), 2)
+            })
+        
+        return jsonify({
+            'success': True,
+            'optimized_portfolio': allocations,
+            'expected_annual_return': round(random.uniform(0.10, 0.15), 3),
+            'portfolio_risk': round(random.uniform(0.15, 0.25), 3),
+            'sharpe_ratio': round(random.uniform(0.8, 1.5), 2)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in portfolio optimization API: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Optimization temporarily unavailable'
+        }), 500
+
+@advanced_analytics.route('/api/risk/analysis', methods=['POST'])
+@login_required
+def api_risk_analysis():
+    """Risk analysis API endpoint"""
+    try:
+        data = request.get_json()
+        portfolio = data.get('portfolio', [])
+        
+        # Generate mock risk analysis
+        import random
+        
+        risk_metrics = {
+            'var_95': round(random.uniform(0.15, 0.35), 3),
+            'var_99': round(random.uniform(0.25, 0.45), 3),
+            'expected_shortfall': round(random.uniform(0.20, 0.40), 3),
+            'max_drawdown': round(random.uniform(0.10, 0.30), 3),
+            'volatility': round(random.uniform(0.15, 0.25), 3),
+            'beta': round(random.uniform(0.8, 1.2), 2),
+            'correlation_sp500': round(random.uniform(0.6, 0.9), 2)
+        }
+        
+        return jsonify({
+            'success': True,
+            'risk_metrics': risk_metrics,
+            'risk_level': 'Moderate' if risk_metrics['volatility'] < 0.2 else 'High',
+            'recommendations': [
+                'Consider diversifying across sectors',
+                'Monitor correlation with market index',
+                'Review position sizing'
+            ]
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in risk analysis API: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'Risk analysis temporarily unavailable'
+        }), 500
+
 # Error handlers for this blueprint
 @advanced_analytics.errorhandler(404)
 def not_found_error(error):

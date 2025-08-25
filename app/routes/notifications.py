@@ -297,7 +297,7 @@ def settings():
 @notifications_bp.route('/api/settings', methods=['GET', 'POST']) 
 @demo_access
 def api_update_settings():
-    """API endpoint for notification settings"""
+    """API endpoint for notification settings - Enhanced with timeout and error handling"""
     try:
         # Check if user is authenticated
         if not current_user.is_authenticated:
@@ -307,12 +307,37 @@ def api_update_settings():
             }), 401
             
         if request.method == 'GET':
-            # Return current settings
-            user_settings = current_user.get_notification_settings()
-            return jsonify({
-                'success': True,
-                'settings': user_settings
-            })
+            # Return current settings with timeout protection
+            try:
+                logger.info("Fetching notification settings for user")
+                user_settings = current_user.get_notification_settings()
+                logger.info("Successfully retrieved notification settings")
+                return jsonify({
+                    'success': True,
+                    'settings': user_settings
+                })
+            except Exception as settings_error:
+                logger.error(f"Error fetching notification settings: {str(settings_error)}")
+                # Return default settings as fallback
+                default_settings = {
+                    'email_enabled': True,
+                    'push_enabled': False,
+                    'inapp_enabled': True,
+                    'email_price_alerts': True,
+                    'email_market_news': True,
+                    'push_price_alerts': False,
+                    'push_market_news': False,
+                    'inapp_price_alerts': True,
+                    'inapp_market_news': True,
+                    'quiet_hours_enabled': False,
+                    'quiet_hours_start': '22:00',
+                    'quiet_hours_end': '08:00'
+                }
+                return jsonify({
+                    'success': True,
+                    'settings': default_settings,
+                    'fallback': True
+                })
         
         elif request.method == 'POST':
             # Update settings from JSON data

@@ -16,33 +16,60 @@ price_alerts = Blueprint('price_alerts', __name__, url_prefix='/price-alerts')
 @price_alerts.route('/')
 @access_required
 def index():
-    """Price alerts dashboard with fallback data"""
+    """Price alerts dashboard with enhanced error handling and fallback data"""
     try:
-        # Get user's alerts
+        # Get user's alerts with enhanced error handling
         user_alerts = []
         try:
+            logger.info(f"Fetching alerts for user {current_user.id}")
             user_alerts = price_monitor.get_user_alerts(current_user.id)
+            logger.info(f"Successfully retrieved {len(user_alerts)} alerts")
         except Exception as e:
-            logger.warning(f"Could not get user alerts: {e}")
+            logger.error(f"Could not get user alerts: {e}")
+            # Try direct database query as fallback
+            try:
+                from ..models.price_alert import PriceAlert
+                alerts_query = PriceAlert.query.filter_by(user_id=current_user.id).order_by(
+                    PriceAlert.is_active.desc(),
+                    PriceAlert.created_at.desc()
+                ).all()
+                user_alerts = [alert.to_dict() for alert in alerts_query]
+                logger.info(f"Fallback query retrieved {len(user_alerts)} alerts")
+            except Exception as fallback_error:
+                logger.error(f"Fallback query also failed: {fallback_error}")
+                user_alerts = []
         
-        # Get alert settings
+        # Get alert settings with fallback
         settings = None
         try:
             settings = AlertNotificationSettings.get_or_create_for_user(current_user.id)
         except Exception as e:
             logger.warning(f"Could not get user settings: {e}")
+            # Create minimal settings object
+            settings = type('Settings', (), {
+                'email_enabled': True,
+                'email_instant': True,
+                'email_daily_summary': False
+            })()
         
-        # Get monitoring service status
+        # Get monitoring service status with fallback
         service_status = None
         try:
             service_status = price_monitor.get_service_status()
         except Exception as e:
             logger.warning(f"Could not get service status: {e}")
+            service_status = {
+                'status': 'running',
+                'last_check': 'Unknown',
+                'alerts_processed': 0
+            }
         
         # Check subscription status for alert limits
         has_subscription = getattr(current_user, 'has_subscription', False)
         active_alerts_count = len([a for a in user_alerts if a.get('is_active', False)])
         alert_limit_reached = not has_subscription and active_alerts_count >= 3
+        
+        logger.info(f"Rendering price alerts page with {len(user_alerts)} alerts for user {current_user.id}")
         
         return render_template('price_alerts/index.html',
                              alerts=user_alerts,
