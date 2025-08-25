@@ -1,4 +1,63 @@
-https://aksjeradar.trade/analysis/warren-buffett 500 error her enda
+
+--
+https://aksjeradar.trade/notifications/api/settings
+her står det bare "sjekker push notifikasjonsstatus" i evigheten, og Prisvarsler, står bare å "Laster.." i evigheten.
+-
+https://aksjeradar.trade/advanced-analytics/
+Knappene /funksjonene genererer prediksjon, bath prediksjoner og markedsanalyse knappene her fungerer ikke,skjer ingenting..
+-
+https://aksjeradar.trade/pro-tools/alerts
+Nå får jeg opprettet prisvarsel her, MEN det kommer jo ikke opp under "aktive varsler" etterpå da som det burde gjort..
+-
+https://aksjeradar.trade/norwegian-intel/
+Her mangler det /vises ikke ikonet over "Shipping Intelligence", ser bare en tom grå sirkel
+-
+https://aksjeradar.trade/market-intel/earnings-calendar
+Knappene: Denne uken, neste uke, måned virker ikke,så de kan vel likesågodt fjernes
+Det samme gjelder her: https://aksjeradar.trade/external-data/market-intelligence
+-
+}
+.card-header h5, .card-header h6, .card-header span, .card-header .small {
+    color: inherit !important;
+}
+Denne regelen må fjernes
+-
+H5.mb0 overskrifter: må være sorte når bakgrunnen er hvit, flere steder det er hvit tekst på hvit bakgrunn
+-
+
+
+------------------------
+builderror
+https://aksjeradar.trade/watchlist/
+--
+https://aksjeradar.trade/notifications/api/settings
+her står det bare "sjekker push notifikasjonsstatus" i evigheten, og Prisvarsler, står bare å "Laster.." i evigheten.
+-
+https://aksjeradar.trade/advanced-analytics/
+Knappene /funksjonene genererer prediksjon, bath prediksjoner og markedsanalyse knappene her fungerer ikke,skjer ingenting..
+-
+https://aksjeradar.trade/pro-tools/alerts
+Nå får jeg opprettet prisvarsel her, MEN det kommer jo ikke opp under "aktive varsler" etterpå da som det burde gjort..
+-
+https://aksjeradar.trade/norwegian-intel/
+Her mangler det /vises ikke ikonet over "Shipping Intelligence", ser bare en tom grå sirkel
+-
+https://aksjeradar.trade/market-intel/earnings-calendar
+Knappene: Denne uken, neste uke, måned virker ikke,så de kan vel likesågodt fjernes
+Det samme gjelder her: https://aksjeradar.trade/external-data/market-intelligence
+-
+}
+.card-header h5, .card-header h6, .card-header span, .card-header .small {
+    color: inherit !important;
+}
+Denne regelen må fjernes
+-
+H5.mb0 overskrifter: må være sorte når bakgrunnen er hvit, flere steder det er hvit tekst på hvit bakgrunn
+-
+
+
+
+----https://aksjeradar.trade/analysis/warren-buffett 500 error her enda
 -
 ⚠️ Profil Utilgjengelig
 Beklager, det oppsto en feil ved lasting av profilsiden. Vennligst prøv igjen senere.

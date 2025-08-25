@@ -20,6 +20,13 @@ try:
 except ImportError:
     DataService = None
 
+try:
+    from ..services.buffett_analysis_service import BuffettAnalysisService
+    BuffettAnalyzer = BuffettAnalysisService  # Create alias for compatibility
+except ImportError:
+    BuffettAnalysisService = None
+    BuffettAnalyzer = None
+
 # Create analysis blueprint
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 
@@ -48,9 +55,10 @@ def sentiment():
             except Exception as e:
                 logger.error(f"Error loading real sentiment data for {selected_symbol}: {e}")
                 sentiment_data = None
-                error = f"Kunne ikke laste sentimentdata for {selected_symbol}. Viser demo-data."
+            # Always provide demo data if real data is not available
             if not sentiment_data:
                 sentiment_data = _generate_demo_sentiment_data(selected_symbol)
+                logger.info(f"Using demo sentiment data for {selected_symbol}")
         # Always define template variables
         return render_template(
             'analysis/sentiment.html',
@@ -691,7 +699,7 @@ def warren_buffett():
 
                 # Try BuffettAnalyzer if available
                 real_analysis = None
-                if 'BuffettAnalyzer' in globals():
+                if BuffettAnalyzer:
                     try:
                         real_analysis = BuffettAnalyzer.analyze_stock(ticker)
                         if real_analysis and isinstance(real_analysis, dict):
@@ -2486,8 +2494,8 @@ def tradingview():
     # Get stock info for the symbol if available
     stock_info = {}
     try:
-        from app.services.data_service import DataService
-        stock_info = DataService.get_stock_info(symbol) or {}
+        if DataService:
+            stock_info = DataService.get_stock_info(symbol) or {}
     except Exception as e:
         logger.warning(f"Could not fetch stock info for {symbol}: {e}")
     

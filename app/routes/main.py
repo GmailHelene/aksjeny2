@@ -1733,19 +1733,25 @@ def profile():
             subscription = None
             subscription_status = 'free'
         
+        # Ensure all variables are defined
+        user_stats = user_stats or {}
+        user_favorites = user_favorites or []
+        user_preferences = user_preferences or {}
+        referral_stats = referral_stats or {}
+        
         return render_template('profile.html',
-            user=current_user,
+            user=current_user if current_user.is_authenticated else None,
             subscription=subscription,
             subscription_status=subscription_status,
             user_stats=user_stats,
-            user_language=getattr(current_user, 'language', 'nb'),
-            user_display_mode=user_preferences['display_mode'],
-            user_number_format=user_preferences['number_format'],
-            user_dashboard_widgets=user_preferences['dashboard_widgets'],
+            user_language=getattr(current_user, 'language', 'nb') if current_user.is_authenticated else 'nb',
+            user_display_mode=user_preferences.get('display_mode', 'light'),
+            user_number_format=user_preferences.get('number_format', 'norwegian'),
+            user_dashboard_widgets=user_preferences.get('dashboard_widgets', '[]'),
             user_favorites=user_favorites,
             **user_preferences,
             **referral_stats,
-            errors=errors if errors else None)
+            errors=errors if 'errors' in locals() and errors else None)
                              
     except Exception as e:
         logger.error(f"Critical error in profile page: {e}")
