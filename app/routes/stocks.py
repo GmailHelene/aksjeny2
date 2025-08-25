@@ -407,14 +407,6 @@ def list_global():
                              market_type='global',
                              category='global',
                              error=False)
-                                 error=False)
-        except:
-            return render_template('stocks/global_dedicated.html',
-                                 stocks={},
-                                 market='Globale aksjer',
-                                 market_type='global',
-                                 category='global',
-                                 error=True)
 
 @stocks.route('/global')
 @demo_access
