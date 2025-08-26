@@ -1608,16 +1608,16 @@ def profile():
             subscription_status = 'basic'  # Default to basic for authenticated users
             errors.append('subscription_check_failed')
             
-            # Enhanced referral stats with error handling
-            try:
-                from ..models.referral import Referral
-                referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
-                referral_stats = {
-                    'referrals_made': referrals,
-                    'referral_earnings': referrals * 100,  # 100 NOK per referral
-                    'referral_code': f'REF{current_user.id}'
-                }
-                logger.info(f"Successfully loaded referral stats for user {current_user.id}: {referrals} referrals")
+        # Enhanced referral stats with error handling
+        try:
+            from ..models.referral import Referral
+            referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
+            referral_stats = {
+                'referrals_made': referrals,
+                'referral_earnings': referrals * 100,  # 100 NOK per referral
+                'referral_code': f'REF{current_user.id}'
+            }
+            logger.info(f"Successfully loaded referral stats for user {current_user.id}: {referrals} referrals")
             except Exception as ref_error:
                 logger.error(f"Error loading referral stats for user {current_user.id}: {ref_error}")
                 referral_stats = {

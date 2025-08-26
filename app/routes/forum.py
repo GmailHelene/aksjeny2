@@ -69,23 +69,38 @@ def index():
 @forum.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
-    if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        content = request.form.get('content', '').strip()
-        if not title or not content:
-            flash('Tittel og innhold er påkrevd.', 'error')
-            return redirect(url_for('forum.create'))
-        post = ForumPost(
-            title=title, 
-            content=content, 
-            user_id=current_user.id,
-            author_id=current_user.id
-        )
-        db.session.add(post)
-        db.session.commit()
-        flash('Innlegg opprettet!', 'success')
+    """Create forum post with enhanced error handling"""
+    try:
+        if request.method == 'POST':
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            
+            if not title or not content:
+                flash('Tittel og innhold er påkrevd.', 'error')
+                return redirect(url_for('forum.create'))
+            
+            # Create new forum post
+            post = ForumPost(
+                title=title, 
+                content=content, 
+                user_id=current_user.id,
+                author_id=current_user.id
+            )
+            
+            db.session.add(post)
+            db.session.commit()
+            
+            flash('Innlegg opprettet!', 'success')
+            return redirect(url_for('forum.index'))
+            
+        # GET request - show create form
+        return render_template('forum/create.html')
+        
+    except Exception as e:
+        logger.error(f"Forum create error: {e}")
+        db.session.rollback()
+        flash('Det oppstod en feil ved opprettelse av innlegg. Prøv igjen.', 'error')
         return redirect(url_for('forum.index'))
-    return render_template('forum/create.html')
 
 # Alias for create_topic (used in template)
 @forum.route('/create_topic', methods=['GET', 'POST'])

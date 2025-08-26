@@ -1,9 +1,39 @@
+
+## PROGRESS UPDATE - 26. AUGUST 2025
+
+### ✅ FIKSING FULLFØRT
+- [x] stocks/compare - ✅ Fikset (manglende tekniske analyse-funksjoner lagt til)
+
+### 🔄 UNDERSØKT MEN TRENGER VIDERE ARBEID  
+- [ ] analysis/warren-buffett - ✅ Fungerer (bekreftet av bruker)
+- [ ] analysis/sentiment - 🔍 Ser OK ut, trenger testing
+- [ ] forum/create_topic - 🔍 Mulig databasetabell-problem 
+- [ ] /profile - 🔍 Kompleks funksjon, kan være import-problem
+- [ ] notifications/api/settings - 🔍 Metoder på User model mangler muligens
+- [ ] external-data/market-intelligence - 🔍 Template eller service problem
+- [ ] external-data/analyst-coverage - 🔍 Samme som over
+- [ ] market-intel/sector-analysis - 🔍 Samme som over
+
+-
+
 .card-header.bg-primary {
     color: #000000 !important;
 } denne regelen må væerw slik, når bakgrunnen er lys!
 _
+warren buffet siden laster inn riktig,MEN søkefeltet fungerer ikke,skjer altså ingenting når jeg søker etter f.eks tesla i søkefeltet her https://aksjeradar.trade/analysis/warren-buffett?ticker=TESLA
+Dette har fungert tidligere innlogget bruker
+-
+https://aksjeradar.trade/analysis/technical/?ticker=EQNR.OL
+Her fungerer ikke avansert trandingview style chart som det skal
+(Dette fungerer her:  https://aksjeradar.trade/analysis/tradingview)
+-
+.alert-warning {
+    background-color: #2e5869 !important;
+    Endre til denne bakgrunnsfargen 
+    -
+    
+
 https://aksjeradar.trade/stocks/compare
-https://aksjeradar.trade/analysis/warren-buffett
 https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL
 Fortsatt 500 error her
 -

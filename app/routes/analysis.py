@@ -52,17 +52,23 @@ def sentiment():
             try:
                 if DataService and hasattr(DataService, 'get_sentiment_data'):
                     sentiment_data = DataService.get_sentiment_data(selected_symbol)
+                    logger.info(f"Got sentiment data from DataService for {selected_symbol}")
             except Exception as e:
                 logger.error(f"Error loading real sentiment data for {selected_symbol}: {e}")
                 sentiment_data = None
+            
             # Always provide demo data if real data is not available
             if not sentiment_data:
                 sentiment_data = _generate_demo_sentiment_data(selected_symbol)
                 logger.info(f"Using demo sentiment data for {selected_symbol}")
+        else:
+            # If no symbol provided, show default/empty state
+            sentiment_data = {}
+            
         # Always define template variables
         return render_template(
             'analysis/sentiment.html',
-            sentiment_data=sentiment_data or {},
+            sentiment_data=sentiment_data,
             error=error,
             popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
             selected_symbol=selected_symbol

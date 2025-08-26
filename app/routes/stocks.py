@@ -118,6 +118,114 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
         current_app.logger.warning(f"MACD calculation failed: {e}")
         return 0.0, 0.0, 0.0
 
+def calculate_bollinger_bands(prices, periods=20, std_dev=2):
+    """Calculate Bollinger Bands"""
+    try:
+        if len(prices) < periods:
+            return {'upper': 0, 'middle': 0, 'lower': 0, 'position': 'middle'}
+        
+        prices_series = pd.Series(prices)
+        
+        # Calculate simple moving average (middle band)
+        sma = prices_series.rolling(window=periods).mean()
+        
+        # Calculate standard deviation
+        std = prices_series.rolling(window=periods).std()
+        
+        # Calculate upper and lower bands
+        upper_band = sma + (std * std_dev)
+        lower_band = sma - (std * std_dev)
+        
+        current_price = prices_series.iloc[-1]
+        upper = float(upper_band.iloc[-1])
+        middle = float(sma.iloc[-1])
+        lower = float(lower_band.iloc[-1])
+        
+        # Determine position
+        if current_price > upper:
+            position = 'above'
+        elif current_price < lower:
+            position = 'below'
+        else:
+            position = 'middle'
+            
+        return {
+            'upper': upper,
+            'middle': middle,
+            'lower': lower,
+            'position': position
+        }
+    except Exception as e:
+        current_app.logger.warning(f"Bollinger Bands calculation failed: {e}")
+        return {'upper': 0, 'middle': 0, 'lower': 0, 'position': 'middle'}
+
+def calculate_sma(prices, periods):
+    """Calculate Simple Moving Average"""
+    try:
+        if len(prices) < periods:
+            return 0
+        
+        prices_series = pd.Series(prices)
+        sma = prices_series.rolling(window=periods).mean()
+        return float(sma.iloc[-1])
+    except Exception as e:
+        current_app.logger.warning(f"SMA calculation failed: {e}")
+        return 0
+
+def generate_signals(current_price, rsi, macd, bb, sma200, sma50):
+    """Generate trading signals based on technical indicators"""
+    try:
+        signals = []
+        
+        # RSI signals
+        if isinstance(rsi, (int, float)):
+            if rsi < 30:
+                signals.append('BUY')
+            elif rsi > 70:
+                signals.append('SELL')
+        
+        # MACD signals  
+        if isinstance(macd, dict):
+            macd_line = macd.get('macd', 0)
+            signal_line = macd.get('signal', 0)
+            if macd_line > signal_line:
+                signals.append('BUY')
+            elif macd_line < signal_line:
+                signals.append('SELL')
+        elif isinstance(macd, (tuple, list)) and len(macd) >= 2:
+            if macd[0] > macd[1]:
+                signals.append('BUY')
+            elif macd[0] < macd[1]:
+                signals.append('SELL')
+        
+        # Moving average signals
+        if sma50 > sma200:
+            signals.append('BUY')
+        elif sma50 < sma200:
+            signals.append('SELL')
+        
+        # Bollinger bands signals
+        if isinstance(bb, dict):
+            if bb.get('position') == 'below':
+                signals.append('BUY')
+            elif bb.get('position') == 'above':
+                signals.append('SELL')
+        
+        # Aggregate signals
+        buy_signals = signals.count('BUY')
+        sell_signals = signals.count('SELL')
+        
+        if buy_signals > sell_signals:
+            return 'BUY'
+        elif sell_signals > buy_signals:
+            return 'SELL'
+        else:
+            return 'HOLD'
+            
+    except Exception as e:
+        current_app.logger.warning(f"Signal generation failed: {e}")
+        return 'HOLD'
+
 @stocks.route('/list/crypto')
 @demo_access
 def list_crypto():
@@ -1907,7 +2015,8 @@ def compare():
                 
                 # Calculate technical indicators
                 rsi[symbol] = calculate_rsi(prices)
-                macd[symbol] = calculate_macd(prices)
+                macd_result = calculate_macd(prices)
+                macd[symbol] = {'macd': macd_result[0], 'signal': macd_result[1], 'hist': macd_result[2]}
                 bb[symbol] = calculate_bollinger_bands(prices)
                 sma200[symbol] = calculate_sma(prices, 200)
                 sma50[symbol] = calculate_sma(prices, 50)
