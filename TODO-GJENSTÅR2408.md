@@ -13,7 +13,7 @@
 - [ ] Fix portfolio creation showing both success and error messages
 - [ ] Fix security error when adding stocks to portfolio
 - [ ] Clear cache after all fixes
-https://aksjeradar.trade/market-intel/sector-analysis - fortsat 500 error
+https://aksjeradar.trade/market-intel/sector-analysis - fortsatt 500 error
 -
 
 
