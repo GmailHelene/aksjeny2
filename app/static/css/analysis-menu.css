@@ -1,0 +1,52 @@
+/* Analysis Menu Styling - August 27, 2025 */
+
+/* Analysis menu container */
+.analysis-menu {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.analysis-menu .card {
+    background: transparent;
+}
+
+.analysis-menu .card-body {
+    background: transparent;
+}
+
+/* Button styling for analysis menu */
+.analysis-menu .btn-outline-light {
+    color: #495057;
+    border-color: #6c757d;
+    background-color: transparent;
+}
+
+.analysis-menu .btn-outline-light:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.analysis-menu .btn-light {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+/* Form elements in analysis menu */
+.analysis-menu .form-label {
+    color: #495057;
+}
+
+.analysis-menu .text-muted {
+    color: #6c757d !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 991.98px) {
+    .analysis-menu {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 15px;
+    }
+}
