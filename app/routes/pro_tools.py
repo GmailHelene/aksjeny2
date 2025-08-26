@@ -95,19 +95,56 @@ def price_alerts():
                 'browser_enabled': browser_alert
             }
             
-            # Reuse create_alert logic
+            # Save alert to database using PriceAlert model
             try:
-                # TODO: Implement database saving
-                alert_id = f"alert_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                flash(f'Prisvarsel opprettet for {ticker}', 'success')
+                from ..models.price_alert import PriceAlert
+                from ..services.price_monitor_service import price_monitor
+                
+                # Create new alert
+                new_alert = PriceAlert(
+                    user_id=current_user.id,
+                    symbol=ticker.upper(),
+                    target_price=float(target_value),
+                    condition=alert_type,  # 'above' or 'below'
+                    is_active=True,
+                    email_enabled=email_alert,
+                    browser_enabled=browser_alert
+                )
+                
+                # Save to database
+                from ..extensions import db
+                db.session.add(new_alert)
+                db.session.commit()
+                
+                # Register with monitoring service
+                try:
+                    price_monitor.add_alert(new_alert.to_dict())
+                except Exception as monitor_error:
+                    logger.warning(f"Could not register alert with monitor: {monitor_error}")
+                
+                flash(f'Prisvarsel opprettet for {ticker} ({alert_type} {target_value})', 'success')
+                logger.info(f"Created price alert for user {current_user.id}: {ticker} {alert_type} {target_value}")
+                
             except Exception as e:
+                logger.error(f"Error creating price alert: {e}")
                 flash(f'Kunne ikke opprette varsel: {str(e)}', 'error')
             
             return redirect(url_for('pro_tools.price_alerts'))
             
         # GET request - show alerts page
-        # Hent brukerens aktive varsler
-        user_alerts = []  # TODO: Implementer database henting
+        # Fetch user's active alerts from database
+        user_alerts = []
+        try:
+            from ..models.price_alert import PriceAlert
+            alerts_query = PriceAlert.query.filter_by(user_id=current_user.id).order_by(
+                PriceAlert.is_active.desc(),
+                PriceAlert.created_at.desc()
+            ).all()
+            user_alerts = [alert.to_dict() for alert in alerts_query]
+            logger.info(f"Retrieved {len(user_alerts)} alerts for user {current_user.id}")
+        except Exception as e:
+            logger.error(f"Error fetching user alerts: {e}")
+            user_alerts = []
         
         return render_template('pro/alerts.html', alerts=user_alerts)
     except Exception as e:

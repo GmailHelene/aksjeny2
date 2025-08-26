@@ -1,3 +1,30 @@
+.navbar-nav .dropdown-menu {
+    background-color: #333333 !important;
+} dette må også endres til background-color. #252525 
+-
+
+https://aksjeradar.trade/stocks/compare
+Denne siden gir fortsatt 500 error... Innlogget bruker
+-
+/profile fungerer fortsatt ikke,nå blir jeg videresendt til forsiden når jeg går på/profile, og får feilmeldingen: Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.
+-
+https://aksjeradar.trade/notifications/api/settings
+Her står fortsatt Prisvarsler, og Push-notifikasjoner bare å laster og laster..
+-
+https://aksjeradar.trade/watchlist/
+Her og står det "laster varsler" i evigheten
+-
+https://aksjeradar.trade/pro-tools/alerts
+Fortsatt problem her med at jeg oppretter prisvarsel, får melding om at varsel er opprettet, MEN det legger seg fortsatt ikke under "Aktive varsler" på samme side
+-
+https://aksjeradar.trade/external-data/analyst-coverage
+Nå får jeg plutselig Beklager en feil oppstod, feilmelding her
+, og her: https://aksjeradar.trade/external-data/market-intelligence
+
+og her
+https://aksjeradar.trade/market-intel/sector-analysis
+-
+
 https://aksjeradar.trade/stocks/compare
 500 error her enda, denne siden må fikses
 Innlogget bruker
