@@ -10,6 +10,9 @@
 
 {% block content %}
 <div class="container py-4">
+    <!-- Analysis Menu -->
+    {% include 'analysis/_menu.html' %}
+    
     <nav aria-label="breadcrumb" class="my-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>

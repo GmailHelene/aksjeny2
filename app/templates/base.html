@@ -529,6 +529,11 @@
     <!-- ConveyThis Script Start -->
     <script src="//cdn.conveythis.com/javascript/conveythis.js?api_key=pub_85496d2f253bff365fbf0fa9429277e3"></script>
     <!-- ConveyThis Script End -->
+    
+    <!-- Free Translation System -->
+    <script>
+    {{ get_free_translation_js() | safe }}
+    </script>
 </head>
 <body>
     <!-- Complex Navigation Bar - 6 dropdowns, 60+ items -->
@@ -704,6 +709,11 @@
                     </li>
                 </ul>
                 {% endif %}
+                
+                <!-- Language Toggle Button -->
+                <div class="navbar-nav ms-auto">
+                    {{ get_language_toggle_html() | safe }}
+                </div>
             </div>
         </div>
     </nav>

@@ -168,6 +168,17 @@ def create_app(config_class=None):
         app.jinja_env.globals['getattr'] = getattr
         app.jinja_env.globals['isinstance'] = isinstance
         
+        # Add free translation system template functions
+        @app.template_global()
+        def get_free_translation_js():
+            from .utils.translation import get_free_translation_js
+            return get_free_translation_js()
+        
+        @app.template_global() 
+        def get_language_toggle_html():
+            from .utils.translation import get_language_toggle_html
+            return get_language_toggle_html()
+        
         # Add translation functions to Jinja2 globals - Setup safely without app context dependency
         def setup_translation_service():
             """Setup translation service safely"""
