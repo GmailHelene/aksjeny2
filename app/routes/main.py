@@ -2411,46 +2411,4 @@ def advanced_crypto_dashboard():
                              title="Crypto Dashboard",
                              error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
 
-@main.route('/analysis/warren-buffett')
-@login_required
-def analysis_warren_buffett():
-    """Warren Buffett analysis route - render directly instead of redirect"""
-    try:
-        ticker = request.args.get('ticker', '')
-        
-        # Get Warren Buffett style analysis
-        data_service = get_data_service()
-        analysis_data = {
-            'ticker': ticker,
-            'recommendation': 'Hold',
-            'score': 75,
-            'criteria': {
-                'debt_to_equity': 'Good',
-                'return_on_equity': 'Excellent', 
-                'profit_margin': 'Good',
-                'revenue_growth': 'Fair'
-            },
-            'buffett_score': 7.5,
-            'summary': 'Solid fundamentals with good long-term prospects'
-        }
-        
-        if ticker and data_service:
-            try:
-                stock_info = data_service.get_stock_info(ticker)
-                if stock_info:
-                    analysis_data['company_name'] = stock_info.get('longName', ticker)
-                    analysis_data['current_price'] = stock_info.get('regularMarketPrice', 0)
-            except Exception as e:
-                logger.warning(f"Error getting stock info for {ticker}: {e}")
-        
-        return render_template('analysis/warren_buffett.html',
-                             analysis=analysis_data,
-                             ticker=ticker,
-                             title="Warren Buffett Analyse")
-                             
-    except Exception as e:
-        logger.error(f"Error in Warren Buffett analysis: {e}")
-        return render_template('analysis/warren_buffett.html',
-                             analysis={'error': 'Analyse ikke tilgjengelig'},
-                             ticker=request.args.get('ticker', ''),
-                             title="Warren Buffett Analyse")
+# Warren Buffett analysis route moved to analysis.py blueprint

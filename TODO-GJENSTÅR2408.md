@@ -2,6 +2,20 @@
     color: #000000 !important;
 } denne regelen må væerw slik, når bakgrunnen er lys!
 _
+https://aksjeradar.trade/stocks/compare
+https://aksjeradar.trade/analysis/warren-buffett
+https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL
+Fortsatt 500 error her
+-
+https://aksjeradar.trade/analysis/short-analysis
+https://aksjeradar.trade/analysis/recommendations
+https://aksjeradar.trade/analysis/technical/
+https://aksjeradar.trade/analysis/strategy-builder
+Herpå disse sidene  savner jeg analysemenyen, alyså den blå  menyen som er /skal være øverst på alle analysesidene
+Fikser du så disse sidene har analsyemenyen øverst slik som de fleste andre /analysis- sidene har?
+(Du ser menyen f.eks her: https://aksjeradar.trade/analysis/global-overview)
+
+-
 
 Varselinnstillinger oppdatert! står det her, når jeg slår på E-post varsler, men toggle blir ikke endret til påslått... https://aksjeradar.trade/settings
 
