@@ -1,3 +1,18 @@
+.card-header.bg-primary {
+    color: #000000 !important;
+} denne regelen må væerw slik, når bakgrunnen er lys!
+_
+
+Varselinnstillinger oppdatert! står det her, når jeg slår på E-post varsler, men toggle blir ikke endret til påslått... https://aksjeradar.trade/settings
+
+
+-
+https://aksjeradar.trade/analysis/warren-buffett
+500 error!
+-
+Klarer vi finne en ny enkel løsning for å oversette siden fra norsk til enlgesk for de som ønsker det, som IKKE koster penger?
+-
+
 https://aksjeradar.trade/notifications/api/settings
 Samme problem med "laster"... og sjekker..." som  det har vært.. ikke fikset.
 -
