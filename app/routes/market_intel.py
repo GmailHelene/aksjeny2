@@ -205,8 +205,10 @@ def earnings_calendar():
 @market_intel.route('/sector-analysis')
 @demo_access
 def sector_analysis():
-    """Sector performance analysis"""
+    """Sector performance analysis with comprehensive error handling"""
     try:
+        logger.info("Accessing sector analysis page")
+        
         # Always use fallback data to avoid API issues
         sector_data = {
             'Energy': {'change_percent': 2.4, 'volume': 1500000, 'name': 'Energi'},
@@ -232,6 +234,8 @@ def sector_analysis():
             {'symbol': 'SUBC.OL', 'name': 'Subsea 7 SA', 'price': 145.30, 'change': 2.1, 'volume': 350000, 'sector': 'Energy'},
         ]
         
+        logger.info("Sector data prepared successfully")
+        
         # Try to get real data as backup (but don't fail if it doesn't work)
         try:
             if ExternalAPIService:
@@ -239,6 +243,7 @@ def sector_analysis():
                 if real_sector_data:
                     # Update with real data if available
                     sector_data.update(real_sector_data)
+                    logger.info("Updated with real sector data")
                     
                 real_screener_data = ExternalAPIService.get_stock_screener(
                     market_cap_min=1000000000,
@@ -246,14 +251,16 @@ def sector_analysis():
                 )
                 if real_screener_data:
                     screener_data = real_screener_data[:20]
+                    logger.info("Updated with real screener data")
         except Exception as api_e:
             logger.warning(f"Could not fetch real data, using fallback: {api_e}")
         
+        logger.info("Rendering sector analysis template")
         return render_template('market_intel/sector_analysis.html',
                              sector_data=sector_data,
                              screener_data=screener_data[:20])  # Top 20
     except Exception as e:
-        logger.error(f"Error in sector analysis: {e}")
+        logger.error(f"Critical error in sector analysis: {e}", exc_info=True)
         # Return a basic page with fallback data instead of error page
         fallback_sector_data = {
             'Energy': {'change_percent': 0.0, 'volume': 1000000, 'name': 'Energi'},
@@ -264,10 +271,14 @@ def sector_analysis():
             {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 280.50, 'change': 0.0, 'volume': 1000000, 'sector': 'Energy'}
         ]
         
-        return render_template('market_intel/sector_analysis.html',
-                             sector_data=fallback_sector_data,
-                             screener_data=fallback_screener_data,
-                             error_message="Noen data kan være utilgjengelig for øyeblikket.")
+        try:
+            return render_template('market_intel/sector_analysis.html',
+                                 sector_data=fallback_sector_data,
+                                 screener_data=fallback_screener_data,
+                                 error_message="Noen data kan være utilgjengelig for øyeblikket.")
+        except Exception as template_error:
+            logger.error(f"Template rendering failed: {template_error}")
+            return f"<h1>Sektoranalyse</h1><p>Siden er midlertidig utilgjengelig. Feil: {str(e)}</p>"
 
 @market_intel.route('/economic-indicators')
 @demo_access
