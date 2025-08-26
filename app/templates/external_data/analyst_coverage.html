@@ -424,4 +424,43 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality for analyst coverage
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            // Update button states
+            filterButtons.forEach(btn => {
+                btn.classList.remove('btn-light', 'active');
+                btn.classList.add('btn-outline-light');
+            });
+            this.classList.remove('btn-outline-light');
+            this.classList.add('btn-light', 'active');
+            
+            // Filter table rows
+            tableRows.forEach(row => {
+                if (filter === 'all') {
+                    row.style.display = '';
+                } else {
+                    const ratingBadge = row.querySelector('.badge');
+                    if (ratingBadge) {
+                        const rating = ratingBadge.textContent.toLowerCase();
+                        if (rating.includes(filter)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
