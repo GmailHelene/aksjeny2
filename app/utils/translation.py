@@ -513,11 +513,20 @@ def get_free_translation_js():
             translateToEnglish();
         }}
         
-        // Update toggle button if it exists
+        // Update toggle button if it exists and add event listener
         const toggleBtn = document.getElementById('language-toggle');
         if (toggleBtn) {{
             toggleBtn.textContent = currentLanguage === 'en' ? 'Norsk' : 'English';
-            toggleBtn.addEventListener('click', toggleLanguage);
+            
+            // Remove any existing event listeners
+            const newToggleBtn = toggleBtn.cloneNode(true);
+            toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+            
+            // Add new event listener
+            newToggleBtn.addEventListener('click', function(e) {{
+                e.preventDefault();
+                toggleLanguage();
+            }});
         }}
     }});
     """
@@ -529,35 +538,10 @@ def get_language_toggle_html():
     """
     return '''
     <button id="language-toggle" class="btn btn-outline-secondary btn-sm ms-2" 
-            onclick="toggleLanguage()" title="Switch to English / Bytt til engelsk">
+            title="Switch to English / Bytt til engelsk">
         🇬🇧 English
     </button>
-    <script>
-    // Check if language preference is stored
-    let currentLanguage = localStorage.getItem('preferredLanguage') || 'no';
-    
-    // Apply stored language on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        if (currentLanguage === 'en') {
-            translatePageToEnglish();
-        }
-        updateLanguageButton();
-    });
-    
-    function toggleLanguage() {
-        if (currentLanguage === 'no') {
-            switchToEnglish();
-        } else {
-            switchToNorwegian();
-        }
-    }
-    
-    function switchToEnglish() {
-        currentLanguage = 'en';
-        localStorage.setItem('preferredLanguage', 'en');
-        
-        // Try Google Translate first
-        if (typeof google !== 'undefined' && google.translate) {
+    '''
             const element = new google.translate.TranslateElement({
                 pageLanguage: 'no',
                 includedLanguages: 'en',

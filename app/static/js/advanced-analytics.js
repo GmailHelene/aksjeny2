@@ -10,7 +10,43 @@ class AdvancedAnalytics {
     }
 
     initializeEventListeners() {
-        // ML Prediction listeners
+        // ML Prediction form listener
+        const mlForm = document.getElementById('ml-prediction-form');
+        if (mlForm) {
+            mlForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const symbol = document.getElementById('prediction-symbol').value.trim().toUpperCase();
+                const days = parseInt(document.getElementById('prediction-days').value);
+                if (symbol) {
+                    this.predictStock(symbol, days);
+                }
+            });
+        }
+
+        // Batch prediction button
+        const batchBtn = document.getElementById('batch-predict-btn');
+        if (batchBtn) {
+            batchBtn.addEventListener('click', () => {
+                const symbols = document.getElementById('batch-symbols').value
+                    .split(',')
+                    .map(s => s.trim().toUpperCase())
+                    .filter(s => s.length > 0);
+                const days = parseInt(document.getElementById('prediction-days').value);
+                if (symbols.length > 0) {
+                    this.batchPredict(symbols, days);
+                }
+            });
+        }
+
+        // Market analysis button
+        const marketBtn = document.getElementById('market-analysis-btn');
+        if (marketBtn) {
+            marketBtn.addEventListener('click', () => {
+                this.getMarketAnalysis();
+            });
+        }
+
+        // Legacy event listeners for data attributes
         document.addEventListener('click', (e) => {
             if (e.target.matches('[data-ml-predict]')) {
                 this.handleMLPrediction(e.target);
