@@ -147,11 +147,15 @@ def create():
                     logger.warning(f"Price monitor service failed: {monitor_error}")
                     alert = None
                 
-                # If price monitor failed, create alert directly
+                # If price monitor failed, create alert directly with proper transaction handling
                 if not alert:
                     try:
                         from ..models.price_alert import PriceAlert
                         from .. import db
+                        
+                        # Ensure we have a fresh session for the transaction
+                        if db.session.is_active:
+                            db.session.rollback()
                         
                         alert = PriceAlert(
                             user_id=current_user.id,
@@ -164,12 +168,14 @@ def create():
                         )
                         
                         db.session.add(alert)
+                        db.session.flush()  # Flush before commit to catch any errors early
                         db.session.commit()
                         
                         logger.info(f"Created price alert directly for user {current_user.id}: {symbol} at {target_price}")
                         
                     except Exception as db_error:
                         logger.error(f"Direct database alert creation failed: {db_error}")
+                        db.session.rollback()  # Ensure rollback on error
                         alert = None
                 
                 if alert:

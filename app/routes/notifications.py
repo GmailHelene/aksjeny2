@@ -295,11 +295,25 @@ def settings():
         return redirect(url_for('notifications.index'))
 
 @notifications_bp.route('/api/settings', methods=['GET', 'POST']) 
-@demo_access
+@login_required  # Changed from @demo_access to @login_required for proper authentication
 def api_update_settings():
-    """API endpoint for notification settings - Enhanced with timeout and error handling"""
+    """API endpoint for notification settings - Enhanced with proper authentication and CSRF handling"""
     try:
-        # Check if user is authenticated
+        # CSRF protection for POST requests
+        if request.method == 'POST':
+            try:
+                from flask_wtf.csrf import validate_csrf
+                csrf_token = request.form.get('csrf_token') or request.headers.get('X-CSRFToken')
+                if csrf_token:
+                    validate_csrf(csrf_token)
+            except Exception as csrf_error:
+                logger.warning(f"CSRF validation failed: {csrf_error}")
+                return jsonify({
+                    'success': False, 
+                    'error': 'Security token validation failed. Please refresh the page and try again.'
+                }), 400
+        
+        # Check if user is authenticated (redundant but safe)
         if not current_user.is_authenticated:
             return jsonify({
                 'success': False, 

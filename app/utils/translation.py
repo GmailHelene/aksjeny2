@@ -525,13 +525,118 @@ def get_free_translation_js():
 
 def get_language_toggle_html():
     """
-    Returns HTML for language toggle button
+    Returns HTML for language toggle button with improved functionality
     """
     return '''
     <button id="language-toggle" class="btn btn-outline-secondary btn-sm ms-2" 
-            onclick="toggleLanguage()" title="Switch language / Bytt språk">
-        English
+            onclick="switchToEnglish()" title="Switch to English / Bytt til engelsk">
+        🇬🇧 English
     </button>
+    <script>
+    function switchToEnglish() {
+        // First try Google Translate API
+        if (typeof google !== 'undefined' && google.translate) {
+            const element = new google.translate.TranslateElement({
+                pageLanguage: 'no',
+                includedLanguages: 'en',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        } else {
+            // Fallback to our own translation
+            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+                window.i18n.setLanguage('en');
+            } else {
+                // Create a simple translation overlay
+                translatePageToEnglish();
+            }
+        }
+        
+        // Update button to show current state
+        const btn = document.getElementById('language-toggle');
+        if (btn) {
+            btn.innerHTML = '🇳🇴 Norsk';
+            btn.onclick = function() { switchToNorwegian(); };
+        }
+    }
+    
+    function switchToNorwegian() {
+        // Reload page to return to Norwegian
+        window.location.reload();
+    }
+    
+    function translatePageToEnglish() {
+        // Simple word replacement for common Norwegian terms
+        const translations = {
+            'Hjem': 'Home',
+            'Nyheter': 'News',
+            'Aksjer': 'Stocks',
+            'Portefølje': 'Portfolio',
+            'Analyse': 'Analysis',
+            'Verktøy': 'Tools',
+            'Profil': 'Profile',
+            'Logg inn': 'Login',
+            'Logg ut': 'Logout',
+            'Søk': 'Search',
+            'Kjøp': 'Buy',
+            'Selg': 'Sell',
+            'Pris': 'Price',
+            'Endring': 'Change',
+            'Volum': 'Volume',
+            'Marked': 'Market',
+            'Oslo Børs': 'Oslo Stock Exchange',
+            'Amerikanke aksjer': 'US Stocks',
+            'Kryptovaluta': 'Cryptocurrency',
+            'Varsel': 'Alert',
+            'Innstillinger': 'Settings',
+            'Om oss': 'About',
+            'Kontakt': 'Contact',
+            'Hjelp': 'Help',
+            'Lagre': 'Save',
+            'Avbryt': 'Cancel',
+            'Oppdater': 'Update',
+            'Slett': 'Delete',
+            'Rediger': 'Edit',
+            'Ny': 'New',
+            'Opprett': 'Create',
+            'Se mer': 'Read more',
+            'Tilbake': 'Back',
+            'Neste': 'Next',
+            'Forrige': 'Previous',
+            'Lukk': 'Close'
+        };
+        
+        // Apply translations to text content
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            textNodes.push(node);
+        }
+        
+        textNodes.forEach(textNode => {
+            let text = textNode.textContent;
+            for (const [norwegian, english] of Object.entries(translations)) {
+                text = text.replace(new RegExp(norwegian, 'gi'), english);
+            }
+            textNode.textContent = text;
+        });
+        
+        // Apply translations to placeholders and titles
+        document.querySelectorAll('[placeholder]').forEach(el => {
+            let placeholder = el.getAttribute('placeholder');
+            for (const [norwegian, english] of Object.entries(translations)) {
+                placeholder = placeholder.replace(new RegExp(norwegian, 'gi'), english);
+            }
+            el.setAttribute('placeholder', placeholder);
+        });
+    }
+    </script>
     '''
 
 # Instructions for implementation:
