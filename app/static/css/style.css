@@ -833,9 +833,9 @@ main {
 }
 
 .alert-warning {
-    background-color: #fff3cd !important;
+    background-color: #2e5869 !important;
     border-color: #ffecb5 !important;
-    color: #664d03 !important;
+    color: #fff !important;
 }
 
 .alert-danger {

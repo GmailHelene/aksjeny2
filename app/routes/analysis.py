@@ -689,10 +689,30 @@ def warren_buffett():
         if ticker:
             logger.info(f"Processing Warren Buffett analysis for: {ticker}")
             
-            # Validate ticker format
-            if not ticker.replace('.', '').replace('-', '').isalnum():
+            # Enhanced ticker validation - allow letters, numbers, dots and dashes
+            # Also allow common company names that can be converted to ticker symbols
+            if not ticker or len(ticker) > 50:
                 flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
                 return redirect(url_for('analysis.warren_buffett'))
+            
+            # Convert common company names to ticker symbols
+            company_to_ticker = {
+                'TESLA': 'TSLA',
+                'APPLE': 'AAPL', 
+                'MICROSOFT': 'MSFT',
+                'GOOGLE': 'GOOGL',
+                'AMAZON': 'AMZN',
+                'FACEBOOK': 'META',
+                'EQUINOR': 'EQNR.OL',
+                'DNB': 'DNB.OL',
+                'TELENOR': 'TEL.OL'
+            }
+            
+            # Convert if it's a known company name
+            original_ticker = ticker
+            if ticker.upper() in company_to_ticker:
+                ticker = company_to_ticker[ticker.upper()]
+                logger.info(f"Converted company name '{original_ticker}' to ticker '{ticker}'")
 
             try:
                 # Try to get real stock data first
