@@ -881,7 +881,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fallbackElement) fallbackElement.style.display = 'block';
         }, 3000); // Reduced to 3 second timeout
         
-        fetch('/stocks/api/demo/chart-data/{{ ticker }}?period=30d')
+        const ticker = '{{ ticker|safe }}';
+        fetch(`/stocks/api/demo/chart-data/${ticker}?period=30d`)
             .then(response => {
                 clearTimeout(chartTimeout); // Cancel timeout since we got a response
                 if (!response.ok) {

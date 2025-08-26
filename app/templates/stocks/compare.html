@@ -298,8 +298,9 @@
         const colors = ['#0d6efd', '#dc3545', '#198754', '#6f42c1', '#fd7e14'];
         
         {% for ticker in tickers %}
-        if ('{{ ticker }}' in {{ chart_data|tojson }}) {
-            const tickerData = {{ chart_data|tojson }}['{{ ticker }}'];
+        const chartData = {{ chart_data|tojson }};
+        if ('{{ ticker }}' in chartData) {
+            const tickerData = chartData['{{ ticker }}'];
             console.log('Chart data for {{ ticker }}:', tickerData);
             
             if (tickerData && tickerData.length > 0) {

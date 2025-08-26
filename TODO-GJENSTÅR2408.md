@@ -1,11 +1,21 @@
+
 .intelligence-header og 
 .ai-insight 
+og .alert-warning 
 Endre bakgrunnsfarge til:#0d47a1 !important
-
-
+-
+https://aksjeradar.trade/stocks/list/currency
+Kolonnen Volum her viser 0 på alle rader, enten fiks det, (må være ekte data) eller fjern denne kolonnen
+-
+Fjern menypunktet under Portfolio som er: ML analytics, da dette ligger under Pro tools også
+-
+https://aksjeradar.trade/advanced-analytics/
+Funksjonaliteten er fortsatt ikkew i orden her, skjer ingenting når jeg tester knappene...
+-
+English knappen øverst på siden som skal oversette siden fra norsk til enlgesk,fungerer veldig dårlig... 
 -
 
-    https://aksjeradar.trade/market-intel/sector-analysis Beklager, en feil oppsto
+https://aksjeradar.trade/market-intel/sector-analysis Beklager, en feil oppsto
 Vi jobber med å løse problemet. Prøv igjen senere.
 -
 https://aksjeradar.trade/external-data/analyst-coverage
