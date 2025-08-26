@@ -1,3 +1,25 @@
+https://aksjeradar.trade/notifications/api/settings
+Samme problem med "laster"... og sjekker..." som  det har vært.. ikke fikset.
+-
+Kunne ikke opprette varsel: 'condition' is an invalid keyword argument for PriceAlert
+Nå får jeg denne medlingen når jeg forsøker å opprette prisvarsel her
+
+-
+ Beklager, en feil oppsto
+Vi jobber med å løse problemet. Prøv igjen senere.
+Får fortsatt denne meldingen på flere sider, som har fungert tidligere!
+https://aksjeradar.trade/external-data/market-intelligence
+https://aksjeradar.trade/external-data/analyst-coverage
+https://aksjeradar.trade/market-intel/sector-analysis
+-
+https://aksjeradar.trade/analysis/sentiment?symbol=TEL.OL
+FORTSATT 500 error her, og her https://aksjeradar.trade/stocks/compare..
+-
+https://aksjeradar.trade/forum/create_topic
+Får 500 error når jeg prøver å lage et nytt innlegg på forum
+
+---
+
 .navbar-nav .dropdown-menu {
     background-color: #333333 !important;
 } dette må også endres til background-color. #252525 
