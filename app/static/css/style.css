@@ -833,7 +833,7 @@ main {
 }
 
 .alert-warning {
-    background-color: #4a5761 !important;
+    background-color: #0d47a1 !important;
     border-color: #ffecb5 !important;
     color: #fff !important;
 }
@@ -1790,5 +1790,16 @@ svg:not(.navbar-brand svg) {
     color: #000 !important;
     font-weight: 600 !important;
     border: 1px solid #ced4da !important;
+}
+
+/* Intelligence and AI styling fixes */
+.intelligence-header {
+    background-color: #0d47a1 !important;
+    color: #fff !important;
+}
+
+.ai-insight {
+    background-color: #0d47a1 !important;
+    color: #fff !important;
 }
 

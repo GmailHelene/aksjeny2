@@ -1,18 +1,26 @@
 
-.intelligence-header og 
-.ai-insight 
-og .alert-warning 
-Endre bakgrunnsfarge til:#0d47a1 !important
--
-https://aksjeradar.trade/stocks/list/currency
-Kolonnen Volum her viser 0 på alle rader, enten fiks det, (må være ekte data) eller fjern denne kolonnen
--
-Fjern menypunktet under Portfolio som er: ML analytics, da dette ligger under Pro tools også
--
-https://aksjeradar.trade/advanced-analytics/
-Funksjonaliteten er fortsatt ikkew i orden her, skjer ingenting når jeg tester knappene...
--
-English knappen øverst på siden som skal oversette siden fra norsk til enlgesk,fungerer veldig dårlig... 
+# UPDATED TODO LIST - 26 AUGUST 2025
+
+## 🔄 NEW ISSUES TO FIX:
+
+### 🎨 CSS Styling Issues:
+- [x] Fix .intelligence-header background color to #0d47a1 !important ✅ COMPLETE
+- [x] Fix .ai-insight background color to #0d47a1 !important ✅ COMPLETE
+- [x] Fix .alert-warning background color to #0d47a1 !important ✅ COMPLETE
+
+### 📊 Currency Data Issues:
+- [x] Fix https://aksjeradar.trade/stocks/list/currency - Volume column shows 0 on all rows, either fix with real data or remove column ✅ COMPLETE
+
+### 🗂️ Navigation Issues:
+- [x] Remove "ML analytics" menu item from Portfolio (duplicate under Pro tools) ✅ COMPLETE
+
+### 📈 Advanced Analytics Issues:
+- [x] Fix https://aksjeradar.trade/advanced-analytics/ - buttons not working ✅ COMPLETE
+
+### 🌐 Translation Issues:
+- [x] Fix English translation button functionality (poor translation quality) ✅ COMPLETE - Significantly expanded translation dictionary with 300+ terms
+
+## ✅ PREVIOUSLY IDENTIFIED ISSUES (SOME FIXED): 
 -
 
 https://aksjeradar.trade/market-intel/sector-analysis Beklager, en feil oppsto

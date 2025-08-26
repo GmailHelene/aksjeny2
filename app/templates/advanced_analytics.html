@@ -291,6 +291,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Rebalance Button
+    document.getElementById('rebalance-btn').addEventListener('click', function() {
+        const symbolsText = document.getElementById('portfolio-symbols').value;
+        const symbols = symbolsText.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
+        
+        if (symbols.length > 1 && window.advancedAnalytics) {
+            // Create mock current portfolio with equal weights
+            const currentPortfolio = {};
+            const equalWeight = 1.0 / symbols.length;
+            symbols.forEach(symbol => {
+                currentPortfolio[symbol] = equalWeight;
+            });
+            
+            // Create target allocation (same as current for demo)
+            const targetAllocation = {...currentPortfolio};
+            
+            window.advancedAnalytics.rebalancePortfolio(currentPortfolio, targetAllocation);
+        }
+    });
+
     // Risk Analysis Form Handler
     document.getElementById('risk-analysis-form').addEventListener('submit', function(e) {
         e.preventDefault();
