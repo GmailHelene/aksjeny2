@@ -3,7 +3,6 @@
 
 ## REMAINING TODO ITEMS:
 
-- [x] Fix background colors: .intelligence-header, .ai-insight, .alert-warning to #0d47a1 !important ✅
 - [ ] Fix profile page redirect/error issues
 - [ ] Fix forum create topic error "Det oppstod en feil ved opprettelse av innlegg"
 - [ ] Fix stocks compare page showing nothing under comparison heading
@@ -14,12 +13,6 @@
 - [ ] Fix security error when adding stocks to portfolio
 - [ ] Clear cache after all fixes
 https://aksjeradar.trade/market-intel/sector-analysis - fortsatt 500 error
--
-
-
-English translation: Siden bare "hopper" tilbake igjen til norsk
-når jeg trykker på English knappen øverst som egentlig skal
-oversette siden og innhold fra norsk til engelsk
 
 -
 https://aksjeradar.trade/notifications/api/settings?csrf_token=IjIxNDc3ZTY3NmE3MWZjNmNmYzlkOGJiNjYwNjgzN2EyNGE0MGY2NjUi.aK4ilg.gDBbUk6ZBlu8jkhu2V1yQrmMyN0&email_price_alerts=on&email_ai_predictions=on&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo
@@ -37,14 +30,15 @@ Fikser du så disse sidene har analsyemenyen øverst slik som de fleste andre /a
 https://aksjeradar.trade/analysis/warren-buffett
 Søkefeltet fungerer ikke her, skjer ingenting...
 -
+
+English translation: Siden bare "hopper" tilbake igjen til norsk
+når jeg trykker på English knappen øverst som egentlig skal
+oversette siden og innhold fra norsk til engelsk
+
+-
+
 Sjekk nøye at alle sider i navigasjonen som innlogget bruker, henter inn og viser kun EKTE data?
 
-
-
-### 🎨 CSS Styling Issues: ✅ FIKSET
-Fix .intelligence-header background color to #0d47a1 !important ✅
-Fix .ai-insight background color to #0d47a1 !important ✅  
-Fix .alert-warning background color to #0d47a1 !important ✅ 
 
 
 

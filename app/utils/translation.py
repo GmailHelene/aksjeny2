@@ -525,16 +525,38 @@ def get_free_translation_js():
 
 def get_language_toggle_html():
     """
-    Returns HTML for language toggle button with improved functionality
+    Returns HTML for language toggle button with persistent language state
     """
     return '''
     <button id="language-toggle" class="btn btn-outline-secondary btn-sm ms-2" 
-            onclick="switchToEnglish()" title="Switch to English / Bytt til engelsk">
+            onclick="toggleLanguage()" title="Switch to English / Bytt til engelsk">
         🇬🇧 English
     </button>
     <script>
+    // Check if language preference is stored
+    let currentLanguage = localStorage.getItem('preferredLanguage') || 'no';
+    
+    // Apply stored language on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (currentLanguage === 'en') {
+            translatePageToEnglish();
+        }
+        updateLanguageButton();
+    });
+    
+    function toggleLanguage() {
+        if (currentLanguage === 'no') {
+            switchToEnglish();
+        } else {
+            switchToNorwegian();
+        }
+    }
+    
     function switchToEnglish() {
-        // First try Google Translate API
+        currentLanguage = 'en';
+        localStorage.setItem('preferredLanguage', 'en');
+        
+        // Try Google Translate first
         if (typeof google !== 'undefined' && google.translate) {
             const element = new google.translate.TranslateElement({
                 pageLanguage: 'no',
@@ -542,30 +564,36 @@ def get_language_toggle_html():
                 layout: google.translate.TranslateElement.InlineLayout.SIMPLE
             }, 'google_translate_element');
         } else {
-            // Fallback to our own translation
-            if (window.i18n && typeof window.i18n.setLanguage === 'function') {
-                window.i18n.setLanguage('en');
-            } else {
-                // Create a simple translation overlay
-                translatePageToEnglish();
-            }
+            // Use our own translation
+            translatePageToEnglish();
         }
         
-        // Update button to show current state
-        const btn = document.getElementById('language-toggle');
-        if (btn) {
-            btn.innerHTML = '🇳🇴 Norsk';
-            btn.onclick = function() { switchToNorwegian(); };
-        }
+        updateLanguageButton();
     }
     
     function switchToNorwegian() {
-        // Reload page to return to Norwegian
+        currentLanguage = 'no';
+        localStorage.setItem('preferredLanguage', 'no');
+        
+        // Reload page to restore Norwegian
         window.location.reload();
     }
     
+    function updateLanguageButton() {
+        const btn = document.getElementById('language-toggle');
+        if (btn) {
+            if (currentLanguage === 'en') {
+                btn.innerHTML = '🇳🇴 Norsk';
+                btn.title = 'Switch to Norwegian / Bytt til norsk';
+            } else {
+                btn.innerHTML = '🇬🇧 English';
+                btn.title = 'Switch to English / Bytt til engelsk';
+            }
+        }
+    }
+    
     function translatePageToEnglish() {
-        // Simple word replacement for common Norwegian terms
+        // Enhanced translation for common Norwegian terms
         const translations = {
             'Hjem': 'Home',
             'Nyheter': 'News',
@@ -584,7 +612,7 @@ def get_language_toggle_html():
             'Volum': 'Volume',
             'Marked': 'Market',
             'Oslo Børs': 'Oslo Stock Exchange',
-            'Amerikanke aksjer': 'US Stocks',
+            'Amerikanske aksjer': 'US Stocks',
             'Kryptovaluta': 'Cryptocurrency',
             'Varsel': 'Alert',
             'Innstillinger': 'Settings',
@@ -598,6 +626,63 @@ def get_language_toggle_html():
             'Rediger': 'Edit',
             'Ny': 'New',
             'Opprett': 'Create',
+            'Oversikt': 'Overview',
+            'Teknisk': 'Technical',
+            'Fundamental': 'Fundamental',
+            'Warren Buffett': 'Warren Buffett',
+            'Benjamin Graham': 'Benjamin Graham',
+            'AI-Analyse': 'AI Analysis',
+            'Short': 'Short',
+            'Sentiment': 'Sentiment',
+            'Prediksjoner': 'Predictions',
+            'Anbefalinger': 'Recommendations',
+            'Screener': 'Screener',
+            'Markedsoversikt': 'Market Overview'
+        };
+        
+        // Apply translations to text content
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            textNodes.push(node);
+        }
+        
+        textNodes.forEach(textNode => {
+            let text = textNode.textContent;
+            let hasChanged = false;
+            
+            Object.keys(translations).forEach(norwegian => {
+                const regex = new RegExp('\\b' + norwegian + '\\b', 'g');
+                if (regex.test(text)) {
+                    text = text.replace(regex, translations[norwegian]);
+                    hasChanged = true;
+                }
+            });
+            
+            if (hasChanged) {
+                textNode.textContent = text;
+            }
+        });
+        
+        // Translate placeholder text
+        const inputs = document.querySelectorAll('input[placeholder], textarea[placeholder]');
+        inputs.forEach(input => {
+            const placeholder = input.placeholder;
+            Object.keys(translations).forEach(norwegian => {
+                const regex = new RegExp('\\b' + norwegian + '\\b', 'g');
+                if (regex.test(placeholder)) {
+                    input.placeholder = placeholder.replace(regex, translations[norwegian]);
+                }
+            });
+        });
+    }
             'Se mer': 'Read more',
             'Tilbake': 'Back',
             'Neste': 'Next',
