@@ -1627,50 +1627,50 @@ def profile():
             }
             errors.append('referral_stats_failed')
             
-            # Get user preferences with defaults
-            try:
-                import json
-                notification_settings = getattr(current_user, 'notification_settings', None)
-                if notification_settings:
-                    notification_settings = json.loads(notification_settings)
-                else:
-                    notification_settings = {}
-                    
-                user_preferences = {
-                    'display_mode': notification_settings.get('display_mode', 'light'),
-                    'number_format': notification_settings.get('number_format', 'norwegian'),
-                    'dashboard_widgets': notification_settings.get('dashboard_widgets', '[]'),
-                    'email_notifications': getattr(current_user, 'email_notifications_enabled', True),
-                    'price_alerts': getattr(current_user, 'price_alerts_enabled', True),
-                    'market_news': getattr(current_user, 'market_news_enabled', True),
-                    'portfolio_updates': getattr(current_user, 'portfolio_updates_enabled', True),
-                    'ai_insights': getattr(current_user, 'ai_insights_enabled', True),
-                    'weekly_reports': getattr(current_user, 'weekly_reports_enabled', True)
-                }
-            except Exception as pref_error:
-                logger.warning(f"Error loading user preferences: {pref_error}")
-                user_preferences = {
-                    'display_mode': 'light',
-                    'number_format': 'norwegian',
-                    'dashboard_widgets': '[]',
-                    'email_notifications': True,
-                    'price_alerts': True,
-                    'market_news': True,
-                    'portfolio_updates': True,
-                    'ai_insights': True,
-                    'weekly_reports': True
-                }
-                errors.append('preferences_failed')
-            
-            # Enhanced favorites loading with stock info
-            try:
-                if hasattr(current_user, 'id'):
-                    # Use the Favorites model
-                    from ..models.favorites import Favorites
-                    favorites = Favorites.query.filter_by(user_id=current_user.id).all()
-                    user_favorites = []
-                    
-                    for fav in favorites:
+        # Get user preferences with defaults
+        try:
+            import json
+            notification_settings = getattr(current_user, 'notification_settings', None)
+            if notification_settings:
+                notification_settings = json.loads(notification_settings)
+            else:
+                notification_settings = {}
+                
+            user_preferences = {
+                'display_mode': notification_settings.get('display_mode', 'light'),
+                'number_format': notification_settings.get('number_format', 'norwegian'),
+                'dashboard_widgets': notification_settings.get('dashboard_widgets', '[]'),
+                'email_notifications': getattr(current_user, 'email_notifications_enabled', True),
+                'price_alerts': getattr(current_user, 'price_alerts_enabled', True),
+                'market_news': getattr(current_user, 'market_news_enabled', True),
+                'portfolio_updates': getattr(current_user, 'portfolio_updates_enabled', True),
+                'ai_insights': getattr(current_user, 'ai_insights_enabled', True),
+                'weekly_reports': getattr(current_user, 'weekly_reports_enabled', True)
+            }
+        except Exception as pref_error:
+            logger.warning(f"Error loading user preferences: {pref_error}")
+            user_preferences = {
+                'display_mode': 'light',
+                'number_format': 'norwegian',
+                'dashboard_widgets': '[]',
+                'email_notifications': True,
+                'price_alerts': True,
+                'market_news': True,
+                'portfolio_updates': True,
+                'ai_insights': True,
+                'weekly_reports': True
+            }
+            errors.append('preferences_failed')
+        
+        # Enhanced favorites loading with stock info
+        try:
+            if hasattr(current_user, 'id'):
+                # Use the Favorites model
+                from ..models.favorites import Favorites
+                favorites = Favorites.query.filter_by(user_id=current_user.id).all()
+                user_favorites = []
+                
+                for fav in favorites:
                         favorite_info = {
                             'symbol': fav.symbol,
                             'name': fav.name or fav.symbol,
@@ -1696,27 +1696,27 @@ def profile():
                     # Update favorite_stocks count
                     user_stats['favorite_stocks'] = len(user_favorites)
                     
-            except Exception as fav_error:
-                logger.warning(f"Error loading favorites: {fav_error}")
-                user_favorites = []
-                errors.append('favorites_failed')
-            
-            # Try to get subscription info
-            try:
-                if subscription_status != 'free':
-                    subscription = {
-                        'type': current_user.subscription_type,
-                        'start_date': current_user.subscription_start,
-                        'end_date': current_user.subscription_end,
-                        'is_trial': bool(current_user.trial_start and not current_user.trial_used),
-                        'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
-                    }
-                else:
-                    subscription = None
-            except Exception as sub_info_error:
-                logger.warning(f"Error getting subscription info: {sub_info_error}")
+        except Exception as fav_error:
+            logger.warning(f"Error loading favorites: {fav_error}")
+            user_favorites = []
+            errors.append('favorites_failed')
+        
+        # Try to get subscription info
+        try:
+            if subscription_status != 'free':
+                subscription = {
+                    'type': current_user.subscription_type,
+                    'start_date': current_user.subscription_start,
+                    'end_date': current_user.subscription_end,
+                    'is_trial': bool(current_user.trial_start and not current_user.trial_used),
+                    'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
+                }
+            else:
                 subscription = None
-                errors.append('subscription_info_failed')
+        except Exception as sub_info_error:
+            logger.warning(f"Error getting subscription info: {sub_info_error}")
+            subscription = None
+            errors.append('subscription_info_failed')
         
         # Ensure all variables are defined
         user_stats = user_stats or {}

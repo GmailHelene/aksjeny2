@@ -32,7 +32,7 @@
 }
 
 .intelligence-header {
-    background: darkblue;
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
     color: white;
     border-radius: 12px;
     padding: 2rem;
@@ -456,108 +456,4 @@
         </div>
     </div>
 </div>
-
-{% block scripts %}
-{{ super() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Update frequency functionality for market intelligence
-    const updateButtons = document.querySelectorAll('[data-update]');
-    
-    updateButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Update button states
-            updateButtons.forEach(btn => {
-                btn.classList.remove('active', 'btn-light');
-                btn.classList.add('btn-outline-light');
-            });
-            this.classList.remove('btn-outline-light');
-            this.classList.add('active', 'btn-light');
-            
-            const updateFreq = this.getAttribute('data-update');
-            
-            // Show loading state
-            const loadingHTML = `
-                <div class="text-center text-muted p-3">
-                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                    <span class="ms-2">Oppdaterer markedsdata...</span>
-                </div>
-            `;
-            
-            // Find metric widgets and show loading
-            const metricWidgets = document.querySelectorAll('.metric-widget');
-            metricWidgets.forEach(widget => {
-                const originalContent = widget.innerHTML;
-                widget.innerHTML = loadingHTML;
-                
-                // Simulate data update
-                setTimeout(() => {
-                    widget.innerHTML = originalContent;
-                    
-                    // Add visual feedback for data refresh
-                    widget.style.transform = 'scale(1.05)';
-                    widget.style.transition = 'transform 0.2s ease';
-                    
-                    setTimeout(() => {
-                        widget.style.transform = 'scale(1)';
-                    }, 200);
-                }, 800);
-            });
-            
-            // Update page title based on frequency
-            const pageTitle = document.querySelector('.intelligence-header h1');
-            if (pageTitle) {
-                const baseTitle = 'Markedsintelligens';
-                const suffixes = {
-                    'live': ' - Live Data',
-                    'daily': ' - Daglig Oppdatering', 
-                    'weekly': ' - Ukentlig Rapport'
-                };
-                pageTitle.textContent = baseTitle + (suffixes[updateFreq] || '');
-            }
-            
-            console.log(`Markedsintelligens oppdatert med frekvens: ${updateFreq}`);
-        });
-    });
-    
-    // Auto-refresh for live mode
-    let autoRefreshInterval;
-    
-    function startAutoRefresh() {
-        const liveButton = document.querySelector('[data-update="live"]');
-        if (liveButton && liveButton.classList.contains('active')) {
-            autoRefreshInterval = setInterval(() => {
-                // Simulate live data update
-                const metrics = document.querySelectorAll('.metric-value');
-                metrics.forEach(metric => {
-                    // Add subtle animation to show data is live
-                    metric.style.color = '#28a745';
-                    setTimeout(() => {
-                        metric.style.color = '';
-                    }, 1000);
-                });
-            }, 30000); // Update every 30 seconds for live mode
-        }
-    }
-    
-    function stopAutoRefresh() {
-        if (autoRefreshInterval) {
-            clearInterval(autoRefreshInterval);
-        }
-    }
-    
-    // Start auto-refresh if in live mode
-    startAutoRefresh();
-    
-    // Update auto-refresh when mode changes
-    updateButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            stopAutoRefresh();
-            setTimeout(startAutoRefresh, 1000);
-        });
-    });
-});
-</script>
-{% endblock %}
-
 {% endblock %}
