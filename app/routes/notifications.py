@@ -295,59 +295,127 @@ def settings():
         return redirect(url_for('notifications.index'))
 
 @notifications_bp.route('/api/settings', methods=['GET', 'POST']) 
-@login_required  # Changed from @demo_access to @login_required for proper authentication
+@login_required 
 def api_update_settings():
-    """API endpoint for notification settings - Enhanced with proper authentication and CSRF handling"""
+    """API endpoint for notification settings - Enhanced with timeout protection"""
     try:
-        # CSRF protection for POST requests
-        if request.method == 'POST':
-            try:
-                from flask_wtf.csrf import validate_csrf
-                csrf_token = request.form.get('csrf_token') or request.headers.get('X-CSRFToken')
-                if csrf_token:
-                    validate_csrf(csrf_token)
-            except Exception as csrf_error:
-                logger.warning(f"CSRF validation failed: {csrf_error}")
+        # Quick timeout protection - set a 2 second maximum response time
+        import signal
+        
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Request timeout")
+        
+        # Only set timeout on non-Windows systems (Windows doesn't support SIGALRM)
+        import platform
+        if platform.system() != 'Windows':
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(2)  # 2 second timeout
+        
+        try:
+            # CSRF protection for POST requests
+            if request.method == 'POST':
+                try:
+                    from flask_wtf.csrf import validate_csrf
+                    csrf_token = request.form.get('csrf_token') or request.headers.get('X-CSRFToken')
+                    if csrf_token:
+                        validate_csrf(csrf_token)
+                except Exception as csrf_error:
+                    logger.warning(f"CSRF validation failed: {csrf_error}")
+                    return jsonify({
+                        'success': False, 
+                        'error': 'Security token validation failed. Please refresh the page and try again.'
+                    }), 400
+            
+            # Check if user is authenticated
+            if not current_user.is_authenticated:
                 return jsonify({
                     'success': False, 
-                    'error': 'Security token validation failed. Please refresh the page and try again.'
-                }), 400
-        
-        # Check if user is authenticated (redundant but safe)
-        if not current_user.is_authenticated:
-            return jsonify({
-                'success': False, 
-                'error': 'Authentication required for notification settings'
-            }), 401
+                    'error': 'Authentication required for notification settings'
+                }), 401
+                
+            if request.method == 'GET':
+                # Return current settings with fast fallback
+                try:
+                    logger.info("Fetching notification settings for user")
+                    user_settings = current_user.get_notification_settings()
+                    logger.info("Successfully retrieved notification settings")
+                    return jsonify({
+                        'success': True,
+                        'settings': user_settings
+                    })
+                except Exception as settings_error:
+                    logger.error(f"Error fetching notification settings: {str(settings_error)}")
+                    # Return default settings as fast fallback
+                    default_settings = {
+                        'email_enabled': True,
+                        'push_enabled': False,
+                        'inapp_enabled': True,
+                        'email_price_alerts': True,
+                        'email_market_news': True,
+                        'push_price_alerts': False,
+                        'push_market_news': False,
+                        'inapp_price_alerts': True,
+                        'inapp_market_news': True,
+                        'quiet_hours_enabled': False,
+                        'quiet_hours_start': '22:00',
+                        'quiet_hours_end': '08:00'
+                    }
+                    return jsonify({
+                        'success': True,
+                        'settings': default_settings,
+                        'fallback': True
+                    })
             
-        if request.method == 'GET':
-            # Return current settings with timeout protection
-            try:
-                logger.info("Fetching notification settings for user")
-                user_settings = current_user.get_notification_settings()
-                logger.info("Successfully retrieved notification settings")
-                return jsonify({
-                    'success': True,
-                    'settings': user_settings
-                })
-            except Exception as settings_error:
-                logger.error(f"Error fetching notification settings: {str(settings_error)}")
-                # Return default settings as fallback
-                default_settings = {
-                    'email_enabled': True,
-                    'push_enabled': False,
-                    'inapp_enabled': True,
-                    'email_price_alerts': True,
-                    'email_market_news': True,
-                    'push_price_alerts': False,
-                    'push_market_news': False,
-                    'inapp_price_alerts': True,
-                    'inapp_market_news': True,
-                    'quiet_hours_enabled': False,
-                    'quiet_hours_start': '22:00',
-                    'quiet_hours_end': '08:00'
-                }
-                return jsonify({
+            # POST request - update settings
+            if request.method == 'POST':
+                settings_data = request.get_json()
+                if not settings_data:
+                    return jsonify({'success': False, 'error': 'No data provided'}), 400
+                
+                try:
+                    # Quick update with minimal database interaction
+                    success = current_user.update_notification_settings(settings_data)
+                    if success:
+                        db.session.commit()
+                        return jsonify({
+                            'success': True, 
+                            'message': 'Settings updated successfully'
+                        })
+                    else:
+                        db.session.rollback()
+                        return jsonify({
+                            'success': False, 
+                            'error': 'Failed to update settings'
+                        })
+                        
+                except Exception as update_error:
+                    logger.error(f"Error updating notification settings: {str(update_error)}")
+                    db.session.rollback()
+                    return jsonify({
+                        'success': False, 
+                        'error': 'Database error occurred'
+                    })
+        
+        finally:
+            # Disable the alarm
+            if platform.system() != 'Windows':
+                signal.alarm(0)
+                
+    except TimeoutError:
+        logger.warning("Notification API request timed out")
+        return jsonify({
+            'success': False,
+            'error': 'Request timed out. Please try again.',
+            'timeout': True
+        }), 200  # Return 200 so frontend doesn't show error page
+        
+    except Exception as e:
+        logger.error(f"Critical error in notification API: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred',
+            'fallback': True
+        }), 200
                     'success': True,
                     'settings': default_settings,
                     'fallback': True
