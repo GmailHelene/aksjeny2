@@ -1618,14 +1618,14 @@ def profile():
                 'referral_code': f'REF{current_user.id}'
             }
             logger.info(f"Successfully loaded referral stats for user {current_user.id}: {referrals} referrals")
-            except Exception as ref_error:
-                logger.error(f"Error loading referral stats for user {current_user.id}: {ref_error}")
-                referral_stats = {
-                    'referrals_made': 0,
-                    'referral_earnings': 0,
-                    'referral_code': f'REF{getattr(current_user, "id", "001")}'
-                }
-                errors.append('referral_stats_failed')
+        except Exception as ref_error:
+            logger.error(f"Error loading referral stats for user {current_user.id}: {ref_error}")
+            referral_stats = {
+                'referrals_made': 0,
+                'referral_earnings': 0,
+                'referral_code': f'REF{getattr(current_user, "id", "001")}'
+            }
+            errors.append('referral_stats_failed')
             
             # Get user preferences with defaults
             try:

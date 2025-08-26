@@ -118,6 +118,87 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
         current_app.logger.warning(f"MACD calculation failed: {e}")
         return 0.0, 0.0, 0.0
 
+def calculate_bollinger_bands(prices, period=20, std_dev=2):
+    """Calculate Bollinger Bands (Upper, Middle, Lower)"""
+    try:
+        if isinstance(prices, list):
+            prices = pd.Series(prices)
+        
+        if len(prices) < period:
+            current_app.logger.warning(f"Not enough data for Bollinger Bands calculation: {len(prices)} < {period}")
+            return float(prices.iloc[-1]), float(prices.iloc[-1]), float(prices.iloc[-1])
+        
+        # Middle band (SMA)
+        middle_band = prices.rolling(window=period).mean()
+        
+        # Standard deviation
+        std = prices.rolling(window=period).std()
+        
+        # Upper and lower bands
+        upper_band = middle_band + (std * std_dev)
+        lower_band = middle_band - (std * std_dev)
+        
+        return float(upper_band.iloc[-1]), float(middle_band.iloc[-1]), float(lower_band.iloc[-1])
+    except Exception as e:
+        current_app.logger.warning(f"Bollinger Bands calculation failed: {e}")
+        last_price = float(prices.iloc[-1]) if len(prices) > 0 else 100.0
+        return last_price, last_price, last_price
+
+def calculate_sma(prices, period=20):
+    """Calculate Simple Moving Average"""
+    try:
+        if isinstance(prices, list):
+            prices = pd.Series(prices)
+        
+        if len(prices) < period:
+            current_app.logger.warning(f"Not enough data for SMA calculation: {len(prices)} < {period}")
+            return float(prices.iloc[-1]) if len(prices) > 0 else 0.0
+        
+        sma = prices.rolling(window=period).mean()
+        return float(sma.iloc[-1])
+    except Exception as e:
+        current_app.logger.warning(f"SMA calculation failed: {e}")
+        return float(prices.iloc[-1]) if len(prices) > 0 else 0.0
+
+def generate_signals(stock_data, technical_indicators):
+    """Generate trading signals based on technical indicators"""
+    try:
+        signals = []
+        
+        # RSI signals
+        rsi = technical_indicators.get('rsi', 50)
+        if rsi > 70:
+            signals.append({'type': 'SELL', 'indicator': 'RSI', 'strength': 'Overkjøpt', 'value': rsi})
+        elif rsi < 30:
+            signals.append({'type': 'BUY', 'indicator': 'RSI', 'strength': 'Oversolgt', 'value': rsi})
+        
+        # MACD signals
+        macd_data = technical_indicators.get('macd', {})
+        if isinstance(macd_data, dict):
+            macd_line = macd_data.get('macd', 0)
+            signal_line = macd_data.get('signal', 0)
+            if macd_line > signal_line:
+                signals.append({'type': 'BUY', 'indicator': 'MACD', 'strength': 'Bullish', 'value': macd_line})
+            else:
+                signals.append({'type': 'SELL', 'indicator': 'MACD', 'strength': 'Bearish', 'value': macd_line})
+        
+        # Bollinger Bands signals
+        bb_data = technical_indicators.get('bollinger_bands', {})
+        if isinstance(bb_data, dict):
+            upper = bb_data.get('upper', 0)
+            lower = bb_data.get('lower', 0)
+            current_price = stock_data.get('last_price', 0)
+            
+            if current_price > upper:
+                signals.append({'type': 'SELL', 'indicator': 'BB', 'strength': 'Overkjøpt', 'value': current_price})
+            elif current_price < lower:
+                signals.append({'type': 'BUY', 'indicator': 'BB', 'strength': 'Oversolgt', 'value': current_price})
+        
+        return signals
+    except Exception as e:
+        current_app.logger.warning(f"Signal generation failed: {e}")
+        return []
+
 def calculate_bollinger_bands(prices, periods=20, std_dev=2):
     """Calculate Bollinger Bands"""
     try:

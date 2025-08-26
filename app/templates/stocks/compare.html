@@ -448,31 +448,6 @@
             document.querySelector('.chart-container:nth-of-type(2)').innerHTML = '<div class="alert alert-warning">Ingen volum data tilgjengelig</div>';
         }
         {% endif %}
-        {% else %}
-        // Debug logging for troubleshooting
-        console.group('Chart Data Debug Info');
-        console.log('Tickers:', {{ tickers|tojson if tickers else '[]' }});
-        console.log('Chart Data:', {{ chart_data|tojson if chart_data else '{}' }});
-        console.log('Metrics:', {{ metrics|tojson if metrics else '{}' }});
-        console.log('Period:', '{{ period }}');
-        console.log('Interval:', '{{ interval }}');
-        console.log('Normalize:', {{ 'true' if normalize else 'false' }});
-        console.groupEnd();
-        
-        // Show diagnostic message in UI
-        const diagnosticDiv = document.createElement('div');
-        diagnosticDiv.className = 'alert alert-info mt-3';
-        diagnosticDiv.innerHTML = `
-            <h6>Diagnostisk informasjon:</h6>
-            <ul class="mb-0">
-                <li>Antall tickere: {{ (tickers|length) if tickers else 0 }}</li>
-                <li>Data tilgjengelig: {{ 'Ja' if chart_data and chart_data|length > 0 else 'Nei' }}</li>
-                <li>Periode: {{ period }}</li>
-                <li>Intervall: {{ interval }}</li>
-            </ul>
-        `;
-        document.querySelector('.chart-container').appendChild(diagnosticDiv);
-        {% endif %}
         
         // Handle favorite buttons
         document.querySelectorAll('.btn-star-favorite').forEach(function(btn) {

@@ -1,5 +1,10 @@
 
-## PROGRESS UPDATE - 26. AUGUST 2025
+
+📋 GJENVÆRENDE WORK:
+Technical analysis JavaScript-feil (require is not defined)
+stocks/compare og sentiment 500-feil trenger mer debugging
+Analysis menu mangler på noen sider
+Settings toggle visual synkronisering
 
 ### ✅ FIKSING FULLFØRT
 - [x] stocks/compare - ✅ Fikset (manglende tekniske analyse-funksjoner lagt til)
@@ -14,7 +19,7 @@
 - [ ] external-data/analyst-coverage - 🔍 Samme som over
 - [ ] market-intel/sector-analysis - 🔍 Samme som over
 
--
+
 
 .card-header.bg-primary {
     color: #000000 !important;
