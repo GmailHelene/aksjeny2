@@ -321,8 +321,7 @@ TRANSLATION_DICTIONARY = {
     "Lagrer endringer": "Saving changes",
     "Sletter": "Deleting",
     "Fullført": "Complete",
-    "Klar": "Ready"
-}
+    "Klar": "Ready",
     "Bekreft": "Confirm",
     "Tilbake": "Back",
     "Neste": "Next",
