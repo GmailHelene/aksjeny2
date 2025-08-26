@@ -380,4 +380,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/advanced-analytics.js') }}"></script>
+<script>
+// Initialize AdvancedAnalytics instance when script loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AdvancedAnalytics !== 'undefined') {
+        window.advancedAnalytics = new AdvancedAnalytics();
+        console.log('AdvancedAnalytics initialized successfully');
+    } else {
+        console.error('AdvancedAnalytics class not found');
+    }
+});
+</script>
 {% endblock %}

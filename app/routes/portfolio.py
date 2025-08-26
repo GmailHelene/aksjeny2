@@ -650,64 +650,70 @@ def stock_tips_feedback(tip_id):
 @access_required
 def create_portfolio():
     """Create a new portfolio with robust error handling"""
-    try:
-        if request.method == 'POST':
-            name = request.form.get('name', '').strip()
-            description = request.form.get('description', '').strip()
-            initial_value = request.form.get('initial_value', '0')
-            currency = request.form.get('currency', 'NOK')
-            
-            if not name:
-                flash('Du må gi porteføljen et navn.', 'danger')
-                return render_template('portfolio/create.html')
-            
-            # Opprett og lagre portefølje
-            try:
-                # Ensure we have the Portfolio model
-                if Portfolio is None:
-                    flash('Portfolio-funksjonen er ikke tilgjengelig for øyeblikket.', 'warning')
-                    return render_template('portfolio/create.html', error="Portfolio-tjeneste ikke tilgjengelig")
-                    
-                new_portfolio = Portfolio(
-                    name=name, 
-                    description=description, 
-                    user_id=current_user.id
-                )
-                db.session.add(new_portfolio)
-                db.session.commit()
-                
-                # Track achievement for creating portfolio (moved after success flash)
-                try:
-                    from ..models.achievements import UserStats, check_user_achievements
-                    user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
-                    if not user_stats:
-                        user_stats = UserStats(user_id=current_user.id)
-                        db.session.add(user_stats)
-                    user_stats.portfolios_created += 1
-                    db.session.commit()
-                    
-                    # Check for new achievements
-                    check_user_achievements(current_user.id, 'portfolios', user_stats.portfolios_created)
-                except Exception as achievement_error:
-                    logger.warning(f"Achievement tracking failed but portfolio created: {achievement_error}")
-                    # Don't fail portfolio creation if achievement tracking fails
-                
-                flash(f'Porteføljen "{name}" ble opprettet!', 'success')
-                return redirect(url_for('portfolio.view_portfolio', id=new_portfolio.id))
-                
-            except Exception as db_error:
-                logger.error(f"Database error creating portfolio: {db_error}")
-                db.session.rollback()
-                flash('Kunne ikke opprette portefølje i databasen. Prøv igjen.', 'error')
-                return render_template('portfolio/create.html', error=str(db_error))
-                
+    if request.method == 'GET':
         # GET request - show form
         return render_template('portfolio/create.html')
+    
+    # POST request - handle form submission
+    try:
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        initial_value = request.form.get('initial_value', '0')
+        currency = request.form.get('currency', 'NOK')
         
+        # Validate input
+        if not name:
+            flash('Du må gi porteføljen et navn.', 'danger')
+            return render_template('portfolio/create.html')
+        
+        # Check if Portfolio model is available
+        if Portfolio is None:
+            flash('Portfolio-funksjonen er ikke tilgjengelig for øyeblikket.', 'warning')
+            return render_template('portfolio/create.html')
+        
+        # Create and save portfolio in a transaction
+        try:
+            new_portfolio = Portfolio(
+                name=name, 
+                description=description, 
+                user_id=current_user.id
+            )
+            db.session.add(new_portfolio)
+            db.session.flush()  # Get the ID without committing
+            
+            # Track achievement for creating portfolio
+            try:
+                from ..models.achievements import UserStats, check_user_achievements
+                user_stats = UserStats.query.filter_by(user_id=current_user.id).first()
+                if not user_stats:
+                    user_stats = UserStats(user_id=current_user.id)
+                    db.session.add(user_stats)
+                user_stats.portfolios_created += 1
+                
+                # Check for new achievements
+                check_user_achievements(current_user.id, 'portfolios', user_stats.portfolios_created)
+            except Exception as achievement_error:
+                logger.warning(f"Achievement tracking failed but continuing with portfolio creation: {achievement_error}")
+                # Don't fail portfolio creation if achievement tracking fails
+            
+            # Commit everything at once
+            db.session.commit()
+            
+            # Only flash success after successful commit
+            flash(f'Porteføljen "{name}" ble opprettet!', 'success')
+            return redirect(url_for('portfolio.view_portfolio', id=new_portfolio.id))
+            
+        except Exception as db_error:
+            logger.error(f"Database error creating portfolio: {db_error}")
+            db.session.rollback()
+            flash('Kunne ikke opprette portefølje i databasen. Prøv igjen.', 'error')
+            return render_template('portfolio/create.html')
+            
     except Exception as e:
         logger.error(f"Critical error in create_portfolio: {e}")
+        db.session.rollback()
         flash('En teknisk feil oppstod. Prøv igjen senere.', 'error')
-        return render_template('portfolio/create.html', error=f"Teknisk feil: {str(e)}")
+        return render_template('portfolio/create.html')
 
 @portfolio.route('/view/<int:id>')
 @login_required

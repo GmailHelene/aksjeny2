@@ -587,7 +587,7 @@ function loadRealChartData(period) {
     };
     
     const apiPeriod = periodMap[period] || '5d';
-    const apiUrl = `/api/chart-data/${currentSymbol}?period=${apiPeriod}`;
+    const apiUrl = `/stocks/api/chart-data/${currentSymbol}?period=${apiPeriod}`;
     
     fetch(apiUrl, {
         method: 'GET',
@@ -865,7 +865,7 @@ document.getElementById('technical-tab').addEventListener('click', function() {
         if (contentElement) contentElement.style.display = 'none';
         
         // Load real technical data from API
-        fetch(`/api/technical-data/${currentSymbol}`, {
+        fetch(`/stocks/api/technical-data/${currentSymbol}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

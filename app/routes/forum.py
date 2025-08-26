@@ -67,6 +67,7 @@ def index():
                          online_now=max(1, total_members // 20) if total_members > 0 else 0)
 
 @forum.route('/create', methods=['GET', 'POST'])
+@forum.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
     """Create forum post with enhanced error handling"""
@@ -74,32 +75,66 @@ def create():
         if request.method == 'POST':
             title = request.form.get('title', '').strip()
             content = request.form.get('content', '').strip()
+            tags = request.form.get('tags', '').strip()
+            category = request.form.get('category', 'general').strip()
             
             if not title or not content:
                 flash('Tittel og innhold er påkrevd.', 'error')
-                return redirect(url_for('forum.create'))
+                return render_template('forum/create_topic.html', 
+                                     title=title, 
+                                     content=content, 
+                                     tags=tags,
+                                     category=category)
+            
+            if len(title) < 5:
+                flash('Tittelen må være minst 5 tegn lang.', 'error')
+                return render_template('forum/create_topic.html', 
+                                     title=title, 
+                                     content=content, 
+                                     tags=tags,
+                                     category=category)
+            
+            if len(content) < 20:
+                flash('Innholdet må være minst 20 tegn langt.', 'error')
+                return render_template('forum/create_topic.html', 
+                                     title=title, 
+                                     content=content, 
+                                     tags=tags,
+                                     category=category)
             
             # Create new forum post
-            post = ForumPost(
-                title=title, 
-                content=content, 
-                user_id=current_user.id,
-                author_id=current_user.id
-            )
-            
-            db.session.add(post)
-            db.session.commit()
-            
-            flash('Innlegg opprettet!', 'success')
-            return redirect(url_for('forum.index'))
+            try:
+                post = ForumPost(
+                    title=title, 
+                    content=content, 
+                    user_id=current_user.id,
+                    author_id=current_user.id,
+                    category=category,
+                    tags=tags
+                )
+                
+                db.session.add(post)
+                db.session.commit()
+                
+                flash('Innlegg opprettet!', 'success')
+                return redirect(url_for('forum.view', post_id=post.id))
+                
+            except Exception as db_error:
+                logger.error(f"Database error creating forum post: {db_error}")
+                db.session.rollback()
+                flash('Det oppstod en feil ved lagring av innlegget. Prøv igjen.', 'error')
+                return render_template('forum/create_topic.html', 
+                                     title=title, 
+                                     content=content, 
+                                     tags=tags,
+                                     category=category)
             
         # GET request - show create form
-        return render_template('forum/create.html')
+        return render_template('forum/create_topic.html')
         
     except Exception as e:
         logger.error(f"Forum create error: {e}")
-        db.session.rollback()
-        flash('Det oppstod en feil ved opprettelse av innlegg. Prøv igjen.', 'error')
+        flash('Det oppstod en uventet feil. Prøv igjen.', 'error')
         return redirect(url_for('forum.index'))
 
 # Alias for create_topic (used in template)
