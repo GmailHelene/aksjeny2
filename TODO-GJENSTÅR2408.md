@@ -22,6 +22,14 @@ https://aksjeradar.trade/external-data/market-intelligence
 Knappene her fungerer ikke: Live, Daglig, Ukentlig
 Fikser du så alle disse knappene som ikke fungerer, enten fungerer,eller så fjerner vi de?
 
+
+-
+.navbar-collapse {
+    background-color: #252525 !important;
+}
+.ai-insight {
+    background: darkblue;
+-
 .metric-card {
     background: darkblue;
     -
@@ -29,7 +37,7 @@ Fikser du så alle disse knappene som ikke fungerer, enten fungerer,eller så fj
     background: darkblue;
 
     -
-    
+
 .navbar-nav .nav-link:hover {
     color: #ffffff !important;
 }

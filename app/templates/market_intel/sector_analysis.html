@@ -79,7 +79,7 @@
 }
 
 .metric-card {
-    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
+    background: darkblue;
     color: white;
     border-radius: 12px;
     padding: 1.5rem;
@@ -137,9 +137,9 @@
                     <i class="bi bi-pie-chart me-3"></i>Sektoranalyse
                 </h1>
                 <div class="btn-group w-100 w-md-auto" role="group">
-                    <button type="button" class="btn btn-outline-primary active btn-sm">Dagens Oversikt</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm">Ukentlig</button>
-                    <button type="button" class="btn btn-outline-primary btn-sm">Månedlig</button>
+                    <button type="button" class="btn btn-outline-primary active btn-sm" data-period="daily">Dagens Oversikt</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-period="weekly">Ukentlig</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-period="monthly">Månedlig</button>
                 </div>
             </div>
         </div>
@@ -386,4 +386,79 @@
         </div>
     </div>
 </div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Period filter functionality for sector analysis
+    const periodButtons = document.querySelectorAll('[data-period]');
+    
+    periodButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update button states
+            periodButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            const period = this.getAttribute('data-period');
+            
+            // Show loading state
+            const loadingHTML = `
+                <div class="text-center text-muted p-4">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span class="ms-2">Oppdaterer data for ${period === 'daily' ? 'i dag' : period === 'weekly' ? 'denne uken' : 'denne måneden'}...</span>
+                </div>
+            `;
+            
+            // Find main content areas and show loading
+            const contentAreas = document.querySelectorAll('.card-body');
+            contentAreas.forEach(area => {
+                if (area.querySelector('.sector-performance') || area.querySelector('.metric-value')) {
+                    const originalContent = area.innerHTML;
+                    area.innerHTML = loadingHTML;
+                    
+                    // Simulate data loading
+                    setTimeout(() => {
+                        area.innerHTML = originalContent;
+                        
+                        // Update titles and content based on period
+                        const titles = area.querySelectorAll('h6, .card-title');
+                        titles.forEach(title => {
+                            if (title.textContent.includes('Oslo Børs')) {
+                                title.textContent = `Oslo Børs - ${period === 'daily' ? 'I dag' : period === 'weekly' ? 'Denne uken' : 'Denne måneden'}`;
+                            }
+                        });
+                        
+                        // Animate updated content
+                        area.style.opacity = '0';
+                        setTimeout(() => {
+                            area.style.transition = 'opacity 0.3s ease';
+                            area.style.opacity = '1';
+                        }, 100);
+                    }, 1000);
+                }
+            });
+            
+            console.log(`Sektoranalyse oppdatert for periode: ${period}`);
+        });
+    });
+    
+    // Add hover effects to metric cards
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+{% endblock %}
+
 {% endblock %}

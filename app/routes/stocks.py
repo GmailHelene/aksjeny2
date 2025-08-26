@@ -1765,6 +1765,43 @@ def toggle_favorite(symbol):
 @demo_access
 def compare():
     """Stock comparison page - Enhanced with better error handling"""
+    
+    # Define demo data generation function first
+    def generate_demo_data(symbol, days=180):
+        """Generate sample stock data"""
+        from datetime import datetime, timedelta
+        
+        base_price = 150 if '.OL' in symbol else 300
+        trend = random.uniform(-0.2, 0.2)
+        volatility = 0.02
+        data = []
+        
+        end_date = datetime.now()
+        for i in range(days):
+            date = end_date - timedelta(days=days-i)
+            # Generate price with trend and random walk
+            if i == 0:
+                close = base_price
+            else:
+                close = data[-1]['close'] * (1 + trend/days + random.uniform(-volatility, volatility))
+                
+            # Generate OHLC values around close
+            open_price = close * (1 + random.uniform(-0.01, 0.01))
+            high = max(open_price, close) * (1 + random.uniform(0, 0.01))
+            low = min(open_price, close) * (1 - random.uniform(0, 0.01))
+            volume = int(random.uniform(50000, 500000))
+            
+            data.append({
+                'date': date.strftime('%Y-%m-%d'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        return data
+    
     try:
         # Support both 'symbols' and 'tickers' parameters for backward compatibility
         symbols_param = request.args.get('symbols') or request.args.get('tickers')
@@ -1928,42 +1965,6 @@ def compare():
                         correlations[symbol][other] = 1.0
                 except Exception:
                     correlations[symbol][other] = 1.0
-
-        # Add demo data generation function
-        def generate_demo_data(symbol, days=180):
-            """Generate sample stock data"""
-            from datetime import datetime, timedelta
-            
-            base_price = 150 if '.OL' in symbol else 300
-            trend = random.uniform(-0.2, 0.2)
-            volatility = 0.02
-            data = []
-            
-            end_date = datetime.now()
-            for i in range(days):
-                date = end_date - timedelta(days=days-i)
-                # Generate price with trend and random walk
-                if i == 0:
-                    close = base_price
-                else:
-                    close = data[-1]['close'] * (1 + trend/days + random.uniform(-volatility, volatility))
-                    
-                # Generate OHLC values around close
-                open_price = close * (1 + random.uniform(-0.01, 0.01))
-                high = max(open_price, close) * (1 + random.uniform(0, 0.01))
-                low = min(open_price, close) * (1 - random.uniform(0, 0.01))
-                volume = int(random.uniform(50000, 500000))
-                
-                data.append({
-                    'date': date.strftime('%Y-%m-%d'),
-                    'open': round(open_price, 2),
-                    'high': round(high, 2),
-                    'low': round(low, 2),
-                    'close': round(close, 2),
-                    'volume': volume
-                })
-            
-            return data
 
         logger.info(f"Processed {len(symbols)} symbols successfully")
 
