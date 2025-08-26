@@ -420,49 +420,48 @@ class OnboardingManager {
     }
 
     showCompletionMessage() {
-        const modal = `
-            <div class="modal fade" id="onboardingCompleteModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-check-circle me-2"></i>
-                                Gratulerer! 🎉
-                            </h5>
-                        </div>
-                        <div class="modal-body text-center">
-                            <i class="bi bi-trophy text-warning" style="font-size: 3rem;"></i>
-                            <h4 class="mt-3">Du er klar til å investere smartere!</h4>
-                            <p class="text-muted">Du har nå lært de grunnleggende funksjonene i Aksjeradar.</p>
+        const modal = 
+            '<div class="modal fade" id="onboardingCompleteModal" tabindex="-1">' +
+                '<div class="modal-dialog">' +
+                    '<div class="modal-content">' +
+                        '<div class="modal-header bg-success text-white">' +
+                            '<h5 class="modal-title">' +
+                                '<i class="bi bi-check-circle me-2"></i>' +
+                                'Gratulerer! 🎉' +
+                            '</h5>' +
+                        '</div>' +
+                        '<div class="modal-body text-center">' +
+                            '<i class="bi bi-trophy text-warning" style="font-size: 3rem;"></i>' +
+                            '<h4 class="mt-3">Du er klar til å investere smartere!</h4>' +
+                            '<p class="text-muted">Du har nå lært de grunnleggende funksjonene i Aksjeradar.</p>' +
                             
-                            <div class="row text-center mt-4">
-                                <div class="col-4">
-                                    <i class="bi bi-robot text-primary"></i>
-                                    <div class="small mt-1">AI-analyser</div>
-                                </div>
-                                <div class="col-4">
-                                    <i class="bi bi-graph-up text-success"></i>
-                                    <div class="small mt-1">Live data</div>
-                                </div>
-                                <div class="col-4">
-                                    <i class="bi bi-lightbulb text-warning"></i>
-                                    <div class="small mt-1">Smart tips</div>
-                                </div>
-                            </div>
+                            '<div class="row text-center mt-4">' +
+                                '<div class="col-4">' +
+                                    '<i class="bi bi-robot text-primary"></i>' +
+                                    '<div class="small mt-1">AI-analyser</div>' +
+                                '</div>' +
+                                '<div class="col-4">' +
+                                    '<i class="bi bi-graph-up text-success"></i>' +
+                                    '<div class="small mt-1">Live data</div>' +
+                                '</div>' +
+                                '<div class="col-4">' +
+                                    '<i class="bi bi-lightbulb text-warning"></i>' +
+                                    '<div class="small mt-1">Smart tips</div>' +
+                                '</div>' +
+                            '</div>' +
                             
-                            <div class="d-grid gap-2 mt-4">
-                                <a href="{{ url_for('main.register') }}" class="btn btn-primary">
-                                    <i class="bi bi-person-plus"></i> Registrer deg nå
-                                </a>
-                                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                    Fortsett uten registrering
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+                            '<div class="d-grid gap-2 mt-4">' +
+                                '<a href="{{ url_for("main.register") }}" class="btn btn-primary">' +
+                                    '<i class="bi bi-person-plus"></i> Registrer deg nå' +
+                                '</a>' +
+                                '<button class="btn btn-outline-secondary" data-bs-dismiss="modal">' +
+                                    'Fortsett uten registrering' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
         
         document.body.insertAdjacentHTML('beforeend', modal);
         const modalEl = new bootstrap.Modal(document.getElementById('onboardingCompleteModal'));

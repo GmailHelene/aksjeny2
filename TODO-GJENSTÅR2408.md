@@ -1,3 +1,67 @@
+.intelligence-header og 
+.ai-insight 
+Endre bakgrunnsfarge til:#0d47a1 !important
+
+
+-
+
+    https://aksjeradar.trade/market-intel/sector-analysis Beklager, en feil oppsto
+Vi jobber med å løse problemet. Prøv igjen senere.
+-
+https://aksjeradar.trade/external-data/analyst-coverage
+Knappene: Alle, buy, hold, sell fungerer ikke her, må fikses eller fjernes
+Uncaught SyntaxError: missing ) after argument list (at analyst-coverage:1472:9)
+
+-
+https://aksjeradar.trade/external-data/market-intelligence
+Knappene live, daglig, ukentlig fungerer ikke her.
+Må fikses eller fjernes.
+aught SyntaxError: missing ) after argument list (at market-intelligence:1504:9)
+
+-
+
+Tekniske detaljer (for utviklere)
+sector-analysis:1075 Uncaught SyntaxError: missing ) after argument lis
+--
+https://aksjeradar.trade/profile
+Vises fortsatt ikke som den skal....redirecter og får feilmelding enda
+
+-
+compare:1295 Uncaught SyntaxError: missing ) after argument list (at compare:1295:9)Understand this error
+index.js:3 Uncaught ReferenceError: require is not defined
+(anonymous) @ index.js:3Understand this error
+compare?tickers=EQNR.OL&tickers=DNB.OL&tickers=&tickers=&period=6mo&interval=1d&normalize=1:1295 Uncaught SyntaxError: missing ) after argument list (at compare?tickers=EQNR.OL&tickers=DNB.OL&tickers=&tickers=&period=6mo&interval=1d&normalize=1:1295:9)
+FOrtsatt så vises det ingenting herr i vinduet under: Sammenligning av EQNR.OL, DNB.OL
+---
+Uncaught SyntaxError: missing ) after argument list (at warren-buffett?ticker=TESLA:1363:9)
+Søkefeltet her fungerer fortsatt ikke
+https://aksjeradar.trade/analysis/warren-buffett?ticker=TESLA
+-
+Det oppstod en feil ved opprettelse av innlegg. Prøv igjen.
+Får dette når jeg forsøker å opprette nytt innelgg på forumet  https://aksjeradar.trade/forum/create_topic
+create_topic:1069 Uncaught SyntaxError: missing ) after argument list (at create_topic:1069:9)
+-
+https://aksjeradar.trade/analysis/short-analysis
+Her mangler den blå analysemenyen øverst på siden,slik den er/og skal være på alle /analyse sidene
+-
+https://aksjeradar.trade/advanced-analytics/
+Knappene /funksjonene genererer prediksjon, bath prediksjoner og markedsanalyse knappene her fungerer ikke,skjer ingenting..
+-
+
+Fortsatt problem med stocks details sidene:https://aksjeradar.trade/stocks/details/GOOGL (eksempel)
+Diagrammene under Kursutvikling bare laster i evigheten
+Og på teknisk analsye tabben er det helt tomt under RSI indikator og MACD indikator
+Kan dette fikses ved å kopiere funksjonaltieten fra denne siden https://aksjeradar.trade/analysis/tradingview, for her fun gerer det...
+-
+Siden det er 2 alarm/privarsel funksjoner,kan vi slå de sammen på et vis?
+Altså i navigasjonen:
+Pro tools - Prisalarmer
+Konto - Varsler
+Kan vi slå disse sammen (bevar funksjkonaltieten i begge,men slå de sammen på 1 side, og pass også på at alt fungerer som det skal...) og kun ha 1 stk menyelement for disse, under "Konto" også fjerner vin det som er under "pro tools
+
+
+
+---
 .alert-warning {
     background-color: #4a5761 !important;
     Endre til denne bakgrunnsfargen på .alert-warnning bannere
@@ -23,23 +87,6 @@ Pro tools - Prisalarmer
 Konto - Varsler
 Kan vi slå disse sammen (bevar funksjkonaltieten i begge,men slå de sammen på 1 side, og pass også på at alt fungerer som det skal...) og kun ha 1 stk menyelement for disse, under "Konto" også fjerner vin det som er under "pro tools"
 
--
-index.js:3 Uncaught ReferenceError: require is not defined
-(anonymous) @ index.js:3Understand this error
-advanced-analytics/:1406 Uncaught SyntaxError: missing ) after argument list (at advanced-analytics/:1406:9)
-Knappene/funksjonene her fungerer ikke! https://aksjeradar.trade/advanced-analytics/
-(Generer prediksjon, batch prediksjoner, markedsanalyse)
-
-
-index.js:3 Uncaught ReferenceError: require is not defined
-(anonymous)	@	index.js:3
-
-oslo-overview:2265 Uncaught SyntaxError: missing ) after argument list (at oslo-overview:2265:9)
-EQNR.OL:2285 Uncaught SyntaxError: Unexpected token '}' (at EQNR.OL:2285:1)Understand this error
-EQNR.OL:2712 Uncaught SyntaxError: missing ) after argument list (at EQNR.OL:2712:9)
-https://aksjeradar.trade/stocks/details/EQNR.OL
-Fortsatt så står det "Henter kursdata...." olg loader i evigheten op\å disse sidene, og RSI Indikator og MACD indikator vinduene/feltene er fortsatt tomme/hvite. Kan di fikse dette ved å herme etter/kiopiere funksjonaliteten som er her: https://aksjeradar.trade/analysis/tradingview
-(for her fungerer det)
 --
 settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1607 Uncaught SyntaxError: Unexpected token '}' (at settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1607:5)Understand this error
 settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1950 Uncaught SyntaxError: missing ) after argument list (at settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1950:9)
@@ -255,24 +302,11 @@ https://aksjeradar.trade/watchlist/ her står det: Laster varsler.... i evighete
 Dette må fjernes som regel!
 -
 
- https://aksjeradar.trade/stocks/details/AAPL
- Fortsatt står det "henter kursdata" i evigheten her... 
- og det står forsatt ingen informasjon tilgjengelig" overalt under "selskap" tabben
- Og prisen øverst, 100 står det på ALLE tickers, derte er jio tydelgivis ikke ekte data som det må være
- Og knappen på disse sidene fir å legge til i portefølje,fungerer heller ikke. Det står bare "legger til" i evigheten. Du kan fjerne denne knappen fra details tickers sidene..
- Og knappen, se fullstendig anbeafling for AAPL (eksemel) skal lenke til /analysis/ai-tickernavn ikke som den gjør nå til recommendations
 
 Fortsatt problem med stocks details sidene:https://aksjeradar.trade/stocks/details/GOOGL (eksempel)
-Porteføljeknappen bare laster i evigheten
 Diagrammene under Kursutvikling bare laster i evigheten
-"kke tilgjengelig"står det overalt på tabben "Selskap"
-På tabben fundamental står det også bare masse -
-Og på teknisk analsye tabben er det helt tomt under RSI indikator og MACD indikator, nå må dette fikses på ordentlig, alt dette på stocks/details   tickers sidene!
-også står det pris 100 øverst på alle sammen, som tyder
-på at dette ikke er ekte data som det MÅ være
-index.js:3 Uncaught ReferenceError: require is not defined
-GOOGL:2068 Uncaught SyntaxError: Unexpected token '}'
-GOOGL:2490 Uncaught SyntaxError: missing ) after argument list
+Og på teknisk analsye tabben er det helt tomt under RSI indikator og MACD indikator
+Kan dette fikses ved å kopiere funksjonaltieten fra denne siden https://aksjeradar.trade/analysis/tradingview, for her fun gerer det...
 -
 
 
