@@ -406,7 +406,7 @@
                                 <a href="{{ url_for('analysis.technical', ticker=ticker) }}" class="btn btn-outline-primary">
                                     <i class="bi bi-graph-up"></i> Full teknisk analyse
                                 </a>
-                                <a href="{{ url_for('analysis.ai', ticker=ticker) }}" class="btn btn-outline-info">
+                                <a href="/analysis/ai?ticker={{ ticker }}" class="btn btn-outline-info">
                                     <i class="bi bi-robot"></i> Vis AI analyse
                                 </a>
                                 <a href="{{ url_for('stocks.compare') }}?tickers={{ ticker }}" class="btn btn-outline-warning">
@@ -543,7 +543,7 @@
                     
                     <div class="mt-4">
                         <div class="d-grid gap-2">
-                            <a href="/analysis/ai-{{ ticker }}" class="btn btn-primary">
+                            <a href="/analysis/ai?ticker={{ ticker }}" class="btn btn-primary">
                                 <i class="bi bi-chart-bar"></i> Se fullstendig anbefaling for {{ ticker }}
                             </a>
                         </div>
@@ -757,6 +757,76 @@
 </div>
 
 <script>
+    // Fallback chart function for when API fails or times out - MOVED TO TOP
+    function showFallbackChart(ctx) {
+        // Generate some sample data for demonstration
+        const sampleData = [];
+        const now = new Date();
+        const basePrice = {{ stock_info.get('regularMarketPrice', 100) }};
+        
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            // Create realistic price variation around base price
+            const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
+            const price = basePrice * (1 + variation);
+            sampleData.push({
+                x: date.toISOString().split('T')[0],
+                y: Math.round(price * 100) / 100
+            });
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Pris ({{ stock_info.get("currency", "NOK") }})',
+                    data: sampleData,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM DD'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Dato'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Pris ({{ stock_info.get("currency", "NOK") }})'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Fallback Chart - Estimerte data'
+                    }
+                }
+            }
+        });
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tabs with error handling
     try {
@@ -900,80 +970,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Note: Portfolio actions are handled by the global PortfolioActionsManager
     // loaded in base.html from portfolio-actions-enhanced.js
     // No additional event listeners needed here as they're automatically setup
-
-    // Fallback chart function for when API fails or times out
-    function showFallbackChart(ctx) {
-        // Generate some sample data for demonstration
-        const sampleData = [];
-        const now = new Date();
-        const basePrice = {{ stock_info.get('regularMarketPrice', 100) }};
-        
-        for (let i = 29; i >= 0; i--) {
-            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-            // Create realistic price variation around base price
-            const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
-            const price = basePrice * (1 + variation);
-            sampleData.push({
-                x: date.toISOString().split('T')[0],
-                y: Math.round(price * 100) / 100
-            });
-        }
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                datasets: [{
-                    label: 'Pris (NOK)',
-                    data: sampleData,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            unit: 'day',
-                            displayFormats: {
-                                day: 'MMM DD'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Dato'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Pris (NOK)'
-                        },
-                        beginAtZero: false
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Kursutvikiling (demo data)',
-                        color: '#6c757d'
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            }
-        });
-    }
 
     // Load technical analysis data and charts
     function loadTechnicalAnalysis() {

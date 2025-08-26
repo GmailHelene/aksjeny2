@@ -31,11 +31,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.dropdown-menu .dropdown-header,
-.dropdown-menu h6.dropdown-header,
-.navbar-dark .dropdown-menu .dropdown-header {
-    color: inherit !important;
-}
+
 
 /* Card header styling fixes */
 .card-header h5,

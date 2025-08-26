@@ -22,6 +22,34 @@ logger = logging.getLogger(__name__)
 # Create the stocks blueprint
 stocks = Blueprint('stocks', __name__, url_prefix='/stocks')
 
+@stocks.route('/test-oslo')
+def test_oslo():
+    """Test route for debugging Oslo template rendering"""
+    try:
+        test_data = {
+            'EQNR.OL': {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 270.50, 'change': 2.30, 'change_percent': 0.86, 'volume': 1000000, 'sector': 'Energy'},
+            'DNB.OL': {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 185.20, 'change': -1.20, 'change_percent': -0.64, 'volume': 2000000, 'sector': 'Financial'}
+        }
+        
+        test_context = {
+            'stocks': test_data,
+            'market': 'Oslo Børs (Test)',
+            'market_type': 'oslo',
+            'category': 'oslo',
+            'data_info': {'total_stocks': 2, 'user_authenticated': False, 'data_quality': 'test'},
+            'error': False,
+            'top_gainers': [],
+            'top_losers': [],
+            'most_active': []
+        }
+        
+        logger.info(f"Test template context: {test_context}")
+        return render_template('stocks/oslo_dedicated.html', **test_context)
+    except Exception as e:
+        logger.error(f"Test template error: {e}")
+        logger.error(f"Test template traceback: {traceback.format_exc()}")
+        return f"Test template error: {e}"
+
 @stocks.route('/')
 @stocks.route('/index')
 @demo_access
@@ -355,34 +383,80 @@ def list_oslo():
         
         # Verify template exists before rendering
         try:
-            return render_template('stocks/oslo_dedicated.html',
-                                 stocks=stocks_data,
-                                 market='Oslo Børs',
-                                 market_type='oslo',
-                                 category='oslo',
-                                 data_info=data_sources_info,
-                                 error=False)
+            # Ensure all required template variables are provided
+            template_context = {
+                'stocks': stocks_data,
+                'market': 'Oslo Børs',
+                'market_type': 'oslo',
+                'category': 'oslo',
+                'data_info': data_sources_info,
+                'error': False,
+                'top_gainers': [],  # Add empty lists for optional template variables
+                'top_losers': [],
+                'most_active': []
+            }
+            
+            logger.info(f"Rendering template with context: stocks={len(stocks_data)}, data_info={data_sources_info}")
+            
+            # Debug: Test basic template rendering first
+            try:
+                # Use the simple template instead of the complex one
+                return render_template('stocks/oslo_simple.html', **template_context)
+            except Exception as template_render_error:
+                logger.error(f"DETAILED TEMPLATE ERROR: {template_render_error}")
+                logger.error(f"Template context keys: {list(template_context.keys())}")
+                logger.error(f"First few stocks: {dict(list(stocks_data.items())[:3])}")
+                raise template_render_error
         except Exception as template_error:
             logger.error(f"Template rendering error: {template_error}")
-            # Try alternative template names
+            logger.error(f"Template error traceback: {traceback.format_exc()}")
+            
+            # Try alternative template names with minimal context
             try:
-                return render_template('stocks/oslo.html',
-                                     stocks=stocks_data,
-                                     market='Oslo Børs',
-                                     market_type='oslo',
-                                     category='oslo',
-                                     data_info=data_sources_info,
-                                     error=False)
+                minimal_context = {
+                    'stocks': stocks_data,
+                    'market': 'Oslo Børs',
+                    'market_type': 'oslo',
+                    'category': 'oslo',
+                    'data_info': data_sources_info,
+                    'error': False
+                }
+                return render_template('stocks/oslo_simple.html', **minimal_context)
             except Exception as alt_template_error:
-                logger.error(f"Alternative template also failed: {alt_template_error}")
-                # Create minimal response
-                return f"""
-                <h1>Oslo Børs Stocks</h1>
-                <p>Data loaded: {len(stocks_data)} stocks</p>
-                <ul>
-                    {''.join([f'<li>{symbol}: {stock.get("name", "N/A")} - {stock.get("last_price", "N/A")}</li>' for symbol, stock in list(stocks_data.items())[:10]])}
-                </ul>
-                """
+                logger.error(f"Simple template also failed: {alt_template_error}")
+                logger.error(f"Simple template error traceback: {traceback.format_exc()}")
+                
+                # Try using the main stocks list template as a fallback
+                try:
+                    return render_template('stocks/list.html',
+                                         stocks=stocks_data,
+                                         market='Oslo Børs',
+                                         category='oslo',
+                                         error=False)
+                except Exception as list_template_error:
+                    logger.error(f"List template also failed: {list_template_error}")
+                    # Return proper HTML with base template
+                    return render_template('base.html', 
+                                         content=f"""
+                                         <div class="container py-4">
+                                             <h1>Oslo Børs Stocks</h1>
+                                             <p>Data loaded: {len(stocks_data)} stocks</p>
+                                             <div class="row">
+                                                 {''.join([f'''
+                                                 <div class="col-md-6 mb-3">
+                                                     <div class="card">
+                                                         <div class="card-body">
+                                                             <h5 class="card-title">{symbol}</h5>
+                                                             <p class="card-text">{stock.get("name", "N/A")}</p>
+                                                             <p class="card-text"><strong>{stock.get("last_price", "N/A")} NOK</strong></p>
+                                                             <a href="/stocks/details/{symbol}" class="btn btn-primary">Detaljer</a>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                                 ''' for symbol, stock in list(stocks_data.items())[:10]])}
+                                             </div>
+                                         </div>
+                                         """)
                              
     except Exception as e:
         logger.error(f"Critical error in Oslo Børs route: {e}")
@@ -394,12 +468,20 @@ def list_oslo():
                 'EQNR.OL': {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 270.50, 'change': 0.00, 'change_percent': 0.00},
                 'DNB.OL': {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 185.20, 'change': 0.00, 'change_percent': 0.00}
             }
-            return render_template('stocks/oslo_dedicated.html',
-                                 stocks=emergency_data,
-                                 market='Oslo Børs',
-                                 market_type='oslo',
-                                 category='oslo',
-                                 error=False)
+            
+            emergency_context = {
+                'stocks': emergency_data,
+                'market': 'Oslo Børs',
+                'market_type': 'oslo',
+                'category': 'oslo',
+                'data_info': {'total_stocks': 2, 'user_authenticated': False, 'data_quality': 'emergency'},
+                'error': False,
+                'top_gainers': [],
+                'top_losers': [],
+                'most_active': []
+            }
+            
+            return render_template('stocks/oslo_simple.html', **emergency_context)
         except Exception as final_error:
             logger.error(f"Final emergency template also failed: {final_error}")
             # Return basic HTML response

@@ -1801,6 +1801,7 @@ def profile():
                 
         except Exception as template_error:
             logger.error(f"Template error in profile fallback: {template_error}")
+            logger.error(f"Template error traceback: {traceback.format_exc()}")
             # Final fallback with flash message instead of direct return
             flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
             return redirect(url_for('main.index'))
