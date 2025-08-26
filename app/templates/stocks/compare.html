@@ -276,9 +276,9 @@
             const interval = document.getElementById('interval').value;
             const normalize = document.getElementById('normalize').value;
             
-            const url = `{{ url_for('stocks.compare') }}?` + 
-                       tickers.map(t => `tickers=${encodeURIComponent(t)}`).join('&') +
-                       `&period=${period}&interval=${interval}&normalize=${normalize}`;
+            const url = '{{ url_for("stocks.compare") }}?' + 
+                       tickers.map(t => 'tickers=' + encodeURIComponent(t)).join('&') +
+                       '&period=' + period + '&interval=' + interval + '&normalize=' + normalize;
             
             window.location.href = url;
         });
@@ -345,7 +345,7 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
+                                unit: {% if interval == '1d' %}'day'{% elif interval == '1wk' %}'week'{% else %}'month'{% endif %},
                                 tooltipFormat: 'dd.MM.yyyy',
                                 displayFormats: {
                                     day: 'dd.MM',
@@ -361,7 +361,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: '{{ 'Normalisert pris (%)' if normalize else 'Pris' }}'
+                                text: {% if normalize %}'Normalisert pris (%)'{% else %}'Pris'{% endif %}
                             }
                         }
                     },
@@ -375,7 +375,7 @@
                                 label: function(context) {
                                     const label = context.dataset.label || '';
                                     const value = context.parsed.y;
-                                    return `${label}: ${value.toFixed(2)}{{ ' %' if normalize else '' }}`;
+                                    return label + ': ' + value.toFixed(2) + '{% if normalize %} %{% endif %}';
                                 }
                             }
                         }
@@ -405,7 +405,7 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
+                                unit: {% if interval == '1d' %}'day'{% elif interval == '1wk' %}'week'{% else %}'month'{% endif %},
                                 tooltipFormat: 'dd.MM.yyyy',
                                 displayFormats: {
                                     day: 'dd.MM',

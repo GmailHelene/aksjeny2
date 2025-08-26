@@ -1018,16 +1018,16 @@ function sortWatchlist() {
 
 function viewStockDetails(symbol) {
     // Navigate to charts page with specific symbol
-    window.location.href = `{{ url_for('mobile_trading.mobile_charts') }}?symbol=${symbol}`;
+    window.location.href = '{{ url_for("mobile_trading.mobile_charts") }}?symbol=' + symbol;
 }
 
 function quickBuy(symbol) {
     // Navigate to quick trade with pre-filled symbol
-    window.location.href = `{{ url_for('mobile_trading.quick_trade') }}?symbol=${symbol}&action=buy`;
+    window.location.href = '{{ url_for("mobile_trading.quick_trade") }}?symbol=' + symbol + '&action=buy';
 }
 
 function addAlert(symbol) {
-    const price = prompt(`Set price alert for ${symbol}:`);
+    const price = prompt('Set price alert for ' + symbol + ':');
     if (price && !isNaN(price)) {
         // Add price alert logic here
         showSuccess(`Price alert set for ${symbol} at $${price}`);

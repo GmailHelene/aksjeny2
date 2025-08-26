@@ -492,7 +492,7 @@ document.getElementById('reply-content')?.addEventListener('input', function() {
     draftTimeout = setTimeout(() => {
         const content = this.value;
         if (content.length > 10) {
-            localStorage.setItem(`forum_draft_topic_{{ topic.id }}`, content);
+            localStorage.setItem('forum_draft_topic_{{ topic.id }}', content);
         }
     }, 2000);
 });
@@ -501,7 +501,7 @@ document.getElementById('reply-content')?.addEventListener('input', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const replyTextarea = document.getElementById('reply-content');
     if (replyTextarea) {
-        const draft = localStorage.getItem(`forum_draft_topic_{{ topic.id }}`);
+        const draft = localStorage.getItem('forum_draft_topic_{{ topic.id }}');
         if (draft && replyTextarea.value === '') {
             replyTextarea.value = draft;
         }

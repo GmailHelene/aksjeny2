@@ -34,7 +34,7 @@ analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 logger = logging.getLogger(__name__)
 
 @analysis.route('/sentiment')
-@access_required
+@demo_access
 def sentiment():
     """Market sentiment analysis page"""
     try:

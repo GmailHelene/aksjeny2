@@ -1,3 +1,54 @@
+.alert-warning {
+    background-color: #4a5761 !important;
+    Endre til denne bakgrunnsfargen på .alert-warnning bannere
+    -
+require is not defined
+/market-intel/sector-analysis:1075 Uncaught SyntaxError: missing ) after argument list
+https://aksjeradar.trade/market-intel/sector-analysis
+Får fortsatt feilmeld. her.
+-
+https://aksjeradar.trade/analysis/short-analysis
+Her mangler den blå analysemenyen øverst på siden,slik den er/og skal være på alle /analyse sidene
+-
+analyst-coverage:1075 Uncaught SyntaxError: missing ) after argument list (at analyst-coverage:1075:9)
+https://aksjeradar.trade/external-data/analyst-coverage
+Feilmeld. her 
+og her:
+https://aksjeradar.trade/external-data/market-intelligence
+market-intelligence:1075 Uncaught SyntaxError: missing ) after argument list (at market-intelligence:1075:9)
+-
+Siden det er 2 alarm/privarsel funksjoner,kan vi slå de sammen på et vis?
+Altså i navigasjonen:
+Pro tools - Prisalarmer
+Konto - Varsler
+Kan vi slå disse sammen (bevar funksjkonaltieten i begge,men slå de sammen på 1 side, og pass også på at alt fungerer som det skal...) og kun ha 1 stk menyelement for disse, under "Konto" også fjerner vin det som er under "pro tools"
+
+-
+index.js:3 Uncaught ReferenceError: require is not defined
+(anonymous) @ index.js:3Understand this error
+advanced-analytics/:1406 Uncaught SyntaxError: missing ) after argument list (at advanced-analytics/:1406:9)
+Knappene/funksjonene her fungerer ikke! https://aksjeradar.trade/advanced-analytics/
+(Generer prediksjon, batch prediksjoner, markedsanalyse)
+
+
+index.js:3 Uncaught ReferenceError: require is not defined
+(anonymous)	@	index.js:3
+
+oslo-overview:2265 Uncaught SyntaxError: missing ) after argument list (at oslo-overview:2265:9)
+EQNR.OL:2285 Uncaught SyntaxError: Unexpected token '}' (at EQNR.OL:2285:1)Understand this error
+EQNR.OL:2712 Uncaught SyntaxError: missing ) after argument list (at EQNR.OL:2712:9)
+https://aksjeradar.trade/stocks/details/EQNR.OL
+Fortsatt så står det "Henter kursdata...." olg loader i evigheten op\å disse sidene, og RSI Indikator og MACD indikator vinduene/feltene er fortsatt tomme/hvite. Kan di fikse dette ved å herme etter/kiopiere funksjonaliteten som er her: https://aksjeradar.trade/analysis/tradingview
+(for her fungerer det)
+--
+settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1607 Uncaught SyntaxError: Unexpected token '}' (at settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1607:5)Understand this error
+settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1950 Uncaught SyntaxError: missing ) after argument list (at settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo:1950:9)
+Dette er knskje grunnen til at varselufunskjonaliteten ikke fungerer /bare står å "Laster" her.. https://aksjeradar.trade/notifications/api/settings?csrf_token=IjFkNjJjMGQyODFlZWQ2MDUwN2E3ZDVlYTc5YTU2ZDg3MDRmZjE1MzYi.aK3_OQ.v6UB6iTi6HUmjkb7xEm4MZmNS7w&quiet_hours_start=&quiet_hours_end=&timezone=Europe%2FOslo Må fikses
+--
+Uncaught SyntaxError: missing ) after argument list (at alerts:1154:9)
+https://aksjeradar.trade/pro-tools/alerts
+Det fungerer ikke å opprette varsel her /står at det blir oppretttet, men det llegger seg ikke under "Aktive varsler" som det burde
+
 
 
 📋 GJENVÆRENDE WORK:

@@ -1693,8 +1693,8 @@ def profile():
                             
                         user_favorites.append(favorite_info)
                         
-                    # Update favorite_stocks count
-                    user_stats['favorite_stocks'] = len(user_favorites)
+                # Update favorite_stocks count
+                user_stats['favorite_stocks'] = len(user_favorites)
                     
         except Exception as fav_error:
             logger.warning(f"Error loading favorites: {fav_error}")

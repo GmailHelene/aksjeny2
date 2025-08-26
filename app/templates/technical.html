@@ -630,7 +630,7 @@ function analyzeStock(symbol) {
     document.getElementById('stockSearch').value = symbol;
     
     // Navigate to detailed analysis page
-    window.location.href = `{{ url_for('main.stock_analysis') }}?symbol=${symbol}`;
+    window.location.href = '{{ url_for("main.stock_analysis") }}?symbol=' + symbol;
 }
 
 function performQuickAnalysis(symbol) {
