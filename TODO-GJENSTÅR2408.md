@@ -1,8 +1,16 @@
 
-# UPDATED TODO LIST - 26 AUGUST 2025
-https://aksjeradar.trade/market-intel/sector-analysis  
-https://aksjeradar.trade/settings
-500 teknisk feil på begge disse sidene
+# UPDATED TODO LIST - 27 AUGUST 2025 - 500 ERRORS FIXED ✅
+
+## CRITICAL 500 ERRORS - RESOLVED ✅
+https://aksjeradar.trade/market-intel/sector-analysis - ✅ FIXED  
+https://aksjeradar.trade/settings - ✅ FIXED (template syntax error corrected)
+
+**Root Cause Found & Fixed**: 
+- settings.html had malformed Jinja template syntax on line 3
+- Fixed: `{<form...> block title %}` → `{% block title %}`
+- Both routes now have proper error handling and fallback data
+
+## REMAINING TODO ITEMS:
 
 - [ ] Fix background colors: .intelligence-header, .ai-insight, .alert-warning to #0d47a1 !important
 - [ ] Fix profile page redirect/error issues
