@@ -849,60 +849,157 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Technical analysis loading - Enhanced with timeout and better error handling
+// Technical analysis loading - Enhanced with real API call and TradingView integration
 document.getElementById('technical-tab').addEventListener('click', function() {
     const loadingElement = document.getElementById('technical-loading');
     const contentElement = document.getElementById('technical-content');
+    
+    // Initialize TradingView widget when technical tab is opened
+    setTimeout(() => {
+        initTradingViewWidget();
+    }, 500);
     
     if (loadingElement) {
         // Show loading first
         loadingElement.style.display = 'block';
         if (contentElement) contentElement.style.display = 'none';
         
-        // Load technical data with timeout
-        const technicalTimeout = setTimeout(() => {
+        // Load real technical data from API
+        fetch(`/api/technical-data/${currentSymbol}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
             loadingElement.style.display = 'none';
             if (contentElement) {
                 contentElement.style.display = 'block';
-                contentElement.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Trendindikatorer</h6>
-                            <table class="table table-sm">
-                                <tr><td>RSI (14)</td><td class="text-end"><span class="badge bg-warning">65.2</span></td></tr>
-                                <tr><td>SMA 20</td><td class="text-end">${({{ stock.price or 100 }} * 0.98).toFixed(2)} NOK</td></tr>
-                                <tr><td>SMA 50</td><td class="text-end">${({{ stock.price or 100 }} * 0.95).toFixed(2)} NOK</td></tr>
-                                <tr><td>EMA 12</td><td class="text-end">${({{ stock.price or 100 }} * 1.02).toFixed(2)} NOK</td></tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Momentum</h6>
-                            <table class="table table-sm">
-                                <tr><td>MACD</td><td class="text-end"><span class="badge bg-success">Bullish</span></td></tr>
-                                <tr><td>Stokastisk</td><td class="text-end">78.5</td></tr>
-                                <tr><td>Williams %R</td><td class="text-end">-25.3</td></tr>
-                                <tr><td>ADX</td><td class="text-end"><span class="badge bg-info">42.1</span></td></tr>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <h6>Analyse Sammendrag</h6>
-                            <div class="alert bg-dark-green">
-                                <strong>Teknisk utblick:</strong> Aksjen viser positive tekniske signaler med RSI på 65.2 som indikerer moderat overkjøpt nivå. 
-                                MACD viser bullish momentum. SMA 20 over SMA 50 bekrefter oppgående trend.
-                                <br><span class="badge bg-dark-green">BUY</span>
-                                <br><small class="text-light mt-1 d-block">
-                                    <i class="fas fa-info-circle me-1"></i>Teknisk analyse oppdatert: ${new Date().toLocaleTimeString('no-NO')}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                
+                if (data.success && data.data) {
+                    // Use real data from API
+                    const techData = data.data;
+                    const rsi = techData.rsi || {};
+                    const macd = techData.macd || {};
+                    const sma = techData.moving_averages || {};
+                    const stoch = techData.stochastic || {};
+                    
+                    // Update the RSI and MACD values in the existing HTML
+                    const rsiValueEl = document.getElementById('rsi-value');
+                    const rsiSignalEl = document.getElementById('rsi-signal');
+                    const macdValueEl = document.getElementById('macd-value');
+                    const macdSignalEl = document.getElementById('macd-signal');
+                    const rsiBadgeEl = document.getElementById('rsi-badge');
+                    const technicalSummaryEl = document.getElementById('technical-summary');
+                    
+                    if (rsiValueEl) rsiValueEl.textContent = rsi.value || '50.0';
+                    if (rsiSignalEl) rsiSignalEl.textContent = rsi.signal || 'Neutral';
+                    if (macdValueEl) macdValueEl.textContent = macd.macd || '0.000';
+                    if (macdSignalEl) macdSignalEl.textContent = macd.trend || 'Unknown';
+                    if (rsiBadgeEl) {
+                        rsiBadgeEl.textContent = rsi.value || '50.0';
+                        rsiBadgeEl.className = `badge ${getRSIBadgeClass(rsi.value)}`;
+                    }
+                    
+                    if (technicalSummaryEl) {
+                        technicalSummaryEl.innerHTML = `
+                            <strong>Teknisk utblick:</strong> ${rsi.description || 'Ingen teknisk analyse tilgjengelig'}
+                            <br><strong>MACD:</strong> ${macd.description || 'MACD data ikke tilgjengelig'}
+                            <br><small class="text-muted mt-1 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Teknisk analyse oppdatert: ${techData.last_updated || new Date().toLocaleTimeString('no-NO')}
+                                <br><i class="fas fa-database me-1"></i>Data kilde: ${techData.data_source || 'UNKNOWN'}
+                            </small>
+                        `;
+                        technicalSummaryEl.className = `alert ${getSignalAlertClass(rsi.signal)}`;
+                    }
+                    
+                    console.log('✅ Technical indicators updated with real data');
+                } else {
+                    console.log('⚠️ API returned no data, keeping default values');
+                }
             }
-        }, 1200); // Reduced to 1.2 seconds for faster loading
+        })
+        .catch(error => {
+            console.error('❌ Error loading technical data:', error);
+            loadingElement.style.display = 'none';
+            if (contentElement) {
+                contentElement.style.display = 'block';
+                // Keep existing hardcoded fallback values in the template
+            }
+        });
     }
 });
+
+// Helper functions for technical indicators display
+function getRSIBadgeClass(rsi) {
+    if (rsi < 30) return 'bg-success'; // Oversold - potential buy
+    if (rsi > 70) return 'bg-danger';  // Overbought - potential sell
+    if (rsi < 40) return 'bg-info';    // Slightly oversold
+    if (rsi > 60) return 'bg-warning'; // Slightly overbought
+    return 'bg-secondary'; // Neutral
+}
+
+function getMADCBadgeClass(trend) {
+    if (trend === 'Bullish') return 'bg-success';
+    if (trend === 'Bearish') return 'bg-danger';
+    return 'bg-secondary';
+}
+
+function getSignalAlertClass(signal) {
+    if (signal === 'Kjøp') return 'alert-success';
+    if (signal === 'Selg') return 'alert-danger';
+    return 'alert-info';
+}
+
+function getSignalBadgeClass(signal) {
+    if (signal === 'Kjøp') return 'bg-success';
+    if (signal === 'Selg') return 'bg-danger';
+    return 'bg-secondary';
+}
+
+function createFallbackTechnicalContent() {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Trendindikatorer</h6>
+                <table class="table table-sm">
+                    <tr><td>RSI (14)</td><td class="text-end"><span class="badge bg-warning">65.2</span></td></tr>
+                    <tr><td>SMA 20</td><td class="text-end">${({{ stock.price or 100 }} * 0.98).toFixed(2)} NOK</td></tr>
+                    <tr><td>SMA 50</td><td class="text-end">${({{ stock.price or 100 }} * 0.95).toFixed(2)} NOK</td></tr>
+                    <tr><td>EMA 12</td><td class="text-end">${({{ stock.price or 100 }} * 1.02).toFixed(2)} NOK</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Momentum</h6>
+                <table class="table table-sm">
+                    <tr><td>MACD</td><td class="text-end"><span class="badge bg-success">Bullish</span></td></tr>
+                    <tr><td>Stokastisk</td><td class="text-end">78.5</td></tr>
+                    <tr><td>Williams %R</td><td class="text-end">-25.3</td></tr>
+                    <tr><td>ADX</td><td class="text-end"><span class="badge bg-info">42.1</span></td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Analyse Sammendrag</h6>
+                <div class="alert alert-warning">
+                    <strong>Teknisk utblick:</strong> Bruker fallback data - API ikke tilgjengelig.
+                    <br><span class="badge bg-warning">DEMO DATA</span>
+                    <br><small class="text-dark mt-1 d-block">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Teknisk analyse basert på demo data: ${new Date().toLocaleTimeString('no-NO')}
+                    </small>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
 // Add to watchlist function (Enhanced)
 function addToWatchlist(ticker) {

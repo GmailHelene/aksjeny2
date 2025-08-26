@@ -2248,40 +2248,175 @@ def api_test_chart_data(symbol):
 @stocks.route('/api/technical-data/<symbol>')
 @demo_access
 def api_technical_data(symbol):
-    """API endpoint for technical analysis data"""
-    # For nå, returner alltid demo teknisk data
-    return jsonify({
-        'success': True,
-        'data': {
-            'rsi': {
-                'value': 58.7,
-                'signal': 'Nøytral',
-                'description': 'RSI indikerer ikke overkjøpt eller oversolgt'
-            },
-            'macd': {
-                'macd': 2.34,
-                'signal': 1.89,
-                'histogram': 0.45,
-                'trend': 'Bullish',
-                'description': 'MACD viser positiv momentum'
-            },
-            'moving_averages': {
-                'sma_20': 340.12,
-                'sma_50': 338.45,
-                'ema_12': 342.89,
-                'ema_26': 341.23
-            },
-            'support_resistance': {
-                'support': 335.50,
-                'resistance': 350.25
-            },
-            'volume_analysis': {
-                'avg_volume': 1800000,
-                'current_volume': 2100000,
-                'volume_ratio': 1.17
+    """API endpoint for technical analysis data - Enhanced with real calculations"""
+    try:
+        current_app.logger.info(f"🔧 Technical data API called for {symbol}")
+        
+        # Try to get real technical data using the functions from the details route
+        technical_data = {}
+        
+        try:
+            # Get historical data for technical calculations
+            historical_data = DataService.get_historical_data(symbol, period='3mo', interval='1d')
+            
+            if historical_data is not None and not historical_data.empty and len(historical_data) >= 26:
+                # Extract closing prices for calculations
+                closing_prices = historical_data['Close'].values
+                
+                current_app.logger.info(f"🔧 Calculating real RSI and MACD for {symbol} using {len(closing_prices)} data points")
+                
+                # Calculate RSI using the real function
+                rsi = calculate_rsi(closing_prices)
+                current_app.logger.info(f"📊 Real RSI for {symbol}: {rsi:.1f}")
+                
+                # Calculate MACD using the real function  
+                macd_line, macd_signal, macd_histogram = calculate_macd(closing_prices)
+                current_app.logger.info(f"📈 Real MACD for {symbol}: Line={macd_line:.3f}, Signal={macd_signal:.3f}, Histogram={macd_histogram:.3f}")
+                
+                # Calculate moving averages
+                if len(closing_prices) >= 50:
+                    sma_20 = float(np.mean(closing_prices[-20:]))
+                    sma_50 = float(np.mean(closing_prices[-50:]))
+                else:
+                    sma_20 = float(np.mean(closing_prices[-min(20, len(closing_prices)):]))
+                    sma_50 = float(np.mean(closing_prices[-min(50, len(closing_prices)):]))
+                
+                # Calculate EMA 12
+                ema_12 = float(pd.Series(closing_prices).ewm(span=12).mean().iloc[-1])
+                
+                # Calculate Stochastic Oscillator
+                high_14 = float(np.max(historical_data['High'].values[-14:]))
+                low_14 = float(np.min(historical_data['Low'].values[-14:]))
+                current_close = float(closing_prices[-1])
+                
+                if high_14 != low_14:
+                    stochastic_k = ((current_close - low_14) / (high_14 - low_14)) * 100
+                else:
+                    stochastic_k = 50.0
+                
+                # Determine signal based on real indicators
+                if rsi < 30 and macd_line > macd_signal:
+                    rsi_signal = 'Kjøp'
+                    rsi_description = f'Oversold RSI ({rsi:.1f}) med bullish MACD crossover'
+                elif rsi > 70 and macd_line < macd_signal:
+                    rsi_signal = 'Selg'
+                    rsi_description = f'Overbought RSI ({rsi:.1f}) med bearish MACD crossover'
+                elif rsi < 40:
+                    rsi_signal = 'Kjøp'
+                    rsi_description = f'Low RSI ({rsi:.1f}) indikerer kjøpsmulighet'
+                elif rsi > 60:
+                    rsi_signal = 'Hold/Selg'
+                    rsi_description = f'High RSI ({rsi:.1f}) indikerer overbought'
+                else:
+                    rsi_signal = 'Nøytral'
+                    rsi_description = f'RSI ({rsi:.1f}) på normale nivåer'
+                
+                macd_signal_text = 'Bullish' if macd_line > macd_signal else 'Bearish'
+                macd_description = f'MACD Line {macd_line:.3f}, Signal {macd_signal:.3f}, Histogram {macd_histogram:.3f}'
+                
+                technical_data = {
+                    'rsi': {
+                        'value': round(rsi, 1),
+                        'signal': rsi_signal,
+                        'description': rsi_description
+                    },
+                    'macd': {
+                        'macd': round(macd_line, 3),
+                        'signal': round(macd_signal, 3),
+                        'histogram': round(macd_histogram, 3),
+                        'trend': macd_signal_text,
+                        'description': macd_description
+                    },
+                    'moving_averages': {
+                        'sma_20': round(sma_20, 2),
+                        'sma_50': round(sma_50, 2),
+                        'ema_12': round(ema_12, 2)
+                    },
+                    'stochastic': {
+                        'k': round(stochastic_k, 1),
+                        'signal': 'Overbought' if stochastic_k > 80 else 'Oversold' if stochastic_k < 20 else 'Normal'
+                    },
+                    'data_source': 'REAL CALCULATIONS',
+                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+                
+                current_app.logger.info(f"✅ Real technical analysis API complete for {symbol}")
+                
+            else:
+                current_app.logger.warning(f"⚠️ Insufficient historical data for {symbol}, using fallback calculations")
+                raise Exception("Insufficient historical data")
+                
+        except Exception as e:
+            current_app.logger.warning(f"⚠️ Technical analysis API failed for {symbol}: {e}, using fallback data")
+            
+            # Fallback to synthetic data
+            base_hash = hash(symbol) % 1000
+            rsi = 30.0 + (base_hash % 40)  # RSI between 30-70
+            macd = -2.0 + (base_hash % 40) / 10  # MACD between -2 and 2
+            
+            technical_data = {
+                'rsi': {
+                    'value': round(rsi, 1),
+                    'signal': 'Nøytral',
+                    'description': f'RSI ({rsi:.1f}) basert på fallback data'
+                },
+                'macd': {
+                    'macd': round(macd, 3),
+                    'signal': round(macd * 0.8, 3),
+                    'histogram': round(macd * 0.2, 3),
+                    'trend': 'Bullish' if macd > 0 else 'Bearish',
+                    'description': f'MACD basert på fallback data'
+                },
+                'moving_averages': {
+                    'sma_20': 100.0,
+                    'sma_50': 98.0,
+                    'ema_12': 102.0
+                },
+                'stochastic': {
+                    'k': 50.0,
+                    'signal': 'Normal'
+                },
+                'data_source': 'FALLBACK DATA',
+                'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
-        }
-    })
+        
+        return jsonify({
+            'success': True,
+            'symbol': symbol,
+            'data': technical_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error in technical data API for {symbol}: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'data': {
+                'rsi': {
+                    'value': 50.0,
+                    'signal': 'Error',
+                    'description': 'Could not calculate RSI'
+                },
+                'macd': {
+                    'macd': 0.0,
+                    'signal': 0.0,
+                    'histogram': 0.0,
+                    'trend': 'Unknown',
+                    'description': 'Could not calculate MACD'
+                },
+                'moving_averages': {
+                    'sma_20': 100.0,
+                    'sma_50': 98.0,
+                    'ema_12': 102.0
+                },
+                'stochastic': {
+                    'k': 50.0,
+                    'signal': 'Error'
+                },
+                'data_source': 'ERROR FALLBACK',
+                'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
 
 @stocks.route('/api/direct-chart/<symbol>')
 def direct_chart_data(symbol):

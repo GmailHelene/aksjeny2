@@ -103,9 +103,11 @@ def price_alerts():
                 # Create new alert
                 new_alert = PriceAlert(
                     user_id=current_user.id,
-                    symbol=ticker.upper(),
+                    ticker=ticker.upper(),  # Store in ticker field
+                    symbol=ticker.upper(),  # Also store in symbol field for compatibility
                     target_price=float(target_value),
-                    condition=alert_type,  # 'above' or 'below'
+                    alert_type=alert_type,  # 'above' or 'below'
+                    condition=alert_type,   # For backward compatibility
                     is_active=True,
                     email_enabled=email_alert,
                     browser_enabled=browser_alert

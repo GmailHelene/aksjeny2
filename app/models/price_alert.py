@@ -103,10 +103,17 @@ class PriceAlert(db.Model):
         return {
             'id': self.id,
             'symbol': self.symbol,
+            'ticker': self.ticker or self.symbol,  # Template compatibility
             'target_price': self.target_price,
+            'target_value': self.target_price,  # Template compatibility
             'alert_type': self.alert_type,
+            'type': self.alert_type,  # Template compatibility
+            'condition': self.alert_type,  # Template compatibility
             'current_price': self.current_price,
             'is_active': self.is_active,
+            'active': self.is_active,  # Template compatibility
+            'is_triggered': getattr(self, 'is_triggered', False),
+            'triggered': getattr(self, 'is_triggered', False),  # Template compatibility
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'triggered_at': self.triggered_at.isoformat() if self.triggered_at else None,

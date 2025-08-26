@@ -1,13 +1,13 @@
 /* Comprehensive Theme Fixes - August 24, 2025 */
 
-/* Unified background color #282828 for all dark backgrounds */
+/* Unified background color #252525 for all dark backgrounds */
 .navbar,
 .navbar-nav,
 .dropdown-menu,
 .navbar-collapse,
 .navbar-nav .dropdown-menu {
-    background-color: #282828 !important;
-    background: #282828 !important;
+    background-color: #252525 !important;
+    background: #252525 !important;
 }
 
 
@@ -101,7 +101,7 @@
 /* Card header colors in dark theme */
 .dark-theme .card-header,
 [class*="bg-dark"] .card-header {
-    background-color: #282828 !important;
+    background-color: #252525 !important;
     color: #ffffff !important;
 }
 
@@ -114,5 +114,5 @@
 [style*="background-color: #1"],
 [style*="background-color: #2"],
 [style*="background-color: #3"] {
-    background-color: #282828 !important;
+    background-color: #252525 !important;
 }

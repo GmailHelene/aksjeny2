@@ -2,7 +2,9 @@
     background-color: #333333 !important;
 } dette må også endres til background-color. #252525 
 -
-
+https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL
+Fortsatt 500 error jher n år jeg tester sentiment analyse.... innlogget bruker
+-
 https://aksjeradar.trade/stocks/compare
 Denne siden gir fortsatt 500 error... Innlogget bruker
 -
@@ -40,7 +42,7 @@ PS: er det ekte data her? Vi skalKUN utelukkende hente inn og vise ekte data for
 -
 https://aksjeradar.trade/watchlist/
 Knappene her: Ny wartchlist, ukentlig rapport, innstillinger - fungerer heller ikke
--
+
 -
 https://aksjeradar.trade/market-intel/sector-analysis
 Knappene her fungerer ikke: Dagens oversikt, ukentlig, månedlig

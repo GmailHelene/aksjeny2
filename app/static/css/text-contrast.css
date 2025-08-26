@@ -29,6 +29,14 @@
     text-decoration: underline;
 }
 
+/* Special rule for light/white backgrounds - text should be black */
+.bg-light > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-white > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-primary.bg-light > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link),
+.bg-primary.bg-white > *:not(.btn):not(.alert):not(.badge):not(.dropdown-menu):not(.nav-linku):not(.nav-link) {
+    color: #000000 !important;
+}
+
 /* Muted text within colored backgrounds */
 .bg-primary .text-muted:not(.nav-link):not(.dropdown-item),
 .bg-secondary .text-muted:not(.nav-link):not(.dropdown-item),
@@ -42,12 +50,12 @@
 /* Navigation and dropdown styles - Mobile menu with black background and white text */
 .dropdown-menu {
     background-color: #000000 !important;
-    border: 1px solid #333333 !important;
+    border: 1px solid #252525 !important;
 }
 
 .dropdown-item:hover,
 .dropdown-item:focus {
-    background-color: #333333 !important;
+    background-color: #252525 !important;
     color: #ffffff !important;
 }
 
@@ -57,7 +65,7 @@
 @media (max-width: 991.98px) {
     .navbar-collapse {
         background-color: #000000 !important;
-        border: 1px solid #333333 !important;
+        border: 1px solid #252525 !important;
         border-radius: 8px;
         margin-top: 0.5rem;
         padding: 1rem;
@@ -88,7 +96,7 @@
     
     .navbar-nav .dropdown-menu {
         background-color: #000000 !important;
-        border: 1px solid #333333 !important;
+        border: 1px solid #252525!important;
         margin-left: 1rem;
         margin-top: 0.25rem;
         position: static;
@@ -103,7 +111,7 @@
     
     .navbar-nav .dropdown-item:hover,
     .navbar-nav .dropdown-item:focus {
-        background-color: #333333 !important;
+        background-color: #252525 !important;
         color: #ffffff !important;
     }
     
@@ -183,9 +191,9 @@ small.text-muted {
 
 /* Navbar fixes for dark background */
 .navbar-collapse {
-    background-color: #333333 !important;
+    background-color: #252525 !important;
 }
 
 .navbar-nav .dropdown-menu {
-    background-color: #333333 !important;
+    background-color: #252525 !important;
 }
