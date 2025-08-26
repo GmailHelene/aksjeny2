@@ -486,18 +486,50 @@ async function saveSettings() {
 }
 
 async function loadPriceAlerts() {
+    const loading = document.getElementById('alerts-loading');
+    const container = document.getElementById('price-alerts-list');
+    
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+        if (loading && loading.style.display !== 'none') {
+            loading.style.display = 'none';
+            if (container) {
+                container.innerHTML = '<p class="text-muted small">Prisvarsler er midlertidig utilgjengelig. Prøv igjen senere.</p>';
+            }
+        }
+    }, 8000); // 8 second timeout
+    
     try {
-        const response = await fetch('/notifications/api/price_alerts');
+        const response = await fetch('/notifications/api/price_alerts', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]')?.value || ''
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
+        clearTimeout(timeoutId); // Clear timeout on successful response
+        
         if (data.success) {
-            renderPriceAlerts(data.alerts);
+            renderPriceAlerts(data.alerts || []);
+            if (data.fallback) {
+                showInfo(data.message || 'Prisvarsler lastet med fallback-data');
+            }
         } else {
-            showError('Feil ved lasting av prisvarsler: ' + data.error);
+            showError('Feil ved lasting av prisvarsler: ' + (data.error || 'Ukjent feil'));
+            renderPriceAlerts([]);
         }
     } catch (error) {
-        showError('Nettverksfeil ved lasting av prisvarsler');
+        clearTimeout(timeoutId); // Clear timeout on error
         console.error('Error loading price alerts:', error);
+        showError('Nettverksfeil ved lasting av prisvarsler: ' + error.message);
+        renderPriceAlerts([]);
     }
 }
 
@@ -657,6 +689,17 @@ function checkPushNotificationStatus() {
     const statusElement = document.getElementById('push-status-text');
     const enableButton = document.getElementById('enable-push-btn');
     
+    // Add timeout to prevent infinite loading
+    setTimeout(() => {
+        if (statusElement.innerHTML.includes('Sjekker')) {
+            statusElement.innerHTML = `
+                <strong>Push-notifikasjoner er ikke tilgjengelig</strong><br>
+                <small>Kunne ikke verifisere push-status. E-post og in-app varsler fungerer fortsatt.</small>
+            `;
+            statusElement.parentElement.className = 'alert alert-info mt-3';
+        }
+    }, 5000); // 5 second timeout
+    
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         statusElement.innerHTML = `
             <strong>Push-notifikasjoner støttes ikke i denne nettleseren</strong><br>
@@ -685,7 +728,9 @@ function checkPushNotificationStatus() {
             <small>Klikk knappen nedenfor for å aktivere øyeblikkelige varsler</small>
         `;
         statusElement.parentElement.className = 'alert alert-info mt-3';
-        enableButton.style.display = 'inline-block';
+        if (enableButton) {
+            enableButton.style.display = 'inline-block';
+        }
     }
 }
 
@@ -784,6 +829,26 @@ function showSuccess(message) {
 function showError(message) {
     const toast = document.createElement('div');
     toast.className = 'toast align-items-center text-white bg-danger border-0 position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
+function showInfo(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-info border-0 position-fixed';
     toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
     toast.innerHTML = `
         <div class="d-flex">

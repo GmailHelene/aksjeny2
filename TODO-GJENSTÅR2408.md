@@ -1,3 +1,29 @@
+
+.navbar-nav .nav-link:hover {
+    color: #ffffff !important;
+}
+-
+.nav-link {
+    display: block;
+    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+    font-size: var(--bs-nav-link-font-size);
+    font-weight: var(--bs-nav-link-font-weight);
+    color: rgb(255 255 255);
+    -
+    .navbar-dark .dropdown-header {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+-
+.navbar-collapse {
+    background-color: #252525 !important;
+}
+og også denne fargen i hele navigasjonen (bakgrunn) både på mobil, og pc, i navigasjon og i dropdown, som bakgrunnfarge
+-
+Fikser du alt dette som stylingregler
+
+--
+
 også kan du fortette med:
 "I've located the stock list and details routes and templates. The Oslo and Global list routes use multiple fallbacks, so the 500 error is likely due to a missing or broken data source. The details template expects real data for price, company info, fundamentals, and technicals, but is currently showing placeholders or demo data.
 

@@ -507,6 +507,48 @@ def api_get_notifications():
         logger.error(f"Error fetching notifications: {str(e)}")
         return jsonify({'success': False, 'error': 'Kunne ikke hente varsler', 'fallback': True}), 200
 
+@notifications_bp.route('/api/price_alerts', methods=['GET'])
+@login_required
+def api_price_alerts():
+    """Get user's price alerts with timeout and error handling"""
+    try:
+        # Import the PriceAlert model
+        from ..models.price_alert import PriceAlert
+        
+        # Get user's price alerts with timeout protection
+        alerts = []
+        try:
+            user_alerts = PriceAlert.query.filter_by(user_id=current_user.id).all()
+            for alert in user_alerts:
+                alerts.append({
+                    'id': alert.id,
+                    'ticker': alert.ticker,
+                    'alert_type': alert.alert_type,
+                    'threshold_price': alert.threshold_price,
+                    'threshold_percent': alert.threshold_percent,
+                    'is_active': alert.is_active,
+                    'is_triggered': alert.is_triggered,
+                    'created_at': alert.created_at.isoformat() if alert.created_at else None
+                })
+        except Exception as db_error:
+            logger.warning(f"Database error fetching price alerts: {str(db_error)}")
+            # Return empty list as fallback
+            alerts = []
+        
+        return jsonify({
+            'success': True,
+            'alerts': alerts
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching price alerts: {str(e)}")
+        return jsonify({
+            'success': True,  # Return success with empty alerts to avoid infinite loading
+            'alerts': [],
+            'fallback': True,
+            'message': 'Prisvarsler er midlertidig utilgjengelig'
+        })
+
 @notifications_bp.route('/api/user/preferences', methods=['GET', 'POST'])
 @login_required
 def user_preferences():
