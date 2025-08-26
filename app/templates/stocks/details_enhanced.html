@@ -208,6 +208,14 @@
                                     <p class="mt-2 text-muted">Henter kursdata...</p>
                                 </div>
                                 <canvas id="priceChart" height="300" style="display: none;"></canvas>
+                                <div id="chart-fallback" class="text-center py-5" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i>
+                                        <strong>Kursgraf utilgjengelig</strong>
+                                        <p class="mb-0 mt-2">Tekniske data og kurshistorikk kan ikke lastes for øyeblikket.</p>
+                                        <small class="text-muted">Prøv å laste siden på nytt om noen minutter.</small>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- TradingView Chart -->
@@ -630,8 +638,15 @@
                         <div class="card-body">
                             {% if stock and stock.get('longBusinessSummary') %}
                                 <p>{{ stock.get('longBusinessSummary') }}</p>
+                            {% elif stock and stock.get('description') %}
+                                <p>{{ stock.get('description') }}</p>
                             {% else %}
-                                <p class="text-muted">Ingen selskapsbeskrivelse tilgjengelig.</p>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Selskapsdetaljer</strong>
+                                    <p class="mb-0 mt-2">{{ stock.get('name', ticker) if stock else ticker }} er et børsnotert selskap.</p>
+                                    <p class="mb-0">Detaljert selskapsinformasjon er ikke tilgjengelig for øyeblikket.</p>
+                                </div>
                             {% endif %}
                             
                             <div class="row mt-4">
@@ -706,7 +721,12 @@
                                 </div>
                                 {% endfor %}
                             {% else %}
-                                <p class="text-muted">Ingen ledelsesinformasjon tilgjengelig.</p>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-people"></i>
+                                    <strong>Ledelsesstruktur</strong>
+                                    <p class="mb-0 mt-2">Ledelsesinformasjon for {{ stock.get('name', ticker) if stock else ticker }} er ikke tilgjengelig i våre datakilder.</p>
+                                    <p class="mb-0">Dette er vanlig for mange børsnoterte selskaper.</p>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -851,14 +871,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('priceChart').getContext('2d');
         const loadingElement = document.getElementById('chart-loading');
         const chartCanvas = document.getElementById('priceChart');
+        const fallbackElement = document.getElementById('chart-fallback');
         
-        // Set a timeout to show chart even if fetch fails
+        // Set a timeout to show fallback message if chart fails to load
         const chartTimeout = setTimeout(() => {
-            console.log('Chart loading timeout - showing fallback chart');
+            console.log('Chart loading timeout - showing fallback message');
             if (loadingElement) loadingElement.style.display = 'none';
-            if (chartCanvas) chartCanvas.style.display = 'block';
-            showFallbackChart(ctx);
-        }, 5000); // 5 second timeout
+            if (chartCanvas) chartCanvas.style.display = 'none';
+            if (fallbackElement) fallbackElement.style.display = 'block';
+        }, 3000); // Reduced to 3 second timeout
         
         fetch(`/stocks/api/demo/chart-data/{{ ticker }}?period=30d`)
             .then(response => {
@@ -876,6 +897,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide loading indicator and show chart
                 if (loadingElement) loadingElement.style.display = 'none';
                 if (chartCanvas) chartCanvas.style.display = 'block';
+                if (fallbackElement) fallbackElement.style.display = 'none';
                 
                 // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
                 const existingChart = Chart.getChart(ctx);
@@ -956,13 +978,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             })
             .catch(error => {
+                clearTimeout(chartTimeout); // Cancel timeout since we got an error
                 console.error('Error loading chart data:', error);
-                // Hide loading indicator and show error message
+                // Hide loading indicator and show fallback message
                 if (loadingElement) loadingElement.style.display = 'none';
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'text-center text-muted py-5';
-                errorDiv.innerHTML = `<p><i class="bi bi-exclamation-triangle text-warning"></i><br>Kunne ikke laste kursdata: ${error.message}<br><small>Prøv igjen senere</small></p>`;
-                document.getElementById('basicChartContainer').appendChild(errorDiv);
+                if (chartCanvas) chartCanvas.style.display = 'none';
+                if (fallbackElement) fallbackElement.style.display = 'block';
             });
     }
     });

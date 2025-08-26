@@ -1,4 +1,35 @@
+https://aksjeradar.trade/stocks/compare
+500 error her enda, denne siden må fikses
+Innlogget bruker
+-
+Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.
+og dette er forsatt meldingen jeg får som innlogget på /profile
+Denne siden har fungert tidlligere....
+-
+https://aksjeradar.trade/external-data/analyst-coverage
+Knappene her med Alle, Buy, Hold, Sell fungerer ikke
+Enten fiks,eller fjern disse knappene
+PS: er det ekte data her? Vi skalKUN utelukkende hente inn og vise ekte data for innloggede brukere
+-
+https://aksjeradar.trade/watchlist/
+Knappene her: Ny wartchlist, ukentlig rapport, innstillinger - fungerer heller ikke
+-
+-
+https://aksjeradar.trade/market-intel/sector-analysis
+Knappene her fungerer ikke: Dagens oversikt, ukentlig, månedlig
+-
+https://aksjeradar.trade/external-data/market-intelligence
+Knappene her fungerer ikke: Live, Daglig, Ukentlig
+Fikser du så alle disse knappene som ikke fungerer, enten fungerer,eller så fjerner vi de?
 
+.metric-card {
+    background: darkblue;
+    -
+    .intelligence-header {
+    background: darkblue;
+
+    -
+    
 .navbar-nav .nav-link:hover {
     color: #ffffff !important;
 }
