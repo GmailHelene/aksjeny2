@@ -376,40 +376,13 @@ function newAnalysis() {
     window.location.href = "{{ url_for('analysis.warren_buffett') }}";
 }
 
-// Enhanced auto-complete and functionality for ticker input
+// Auto-complete for ticker input
 document.addEventListener('DOMContentLoaded', function() {
     const tickerInput = document.getElementById('ticker');
     if (tickerInput) {
-        // Auto-uppercase input
         tickerInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
         });
-        
-        // Submit on Enter key
-        tickerInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const form = this.closest('form');
-                if (form && this.value.trim()) {
-                    form.submit();
-                }
-            }
-        });
-        
-        // Focus on load for better UX
-        tickerInput.focus();
-        
-        // Prevent form submission if empty
-        const form = tickerInput.closest('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (!tickerInput.value.trim()) {
-                    e.preventDefault();
-                    alert('Vennligst skriv inn et aksjesymbol');
-                    tickerInput.focus();
-                }
-            });
-        }
     }
 });
 </script>

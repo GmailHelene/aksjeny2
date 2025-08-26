@@ -205,80 +205,35 @@ def earnings_calendar():
 @market_intel.route('/sector-analysis')
 @demo_access
 def sector_analysis():
-    """Sector performance analysis with comprehensive error handling"""
+    """Sector performance analysis"""
     try:
-        logger.info("Accessing sector analysis page")
+        if ExternalAPIService:
+            sector_data = ExternalAPIService.get_sector_performance()
+            screener_data = ExternalAPIService.get_stock_screener(
+                market_cap_min=1000000000,  # 1B+ market cap
+                volume_min=1000000          # 1M+ volume
+            )
+        else:
+            # Fallback data when service is not available
+            sector_data = {
+                'Energy': {'change_percent': 2.4, 'volume': 1500000},
+                'Technology': {'change_percent': -0.8, 'volume': 2300000},
+                'Financials': {'change_percent': 1.2, 'volume': 1800000},
+                'Healthcare': {'change_percent': 0.5, 'volume': 900000},
+                'Consumer_Discretionary': {'change_percent': -1.1, 'volume': 1200000}
+            }
+            screener_data = [
+                {'symbol': 'EQNR', 'name': 'Equinor ASA', 'price': 280.50, 'change': 2.4},
+                {'symbol': 'DNB', 'name': 'DNB Bank ASA', 'price': 220.30, 'change': 1.2},
+                {'symbol': 'TEL', 'name': 'Telenor ASA', 'price': 165.80, 'change': -0.5}
+            ]
         
-        # Always use fallback data to avoid API issues
-        sector_data = {
-            'Energy': {'change_percent': 2.4, 'volume': 1500000, 'name': 'Energi'},
-            'Technology': {'change_percent': -0.8, 'volume': 2300000, 'name': 'Teknologi'},
-            'Financials': {'change_percent': 1.2, 'volume': 1800000, 'name': 'Finans'},
-            'Healthcare': {'change_percent': 0.5, 'volume': 900000, 'name': 'Helse'},
-            'Consumer_Discretionary': {'change_percent': -1.1, 'volume': 1200000, 'name': 'Forbruksvarer'},
-            'Industrials': {'change_percent': 0.7, 'volume': 1100000, 'name': 'Industri'},
-            'Materials': {'change_percent': 1.8, 'volume': 800000, 'name': 'Materialer'},
-            'Real_Estate': {'change_percent': -0.3, 'volume': 600000, 'name': 'Eiendom'},
-            'Utilities': {'change_percent': 0.2, 'volume': 500000, 'name': 'Kraftforsyning'},
-            'Telecommunications': {'change_percent': -0.6, 'volume': 700000, 'name': 'Telekommunikasjon'}
-        }
-        
-        screener_data = [
-            {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 280.50, 'change': 2.4, 'volume': 1200000, 'sector': 'Energy'},
-            {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'price': 220.30, 'change': 1.2, 'volume': 800000, 'sector': 'Financials'},
-            {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'price': 165.80, 'change': -0.5, 'volume': 600000, 'sector': 'Telecommunications'},
-            {'symbol': 'NHY.OL', 'name': 'Norsk Hydro ASA', 'price': 65.40, 'change': 1.8, 'volume': 900000, 'sector': 'Materials'},
-            {'symbol': 'AKER.OL', 'name': 'Aker ASA', 'price': 720.00, 'change': 0.7, 'volume': 300000, 'sector': 'Industrials'},
-            {'symbol': 'MHG.OL', 'name': 'Marine Harvest Group', 'price': 180.20, 'change': -0.8, 'volume': 500000, 'sector': 'Consumer_Discretionary'},
-            {'symbol': 'STB.OL', 'name': 'Storebrand ASA', 'price': 95.60, 'change': 0.5, 'volume': 400000, 'sector': 'Financials'},
-            {'symbol': 'SUBC.OL', 'name': 'Subsea 7 SA', 'price': 145.30, 'change': 2.1, 'volume': 350000, 'sector': 'Energy'},
-        ]
-        
-        logger.info("Sector data prepared successfully")
-        
-        # Try to get real data as backup (but don't fail if it doesn't work)
-        try:
-            if ExternalAPIService:
-                real_sector_data = ExternalAPIService.get_sector_performance()
-                if real_sector_data:
-                    # Update with real data if available
-                    sector_data.update(real_sector_data)
-                    logger.info("Updated with real sector data")
-                    
-                real_screener_data = ExternalAPIService.get_stock_screener(
-                    market_cap_min=1000000000,
-                    volume_min=1000000
-                )
-                if real_screener_data:
-                    screener_data = real_screener_data[:20]
-                    logger.info("Updated with real screener data")
-        except Exception as api_e:
-            logger.warning(f"Could not fetch real data, using fallback: {api_e}")
-        
-        logger.info("Rendering sector analysis template")
         return render_template('market_intel/sector_analysis.html',
                              sector_data=sector_data,
                              screener_data=screener_data[:20])  # Top 20
     except Exception as e:
-        logger.error(f"Critical error in sector analysis: {e}", exc_info=True)
-        # Return a basic page with fallback data instead of error page
-        fallback_sector_data = {
-            'Energy': {'change_percent': 0.0, 'volume': 1000000, 'name': 'Energi'},
-            'Technology': {'change_percent': 0.0, 'volume': 1000000, 'name': 'Teknologi'},
-            'Financials': {'change_percent': 0.0, 'volume': 1000000, 'name': 'Finans'}
-        }
-        fallback_screener_data = [
-            {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'price': 280.50, 'change': 0.0, 'volume': 1000000, 'sector': 'Energy'}
-        ]
-        
-        try:
-            return render_template('market_intel/sector_analysis.html',
-                                 sector_data=fallback_sector_data,
-                                 screener_data=fallback_screener_data,
-                                 error_message="Noen data kan være utilgjengelig for øyeblikket.")
-        except Exception as template_error:
-            logger.error(f"Template rendering failed: {template_error}")
-            return f"<h1>Sektoranalyse</h1><p>Siden er midlertidig utilgjengelig. Feil: {str(e)}</p>"
+        logger.error(f"Error in sector analysis: {e}")
+        return render_template('error.html', error="Kunne ikke hente sektoranalyse.")
 
 @market_intel.route('/economic-indicators')
 @demo_access

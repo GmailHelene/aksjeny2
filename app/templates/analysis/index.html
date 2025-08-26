@@ -60,7 +60,17 @@
             </div>
         </div>
         
-
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up-arrow text-success"></i> Predictions
+                    </h5>
+                    <p class="card-text">AI-baserte kursprediksjoner for enkeltaksjer.</p>
+                    <a href="{{ url_for('analysis.prediction') }}" class="btn btn-success">Se prediksjoner</a>
+                </div>
+            </div>
+        </div>
         
         <div class="col-md-4 mb-4">
             <div class="card h-100">
@@ -74,11 +84,41 @@
             </div>
         </div>
         
-
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-search text-secondary"></i> Aksje-screener
+                    </h5>
+                    <p class="card-text">Finn aksjer basert på dine kriterier.</p>
+                    <a href="{{ url_for('analysis.screener') }}" class="btn btn-secondary">Åpne screener</a>
+                </div>
+            </div>
+        </div>
         
-
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-globe text-dark"></i> Markedsoversikt
+                    </h5>
+                    <p class="card-text">Få oversikt over globale markeder og trender.</p>
+                    <a href="{{ url_for('analysis.market_overview') }}" class="btn btn-dark">Markedsoversikt</a>
+                </div>
+            </div>
+        </div>
         
-
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-lightbulb text-warning"></i> AI Anbefalinger
+                    </h5>
+                    <p class="card-text">Få databaserte investeringsanbefalinger fra vår AI.</p>
+                    <a href="{{ url_for('analysis.recommendation') }}" class="btn btn-warning">Se anbefalinger</a>
+                </div>
+            </div>
+        </div>
         
         <div class="col-md-4 mb-4">
             <div class="card h-100">

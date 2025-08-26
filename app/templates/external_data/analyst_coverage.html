@@ -89,8 +89,7 @@
 }
 
 .coverage-header {
-    background:  background: #344686;
-;
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
     color: white;
     border-radius: 12px;
     padding: 2rem;
@@ -426,42 +425,71 @@
     </div>
 </div>
 
+{% block scripts %}
+{{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Filter functionality for analyst coverage
     const filterButtons = document.querySelectorAll('[data-filter]');
-    const tableRows = document.querySelectorAll('tbody tr');
+    const analysisCards = document.querySelectorAll('.analyst-card');
+    const tableRows = document.querySelectorAll('#analyst-table tbody tr');
     
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            
             // Update button states
             filterButtons.forEach(btn => {
-                btn.classList.remove('btn-light', 'active');
+                btn.classList.remove('active', 'btn-light');
                 btn.classList.add('btn-outline-light');
             });
             this.classList.remove('btn-outline-light');
-            this.classList.add('btn-light', 'active');
+            this.classList.add('active', 'btn-light');
+            
+            const filter = this.getAttribute('data-filter');
             
             // Filter table rows
             tableRows.forEach(row => {
-                if (filter === 'all') {
-                    row.style.display = '';
-                } else {
-                    const ratingBadge = row.querySelector('.badge');
-                    if (ratingBadge) {
-                        const rating = ratingBadge.textContent.toLowerCase();
-                        if (rating.includes(filter)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
+                const ratingBadge = row.querySelector('.badge');
+                if (!ratingBadge) return;
+                
+                const rating = ratingBadge.textContent.toLowerCase().trim();
+                let show = false;
+                
+                switch(filter) {
+                    case 'all':
+                        show = true;
+                        break;
+                    case 'buy':
+                        show = rating.includes('kjøp') || rating.includes('buy');
+                        break;
+                    case 'hold':
+                        show = rating.includes('hold');
+                        break;
+                    case 'sell':
+                        show = rating.includes('selg') || rating.includes('sell');
+                        break;
                 }
+                
+                row.style.display = show ? '' : 'none';
             });
+            
+            // Show feedback message
+            const activeRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
+            console.log(`Viser ${activeRows.length} analyser for filter: ${filter}`);
+        });
+    });
+    
+    // Add hover effects
+    analysisCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
         });
     });
 });
 </script>
+{% endblock %}
+
 {% endblock %}

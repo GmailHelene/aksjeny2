@@ -34,7 +34,7 @@ analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 logger = logging.getLogger(__name__)
 
 @analysis.route('/sentiment')
-@demo_access
+@access_required
 def sentiment():
     """Market sentiment analysis page"""
     try:
@@ -52,23 +52,17 @@ def sentiment():
             try:
                 if DataService and hasattr(DataService, 'get_sentiment_data'):
                     sentiment_data = DataService.get_sentiment_data(selected_symbol)
-                    logger.info(f"Got sentiment data from DataService for {selected_symbol}")
             except Exception as e:
                 logger.error(f"Error loading real sentiment data for {selected_symbol}: {e}")
                 sentiment_data = None
-            
             # Always provide demo data if real data is not available
             if not sentiment_data:
                 sentiment_data = _generate_demo_sentiment_data(selected_symbol)
                 logger.info(f"Using demo sentiment data for {selected_symbol}")
-        else:
-            # If no symbol provided, show default/empty state
-            sentiment_data = {}
-            
         # Always define template variables
         return render_template(
             'analysis/sentiment.html',
-            sentiment_data=sentiment_data,
+            sentiment_data=sentiment_data or {},
             error=error,
             popular_stocks=['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'],
             selected_symbol=selected_symbol
@@ -689,30 +683,10 @@ def warren_buffett():
         if ticker:
             logger.info(f"Processing Warren Buffett analysis for: {ticker}")
             
-            # Enhanced ticker validation - allow letters, numbers, dots and dashes
-            # Also allow common company names that can be converted to ticker symbols
-            if not ticker or len(ticker) > 50:
+            # Validate ticker format
+            if not ticker.replace('.', '').replace('-', '').isalnum():
                 flash('Ugyldig aksjesymbol. Vennligst prøv igjen.', 'warning')
                 return redirect(url_for('analysis.warren_buffett'))
-            
-            # Convert common company names to ticker symbols
-            company_to_ticker = {
-                'TESLA': 'TSLA',
-                'APPLE': 'AAPL', 
-                'MICROSOFT': 'MSFT',
-                'GOOGLE': 'GOOGL',
-                'AMAZON': 'AMZN',
-                'FACEBOOK': 'META',
-                'EQUINOR': 'EQNR.OL',
-                'DNB': 'DNB.OL',
-                'TELENOR': 'TEL.OL'
-            }
-            
-            # Convert if it's a known company name
-            original_ticker = ticker
-            if ticker.upper() in company_to_ticker:
-                ticker = company_to_ticker[ticker.upper()]
-                logger.info(f"Converted company name '{original_ticker}' to ticker '{ticker}'")
 
             try:
                 # Try to get real stock data first

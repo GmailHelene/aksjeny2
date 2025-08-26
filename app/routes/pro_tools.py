@@ -92,7 +92,7 @@ def price_alerts():
                 'condition': alert_type,
                 'price': float(target_value),
                 'email_enabled': email_alert,
-                'notify_push': browser_alert  # Changed from browser_enabled to notify_push
+                'browser_enabled': browser_alert
             }
             
             # Save alert to database using PriceAlert model
@@ -109,7 +109,7 @@ def price_alerts():
                     alert_type=alert_type,  # 'above' or 'below'
                     is_active=True,
                     email_enabled=email_alert,
-                    notify_push=browser_alert  # Changed from browser_enabled to notify_push
+                    browser_enabled=browser_alert
                 )
                 
                 # Save to database

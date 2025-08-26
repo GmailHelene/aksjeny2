@@ -631,41 +631,42 @@ function showTrialExpiredPopup() {
     const popup = document.createElement("div");
     popup.className = "modal fade";
     popup.id = "trialExpiredModal";
-    popup.innerHTML = 
-        '<div class="modal-dialog modal-dialog-centered">' +
-            '<div class="modal-content">' +
-                '<div class="modal-header bg-warning text-dark">' +
-                    '<h5 class="modal-title">' +
-                        '<i class="bi bi-clock-history"></i> Prøveperioden er utløpt' +
-                    '</h5>' +
-                    '<button type="button" class="btn-close" data-bs-dismiss="modal"></button>' +
-                '</div>' +
-                '<div class="modal-body text-center">' +
-                    '<div class="mb-4">' +
-                        '<i class="bi bi-hourglass-bottom text-warning" style="font-size: 4rem;"></i>' +
-                    '</div>' +
-                    '<h6 class="mb-3">Din 15-minutters gratis prøveperiode er nå over!</h6>' +
-                    '<p class="mb-4">Du har nå begrenset tilgang til demo-funksjoner. For full tilgang til alle funksjoner, sanntidsdata og AI-analyser:</p>' +
+    popup.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clock-history"></i> Prøveperioden er utløpt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-hourglass-bottom text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    <h6 class="mb-3">Din 15-minutters gratis prøveperiode er nå over!</h6>
+                    <p class="mb-4">Du har nå begrenset tilgang til demo-funksjoner. For full tilgang til alle funksjoner, sanntidsdata og AI-analyser:</p>
                     
-                    '<div class="d-grid gap-2">' +
-                        '<a href="{{ url_for("main.register") }}" class="btn btn-primary btn-lg">' +
-                            '<i class="bi bi-person-plus"></i> Opprett gratis konto' +
-                        '</a>' +
-                        '<a href="{{ url_for("main.subscription") }}" class="btn btn-outline-primary">' +
-                            '<i class="bi bi-star"></i> Se abonnementer fra 399kr/mnd' +
-                        '</a>' +
-                        '<a href="{{ url_for("main.login") }}" class="btn btn-link text-muted">' +
-                            'Har du allerede konto? Logg inn' +
-                        '</a>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="modal-footer">' +
-                    '<small class="text-muted w-100 text-center">' +
-                        '<i class="bi bi-shield-check"></i> Ingen forpliktelser • Avbryt når som helst' +
-                    '</small>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for("main.register") }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus"></i> Opprett gratis konto
+                        </a>
+                        <a href="{{ url_for("main.subscription") }}" class="btn btn-outline-primary">
+                            <i class="bi bi-star"></i> Se abonnementer fra 399kr/mnd
+                        </a>
+                        <a href="{{ url_for("main.login") }}" class="btn btn-link text-muted">
+                            Har du allerede konto? Logg inn
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-muted w-100 text-center">
+                        <i class="bi bi-shield-check"></i> Ingen forpliktelser • Avbryt når som helst
+                    </small>
+                </div>
+            </div>
+        </div>
+    `;
     
     document.body.appendChild(popup);
     

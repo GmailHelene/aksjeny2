@@ -191,16 +191,16 @@ document.getElementById('quickAnalysisForm').addEventListener('submit', function
     let url = '';
     switch(analysisType) {
         case 'technical':
-            url = '{{ url_for("analysis.technical") }}?symbol=' + symbol;
+            url = `{{ url_for('analysis.technical') }}?symbol=${symbol}`;
             break;
         case 'fundamental':
-            url = '{{ url_for("analysis.fundamental") }}?symbol=' + symbol;
+            url = `{{ url_for('analysis.fundamental') }}?symbol=${symbol}`;
             break;
         case 'sentiment':
-            url = '{{ url_for("analysis.sentiment") }}?symbol=' + symbol;
+            url = `{{ url_for('analysis.sentiment') }}?symbol=${symbol}`;
             break;
         case 'ai':
-            url = '{{ url_for("analysis.ai_predictions") }}?symbol=' + symbol;
+            url = `{{ url_for('analysis.ai_predictions') }}?symbol=${symbol}`;
             break;
     }
     

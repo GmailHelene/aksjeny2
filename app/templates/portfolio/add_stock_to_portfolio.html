@@ -12,7 +12,6 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
-                        {{ csrf_token() }}
                         <div class="mb-3">
                             <label for="ticker" class="form-label">Ticker-symbol</label>
                             <input type="text" class="form-control" id="ticker" name="ticker" placeholder="f.eks. EQNR, AAPL" required>

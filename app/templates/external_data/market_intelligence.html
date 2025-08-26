@@ -32,7 +32,7 @@
 }
 
 .intelligence-header {
-    background-color: #0d47a1 !important;
+    background: darkblue;
     color: white;
     border-radius: 12px;
     padding: 2rem;
@@ -123,7 +123,7 @@
 }
 
 .ai-insight {
-    background-color: #0d47a1 !important;
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
     color: white;
     border-radius: 12px;
     padding: 1.5rem;
@@ -457,119 +457,107 @@
     </div>
 </div>
 
+{% block scripts %}
+{{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize time period filter functionality
-    const timeButtons = document.querySelectorAll('[data-update]');
+    // Update frequency functionality for market intelligence
+    const updateButtons = document.querySelectorAll('[data-update]');
     
-    // Add click event listeners to time period buttons
-    timeButtons.forEach(button => {
+    updateButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const updateType = this.getAttribute('data-update');
-            
             // Update button states
-            timeButtons.forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.remove('btn-light');
+            updateButtons.forEach(btn => {
+                btn.classList.remove('active', 'btn-light');
                 btn.classList.add('btn-outline-light');
             });
-            
-            // Set active button
-            this.classList.add('active');
             this.classList.remove('btn-outline-light');
-            this.classList.add('btn-light');
+            this.classList.add('active', 'btn-light');
             
-            // Filter content based on update type
-            filterByTimeperiod(updateType);
+            const updateFreq = this.getAttribute('data-update');
+            
+            // Show loading state
+            const loadingHTML = `
+                <div class="text-center text-muted p-3">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span class="ms-2">Oppdaterer markedsdata...</span>
+                </div>
+            `;
+            
+            // Find metric widgets and show loading
+            const metricWidgets = document.querySelectorAll('.metric-widget');
+            metricWidgets.forEach(widget => {
+                const originalContent = widget.innerHTML;
+                widget.innerHTML = loadingHTML;
+                
+                // Simulate data update
+                setTimeout(() => {
+                    widget.innerHTML = originalContent;
+                    
+                    // Add visual feedback for data refresh
+                    widget.style.transform = 'scale(1.05)';
+                    widget.style.transition = 'transform 0.2s ease';
+                    
+                    setTimeout(() => {
+                        widget.style.transform = 'scale(1)';
+                    }, 200);
+                }, 800);
+            });
+            
+            // Update page title based on frequency
+            const pageTitle = document.querySelector('.intelligence-header h1');
+            if (pageTitle) {
+                const baseTitle = 'Markedsintelligens';
+                const suffixes = {
+                    'live': ' - Live Data',
+                    'daily': ' - Daglig Oppdatering', 
+                    'weekly': ' - Ukentlig Rapport'
+                };
+                pageTitle.textContent = baseTitle + (suffixes[updateFreq] || '');
+            }
+            
+            console.log(`Markedsintelligens oppdatert med frekvens: ${updateFreq}`);
         });
     });
     
-    function filterByTimeperiod(type) {
-        console.log('Filtering by time period:', type);
-        
-        // Get all metric widgets and cards
-        const metricWidgets = document.querySelectorAll('.metric-widget');
-        const intelligenceCards = document.querySelectorAll('.intelligence-card');
-        const newsItems = document.querySelectorAll('.news-item');
-        
-        // Show loading effect
-        metricWidgets.forEach(widget => {
-            widget.style.opacity = '0.6';
-            setTimeout(() => {
-                widget.style.opacity = '1';
-            }, 300);
-        });
-        
-        // Update metrics based on time period
-        updateMetrics(type);
-        
-        // Update news items visibility
-        updateNewsItems(type);
-        
-        // Update AI signals
-        updateAISignals(type);
-    }
+    // Auto-refresh for live mode
+    let autoRefreshInterval;
     
-    function updateMetrics(type) {
-        const metrics = document.querySelectorAll('.metric-value');
-        
-        // Simulate different values for different time periods
-        const metricData = {
-            live: ['78', '62%', '1,247', '$2.1B'],
-            daily: ['82', '68%', '856', '$1.8B'],
-            weekly: ['75', '58%', '3,421', '$5.2B']
-        };
-        
-        if (metricData[type]) {
-            metrics.forEach((metric, index) => {
-                if (metricData[type][index]) {
-                    metric.textContent = metricData[type][index];
-                }
-            });
+    function startAutoRefresh() {
+        const liveButton = document.querySelector('[data-update="live"]');
+        if (liveButton && liveButton.classList.contains('active')) {
+            autoRefreshInterval = setInterval(() => {
+                // Simulate live data update
+                const metrics = document.querySelectorAll('.metric-value');
+                metrics.forEach(metric => {
+                    // Add subtle animation to show data is live
+                    metric.style.color = '#28a745';
+                    setTimeout(() => {
+                        metric.style.color = '';
+                    }, 1000);
+                });
+            }, 30000); // Update every 30 seconds for live mode
         }
     }
     
-    function updateNewsItems(type) {
-        const newsItems = document.querySelectorAll('.news-item');
-        
-        // Show all items for now, but could filter based on timestamps
-        newsItems.forEach(item => {
-            item.style.display = 'block';
-        });
-        
-        // Update timestamps based on filter
-        const timeStamps = document.querySelectorAll('.news-item small.text-muted');
-        timeStamps.forEach(stamp => {
-            const text = stamp.textContent;
-            if (type === 'weekly' && (text.includes('t') || text.includes('min'))) {
-                stamp.textContent = Math.floor(Math.random() * 7) + 'd';
-            } else if (type === 'daily' && text.includes('d')) {
-                stamp.textContent = Math.floor(Math.random() * 24) + 't';
-            }
-        });
-    }
-    
-    function updateAISignals(type) {
-        const performanceValues = document.querySelectorAll('.metric-value.text-success, .metric-value.text-warning');
-        
-        // Update performance metrics based on time period
-        const performanceData = {
-            live: ['+8.2%', '+12.7%', '74%'],
-            daily: ['+6.1%', '+9.4%', '71%'],
-            weekly: ['+11.3%', '+18.2%', '78%']
-        };
-        
-        if (performanceData[type]) {
-            performanceValues.forEach((value, index) => {
-                if (performanceData[type][index]) {
-                    value.textContent = performanceData[type][index];
-                }
-            });
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
         }
     }
     
-    // Initialize with live data (default active button)
-    filterByTimeperiod('live');
+    // Start auto-refresh if in live mode
+    startAutoRefresh();
+    
+    // Update auto-refresh when mode changes
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            stopAutoRefresh();
+            setTimeout(startAutoRefresh, 1000);
+        });
+    });
 });
 </script>
+{% endblock %}
+
 {% endblock %}

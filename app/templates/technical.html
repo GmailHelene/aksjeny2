@@ -23,8 +23,7 @@
 }
 
 .index-card {
-    background:  background: #344686;
-;
+    background: linear-gradient(135deg, #667eea 0%, #000000 100%);
     color: white;
     border-radius: 12px;
     padding: 1.5rem;
@@ -631,7 +630,7 @@ function analyzeStock(symbol) {
     document.getElementById('stockSearch').value = symbol;
     
     // Navigate to detailed analysis page
-    window.location.href = '{{ url_for("main.stock_analysis") }}?symbol=' + symbol;
+    window.location.href = `{{ url_for('main.stock_analysis') }}?symbol=${symbol}`;
 }
 
 function performQuickAnalysis(symbol) {

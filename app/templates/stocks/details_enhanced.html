@@ -881,8 +881,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fallbackElement) fallbackElement.style.display = 'block';
         }, 3000); // Reduced to 3 second timeout
         
-        const ticker = '{{ ticker|safe }}';
-        fetch(`/stocks/api/demo/chart-data/${ticker}?period=30d`)
+        fetch(`/stocks/api/demo/chart-data/{{ ticker }}?period=30d`)
             .then(response => {
                 clearTimeout(chartTimeout); // Cancel timeout since we got a response
                 if (!response.ok) {
@@ -966,9 +965,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 callbacks: {
                                     label: function(context) {
                                         if (context.dataset.type === 'line') {
-                                            return 'Pris: ' + context.parsed.y + ' {{ stock_info.get("currency", "NOK") }}';
+                                            return `Pris: ${context.parsed.y} {{ stock_info.get('currency', 'NOK') }}`;
                                         } else {
-                                            return 'Volum: ' + context.parsed.y.toLocaleString();
+                                            return `Volum: ${context.parsed.y.toLocaleString()}`;
                                         }
                                     }
                                 }

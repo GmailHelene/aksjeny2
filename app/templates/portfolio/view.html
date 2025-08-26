@@ -202,9 +202,8 @@ function deletePortfolio(portfolioId) {
 function submitHolding() {
     const form = document.getElementById('addHoldingForm');
     const formData = new FormData(form);
-    const portfolioId = '{{ portfolio.id }}';
     
-    fetch(`/portfolio/portfolio/${portfolioId}/add`, {
+    fetch(`/portfolio/portfolio/{{ portfolio.id }}/add`, {
         method: 'POST',
         body: formData
     })
@@ -226,9 +225,8 @@ function editHolding(holdingId) {
 
 function deleteHolding(holdingId) {
     if (confirm('Er du sikker på at du vil slette denne beholdningen?')) {
-        const portfolioId = '{{ portfolio.id }}';
         // Send POST request to backend to delete holding
-        fetch(`/portfolio/${portfolioId}/remove/${holdingId}`, {
+        fetch(`/portfolio/${portfolio.id}/remove/${holdingId}`, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',

@@ -276,9 +276,9 @@
             const interval = document.getElementById('interval').value;
             const normalize = document.getElementById('normalize').value;
             
-            const url = '{{ url_for("stocks.compare") }}?' + 
-                       tickers.map(t => 'tickers=' + encodeURIComponent(t)).join('&') +
-                       '&period=' + period + '&interval=' + interval + '&normalize=' + normalize;
+            const url = `{{ url_for('stocks.compare') }}?` + 
+                       tickers.map(t => `tickers=${encodeURIComponent(t)}`).join('&') +
+                       `&period=${period}&interval=${interval}&normalize=${normalize}`;
             
             window.location.href = url;
         });
@@ -298,9 +298,8 @@
         const colors = ['#0d6efd', '#dc3545', '#198754', '#6f42c1', '#fd7e14'];
         
         {% for ticker in tickers %}
-        const chartData = {{ chart_data|tojson }};
-        if ('{{ ticker }}' in chartData) {
-            const tickerData = chartData['{{ ticker }}'];
+        if ('{{ ticker }}' in {{ chart_data|tojson }}) {
+            const tickerData = {{ chart_data|tojson }}['{{ ticker }}'];
             console.log('Chart data for {{ ticker }}:', tickerData);
             
             if (tickerData && tickerData.length > 0) {
@@ -346,7 +345,7 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: {% if interval == '1d' %}'day'{% elif interval == '1wk' %}'week'{% else %}'month'{% endif %},
+                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
                                 tooltipFormat: 'dd.MM.yyyy',
                                 displayFormats: {
                                     day: 'dd.MM',
@@ -362,7 +361,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: {% if normalize %}'Normalisert pris (%)'{% else %}'Pris'{% endif %}
+                                text: '{{ 'Normalisert pris (%)' if normalize else 'Pris' }}'
                             }
                         }
                     },
@@ -376,7 +375,7 @@
                                 label: function(context) {
                                     const label = context.dataset.label || '';
                                     const value = context.parsed.y;
-                                    return label + ': ' + value.toFixed(2) + '{% if normalize %} %{% endif %}';
+                                    return `${label}: ${value.toFixed(2)}{{ ' %' if normalize else '' }}`;
                                 }
                             }
                         }
@@ -406,7 +405,7 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: {% if interval == '1d' %}'day'{% elif interval == '1wk' %}'week'{% else %}'month'{% endif %},
+                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
                                 tooltipFormat: 'dd.MM.yyyy',
                                 displayFormats: {
                                     day: 'dd.MM',
@@ -448,6 +447,31 @@
             document.getElementById('volumeChart').style.display = 'none';
             document.querySelector('.chart-container:nth-of-type(2)').innerHTML = '<div class="alert alert-warning">Ingen volum data tilgjengelig</div>';
         }
+        {% endif %}
+        {% else %}
+        // Debug logging for troubleshooting
+        console.group('Chart Data Debug Info');
+        console.log('Tickers:', {{ tickers|tojson if tickers else '[]' }});
+        console.log('Chart Data:', {{ chart_data|tojson if chart_data else '{}' }});
+        console.log('Metrics:', {{ metrics|tojson if metrics else '{}' }});
+        console.log('Period:', '{{ period }}');
+        console.log('Interval:', '{{ interval }}');
+        console.log('Normalize:', {{ 'true' if normalize else 'false' }});
+        console.groupEnd();
+        
+        // Show diagnostic message in UI
+        const diagnosticDiv = document.createElement('div');
+        diagnosticDiv.className = 'alert alert-info mt-3';
+        diagnosticDiv.innerHTML = `
+            <h6>Diagnostisk informasjon:</h6>
+            <ul class="mb-0">
+                <li>Antall tickere: {{ (tickers|length) if tickers else 0 }}</li>
+                <li>Data tilgjengelig: {{ 'Ja' if chart_data and chart_data|length > 0 else 'Nei' }}</li>
+                <li>Periode: {{ period }}</li>
+                <li>Intervall: {{ interval }}</li>
+            </ul>
+        `;
+        document.querySelector('.chart-container').appendChild(diagnosticDiv);
         {% endif %}
         
         // Handle favorite buttons

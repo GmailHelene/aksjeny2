@@ -2241,8 +2241,8 @@ function printAnalysis() {
 function shareAnalysis() {
     if (navigator.share) {
         navigator.share({
-            title: 'Teknisk analyse - {{ symbol }}',
-            text: 'Se teknisk analyse for {{ symbol }} på Aksjeradar',
+            title: `Teknisk analyse - {{ symbol }}`,
+            text: `Se teknisk analyse for {{ symbol }} på Aksjeradar`,
             url: window.location.href
         });
     } else {

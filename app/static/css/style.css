@@ -833,9 +833,9 @@ main {
 }
 
 .alert-warning {
-    background-color: #0d47a1 !important;
+    background-color: #fff3cd !important;
     border-color: #ffecb5 !important;
-    color: #fff !important;
+    color: #664d03 !important;
 }
 
 .alert-danger {
@@ -845,30 +845,28 @@ main {
 }
 
 /* Buttons */
-.btn-primary,
-.analysis-menu .btn-primary {
-    background-color: #0d47a1 !important;
-    border-color: #0d47a1 !important;
+.btn-primary {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
     color: #fff !important;
 }
 
-.btn-primary:hover,
-.analysis-menu .btn-primary:hover {
-    background-color: #0a3776 !important;
-    border-color: #0a3776 !important;
+.btn-primary:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
     color: #fff !important;
 }
 
 /* Info buttons should match primary button styling */
 .btn-info {
-    background-color: #0d47a1 !important;
-    border-color: #0d47a1 !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
     color: #fff !important;
 }
 
 .btn-info:hover {
-    background-color: #0a3776 !important;
-    border-color: #0a3776 !important;
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
     color: #fff !important;
 }
 
@@ -882,18 +880,16 @@ button[type="submit"].btn-success {
     color: #ffffff !important;
 }
 
-.btn-outline-primary,
-.analysis-menu .btn-outline-primary {
-    color: #0d47a1 !important;
-    border-color: #0d47a1 !important;
+.btn-outline-primary {
+    color: #0d6efd !important;
+    border-color: #0d6efd !important;
     background-color: #fff !important;
 }
 
-.btn-outline-primary:hover,
-.analysis-menu .btn-outline-primary:hover {
-    background-color: #0d47a1 !important;
+.btn-outline-primary:hover {
+    background-color: #0d6efd !important;
     color: #fff !important;
-    border-color: #0d47a1 !important;
+    border-color: #0d6efd !important;
 }
 
 .btn-success {
@@ -1794,16 +1790,5 @@ svg:not(.navbar-brand svg) {
     color: #000 !important;
     font-weight: 600 !important;
     border: 1px solid #ced4da !important;
-}
-
-/* Intelligence and AI styling fixes */
-.intelligence-header {
-    background-color: #0d47a1 !important;
-    color: #fff !important;
-}
-
-.ai-insight {
-    background-color: #0d47a1 !important;
-    color: #fff !important;
 }
 

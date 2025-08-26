@@ -147,23 +147,11 @@ def create():
                     logger.warning(f"Price monitor service failed: {monitor_error}")
                     alert = None
                 
-                # If price monitor failed, create alert directly with improved transaction handling
+                # If price monitor failed, create alert directly
                 if not alert:
                     try:
                         from ..models.price_alert import PriceAlert
                         from .. import db
-                        
-                        # Start a new transaction with proper error handling
-                        try:
-                            # Close any existing transaction that might be in an error state
-                            if hasattr(db.session, '_is_active') and db.session._is_active:
-                                db.session.rollback()
-                        except:
-                            pass
-                        
-                        # Create a new session if needed
-                        if not db.session.is_active:
-                            db.session.begin()
                         
                         alert = PriceAlert(
                             user_id=current_user.id,
@@ -176,24 +164,12 @@ def create():
                         )
                         
                         db.session.add(alert)
-                        db.session.flush()  # Flush before commit to catch any errors early
+                        db.session.commit()
                         
-                        # Test the transaction before committing
-                        try:
-                            db.session.commit()
-                            logger.info(f"Successfully created price alert for user {current_user.id}: {symbol} at {target_price}")
-                        except Exception as commit_error:
-                            logger.error(f"Commit failed: {commit_error}")
-                            db.session.rollback()
-                            alert = None
-                            raise commit_error
+                        logger.info(f"Created price alert directly for user {current_user.id}: {symbol} at {target_price}")
                         
                     except Exception as db_error:
                         logger.error(f"Direct database alert creation failed: {db_error}")
-                        try:
-                            db.session.rollback()  # Ensure rollback on error
-                        except:
-                            pass  # Rollback might fail if session is already closed
                         alert = None
                 
                 if alert:

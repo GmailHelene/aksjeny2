@@ -943,16 +943,16 @@ function resetZoom() {
 }
 
 function quickBuy() {
-    window.location.href = '{{ url_for("mobile_trading.quick_trade") }}?symbol=' + currentSymbol + '&action=buy';
+    window.location.href = `{{ url_for('mobile_trading.quick_trade') }}?symbol=${currentSymbol}&action=buy`;
 }
 
 function quickSell() {
-    window.location.href = '{{ url_for("mobile_trading.quick_trade") }}?symbol=' + currentSymbol + '&action=sell';
+    window.location.href = `{{ url_for('mobile_trading.quick_trade') }}?symbol=${currentSymbol}&action=sell`;
 }
 
 function addToWatchlist() {
     // Add to watchlist logic
-    alert(currentSymbol + ' added to watchlist!');
+    alert(`${currentSymbol} added to watchlist!`);
 }
 
 function setAlert() {

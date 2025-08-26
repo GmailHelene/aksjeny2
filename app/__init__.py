@@ -94,10 +94,10 @@ def create_app(config_class=None):
         (request.endpoint.startswith('dashboard.') and '/api/' in request.path)
     ))
     
-    # Custom unauthorized handler to redirect unauthenticated users to login
+    # Custom unauthorized handler to redirect unauthenticated users to demo
     @login_manager.unauthorized_handler
     def unauthorized():
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('main.demo'))
     
     app.logger.info("Custom unauthorized handler registered for Flask-Login")
     
