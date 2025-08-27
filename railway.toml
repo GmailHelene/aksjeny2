@@ -2,7 +2,7 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "python3 main.py"
+startCommand = "python3 start_fixed.py"
 healthcheckPath = "/health/ready"
 healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
