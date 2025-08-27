@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Innstillinger - Aksjeradar{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h1 class="mb-4">Kontoinnstillinger</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Varselinnstillinger</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input setting-toggle" type="checkbox" 
+                               id="email_notifications" name="email_notifications"
+                               {% if settings.email_notifications %}checked{% endif %}>
+                        <label class="form-check-label" for="email_notifications">
+                            E-postvarsler
+                        </label>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input setting-toggle" type="checkbox" 
+                               id="sms_notifications" name="sms_notifications"
+                               {% if settings.sms_notifications %}checked{% endif %}>
+                        <label class="form-check-label" for="sms_notifications">
+                            SMS-varsler
+                        </label>
+                    </div>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input setting-toggle" type="checkbox" 
+                               id="push_notifications" name="push_notifications"
+                               {% if settings.push_notifications %}checked{% endif %}>
+                        <label class="form-check-label" for="push_notifications">
+                            Push-varsler
+                        </label>
+                    </div>
+                    
+                    <div class="form-check form-switch">
+                        <input class="form-check-input setting-toggle" type="checkbox" 
+                               id="newsletter" name="newsletter"
+                               {% if settings.newsletter %}checked{% endif %}>
+                        <label class="form-check-label" for="newsletter">
+                            Nyhetsbrev
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Kontoinformasjon</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>E-post:</strong> {{ user.email }}</p>
+                    <p><strong>Brukertype:</strong> {{ 'Premium' if user.is_premium else 'Standard' }}</p>
+                    <p><strong>Medlem siden:</strong> {{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'N/A' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.setting-toggle');
+    
+    toggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const formData = new FormData();
+            formData.append('setting', this.name);
+            formData.append('value', this.checked);
+            formData.append('csrf_token', '{{ csrf_token() }}');
+            
+            fetch('/settings/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+                    alert.style.zIndex = '9999';
+                    alert.innerHTML = `
+                        Innstilling oppdatert!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alert);
+                    
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 3000);
+                } else {
+                    // Revert toggle on error
+                    this.checked = !this.checked;
+                    alert('Kunne ikke oppdatere innstilling: ' + (data.error || 'Ukjent feil'));
+                }
+            })
+            .catch(error => {
+                // Revert toggle on error
+                this.checked = !this.checked;
+                alert('Nettverksfeil: Kunne ikke oppdatere innstilling');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

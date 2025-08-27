@@ -670,13 +670,11 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Innstillinger</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('notifications.settings') }}"><i class="fas fa-bell"></i> Varsler</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('my_subscription') }}">Mitt Abonnement</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.settings') }}"><i class="fas fa-cog"></i> Kontoinnstillinger</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('notifications.settings') }}"><i class="fas fa-bell"></i> Varsler</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.privacy') }}"><i class="fas fa-shield-alt"></i> Personvern</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Support</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.help') }}"><i class="fas fa-question-circle"></i> Hjelp</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.contact') }}"><i class="fas fa-envelope"></i> Kontakt oss</a></li>
                             <li><hr class="dropdown-divider"></li>
@@ -1108,5 +1106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+</body>
+</html>
 </body>
 </html>
