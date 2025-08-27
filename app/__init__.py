@@ -738,11 +738,6 @@ def register_template_filters(app):
                 return f"{value:,.0f}"
         except (ValueError, TypeError):
             return str(value) if value is not None else "—"
-y initialized
-# Create the Flask app instance first of the file
-app = Flask(__name__)settingser_views():
-d after app is initialized"""
-# ...existing code for app configuration...n stocks
 
 # Move all view imports to the very end, after app is fully initialized
 # This must be at the VERY END of the file
