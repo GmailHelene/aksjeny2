@@ -747,7 +747,7 @@ d after app is initialized"""
 # Move all view imports to the very end, after app is fully initialized
 # This must be at the VERY END of the file
 def register_views():
-    """Register all view modules - called after app is initialized"""
+    """Register all view modules - called after app is initialized."""
     from app.views import stocks
     from app.views import analysis
     from app.views import portfolio
