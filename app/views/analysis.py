@@ -1,5 +1,5 @@
 from flask import render_template, request
-from app.utils import get_stock_data, generate_demo_data
+from app.utils.analysis_utils import get_stock_data, generate_demo_data
 
 def init_analysis_routes(app):
     @app.route('/analysis/warren-buffett')
