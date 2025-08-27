@@ -183,107 +183,31 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    {% if sector_data %}
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="sector-performance positive">
+                            {% for sector_name, sector_info in sector_data.items() %}
+                            <div class="sector-performance {% if sector_info.get('change_percent', 0) > 0 %}positive{% elif sector_info.get('change_percent', 0) < 0 %}negative{% endif %}">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <strong>Energi</strong>
-                                        <div class="small text-muted">EQNR, AKE, VAR</div>
+                                        <strong>{{ sector_name }}</strong>
+                                        <div class="small text-muted">{{ sector_info.get('volume', 0)|int|number_format }} vol</div>
                                     </div>
-                                    <div class="text-success">
-                                        <strong>+3.2%</strong>
+                                    <div class="{% if sector_info.get('change_percent', 0) > 0 %}text-success{% elif sector_info.get('change_percent', 0) < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        <strong>{% if sector_info.get('change_percent', 0) > 0 %}+{% endif %}{{ sector_info.get('change_percent', 0)|round(1) }}%</strong>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="sector-performance positive">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Sjømat</strong>
-                                        <div class="small text-muted">MOWI, SalMar, LSG</div>
-                                    </div>
-                                    <div class="text-success">
-                                        <strong>+2.8%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="sector-performance positive">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Shipping</strong>
-                                        <div class="small text-muted">FLNG, EURN, DHT</div>
-                                    </div>
-                                    <div class="text-success">
-                                        <strong>+1.9%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="sector-performance positive">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Bank</strong>
-                                        <div class="small text-muted">DNB, SpareBank 1</div>
-                                    </div>
-                                    <div class="text-success">
-                                        <strong>+1.4%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="sector-performance negative">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Teknologi</strong>
-                                        <div class="small text-muted">KAHOOT, AutoStore</div>
-                                    </div>
-                                    <div class="text-danger">
-                                        <strong>-2.1%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="sector-performance negative">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Telekom</strong>
-                                        <div class="small text-muted">TEL, ICE</div>
-                                    </div>
-                                    <div class="text-danger">
-                                        <strong>-1.3%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="sector-performance">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Industri</strong>
-                                        <div class="small text-muted">AKER, YAR, AKSO</div>
-                                    </div>
-                                    <div class="text-muted">
-                                        <strong>+0.2%</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="sector-performance">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>Forbruksvarer</strong>
-                                        <div class="small text-muted">NordicSemi, AKVA</div>
-                                    </div>
-                                    <div class="text-muted">
-                                        <strong>-0.1%</strong>
-                                    </div>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-triangle display-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">Ingen sektordata tilgjengelig</h5>
+                        <p class="text-muted">Sektordata er ikke tilgjengelig for øyeblikket.</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
