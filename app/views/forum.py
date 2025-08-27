@@ -10,7 +10,7 @@ def create_topic():
         try:
             title = request.form.get('title')
             content = request.form.get('content')
-            category_id = request.form.get('category')
+            category_id = int(request.form.get('category'))
             
             if not all([title, content, category_id]):
                 flash('Alle felt må fylles ut', 'error')

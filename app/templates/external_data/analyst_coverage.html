@@ -165,6 +165,51 @@
         </div>
     </div>
 
+    <!-- Analyst Coverage Data -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card analyst-card">
+                <div class="card-header" style="background-color: #0d47a1 !important; color: white;">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-lines-fill me-2"></i>Analyst Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if analyst_coverage %}
+                        {% for symbol, coverage in analyst_coverage.items() %}
+                        <div class="analyst-card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ symbol }}</h6>
+                                <span class="badge {% if coverage.consensus.recommendation == 'Buy' %}bg-success{% elif coverage.consensus.recommendation == 'Hold' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ coverage.consensus.recommendation }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Analytiker Konsensus</h6>
+                                        <p><strong>Anbefaling:</strong> {{ coverage.consensus.recommendation }}</p>
+                                        <p><strong>Kursmål:</strong> {{ coverage.ratings.target_price|round(2) if coverage.ratings.target_price else 'N/A' }}</p>
+                                        <p><strong>Antall analytikere:</strong> {{ coverage.ratings.num_analysts }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Teknisk Analyse</h6>
+                                        <p><strong>Trend:</strong> {{ coverage.technical.trend }}</p>
+                                        <p><strong>Støtte:</strong> {{ coverage.technical.support|round(2) if coverage.technical.support else 'N/A' }}</p>
+                                        <p><strong>Motstand:</strong> {{ coverage.technical.resistance|round(2) if coverage.technical.resistance else 'N/A' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No analyst coverage data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Top Analyst Coverage -->
     <div class="row">
         <div class="col-12">

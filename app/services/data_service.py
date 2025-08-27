@@ -1891,11 +1891,11 @@ class DataService:
             # Major US tech stocks
             base_price = random.uniform(100, 400)
             sector = 'Technology'
-               exchange = 'NASDAQ'
+            exchange = 'NASDAQ'
         else:
             base_price = random.uniform(20, 200)
             sector = 'Diverse'
-               exchange = 'NYSE'
+            exchange = 'NYSE'
         
         # Generate realistic metrics
         change = random.uniform(-0.05, 0.05) * base_price

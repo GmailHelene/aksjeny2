@@ -17,6 +17,7 @@ import psutil
 import time
 import redis
 from add_missing_columns import add_missing_columns
+from add_browser_enabled_column import add_browser_enabled_column
 
 # Load environment variables
 load_dotenv()
@@ -54,6 +55,7 @@ def create_app(config_class=None):
     with app.app_context():
         try:
             add_missing_columns()
+            add_browser_enabled_column()
         except Exception as e:
             app.logger.error(f"Error adding missing columns: {e}")
     migrate = Migrate(app, db)
@@ -294,6 +296,8 @@ def create_app(config_class=None):
     init_market_intel_routes(app)
     from app.views.profile import init_profile_routes
     init_profile_routes(app)
+    from app.views.advanced_analytics import init_advanced_analytics_routes
+    init_advanced_analytics_routes(app)
     # Do the same for other views if needed
     import app.views.external_data
     return app

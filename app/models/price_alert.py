@@ -29,6 +29,7 @@ class PriceAlert(db.Model):
     # Email notification settings
     email_sent = db.Column(db.Boolean, default=False, nullable=False)
     email_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    browser_enabled = db.Column(db.Boolean, default=False, nullable=False)
     
     # Database-required notification fields  
     notify_email = db.Column(db.Boolean, default=True, nullable=False)
@@ -121,7 +122,8 @@ class PriceAlert(db.Model):
             'company_name': self.company_name,
             'exchange': self.exchange,
             'notes': self.notes,
-            'email_enabled': self.email_enabled
+            'email_enabled': self.email_enabled,
+            'browser_enabled': self.browser_enabled
         }
     
     @staticmethod

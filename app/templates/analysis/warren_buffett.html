@@ -376,12 +376,29 @@ function newAnalysis() {
     window.location.href = "{{ url_for('analysis.warren_buffett') }}";
 }
 
+function analyzeCustomTicker() {
+    const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+    if (ticker) {
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + ticker;
+    }
+}
+
 // Auto-complete for ticker input
 document.addEventListener('DOMContentLoaded', function() {
     const tickerInput = document.getElementById('ticker');
     if (tickerInput) {
         tickerInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
+        });
+    }
+    
+    // Also handle the menu ticker input
+    const menuTickerInput = document.getElementById('ticker-input');
+    if (menuTickerInput) {
+        menuTickerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeCustomTicker();
+            }
         });
     }
 });

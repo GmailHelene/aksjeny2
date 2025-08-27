@@ -11,7 +11,7 @@ def alerts():
             alert = PriceAlert(
                 user_id=current_user.id,
                 ticker=request.form.get('ticker'),
-                price_threshold=float(request.form.get('price')),
+                target_price=float(request.form.get('price')),
                 alert_type=request.form.get('alert_type'),
                 email_enabled=request.form.get('email_enabled') == 'on',
                 active=True
@@ -36,12 +36,12 @@ def price_alert_create():
             
             if not ticker or not price:
                 flash('Ticker og pris må fylles ut', 'error')
-                return render_template('alerts/create.html')
+                return render_template('price_alerts/create.html')
             
             alert = PriceAlert(
                 user_id=current_user.id,
                 ticker=ticker,
-                price_threshold=float(price),
+                target_price=float(price),
                 alert_type=request.form.get('alert_type', 'above'),
                 email_enabled=True,
                 active=True
@@ -54,4 +54,4 @@ def price_alert_create():
             db.session.rollback()
             flash('Kunne ikke opprette prisvarsel. Prøv igjen.', 'error')
     
-    return render_template('alerts/create.html')
+    return render_template('price_alerts/create.html')

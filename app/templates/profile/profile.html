@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Profile</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>User Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Premium:</strong> {{ user.is_premium|default('No') }}</p>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Portfolios</h5>
+                </div>
+                <div class="card-body">
+                    {% if portfolios %}
+                        <ul class="list-group">
+                            {% for portfolio in portfolios %}
+                            <li class="list-group-item">
+                                <a href="{{ url_for('portfolio.view', portfolio_id=portfolio.id) }}">{{ portfolio.name }}</a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No portfolios found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
