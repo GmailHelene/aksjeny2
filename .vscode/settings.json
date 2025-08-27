@@ -14,7 +14,7 @@
   "github.copilot.chat.editor.temporalContext.enabled": true,
   "github.copilot.chat.edits.temporalContext.enabled": true,
   "github.copilot.chat.languageContext.typescript.enabled": true,
-  "github.copilot.chat.languageContext.typescript.cacheTimeout": 4500,
+  "github.copilot.chat.languageContext.typescript.cacheTimeout": 9500,
   "github.copilot.chat.notebook.followCellExecution.enabled": true,
   "python.defaultInterpreterPath": "/usr/bin/python3",
   "python.terminal.activateEnvironment": false,
@@ -29,5 +29,6 @@
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.stubPath": "/home/alloy/.local/lib/python3.9/site-packages",
   "pylance.insidersChannel": "off",
-  "github.copilot.chat.scopeSelection": true
+  "github.copilot.chat.scopeSelection": true,
+  "github.copilot.chat.enableRetryAfterFilteredResponse": true
 }

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Sitemap: https://aksjeradar.trade/sitemap.xml
+
+# Block Railway app URLs
+User-agent: *
+Disallow: http://web-production-1e7d.up.railway.app/
+Disallow: https://web-production-1e7d.up.railway.app/

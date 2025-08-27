@@ -1,0 +1,48 @@
+from flask import render_template, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user
+from app import app, cache
+import os
+import shutil
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_admin:
+            flash('Du har ikke tilgang til denne siden', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/admin/clear-cache', methods=['POST'])
+@admin_required
+def clear_cache():
+    """Clear all application caches"""
+    try:
+        # Clear Flask-Caching cache
+        cache.clear()
+        
+        # Clear Python __pycache__ directories
+        for root, dirs, files in os.walk(app.root_path):
+            for dir in dirs:
+                if dir == '__pycache__':
+                    shutil.rmtree(os.path.join(root, dir))
+        
+        # Clear session cache
+        app.session_interface.cache.clear() if hasattr(app.session_interface, 'cache') else None
+        
+        # Clear static file cache by adding version parameter
+        app.config['ASSETS_VERSION'] = str(int(time.time()))
+        
+        flash('All caches cleared successfully!', 'success')
+        return jsonify({'success': True, 'message': 'All caches cleared'})
+    except Exception as e:
+        app.logger.error(f"Cache clearing error: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/clear-browser-cache')
+@admin_required  
+def clear_browser_cache_instructions():
+    """Return instructions for clearing browser cache"""
+    return render_template('admin/clear_cache.html')
