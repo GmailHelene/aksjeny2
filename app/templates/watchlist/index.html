@@ -3,7 +3,7 @@
 {% block title %}Watchlist & Varsler - Aksjeradar{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container py-4">
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -692,7 +692,7 @@ function deleteWatchlist(id) {
                     <i class="bi bi-check-circle"></i> Watchlist slettet
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
-                document.querySelector('.container-fluid').insertBefore(successAlert, document.querySelector('.container-fluid').firstChild);
+                document.querySelector('.container').insertBefore(successAlert, document.querySelector('.container').firstChild);
                 
                 setTimeout(() => {
                     successAlert.remove();
