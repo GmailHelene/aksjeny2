@@ -351,10 +351,7 @@ def register_blueprints(app):
         blueprints_registered.append('pricing')
         app.logger.info("OK Registered Pricing blueprint")
         
-        # Register stocks blueprint
-        from .routes.stocks import stocks
-        app.register_blueprint(stocks, url_prefix='/stocks')
-        blueprints_registered.append('stocks')
+        # NOTE: stocks blueprint is registered via blueprint_configs below
         
         # Register Stripe blueprint
         try:

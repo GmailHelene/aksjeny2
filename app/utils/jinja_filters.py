@@ -3,8 +3,19 @@ Custom Jinja filters for the application
 """
 from datetime import datetime
 from flask import Blueprint
+import json
 
 jinja_filters = Blueprint('filters', __name__)
+
+@jinja_filters.app_template_filter('fromjson')
+def fromjson(value):
+    """Convert JSON string to Python object"""
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return []
 
 @jinja_filters.app_template_filter('timeago')
 def timeago(dt):

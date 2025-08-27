@@ -514,8 +514,9 @@
     </div>
 </div>
 
-{% block scripts %}
-{{ super() }}
+{% endblock %}
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Update frequency functionality for market intelligence
@@ -615,6 +616,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %}
-
 {% endblock %}
