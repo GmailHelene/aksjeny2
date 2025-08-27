@@ -1,4 +1,11 @@
-@app.route('/settings/delete-alert', methods=['POST'])
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user
+from app.extensions import db
+from app.models import User
+
+settings_bp = Blueprint('settings', __name__)
+
+@settings_bp.route('/settings/delete-alert', methods=['POST'])
 @login_required
 def delete_price_alert():
     try:
@@ -22,6 +29,24 @@ from app.models import User
 
 settings_bp = Blueprint('settings', __name__)
 
+@settings_bp.route('/settings/delete-alert', methods=['POST'])
+@login_required
+def delete_price_alert():
+    try:
+        alert_id = request.form.get('alert_id')
+        from app.models.price_alert import PriceAlert
+        alert = PriceAlert.query.filter_by(id=alert_id, user_id=current_user.id).first()
+        if alert:
+            db.session.delete(alert)
+            db.session.commit()
+            flash('Prisvarsel slettet.', 'success')
+        else:
+            flash('Fant ikke prisvarsel.', 'error')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Feil ved sletting av prisvarsel: {str(e)}', 'error')
+    return redirect(url_for('settings'))
+
 @settings_bp.route('/settings')
 @login_required
 def settings():
@@ -42,7 +67,6 @@ def settings():
                 user_settings = settings_obj
         except:
             pass  # Use default settings if model doesn't exist
-        
         # Fetch user's price alerts
         try:
             from app.models.price_alert import PriceAlert
@@ -54,18 +78,18 @@ def settings():
                              settings=user_settings,
                              price_alerts=price_alerts)
     except Exception as e:
-        app.logger.error(f"Settings error: {str(e)}")
+        from flask import current_app
+        current_app.logger.error(f"Settings error: {str(e)}")
         flash('En feil oppstod ved lasting av innstillinger', 'error')
         return redirect(url_for('index'))
 
-@app.route('/settings/update', methods=['POST'])
+@settings_bp.route('/settings/update', methods=['POST'])
 @login_required
 def update_settings():
     """Update user settings via AJAX"""
     try:
         setting = request.form.get('setting')
         value = request.form.get('value') == 'true'
-        
         # Try to update in database if model exists
         try:
             from app.models import UserSettings
@@ -73,7 +97,6 @@ def update_settings():
             if not user_settings:
                 user_settings = UserSettings(user_id=current_user.id)
                 db.session.add(user_settings)
-            
             # Update the specific setting
             if hasattr(user_settings, setting):
                 setattr(user_settings, setting, value)
@@ -84,8 +107,8 @@ def update_settings():
         except:
             # If no model, just return success
             return jsonify({'success': True, 'message': 'Innstilling oppdatert'})
-            
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Update settings error: {str(e)}")
+        from flask import current_app
+        current_app.logger.error(f"Update settings error: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
