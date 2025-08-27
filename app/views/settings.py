@@ -1,3 +1,20 @@
+@app.route('/settings/delete-alert', methods=['POST'])
+@login_required
+def delete_price_alert():
+    try:
+        alert_id = request.form.get('alert_id')
+        from app.models.price_alert import PriceAlert
+        alert = PriceAlert.query.filter_by(id=alert_id, user_id=current_user.id).first()
+        if alert:
+            db.session.delete(alert)
+            db.session.commit()
+            flash('Prisvarsel slettet.', 'success')
+        else:
+            flash('Fant ikke prisvarsel.', 'error')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Feil ved sletting av prisvarsel: {str(e)}', 'error')
+    return redirect(url_for('settings'))
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app import app, db
@@ -25,9 +42,16 @@ def settings():
         except:
             pass  # Use default settings if model doesn't exist
         
+        # Fetch user's price alerts
+        try:
+            from app.models.price_alert import PriceAlert
+            price_alerts = PriceAlert.query.filter_by(user_id=current_user.id).all()
+        except Exception:
+            price_alerts = []
         return render_template('settings/settings.html', 
                              user=current_user,
-                             settings=user_settings)
+                             settings=user_settings,
+                             price_alerts=price_alerts)
     except Exception as e:
         app.logger.error(f"Settings error: {str(e)}")
         flash('En feil oppstod ved lasting av innstillinger', 'error')

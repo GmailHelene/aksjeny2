@@ -29,6 +29,17 @@ class DeviceTrialTracker(db.Model):
         return False
 
 class User(UserMixin, db.Model):
+    @property
+    def is_premium(self):
+        """Return True if user has an active paid subscription"""
+        if not self.has_subscription:
+            return False
+        if self.subscription_type in ['monthly', 'yearly', 'lifetime']:
+            if self.subscription_type == 'lifetime':
+                return True
+            if self.subscription_end:
+                return datetime.utcnow() <= self.subscription_end
+        return False
     __tablename__ = 'users'  # <-- Viktig!
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
