@@ -2536,5 +2536,3 @@ def strategy_builder():
     """Strategy builder functionality"""
     return render_template('analysis/strategy_builder.html', title='Strategibygger')
 
-@analysis.route('/short-analysis', methods=['GET', 'POST'])
-
