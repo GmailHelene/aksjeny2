@@ -21,8 +21,8 @@ def my_subscription():
         return render_template('subscription/my-subscription.html',
                              renewal_date=renewal_date)
     except Exception as e:
-    from flask import current_app
-    current_app.logger.error(f"Subscription page error: {str(e)}")
+        from flask import current_app
+        current_app.logger.error(f"Subscription page error: {str(e)}")
         flash('Kunne ikke laste abonnementsinformasjon', 'error')
         return redirect(url_for('index'))
 
