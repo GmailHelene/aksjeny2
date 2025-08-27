@@ -118,6 +118,96 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
         current_app.logger.warning(f"MACD calculation failed: {e}")
         return 0.0, 0.0, 0.0
 
+def calculate_bollinger_bands(prices, period=20, std_dev=2):
+    """Calculate Bollinger Bands"""
+    try:
+        if len(prices) < period:
+            return {'upper': prices[-1] if prices else 0, 'middle': prices[-1] if prices else 0, 'lower': prices[-1] if prices else 0, 'position': 'middle'}
+        
+        prices_series = pd.Series(prices)
+        sma = prices_series.rolling(window=period).mean()
+        std = prices_series.rolling(window=period).std()
+        
+        upper_band = sma + (std * std_dev)
+        lower_band = sma - (std * std_dev)
+        
+        current_price = prices[-1]
+        if current_price > upper_band.iloc[-1]:
+            position = 'above'
+        elif current_price < lower_band.iloc[-1]:
+            position = 'below'
+        else:
+            position = 'middle'
+        
+        return {
+            'upper': float(upper_band.iloc[-1]),
+            'middle': float(sma.iloc[-1]),
+            'lower': float(lower_band.iloc[-1]),
+            'position': position
+        }
+    except Exception as e:
+        current_app.logger.warning(f"Bollinger Bands calculation failed: {e}")
+        return {'upper': prices[-1] if prices else 0, 'middle': prices[-1] if prices else 0, 'lower': prices[-1] if prices else 0, 'position': 'middle'}
+
+def calculate_sma(prices, period):
+    """Calculate Simple Moving Average"""
+    try:
+        if len(prices) < period:
+            return prices[-1] if prices else 0
+        
+        prices_series = pd.Series(prices)
+        sma = prices_series.rolling(window=period).mean()
+        return float(sma.iloc[-1])
+    except Exception as e:
+        current_app.logger.warning(f"SMA calculation failed: {e}")
+        return prices[-1] if prices else 0
+
+def generate_signals(current_price, rsi, macd, bb, sma200, sma50):
+    """Generate trading signals based on technical indicators"""
+    try:
+        signals = []
+        
+        # RSI signals
+        if rsi > 70:
+            signals.append("OVERBOUGHT")
+        elif rsi < 30:
+            signals.append("OVERSOLD")
+        else:
+            signals.append("NEUTRAL")
+        
+        # MACD signals
+        if isinstance(macd, dict) and 'macd' in macd and 'signal' in macd:
+            if macd['macd'] > macd['signal']:
+                signals.append("BULLISH")
+            elif macd['macd'] < macd['signal']:
+                signals.append("BEARISH")
+        
+        # Bollinger Band signals
+        if isinstance(bb, dict) and 'position' in bb:
+            if bb['position'] == 'below':
+                signals.append("BUY")
+            elif bb['position'] == 'above':
+                signals.append("SELL")
+        
+        # Moving Average signals
+        if sma50 and sma200:
+            if sma50 > sma200:
+                signals.append("UPTREND")
+            else:
+                signals.append("DOWNTREND")
+        
+        # Overall signal
+        if "BUY" in signals or "BULLISH" in signals or "OVERSOLD" in signals:
+            return "BUY"
+        elif "SELL" in signals or "BEARISH" in signals or "OVERBOUGHT" in signals:
+            return "SELL"
+        else:
+            return "HOLD"
+            
+    except Exception as e:
+        current_app.logger.warning(f"Signal generation failed: {e}")
+        return "HOLD"
+
 @stocks.route('/list/crypto')
 @demo_access
 def list_crypto():

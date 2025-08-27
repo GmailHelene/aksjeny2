@@ -45,25 +45,25 @@ def init_advanced_analytics_routes(app):
             data = request.get_json()
             tickers = data.get('tickers', [])
             
-        if not tickers:
-            return jsonify({'success': False, 'error': 'Ingen tickers angitt'})
-        
-        results = []
-        for ticker in tickers:
-            prediction = random.uniform(-10, 15)
-            results.append({
-                'ticker': ticker,
-                'prediction': prediction,
-                'signal': 'BUY' if prediction > 0 else 'SELL'
+            if not tickers:
+                return jsonify({'success': False, 'error': 'Ingen tickers angitt'})
+            
+            results = []
+            for ticker in tickers:
+                prediction = random.uniform(-10, 15)
+                results.append({
+                    'ticker': ticker,
+                    'prediction': prediction,
+                    'signal': 'BUY' if prediction > 0 else 'SELL'
+                })
+            
+            return jsonify({
+                'success': True,
+                'results': results
             })
-        
-        return jsonify({
-            'success': True,
-            'results': results
-        })
-    except Exception as e:
-        app.logger.error(f"Batch prediction error: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)})
+        except Exception as e:
+            app.logger.error(f"Batch prediction error: {str(e)}")
+            return jsonify({'success': False, 'error': str(e)})
 
     @app.route('/advanced-analytics/market-analysis', methods=['POST'])
     @login_required

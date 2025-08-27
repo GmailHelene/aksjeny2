@@ -1,9 +1,28 @@
+ Remaining Issues to Address:
+Non-functional Advanced Analytics Buttons - Need to investigate button functionality
+Stock Details Chart Loading & Technical Analysis Display - Need to check chart rendering
+CSRF Token Issues on Portfolio Pages - Need to verify CSRF implementation
+Portfolio Creation Database Conflicts - Need to examine database operations
+-
+
+
+! Sjekk at alle sider representert i navigasjonen (innlogget bruker) henter og viser utelukkende EKTE data
+
+-
+Oversettelsesfunksjonen fungerer ikke som den skal.. Når jeg trykker på "English" knappen øverst, så skejr det ingenting, siden bare "hopper"; når alt på norsk da egentlig skal bli oversatt til engelsk
+
+
+
+
+
+-----
+
 Kan du da fortsette med dette:
 https://aksjeradar.trade/stocks/list/currency
 Kolonnen her som viser volum 0  i alle rader kan fjernes
 -
 
--
+
 https://aksjeradar.trade/external-data/market-intelligence
 https://aksjeradar.trade/external-data/analyst-coverage
 Feilmelding på disse 2 sidene nå også! De har fungert..
