@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Warren Buffett Analyse</h1>
+  <form method="get" action="">
+    <label for="ticker">Søk etter ticker:</label>
+    <input type="text" id="ticker" name="ticker" value="{{ ticker }}" placeholder="F.eks. TSLA">
+    <button type="submit">Søk</button>
+  </form>
+  {% if error %}
+    <div class="alert alert-danger">Beklager, en feil oppsto. Prøv igjen senere.</div>
+  {% elif data %}
+    <h2>Analyse for {{ ticker }}</h2>
+    <pre>{{ data | tojson(indent=2) }}</pre>
+  {% else %}
+    <p>Ingen data funnet for valgt ticker.</p>
+  {% endif %}
+{% endblock %}

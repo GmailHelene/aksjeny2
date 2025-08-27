@@ -10,17 +10,21 @@ def create_topic():
         try:
             title = request.form.get('title')
             content = request.form.get('content')
-            category = request.form.get('category')
+            category_id = request.form.get('category')
             
-            if not all([title, content, category]):
+            if not all([title, content, category_id]):
                 flash('Alle felt må fylles ut', 'error')
                 return render_template('forum/create_topic.html')
             
+            # Generate slug from title
+            import re
+            slug = re.sub(r'[^a-zA-Z0-9]+', '-', title.lower()).strip('-')
             topic = ForumTopic(
                 title=title,
+                slug=slug,
                 content=content,
-                category=category,
-                user_id=current_user.id
+                category_id=category_id,
+                author_id=current_user.id
             )
             db.session.add(topic)
             db.session.commit()

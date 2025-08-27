@@ -1,7 +1,5 @@
 from flask import render_template, request, jsonify, current_app
-import yfinance as yf
-import pandas as pd
-from datetime import datetime, timedelta
+from app.utils.stocks_utils import get_comparison_data, generate_demo_comparison
 
 def init_stocks_routes(app):
     """Initialize stock routes with app instance"""
@@ -25,8 +23,8 @@ def init_stocks_routes(app):
             
             return render_template('stocks/compare.html',
                                  tickers=tickers,
-                                 data=comparison_data,
-                                 error=False)
+                                 error=False,
+                                 **comparison_data)
                                  
         except Exception as e:
             current_app.logger.error(f"Compare error: {str(e)}")

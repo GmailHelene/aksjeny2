@@ -281,6 +281,11 @@ def create_app(config_class=None):
                 app.logger.warning(f"Database initialization skipped: {e}")
         
         # After app is created and configured:
+        pass
+    except Exception as e:
+        app.logger.error(f"ERROR Critical error during app creation: {e}")
+        raise
+    # Register routes after try block
     from app.views.stocks import init_stocks_routes
     init_stocks_routes(app)
     from app.views.analysis import init_analysis_routes
@@ -289,11 +294,8 @@ def create_app(config_class=None):
     init_market_intel_routes(app)
     from app.views.profile import init_profile_routes
     init_profile_routes(app)
-        # Do the same for other views if needed
-        return app
-    except Exception as e:
-        app.logger.error(f"ERROR Critical error during app creation: {e}")
-        raise
+    # Do the same for other views if needed
+    return app
 
 def register_blueprints(app):
     """Register all blueprints"""

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Sektor Analyse</h1>
+  {% if error %}
+    <div class="alert alert-danger">Beklager, en feil oppsto. Vi jobber med å løse problemet. Prøv igjen senere.</div>
+  {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sektor</th>
+          <th>Utvikling (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sector in sectors %}
+        <tr>
+          <td>{{ sector.name }}</td>
+          <td>{{ sector.performance }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
