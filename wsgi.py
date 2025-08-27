@@ -4,6 +4,7 @@ WSGI entry point for Railway deployment
 """
 import os
 import sys
+import importlib.util
 
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -12,8 +13,15 @@ sys.path.insert(0, os.path.dirname(__file__))
 os.environ.setdefault('FLASK_ENV', 'production')
 
 try:
-    from app.__init__ import create_app
-    app = create_app('production')
+    # Import the create_app function directly from __init__.py file
+    # This avoids the circular import issue
+    init_path = os.path.join(os.path.dirname(__file__), 'app', '__init__.py')
+    spec = importlib.util.spec_from_file_location("app_init", init_path)
+    app_init = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(app_init)
+    
+    # Create the Flask app using the imported function
+    app = app_init.create_app('production')
     
     # Ensure app is ready
     with app.app_context():
