@@ -1806,7 +1806,6 @@ def profile():
             flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
             return redirect(url_for('main.index'))
 
-@main.route('/mitt-abonnement')
 @main.route('/my-subscription')
 @login_required
 def my_subscription():
@@ -1950,7 +1949,7 @@ def subscription_checkout(plan):
         #     return redirect(checkout_url)
         # else:
         #     flash('Kunne ikke opprette betalingslink. Prøv igjen senere.', 'error')
-        #         return redirect(url_for('main.pricing'))
+        #     return redirect(url_for('main.pricing'))
             
     except Exception as e:
         logger.error(f"Error creating checkout session: {e}")
