@@ -180,56 +180,15 @@ def insider_trading_overview():
 def analyst_coverage():
     """Show analyst coverage overview"""
     try:
-        # Get analyst coverage for top stocks
-        top_stocks = ['EQNR', 'DNB', 'TEL', 'AKER', 'MOWI']
+        from flask_login import current_user
+        from app.utils.market_intel_utils import get_analyst_coverage_data
         
-        analyst_coverage = {}
-        for stock in top_stocks:
-            try:
-                ratings = get_analyst_ratings(stock)
-                comprehensive = get_stock_comprehensive_data(stock)
-                
-                # Add fallback data if empty responses
-                if not ratings and not comprehensive:
-                    ratings = {
-                        'consensus': 'Buy',
-                        'target_price': 285.0,
-                        'num_analysts': 12,
-                        'strong_buy': 5,
-                        'buy': 4,
-                        'hold': 2,
-                        'sell': 1,
-                        'strong_sell': 0
-                    }
-                    comprehensive = {
-                        'analyst_consensus': {
-                            'recommendation': 'Buy',
-                            'target_price': 285.0
-                        },
-                        'technical_analysis': {
-                            'trend': 'Bullish',
-                            'support': 270.0,
-                            'resistance': 295.0
-                        }
-                    }
-                
-                analyst_coverage[stock] = {
-                    'ratings': ratings,
-                    'consensus': comprehensive.get('analyst_consensus', {}),
-                    'technical': comprehensive.get('technical_analysis', {})
-                }
-            except Exception as e:
-                logger.error(f"Error getting analyst data for {stock}: {e}")
-                # Add fallback data for this stock
-                analyst_coverage[stock] = {
-                    'ratings': {'consensus': 'Hold', 'target_price': 200.0, 'num_analysts': 0},
-                    'consensus': {'recommendation': 'Hold'},
-                    'technical': {'trend': 'Neutral'}
-                }
-                continue
+        # Get analyst coverage data - use real data if user is authenticated
+        is_authenticated = hasattr(current_user, 'is_authenticated') and current_user.is_authenticated
+        analyst_data = get_analyst_coverage_data(real=is_authenticated)
         
         return render_template('external_data/analyst_coverage.html',
-                             analyst_coverage=analyst_coverage)
+                             analyst_coverage=analyst_data)
                              
     except Exception as e:
         logger.error(f"Error in analyst coverage: {e}")
@@ -240,69 +199,31 @@ def analyst_coverage():
 def market_intelligence():
     """Comprehensive market intelligence dashboard"""
     try:
-        # Get market overview
-        if external_data_service:
-            market_overview = external_data_service.get_market_overview()
-        else:
-            # Fallback market overview data
-            market_overview = {
-                'indices': {
-                    'OSEBX': {'value': 1285.50, 'change': 1.2, 'change_percent': 0.09},
-                    'S&P500': {'value': 4450.30, 'change': -8.20, 'change_percent': -0.18},
-                    'NASDAQ': {'value': 13890.15, 'change': -25.40, 'change_percent': -0.18}
-                },
-                'currencies': {
-                    'USDNOK': {'value': 10.45, 'change': 0.02},
-                    'EURNOK': {'value': 11.28, 'change': -0.01}
-                },
-                'commodities': {
-                    'oil_brent': {'value': 85.30, 'change': 1.20},
-                    'gas_nymex': {'value': 2.95, 'change': -0.05}
-                }
+        from flask_login import current_user
+        from app.utils.market_intel_utils import get_market_intelligence_data, get_sector_data
+        
+        # Get market intelligence data - use real data if user is authenticated
+        is_authenticated = hasattr(current_user, 'is_authenticated') and current_user.is_authenticated
+        intelligence_data = get_market_intelligence_data(real=is_authenticated)
+        sector_data = get_sector_data()
+        
+        # Create market overview data for template
+        market_overview = {
+            'indices': {
+                'OSEBX': {'value': 1285.50, 'change': 1.2, 'change_percent': 0.09},
+                'S&P500': {'value': 4450.30, 'change': -8.20, 'change_percent': -0.18},
+                'NASDAQ': {'value': 13890.15, 'change': -25.40, 'change_percent': -0.18}
+            },
+            'currencies': {
+                'USDNOK': {'value': 10.45, 'change': 0.02},
+                'EURNOK': {'value': 11.28, 'change': -0.01}
             }
-        
-        # Get data for featured stocks
-        featured_stocks = ['EQNR', 'DNB', 'TEL']
-        featured_analysis = {}
-        
-        for stock in featured_stocks:
-            try:
-                comprehensive = get_stock_comprehensive_data(stock)
-                ai_analysis = get_ai_analysis(stock)
-                
-                # Add fallback data if empty responses
-                if not comprehensive:
-                    comprehensive = {
-                        'price_data': {'current_price': 280.50, 'change_percent': 1.2},
-                        'analyst_consensus': {'recommendation': 'Buy', 'target_price': 295.0},
-                        'technical_analysis': {'trend': 'Bullish', 'rsi': 65},
-                        'fundamentals': {'pe_ratio': 12.5, 'market_cap': '850B NOK'}
-                    }
-                
-                if not ai_analysis:
-                    ai_analysis = {
-                        'sentiment': 'Positive',
-                        'summary': f'Fundamental analysis indicates {stock} shows strong market position with solid fundamentals.',
-                        'risk_assessment': 'Medium',
-                        'recommendation': 'Hold'
-                    }
-                
-                featured_analysis[stock] = {
-                    'external': comprehensive,
-                    'ai': ai_analysis
-                }
-            except Exception as e:
-                logger.error(f"Error getting featured analysis for {stock}: {e}")
-                # Add fallback data for this stock
-                featured_analysis[stock] = {
-                    'external': {'price_data': {'current_price': 200.0, 'change_percent': 0.0}},
-                    'ai': {'sentiment': 'Neutral', 'summary': 'Data not available', 'recommendation': 'Hold'}
-                }
-                continue
+        }
         
         return render_template('external_data/market_intelligence.html',
                              market_overview=market_overview,
-                             featured_analysis=featured_analysis)
+                             data=intelligence_data,
+                             sector_data=sector_data)
                              
     except Exception as e:
         logger.error(f"Error in market intelligence: {e}")

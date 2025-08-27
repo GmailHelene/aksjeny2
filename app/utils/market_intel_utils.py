@@ -127,44 +127,69 @@ def get_analyst_coverage_data(real=False):
                 from app.services.external_data import external_data_service
                 if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
                     top_stocks = ['EQNR', 'DNB', 'TEL', 'AKER', 'MOWI']
-                    analyst_coverage = []
+                    analyst_coverage = {}
                     for symbol in top_stocks:
                         try:
                             analyst_data = external_data_service.get_norwegian_analyst_data(symbol)
                             consensus = analyst_data.get('consensus', {})
-                            analyst_coverage.append({
-                                'company': symbol,
-                                'symbol': symbol,
-                                'recommendation': consensus.get('rating', 'HOLD'),
-                                'firm': 'Konsensus',
-                                'date': '2025',
-                                'target_price': consensus.get('avg_target_price', 0),
-                                'num_analysts': consensus.get('num_analysts', 0)
-                            })
+                            analyst_coverage[symbol] = {
+                                'ratings': {
+                                    'consensus': consensus.get('rating', 'HOLD'),
+                                    'target_price': consensus.get('avg_target_price', 0),
+                                    'num_analysts': consensus.get('num_analysts', 0)
+                                },
+                                'consensus': {
+                                    'recommendation': consensus.get('rating', 'HOLD')
+                                },
+                                'technical': {
+                                    'trend': 'Neutral',
+                                    'support': None,
+                                    'resistance': None
+                                }
+                            }
                         except Exception as e:
-                            analyst_coverage.append({
-                                'company': symbol,
-                                'symbol': symbol,
-                                'recommendation': 'HOLD',
-                                'firm': 'N/A',
-                                'date': 'N/A',
-                                'target_price': 0,
-                                'num_analysts': 0
-                            })
+                            analyst_coverage[symbol] = {
+                                'ratings': {'consensus': 'HOLD', 'target_price': 0, 'num_analysts': 0},
+                                'consensus': {'recommendation': 'HOLD'},
+                                'technical': {'trend': 'Neutral', 'support': None, 'resistance': None}
+                            }
                     return analyst_coverage
                 else:
-                    return generate_demo_analyst_coverage()
+                    return generate_demo_analyst_coverage_dict()
             except ImportError:
                 # external_data service not available, return demo data
-                return generate_demo_analyst_coverage()
+                return generate_demo_analyst_coverage_dict()
             except Exception as e:
                 # Any other error, return demo data
-                return generate_demo_analyst_coverage()
+                return generate_demo_analyst_coverage_dict()
         else:
-            return generate_demo_analyst_coverage()
+            return generate_demo_analyst_coverage_dict()
     except Exception as e:
         # Fallback for any error
-        return generate_demo_analyst_coverage()
+        return generate_demo_analyst_coverage_dict()
+
+def generate_demo_analyst_coverage_dict():
+    """Generate demo analyst coverage data in dict format for template"""
+    demo_data = generate_demo_analyst_coverage()
+    result = {}
+    for item in demo_data:
+        symbol = item['symbol']
+        result[symbol] = {
+            'ratings': {
+                'consensus': item['recommendation'],
+                'target_price': item['target_price'],
+                'num_analysts': item.get('num_analysts', 8)
+            },
+            'consensus': {
+                'recommendation': item['recommendation']
+            },
+            'technical': {
+                'trend': 'Neutral',
+                'support': None,
+                'resistance': None
+            }
+        }
+    return result
 
 def generate_demo_analyst_coverage():
     """Generate demo analyst coverage data for non-authenticated users"""
