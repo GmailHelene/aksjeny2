@@ -228,14 +228,16 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        {% for item in data %}
-                        <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
-                            <h6>{{ item.title }}</h6>
-                            <p>{{ item.summary }}</p>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p>No market intelligence data available.</p>
+                        {% if data %}
+                            {% for item in data %}
+                            <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                <h6>{{ item.title }}</h6>
+                                <p>{{ item.summary }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No market intelligence data available.</p>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

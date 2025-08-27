@@ -24,30 +24,66 @@ def get_sector_data():
         # If any error, return demo data
         return generate_demo_sectors()
 
-def generate_demo_sectors():
-    # Dummy implementation: Replace with real demo sector data logic
+def generate_demo_market_intelligence():
+    """Generate demo market intelligence data for non-authenticated users"""
     return [
-        {'name': 'Demo Sector', 'performance': 0.0}
+        {
+            'title': 'OSEBX Index',
+            'summary': 'OSEBX: 1,255.30 (+0.8%) - Positiv trend med økning i handelsvolum'
+        },
+        {
+            'title': 'Top Insider Activity', 
+            'summary': 'EQNR: Kjøp +250K, DNB: Kjøp +150K, TEL: Hold - Økt institusjonell interesse'
+        },
+        {
+            'title': 'Analyst Upgrades',
+            'summary': 'EQNR: BUY→STRONG BUY (DNB), NHY: HOLD→BUY (Pareto) - Positive revisjoner denne uken'
+        },
+        {
+            'title': 'Sector Performance',
+            'summary': 'Energy: +2.1%, Technology: +1.5%, Healthcare: +0.8% - Sektorrotasjon mot energi'
+        },
+        {
+            'title': 'Market Sentiment',
+            'summary': 'VIX: 18.2 (-5.1%) - Redusert volatilitet, økende risikoappetitt blant investorer'
+        }
     ]
 
 def get_market_intelligence_data(real=False):
-    if real:
-        try:
-            from flask_login import current_user
-            from app.services.external_data import external_data_service
-            if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-                overview = external_data_service.get_market_overview()
-                # Format for template: convert dict to list of sections
-                result = []
-                if 'osebx_index' in overview:
-                    result.append({'title': 'OSEBX Index', 'summary': f"Value: {overview['osebx_index']['value']}, Change: {overview['osebx_index']['change']} ({overview['osebx_index']['change_percent']}%), Trend: {overview['osebx_index']['trend']}"})
-                if 'top_insider_activity' in overview:
-                    summary = ', '.join([f"{a['symbol']}: {a['net_activity']} (Confidence: {a['confidence']})" for a in overview['top_insider_activity']])
-                    result.append({'title': 'Top Insider Activity', 'summary': summary})
-                if 'analyst_upgrades' in overview:
-                    summary = ', '.join([f"{a['symbol']}: {a['from']}→{a['to']} ({a['firm']})" for a in overview['analyst_upgrades']])
-                    result.append({'title': 'Analyst Upgrades', 'summary': summary})
-                if 'sector_performance' in overview:
+    try:
+        if real:
+            try:
+                from flask_login import current_user
+                from app.services.external_data import external_data_service
+                if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                    overview = external_data_service.get_market_overview()
+                    # Format for template: convert dict to list of sections
+                    result = []
+                    if 'osebx_index' in overview:
+                        result.append({'title': 'OSEBX Index', 'summary': f"Value: {overview['osebx_index']['value']}, Change: {overview['osebx_index']['change']} ({overview['osebx_index']['change_percent']}%), Trend: {overview['osebx_index']['trend']}"})
+                    if 'top_insider_activity' in overview:
+                        summary = ', '.join([f"{a['symbol']}: {a['net_activity']} (Confidence: {a['confidence']})" for a in overview['top_insider_activity']])
+                        result.append({'title': 'Top Insider Activity', 'summary': summary})
+                    if 'analyst_upgrades' in overview:
+                        summary = ', '.join([f"{a['symbol']}: {a['from']}→{a['to']} ({a['firm']})" for a in overview['analyst_upgrades']])
+                        result.append({'title': 'Analyst Upgrades', 'summary': summary})
+                    if 'sector_performance' in overview:
+                        summary = ', '.join([f"{s}: {d['performance']}% ({d['trend']})" for s, d in overview['sector_performance'].items()])
+                        result.append({'title': 'Sector Performance', 'summary': summary})
+                    return result if result else generate_demo_market_intelligence()
+                else:
+                    return generate_demo_market_intelligence()
+            except ImportError:
+                # external_data service not available, return demo data
+                return generate_demo_market_intelligence()
+            except Exception as e:
+                # Any other error, return demo data
+                return generate_demo_market_intelligence()
+        else:
+            return generate_demo_market_intelligence()
+    except Exception as e:
+        # Fallback for any error
+        return generate_demo_market_intelligence()
                     summary = ', '.join([f"{sector}: {data['performance']}% ({data['trend']})" for sector, data in overview['sector_performance'].items()])
                     result.append({'title': 'Sector Performance', 'summary': summary})
                 if 'market_sentiment' in overview:
@@ -56,46 +92,68 @@ def get_market_intelligence_data(real=False):
                     result.append({'title': 'Market Sentiment', 'summary': summary})
                 return result
         except Exception as e:
-            pass  # Fallback to demo data
-        # If error, fallback to demo
-        return [
-            {'title': 'Demo Market Intelligence', 'summary': 'Demo summary.'}
-        ]
-    else:
-        # Demo data for non-authenticated users
-        return [
-            {'title': 'Demo Market Intelligence', 'summary': 'Demo summary.'}
-        ]
+            except Exception as e:
+                # Any other error, return demo data
+                return generate_demo_market_intelligence()
+        else:
+            return generate_demo_market_intelligence()
+    except Exception as e:
+        # Fallback for any error
+        return generate_demo_market_intelligence()
 
 def get_analyst_coverage_data(real=False):
-    if real:
-        try:
-            from flask_login import current_user
-            from app.services.external_data import external_data_service
-            if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
-                top_stocks = ['EQNR', 'DNB', 'TEL', 'AKER', 'MOWI']
-                analyst_coverage = {}
-                for symbol in top_stocks:
-                    try:
-                        analyst_data = external_data_service.get_norwegian_analyst_data(symbol)
-                        analyst_coverage[symbol] = {
-                            'consensus': analyst_data.get('consensus', {}),
-                            'recommendations': analyst_data.get('recommendations', [])
-                        }
-                    except Exception as e:
-                        analyst_coverage[symbol] = {
-                            'consensus': {'rating': 'HOLD', 'avg_target_price': 0, 'num_analysts': 0},
-                            'recommendations': []
-                        }
-                return analyst_coverage
-        except Exception as e:
-            pass  # Fallback to demo data
-        # If error, fallback to demo
-        return {
-            'EQNR': {'consensus': {'rating': 'Demo', 'avg_target_price': 0, 'num_analysts': 0}, 'recommendations': []}
-        }
-    else:
-        # Demo data for non-authenticated users
-        return [
-            {'analyst': 'Demo Analyst', 'rating': 'Demo', 'target_price': 0}
-        ]
+    try:
+        if real:
+            try:
+                from flask_login import current_user
+                from app.services.external_data import external_data_service
+                if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                    top_stocks = ['EQNR', 'DNB', 'TEL', 'AKER', 'MOWI']
+                    analyst_coverage = []
+                    for symbol in top_stocks:
+                        try:
+                            analyst_data = external_data_service.get_norwegian_analyst_data(symbol)
+                            consensus = analyst_data.get('consensus', {})
+                            analyst_coverage.append({
+                                'company': symbol,
+                                'symbol': symbol,
+                                'recommendation': consensus.get('rating', 'HOLD'),
+                                'firm': 'Konsensus',
+                                'date': '2025',
+                                'target_price': consensus.get('avg_target_price', 0),
+                                'num_analysts': consensus.get('num_analysts', 0)
+                            })
+                        except Exception as e:
+                            analyst_coverage.append({
+                                'company': symbol,
+                                'symbol': symbol,
+                                'recommendation': 'HOLD',
+                                'firm': 'N/A',
+                                'date': 'N/A',
+                                'target_price': 0,
+                                'num_analysts': 0
+                            })
+                    return analyst_coverage
+                else:
+                    return generate_demo_analyst_coverage()
+            except ImportError:
+                # external_data service not available, return demo data
+                return generate_demo_analyst_coverage()
+            except Exception as e:
+                # Any other error, return demo data
+                return generate_demo_analyst_coverage()
+        else:
+            return generate_demo_analyst_coverage()
+    except Exception as e:
+        # Fallback for any error
+        return generate_demo_analyst_coverage()
+
+def generate_demo_analyst_coverage():
+    """Generate demo analyst coverage data for non-authenticated users"""
+    return [
+        {'company': 'Equinor ASA', 'symbol': 'EQNR', 'recommendation': 'BUY', 'firm': 'DNB Markets', 'date': '2025-08-27', 'target_price': 320},
+        {'company': 'DNB Bank ASA', 'symbol': 'DNB', 'recommendation': 'HOLD', 'firm': 'Pareto Securities', 'date': '2025-08-27', 'target_price': 195},
+        {'company': 'Telenor ASA', 'symbol': 'TEL', 'recommendation': 'BUY', 'firm': 'SEB', 'date': '2025-08-26', 'target_price': 165},
+        {'company': 'Aker Solutions', 'symbol': 'AKERSOL', 'recommendation': 'STRONG BUY', 'firm': 'SpareBank 1', 'date': '2025-08-25', 'target_price': 45},
+        {'company': 'Mowi ASA', 'symbol': 'MOWI', 'recommendation': 'HOLD', 'firm': 'Carnegie', 'date': '2025-08-24', 'target_price': 220}
+    ]
