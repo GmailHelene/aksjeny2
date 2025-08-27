@@ -185,35 +185,68 @@
         <div class="tab-pane fade show active" id="overview" role="tabpanel">
             <div class="row">
                 <div class="col-lg-8">
-                    <!-- Price Chart -->
+                    <!-- Stock Header ...existing code... -->
+
+                    <!-- TradingView Chart Widget -->
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
-                            <h5 class="mb-0">Kursutvikling</h5>
-                            <div class="btn-group btn-group-sm mt-2" role="group">
-                                <button type="button" class="btn btn-outline-primary active" id="showBasicChart">
-                                    Grunnleggende
-                                </button>
-                                <button type="button" class="btn btn-outline-primary" id="showTradingViewChart">
-                                    TradingView
-                                </button>
+                            <h5 class="mb-0">
+                                <i class="bi bi-bar-chart me-2"></i>
+                                Avansert Chart - {{ ticker if ticker else 'Velg aksje' }}
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="tradingview_main_widget" style="height: 600px;">
+                                <div class="text-center p-5" id="loading-indicator">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Laster TradingView chart...</span>
+                                    </div>
+                                    <p class="text-muted mt-3">Laster TradingView chart...</p>
+                                    <small class="text-muted">Hvis chartet ikke laster, kan det skyldes ad blocker eller nettverksproblemer</small>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <!-- Basic Chart -->
-                            <div id="basicChartContainer" style="display: block;">
-                                <div id="chart-loading" class="text-center py-5">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Laster kursdata...</span>
-                                    </div>
-                                    <p class="mt-2 text-muted">Henter kursdata...</p>
+                    </div>
+
+                    <!-- Technical Analysis Widget -->
+                    <div class="row">
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Teknisk Analyse</h6>
                                 </div>
-                                <canvas id="priceChart" height="300" style="display: none;"></canvas>
-                                <div id="chart-fallback" class="text-center py-5" style="display: none;">
-                                    <div class="alert alert-info">
-                                        <i class="bi bi-info-circle"></i>
-                                        <strong>Kursgraf utilgjengelig</strong>
-                                        <p class="mb-0 mt-2">Tekniske data og kurshistorikk kan ikke lastes for øyeblikket.</p>
-                                        <small class="text-muted">Prøv å laste siden på nytt om noen minutter.</small>
+                                <div class="card-body p-0">
+                                    <div id="tradingview_technical_analysis" style="height: 350px;">
+                                        <div class="text-center p-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Laster teknisk analyse...</span>
+                                            </div>
+                                            <p class="text-muted mt-3">Laster teknisk analyse...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Markedsoversikt</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="tradingview_market_overview" style="height: 350px;">
+                                        <div class="text-center p-4">
+                                            <i class="bi bi-graph-up text-primary mb-2" style="font-size: 2rem;"></i>
+                                            <h6>Markedsoversikt</h6>
+                                            <p class="text-muted small">Laster markeds-indikatorer...</p>
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Laster...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                                     </div>
                                 </div>
                             </div>

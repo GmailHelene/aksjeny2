@@ -160,7 +160,8 @@ def create():
                             alert_type=alert_type,
                             company_name=company_name or f"Stock {symbol}",
                             notes=notes,
-                            is_active=True
+                            is_active=True,
+                            browser_enabled=bool(request.form.get('browser_enabled', False))
                         )
                         
                         db.session.add(alert)

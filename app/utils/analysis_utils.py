@@ -1,7 +1,18 @@
 def get_stock_data(ticker):
-    # Dummy implementation: Replace with real data fetching logic
+    # Hent aksjedata fra API
     if ticker:
-        return {'ticker': ticker, 'price': 100.0, 'name': 'Demo Stock'}
+        try:
+            import requests
+            response = requests.get(f'http://localhost:5000/stocks/quick-prices?tickers={ticker}', timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success') and 'data' in data:
+                    stock = data['data'].get(ticker)
+                    if stock:
+                        stock['ticker'] = ticker
+                        return stock
+        except Exception as api_error:
+            pass
     return None
 
 def generate_demo_data(ticker):

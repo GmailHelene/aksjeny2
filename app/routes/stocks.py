@@ -1933,35 +1933,38 @@ def compare():
                 data_service = None
 
             # Process each symbol
-            for symbol in symbols:
-                try:
-                    # Get stock info and historical data
-                    if data_service:
-                        info = data_service.get_stock_info(symbol)
-                        hist_data = data_service.get_stock_data(symbol, period=period, interval=interval)
+            import requests
+            try:
+                response = requests.get(f'http://localhost:5000/stocks/quick-prices?tickers={"%2C".join(symbols)}', timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('success') and 'data' in data:
+                        for symbol in symbols:
+                            stock = data['data'].get(symbol)
+                            if stock:
+                                chart_data[symbol] = [{
+                                    'date': '',
+                                    'open': stock.get('price', 0),
+                                    'high': stock.get('price', 0),
+                                    'low': stock.get('price', 0),
+                                    'close': stock.get('price', 0),
+                                    'volume': stock.get('volume', 0)
+                                }]
+                                ticker_names[symbol] = symbol
+                            else:
+                                chart_data[symbol] = generate_demo_data(symbol, 180)
+                                ticker_names[symbol] = symbol
                     else:
-                        info = None
-                        hist_data = None
-                        
-                    # Use demo data if no real data available
-                    if not info or not hist_data or hist_data.empty:
+                        for symbol in symbols:
+                            chart_data[symbol] = generate_demo_data(symbol, 180)
+                            ticker_names[symbol] = symbol
+                else:
+                    for symbol in symbols:
                         chart_data[symbol] = generate_demo_data(symbol, 180)
                         ticker_names[symbol] = symbol
-                    else:
-                        chart_data[symbol] = [
-                            {
-                                'date': idx.strftime('%Y-%m-%d'),
-                                'open': float(row.get('Open', 0)),
-                                'high': float(row.get('High', 0)),
-                                'low': float(row.get('Low', 0)),
-                                'close': float(row.get('Close', 0)),
-                                'volume': int(row.get('Volume', 0))
-                            }
-                            for idx, row in hist_data.iterrows()
-                        ]
-                        ticker_names[symbol] = info.get('name', symbol)
-                except Exception as e:
-                    logger.error(f"Error processing {symbol}: {e}")
+            except Exception as e:
+                logger.error(f"Error fetching quick prices: {e}")
+                for symbol in symbols:
                     chart_data[symbol] = generate_demo_data(symbol, 180)
                     ticker_names[symbol] = symbol
 

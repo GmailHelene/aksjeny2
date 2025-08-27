@@ -1,0 +1,2 @@
+[console_scripts]
+aksjeradar = run:app

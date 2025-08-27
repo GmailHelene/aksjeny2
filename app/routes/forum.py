@@ -91,7 +91,30 @@ def create():
 @forum.route('/create_topic', methods=['GET', 'POST'])
 @login_required
 def create_topic():
-    return create()
+    from flask_wtf import FlaskForm
+    from wtforms import StringField, TextAreaField
+    from wtforms.validators import DataRequired
+    class TopicForm(FlaskForm):
+        title = StringField('Tittel', validators=[DataRequired()])
+        content = TextAreaField('Innhold', validators=[DataRequired()])
+    form = TopicForm()
+    if form.validate_on_submit():
+        try:
+            from app.models.forum import ForumPost
+            post = ForumPost(
+                title=form.title.data,
+                content=form.content.data,
+                user_id=current_user.id,
+                author_id=current_user.id
+            )
+            db.session.add(post)
+            db.session.commit()
+            flash('Innlegg opprettet!', 'success')
+            return redirect(url_for('forum.index'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Kunne ikke opprette innlegg: {str(e)}', 'error')
+    return render_template('forum/create_topic.html', form=form)
 
 @forum.route('/category/<category_name>')
 def category(category_name):
