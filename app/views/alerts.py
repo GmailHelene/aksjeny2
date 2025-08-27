@@ -41,7 +41,7 @@ def price_alert_create():
             alert = PriceAlert(
                 user_id=current_user.id,
                 ticker=ticker,
-                target_price=float(price),
+                price_threshold=float(price),
                 alert_type=request.form.get('alert_type', 'above'),
                 email_enabled=True,
                 active=True

@@ -5,12 +5,17 @@ def get_sector_data():
         # If user is authenticated, fetch real sector data from API
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
             try:
-                # Hent sektordata fra API
-                response = requests.get('http://localhost:5000/market/sectors', timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get('success') and 'sectors' in data:
-                        return data['sectors']
+                from app.services.external_data import external_data_service
+                overview = external_data_service.get_market_overview()
+                if 'sector_performance' in overview:
+                    sectors = []
+                    for sector, data in overview['sector_performance'].items():
+                        sectors.append({
+                            'name': sector.title(),
+                            'performance': data['performance'],
+                            'trend': data['trend']
+                        })
+                    return sectors
             except Exception as api_error:
                 pass  # Faller tilbake til demo-data
         # Non-authenticated users eller feil gir demo-data
@@ -27,10 +32,34 @@ def generate_demo_sectors():
 
 def get_market_intelligence_data(real=False):
     if real:
-        # TODO: Replace with real market intelligence data fetching logic
+        try:
+            from flask_login import current_user
+            from app.services.external_data import external_data_service
+            if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                overview = external_data_service.get_market_overview()
+                # Format for template: convert dict to list of sections
+                result = []
+                if 'osebx_index' in overview:
+                    result.append({'title': 'OSEBX Index', 'summary': f"Value: {overview['osebx_index']['value']}, Change: {overview['osebx_index']['change']} ({overview['osebx_index']['change_percent']}%), Trend: {overview['osebx_index']['trend']}"})
+                if 'top_insider_activity' in overview:
+                    summary = ', '.join([f"{a['symbol']}: {a['net_activity']} (Confidence: {a['confidence']})" for a in overview['top_insider_activity']])
+                    result.append({'title': 'Top Insider Activity', 'summary': summary})
+                if 'analyst_upgrades' in overview:
+                    summary = ', '.join([f"{a['symbol']}: {a['from']}→{a['to']} ({a['firm']})" for a in overview['analyst_upgrades']])
+                    result.append({'title': 'Analyst Upgrades', 'summary': summary})
+                if 'sector_performance' in overview:
+                    summary = ', '.join([f"{sector}: {data['performance']}% ({data['trend']})" for sector, data in overview['sector_performance'].items()])
+                    result.append({'title': 'Sector Performance', 'summary': summary})
+                if 'market_sentiment' in overview:
+                    sentiment = overview['market_sentiment']
+                    summary = f"Overall: {sentiment['overall']}, Fear/Greed: {sentiment['fear_greed_index']}, Volatility: {sentiment['volatility_index']}"
+                    result.append({'title': 'Market Sentiment', 'summary': summary})
+                return result
+        except Exception as e:
+            pass  # Fallback to demo data
+        # If error, fallback to demo
         return [
-            {'title': 'Global Market Trends', 'summary': 'Markets are up 2% this week.'},
-            {'title': 'Sector Rotation', 'summary': 'Investors moving from tech to healthcare.'}
+            {'title': 'Demo Market Intelligence', 'summary': 'Demo summary.'}
         ]
     else:
         # Demo data for non-authenticated users
@@ -40,11 +69,31 @@ def get_market_intelligence_data(real=False):
 
 def get_analyst_coverage_data(real=False):
     if real:
-        # TODO: Replace with real analyst coverage data fetching logic
-        return [
-            {'analyst': 'John Doe', 'rating': 'Buy', 'target_price': 150},
-            {'analyst': 'Jane Smith', 'rating': 'Hold', 'target_price': 120}
-        ]
+        try:
+            from flask_login import current_user
+            from app.services.external_data import external_data_service
+            if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                top_stocks = ['EQNR', 'DNB', 'TEL', 'AKER', 'MOWI']
+                analyst_coverage = {}
+                for symbol in top_stocks:
+                    try:
+                        analyst_data = external_data_service.get_norwegian_analyst_data(symbol)
+                        analyst_coverage[symbol] = {
+                            'consensus': analyst_data.get('consensus', {}),
+                            'recommendations': analyst_data.get('recommendations', [])
+                        }
+                    except Exception as e:
+                        analyst_coverage[symbol] = {
+                            'consensus': {'rating': 'HOLD', 'avg_target_price': 0, 'num_analysts': 0},
+                            'recommendations': []
+                        }
+                return analyst_coverage
+        except Exception as e:
+            pass  # Fallback to demo data
+        # If error, fallback to demo
+        return {
+            'EQNR': {'consensus': {'rating': 'Demo', 'avg_target_price': 0, 'num_analysts': 0}, 'recommendations': []}
+        }
     else:
         # Demo data for non-authenticated users
         return [

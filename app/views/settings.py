@@ -52,21 +52,13 @@ def delete_price_alert():
 def settings():
     """Display user settings page"""
     try:
-        # Create default settings object if UserSettings doesn't exist
-        user_settings = {
-            'email_notifications': True,
-            'sms_notifications': False,
-            'push_notifications': False,
-            'newsletter': True
-        }
-        # Try to get actual settings if model exists
-        try:
-            from app.models import UserSettings
-            settings_obj = UserSettings.query.filter_by(user_id=current_user.id).first()
-            if settings_obj:
-                user_settings = settings_obj
-        except:
-            pass  # Use default settings if model doesn't exist
+        from app.models import UserSettings
+        settings_obj = UserSettings.query.filter_by(user_id=current_user.id).first()
+        if not settings_obj:
+            from flask import current_app
+            current_app.logger.error(f"UserSettings missing for user {current_user.id}")
+            flash('Innstillinger mangler for denne brukeren. Kontakt support.', 'error')
+            return redirect(url_for('index'))
         # Fetch user's price alerts
         try:
             from app.models.price_alert import PriceAlert
@@ -75,7 +67,7 @@ def settings():
             price_alerts = []
         return render_template('settings/settings.html', 
                              user=current_user,
-                             settings=user_settings,
+                             settings=settings_obj,
                              price_alerts=price_alerts)
     except Exception as e:
         from flask import current_app
