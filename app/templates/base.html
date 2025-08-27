@@ -537,7 +537,7 @@
 </head>
 <body>
     <!-- Complex Navigation Bar - 6 dropdowns, 60+ items -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 <i class="fas fa-chart-line me-2"></i>AksjeRadar
@@ -546,145 +546,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                {% if current_user.is_authenticated %}
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fas fa-home"></i> Hjem</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('stocks.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-chart-bar"></i> Aksjer
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.index') }}"><i class="fas fa-chart-bar"></i> Oversikt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Aksjer & Markets</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_oslo') }}"><i class="fas fa-flag"></i> Oslo Børs</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.global_list') }}"><i class="fas fa-globe"></i> Globale aksjer</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Kryptovaluta</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_crypto') }}"><i class="fab fa-bitcoin"></i> Kryptovalutaer</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.crypto_dashboard') }}"><i class="fas fa-chart-line"></i> Crypto Dashboard</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.list_currency') }}"><i class="fas fa-dollar-sign"></i> Valuta</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.prices') }}"><i class="fas fa-dollar-sign"></i> Aksjekurser</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.search') }}"><i class="fas fa-search"></i> Søk aksjer</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}"><i class="fas fa-arrows-alt"></i> Sammenlign aksjer</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('analysis.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-brain"></i> Analyse
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.ai') }}"><i class="fas fa-robot"></i> AI Analyser</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Markedsoversikt</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.market_overview') }}"><i class="fas fa-pie-chart"></i> Markedsoversikt</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.oslo_overview') }}"><i class="fas fa-flag"></i> Oslo Børs Oversikt</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.global_overview') }}"><i class="fas fa-globe"></i> Global Oversikt</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.currency_overview') }}"><i class="fas fa-dollar-sign"></i> Valuta Oversikt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Teknisk Analyse</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}"><i class="fas fa-chart-line"></i> Teknisk analyse</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.fundamental') }}"><i class="fas fa-calculator"></i> Fundamental analyse</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.sentiment') }}"><i class="fas fa-smile"></i> Sentiment analyse</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Investeringsstrategier</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.warren_buffett') }}"><i class="fas fa-user-tie"></i> Warren Buffett</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.benjamin_graham') }}"><i class="fas fa-book"></i> Benjamin Graham</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Verktøy & Screening</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.screener') }}"><i class="fas fa-filter"></i> Aksje-screener</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.strategy_builder') }}"><i class="fas fa-tools"></i> Strategibygger</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.tradingview') }}"><i class="fas fa-chart-line"></i> TradingView</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Anbefalinger & Prediksjoner</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}"><i class="fas fa-crystal-ball"></i> Prediksjoner</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}"><i class="fas fa-chart-bar"></i> Short analyse</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('market_intel.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-bolt"></i> Market Intel
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.index') }}"><i class="fas fa-info-circle"></i> Oversikt</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.insider_trading') }}"><i class="fas fa-user-secret"></i> Insider Trading Analysis</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.earnings_calendar') }}"><i class="fas fa-calendar-alt"></i> Resultatkalender</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.sector_analysis') }}"><i class="fas fa-project-diagram"></i> Sektoranalyse</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('market_intel.economic_indicators') }}"><i class="fas fa-chart-line"></i> Økonomiske indikatorer</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Nyheter & Intelligence</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('news_bp.index') }}"><i class="fas fa-newspaper"></i> Finansnyheter</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('features.market_news_sentiment') }}"><i class="fas fa-smile"></i> Market News Sentiment</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('daily_view.index') }}"><i class="fas fa-calendar-day"></i> Dagens marked</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('sentiment_tracker.sentiment_tracker_page') }}"><i class="fas fa-smile"></i> Sentiment Tracker</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Norge</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.index') }}"><i class="fas fa-flag"></i> Norge Oversikt</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.social_sentiment') }}"><i class="fas fa-comments"></i> Sosial sentiment</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.oil_correlation') }}"><i class="fas fa-oil-can"></i> Olje-korrelasjon</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('norwegian_intel.shipping_intelligence') }}"><i class="fas fa-ship"></i> Shipping Intelligence</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('external_data.market_intelligence') }}"><i class="fas fa-cloud-download-alt"></i> Ekstern Data</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('external_data.analyst_coverage') }}"><i class="fas fa-users"></i> Analytiker Dekning</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('pro_tools.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-tools"></i> Pro Tools
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('pro_tools.price_alerts') }}"><i class="fas fa-bell"></i> Prisalarmer</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('features.analyst_recommendations') }}"><i class="fas fa-users"></i> Analytiker Anbefalinger</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">Avanserte Verktøy</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}"><i class="fas fa-chart-line"></i> Advanced Analytics</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_features.currency_converter') }}"><i class="fas fa-exchange-alt"></i> Valutakonverter</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('investment_analyzer.index') }}"><i class="fas fa-calculator"></i> Investment Analyzer</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('mobile_trading.mobile_dashboard') }}"><i class="fas fa-mobile-alt"></i> Mobile Trading</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-briefcase"></i> Portfolio
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.index') }}"><i class="fas fa-eye"></i> Avansert Watchlist</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.stock_tips') }}"><i class="fas fa-lightbulb"></i> Aksjetips</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.advanced') }}"><i class="fas fa-cogs"></i> Avansert portfolio</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('advanced_analytics.index') }}"><i class="fas fa-robot"></i> ML Analytics</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> Konto
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user-cog"></i> Profil</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('my_subscription') }}">Mitt Abonnement</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.settings') }}"><i class="fas fa-cog"></i> Kontoinnstillinger</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('notifications.settings') }}"><i class="fas fa-bell"></i> Varsler</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.privacy') }}"><i class="fas fa-shield-alt"></i> Personvern</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.help') }}"><i class="fas fa-question-circle"></i> Hjelp</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.contact') }}"><i class="fas fa-envelope"></i> Kontakt oss</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logg ut</a></li>
-                        </ul>
-                    </li>
-                </ul>
-                {% else %}
-                <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
                 <ul class="navbar-nav ms-auto">
+                    <!-- LIMITED NAVIGATION FOR NON-AUTHENTICATED USERS -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.demo') }}">
                             <i class="bi bi-play-circle"></i> Demo
@@ -706,15 +569,11 @@
                         </a>
                     </li>
                 </ul>
-                {% endif %}
                 
                 <!-- Language Toggle Button -->
                 <div class="navbar-nav ms-auto">
                     {{ get_language_toggle_html() | safe }}
                 </div>
-            </div>
-        </div>
-    </nav>
             </div>
         </div>
     </nav>
@@ -967,6 +826,147 @@
                     autohide: true,
                     delay: 3000
                 });
+                toast.show();
+            };
+            };
+        }
+        
+        // Override any global showErrorAlert functions
+        if (window.showErrorAlert) {
+            const originalShowErrorAlert = window.showErrorAlert;
+            window.showErrorAlert = function(message) {
+                if (typeof message === 'string' && 
+                    (message.includes('teknisk feil') || 
+                     message.includes('En teknisk feil oppsto') ||
+                     message.includes('Det oppstod en teknisk feil'))) {
+                    console.warn('Technical error alert suppressed:', message);
+                    return;
+                }
+                originalShowErrorAlert.call(this, message);
+            };
+        }
+        
+        // Global error handler to prevent unhandled errors from showing to users
+        window.addEventListener('error', function(e) {
+            if (e.message && typeof e.message === 'string' && 
+                (e.message.includes('teknisk feil') || 
+                 e.message.includes('En teknisk feil oppsto'))) {
+                console.warn('Technical error suppressed:', e.message);
+                e.preventDefault();
+                return true;
+            }
+        });
+        
+        console.log('✅ Global error suppression system initialized');
+    });
+    </script>
+    
+    <!-- Achievement Tracking System -->
+    {% if current_user.is_authenticated %}
+    <script>
+        // Make achievementTracking.trackAchievement available globally
+        window.trackAchievement = achievementTracking.trackAchievement.bind(achievementTracking);
+        
+        // Track page visits for analytics
+        if (window.location.pathname.includes('/analysis/')) {
+            window.trackAchievement('page_visits');
+        }
+    </script>
+    {% endif %}
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('{{ url_for("static", filename="sw.js") }}')
+                .then(function(registration) {
+                    console.log('ServiceWorker registered: ', registration);
+                })
+                .catch(function(error) {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        });
+    }
+    </script>
+    
+    <!-- Portfolio and Favorites JavaScript -->
+    <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/watchlist-fix.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- GDPR Cookie Banner -->
+    {% include 'shared/cookie_banner.html' %}
+    
+    <!-- Translation system -->
+<script>
+// Translation system
+const translations = {
+    'no': {
+        // Norwegian to English translations
+        'Hjem': 'Home',
+        'Aksjer': 'Stocks',
+        'Analyse': 'Analysis',
+        'Portefølje': 'Portfolio',
+        'Forum': 'Forum',
+        'Pro Tools': 'Pro Tools',
+        'Konto': 'Account',
+        // Add more translations as needed
+    },
+    'en': {
+        // English to Norwegian translations (reverse)
+        'Home': 'Hjem',
+        'Stocks': 'Aksjer',
+        'Analysis': 'Analyse',
+        'Portfolio': 'Portefølje',
+        'Forum': 'Forum',
+        'Pro Tools': 'Pro Tools',
+        'Account': 'Konto',
+    }
+};
+
+
+
+</html></body></script>
+function translatePage(targetLang) {
+    const dict = translations[targetLang] || translations['no'];
+    
+    // Translate all text nodes
+    document.querySelectorAll('*').forEach(element => {
+        if (element.childNodes.length =
+            const text = element.textContent.trim();
+            if (dict[text]) {
+                element.textContent = dict[text];
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const langToggle = document.getElementById('language-toggle');
+    if (langToggle) {
+        langToggle.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default link behavior
+            const currentLang = localStorage.getItem('lang') || 'no';
+            const newLang = currentLang === 'en' ? 'no' : 'en';
+            localStorage.setItem('lang', newLang);
+            translatePage(newLang);
+            this.textContent = newLang === 'en' ? 'Norsk' : 'English';
+            return false; // Prevent page jump
+        });
+    }
+    
+    // Apply saved language on page load
+    const savedLang = localStorage.getItem('lang') || 'no';
+    if (savedLang === 'en') {
+        translatePage('en');
+        if (langToggle) langToggle.textContent = 'Norsk';
+    }
+});
+</script>
+</body>
+</html>
                 toast.show();
             };
             };

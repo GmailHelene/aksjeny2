@@ -29,14 +29,20 @@
     color: white !important;
 }
 
- .bg-primary .h5:not(.dropdown-item):not(.nav-link) {
- color: #000000 !important;
+.bg-primary .h5:not(.dropdown-item):not(.nav-link) {
+    color: #000000 !important;
 }
 
-/* Override for .alert-warning banners */
+/* Override for .alert-warning banners - Updated color */
 .alert-warning {
-    background-color: #0d47a1 !important;
+    background-color: #379b84 !important;
     color: white !important;
+    border-color: #2d7d6a !important;
+}
+
+.alert-warning a {
+    color: #fff !important;
+    text-decoration: underline;
 }
 
 /* Override for .intelligence-header */

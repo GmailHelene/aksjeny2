@@ -732,3 +732,17 @@ def register_template_filters(app):
                 return f"{value:,.0f}"
         except (ValueError, TypeError):
             return str(value) if value is not None else "—"
+
+# Import views at the end of the file
+from app.views import (
+    main,
+    auth,
+    stocks,
+    analysis,
+    portfolio,
+    forum,
+    admin,
+    settings,  # Add this
+    advanced_analytics,  # Add this
+    subscription  # Add this if not already there
+)
