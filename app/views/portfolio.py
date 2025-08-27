@@ -4,7 +4,7 @@ from app.extensions import db
 from app.models.portfolio import Portfolio
 from app.models.stock import Stock
 
-portfolio_bp = Blueprint('portfolio', __name__)
+portfolio_bp = Blueprint('portfolio_bp', __name__)
 
 @portfolio_bp.route('/portfolio/<int:portfolio_id>/add', methods=['GET', 'POST'])
 @login_required
