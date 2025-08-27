@@ -16,6 +16,9 @@ def get_sector_data():
                             'trend': data['trend']
                         })
                     return sectors
+            except ImportError:
+                # external_data service not available, return demo data
+                pass
             except Exception as api_error:
                 pass  # Faller tilbake til demo-data
         # Non-authenticated users eller feil gir demo-data

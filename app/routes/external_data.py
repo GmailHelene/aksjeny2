@@ -9,8 +9,9 @@ try:
         get_market_sentiment,
         external_data_service
     )
-except ImportError:
+except ImportError as e:
     # Fallback dummy functions if service not available
+    print(f"Warning: external_data service not available: {e}")
     def get_stock_comprehensive_data(symbol):
         return {}
     def get_insider_trading_data(symbol):

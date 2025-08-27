@@ -1273,13 +1273,16 @@ def my_subscription():
             }
         else:
             # Always use StripeService for real subscription data
-            from app.services.external_data import external_data_service
             try:
+                from app.services.external_data import external_data_service
                 stripe_service = external_data_service.stripe_service if hasattr(external_data_service, 'stripe_service') else None
                 if stripe_service:
                     sub_status = stripe_service.get_subscription_status(current_user)
                 else:
                     sub_status = None
+            except ImportError:
+                logger.warning("external_data_service not available, using fallback")
+                sub_status = None
             except Exception as e:
                 logger.error(f"StripeService error: {e}")
                 sub_status = None
