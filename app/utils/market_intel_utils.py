@@ -19,3 +19,29 @@ def generate_demo_sectors():
     return [
         {'name': 'Demo Sector', 'performance': 0.0}
     ]
+
+def get_market_intelligence_data(real=False):
+    if real:
+        # TODO: Replace with real market intelligence data fetching logic
+        return [
+            {'title': 'Global Market Trends', 'summary': 'Markets are up 2% this week.'},
+            {'title': 'Sector Rotation', 'summary': 'Investors moving from tech to healthcare.'}
+        ]
+    else:
+        # Demo data for non-authenticated users
+        return [
+            {'title': 'Demo Market Intelligence', 'summary': 'Demo summary.'}
+        ]
+
+def get_analyst_coverage_data(real=False):
+    if real:
+        # TODO: Replace with real analyst coverage data fetching logic
+        return [
+            {'analyst': 'John Doe', 'rating': 'Buy', 'target_price': 150},
+            {'analyst': 'Jane Smith', 'rating': 'Hold', 'target_price': 120}
+        ]
+    else:
+        # Demo data for non-authenticated users
+        return [
+            {'analyst': 'Demo Analyst', 'rating': 'Demo', 'target_price': 0}
+        ]
