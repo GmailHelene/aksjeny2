@@ -295,7 +295,7 @@ def create_app(config_class=None):
     from app.views.profile import init_profile_routes
     init_profile_routes(app)
     # Do the same for other views if needed
-    from app.views.external_data import *
+    import app.views.external_data
     return app
 
 def register_blueprints(app):
