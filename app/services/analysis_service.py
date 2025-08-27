@@ -214,6 +214,24 @@ class AnalysisService:
                 'sma50': 385.2,
                 'sma200': 380.1
             },
+                'GOOGL': {
+                    'last_price': 2750.5,
+                    'change': 15.2,
+                    'change_percent': 0.56,
+                    'signal': 'KJØP',
+                    'signal_reason': 'RSI (47.3) er i nøytral sone • MACD (2.7) er over signallinje (2.1), som indikerer bullish momentum',
+                    'overall_signal': 'BUY',
+                    'rsi': 47.3,
+                    'macd': 2.7,
+                    'macd_signal': 2.1,
+                    'volume': 1800000,
+                    'avg_volume': 1700000,
+                    'support': 2700.0,
+                    'resistance': 2800.0,
+                    'sma20': 2740.2,
+                    'sma50': 2735.5,
+                    'sma200': 2705.8
+                },
             'AMZN': {
                 'last_price': 178.9,
                 'change': -0.80,

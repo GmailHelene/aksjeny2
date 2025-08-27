@@ -1891,28 +1891,33 @@ class DataService:
             # Major US tech stocks
             base_price = random.uniform(100, 400)
             sector = 'Technology'
+               exchange = 'NASDAQ'
         else:
             base_price = random.uniform(20, 200)
             sector = 'Diverse'
+               exchange = 'NYSE'
         
         # Generate realistic metrics
         change = random.uniform(-0.05, 0.05) * base_price
         change_percent = (change / base_price) * 100
         
         return {
-            'ticker': ticker,
-            'name': ticker.replace('.OL', ' ASA').replace('_', ' '),
-            'last_price': round(base_price, 2),
-            'change': round(change, 2),
-            'change_percent': round(change_percent, 2),
-            'volume': random.randint(100000, 5000000),
-            'sector': sector,
-            'data_source': 'Enhanced Fallback Data',
-            'signal': 'HOLD',
-            'rsi': 50.0 + random.uniform(-25, 25),
-            'market_cap': base_price * random.randint(1000000, 10000000),
-            'timestamp': datetime.now().isoformat()
-        }
+                'ticker': ticker,
+                'symbol': ticker,
+                'name': ticker.replace('.OL', ' ASA').replace('_', ' '),
+                'price': round(base_price, 2),
+                'last_price': round(base_price, 2),
+                'change': round(change, 2),
+                'change_percent': round(change_percent, 2),
+                'volume': random.randint(100000, 5000000),
+                'sector': sector,
+                'exchange': exchange,
+                'data_source': 'Enhanced Fallback Data',
+                'signal': 'HOLD',
+                'rsi': 50.0 + random.uniform(-25, 25),
+                'market_cap': base_price * random.randint(1000000, 10000000),
+                'timestamp': datetime.now().isoformat()
+            }
 
     @staticmethod
     def _get_company_name(ticker):
