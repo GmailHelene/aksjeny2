@@ -176,7 +176,7 @@ function handleApiError(error, context = '') {
 
 // Auto-run tests if this script is loaded directly (Node.js)
 if (require.main === module) {
-    const baseUrl = process.argv[2] || 'http://localhost:5000';
+    const baseUrl = process.argv[2] || 'http://localhost:5002';
     console.log(`🎯 Testing Aksjeradar endpoints at: ${baseUrl}`);
     console.log('=====================================');
     

@@ -17,7 +17,7 @@ from flask import url_for
 from app import create_app
 
 class EndpointTester:
-    def __init__(self, base_url: str = "http://localhost:5000"):
+    def __init__(self, base_url: str = "http://localhost:5002"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.session.headers.update({
@@ -530,8 +530,8 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Test all Aksjeradar endpoints')
-    parser.add_argument('--url', default='http://localhost:5000', 
-                       help='Base URL to test (default: http://localhost:5000)')
+    parser.add_argument('--url', default='http://localhost:5002', 
+                       help='Base URL to test (default: http://localhost:5002)')
     parser.add_argument('--output', default='endpoint_test_results.json',
                        help='Output file for detailed results')
     

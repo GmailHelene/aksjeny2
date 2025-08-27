@@ -73,7 +73,7 @@ def login():
     })
 
 if __name__ == '__main__':
-    print("🚀 Starter enkel test-server på http://localhost:5000")
+    print("🚀 Starter enkel test-server på http://localhost:5002")
     print("📋 Tilgjengelige endepunkter:")
     print("   - /")
     print("   - /demo")

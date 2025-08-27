@@ -4,7 +4,7 @@
  */
 
 class AksjeradarSystemTest {
-    constructor(baseUrl = 'http://localhost:5000') {
+    constructor(baseUrl = 'http://localhost:5002') {
         this.baseUrl = baseUrl;
         this.results = [];
         this.errors = [];
@@ -321,7 +321,7 @@ class AksjeradarSystemTest {
 
 // Auto-run hvis dette scriptet kjøres direkte
 if (require.main === module) {
-    const baseUrl = process.argv[2] || 'http://localhost:5000';
+    const baseUrl = process.argv[2] || 'http://localhost:5002';
     const tester = new AksjeradarSystemTest(baseUrl);
     
     tester.runCompleteTest()

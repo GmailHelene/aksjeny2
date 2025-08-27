@@ -14,7 +14,7 @@ from pathlib import Path
 import json
 
 class AksjeradarProductionTester:
-    def __init__(self, base_url="http://localhost:5000"):
+    def __init__(self, base_url="http://localhost:5002"):
         self.base_url = base_url
         self.test_results = {
             'files': [],
@@ -391,7 +391,7 @@ class AksjeradarProductionTester:
 
 def main():
     """Main test runner"""
-    base_url = "http://localhost:5000"
+    base_url = "http://localhost:5002"
     
     # Check if server is running
     try:

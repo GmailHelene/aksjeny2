@@ -199,7 +199,7 @@ def main():
         
         print("\n📝 NESTE STEG:")
         print("1. Start appen: python run.py")
-        print("2. Test i nettleser: http://localhost:5000")
+        print("2. Test i nettleser: http://localhost:5002")
         print("3. Kjør full test: python test_alle_rettelser.py")
         
     else:

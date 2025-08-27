@@ -27,4 +27,4 @@ export FLASK_ENV=development
 python app.py &
 
 echo "✅ Flask application restarted!"
-echo "🌐 Application should be available at http://localhost:5000"
+echo "🌐 Application should be available at http://localhost:5002"

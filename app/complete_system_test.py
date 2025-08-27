@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 class SystemTester:
-    def __init__(self, base_url="http://localhost:5000"):
+    def __init__(self, base_url="http://localhost:5002"):
         self.base_url = base_url
         self.session = requests.Session()
         self.test_results = {}

@@ -1934,8 +1934,11 @@ def compare():
 
             # Process each symbol
             import requests
+            from flask import current_app
             try:
-                response = requests.get(f'http://localhost:5000/stocks/quick-prices?tickers={"%2C".join(symbols)}', timeout=5)
+                # Use dynamic port from config or fallback to correct port
+                port = getattr(current_app.config, 'PORT', 5002)
+                response = requests.get(f'http://localhost:{port}/stocks/quick-prices?tickers={"%2C".join(symbols)}', timeout=5)
                 if response.status_code == 200:
                     data = response.json()
                     if data.get('success') and 'data' in data:

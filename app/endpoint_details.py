@@ -20,7 +20,7 @@ def test_endpoint_details():
     
     for route in routes:
         try:
-            response = requests.get(f"http://localhost:5000{route}", timeout=5)
+            response = requests.get(f"http://localhost:5002{route}", timeout=5)
             print(f"\n🔍 {route}:")
             print(f"   Status: {response.status_code}")
             print(f"   Headers: {dict(response.headers)}")

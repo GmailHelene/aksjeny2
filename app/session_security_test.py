@@ -18,7 +18,7 @@ def test_security_headers():
     
     try:
         # Test with a simple GET request to the home page
-        response = requests.get('http://localhost:5000/', timeout=10)
+        response = requests.get('http://localhost:5002/', timeout=10)
         
         headers_to_check = {
             'X-Content-Type-Options': 'nosniff',
@@ -46,7 +46,7 @@ def test_security_headers():
         
     except requests.exceptions.RequestException as e:
         print(f"❌ Failed to test security headers: {e}")
-        print("💡 Make sure the app is running on http://localhost:5000")
+        print("💡 Make sure the app is running on http://localhost:5002")
         return False
 
 def test_cookie_security():
@@ -58,7 +58,7 @@ def test_cookie_security():
         session = requests.Session()
         
         # Try to access a page that sets cookies
-        response = session.get('http://localhost:5000/', timeout=10)
+        response = session.get('http://localhost:5002/', timeout=10)
         
         print(f"Response Status: {response.status_code}")
         
@@ -91,7 +91,7 @@ def test_csrf_protection():
         session = requests.Session()
         
         # Get the login page to retrieve CSRF token
-        response = session.get('http://localhost:5000/login', timeout=10)
+        response = session.get('http://localhost:5002/login', timeout=10)
         
         if response.status_code == 200:
             print("✅ Login page accessible")
@@ -102,7 +102,7 @@ def test_csrf_protection():
                 'password': 'testpassword'
             }
             
-            response = session.post('http://localhost:5000/login', 
+            response = session.post('http://localhost:5002/login', 
                                   data=login_data, 
                                   timeout=10,
                                   allow_redirects=False)

@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Test configuration
-BASE_URL = "http://localhost:5000"  # Adjust if different
+BASE_URL = "http://localhost:5002"  # Adjust if different
 TIMEOUT = 10
 MAX_RETRIES = 2
 

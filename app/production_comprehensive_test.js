@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Test configuration
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'http://localhost:5002';
 const TIMEOUT = 5000;
 
 // Test results

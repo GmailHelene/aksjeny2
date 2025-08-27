@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 class PlatformProductionTester:
     """Comprehensive platform production readiness tester"""
     
-    def __init__(self, base_url='http://localhost:5000'):
+    def __init__(self, base_url='http://localhost:5002'):
         self.base_url = base_url
         self.session = requests.Session()
         self.session.timeout = 30
@@ -592,7 +592,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Final Platform Production Readiness Test')
-    parser.add_argument('--base-url', default='http://localhost:5000', 
+    parser.add_argument('--base-url', default='http://localhost:5002', 
                        help='Base URL to test against')
     
     args = parser.parse_args()

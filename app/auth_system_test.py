@@ -498,7 +498,7 @@ class AuthTester:
 def parse_arguments():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description='Authentication System Tester for Aksjeradar')
-    parser.add_argument('--base-url', default='http://localhost:5000', help='Base URL to test against')
+    parser.add_argument('--base-url', default='http://localhost:5002', help='Base URL to test against')
     return parser.parse_args()
 
 

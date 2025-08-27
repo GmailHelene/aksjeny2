@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:5002"
 USERS = {
     "demo": {"email": "demo@aksjeradar.test", "password": "demo123"},
     "paid": {"email": "helene721@gmail.com", "password": "password123"}

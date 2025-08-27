@@ -37,7 +37,7 @@ class EmailService:
             # Check if server is actually running on a different port
             import requests
             try:
-                requests.get('http://localhost:5000', timeout=1)
+                requests.get('http://localhost:5002', timeout=1)
             except:
                 # Try other common ports
                 for port in [8000, 3000, 4000]:

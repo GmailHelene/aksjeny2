@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://localhost:5002"
 CREDENTIALS = {"email": "helene721@gmail.com", "password": "password123"}  # oppdater passord
 
 @pytest.fixture

@@ -141,7 +141,7 @@ def run_all_tests(base_url, timeout=300):
 def parse_arguments():
     """Parse command line arguments"""
     parser = argparse.ArgumentParser(description='Aksjeradar Complete Test Suite Runner')
-    parser.add_argument('--base-url', default='http://localhost:5000', help='Base URL to test against')
+    parser.add_argument('--base-url', default='http://localhost:5002', help='Base URL to test against')
     parser.add_argument('--timeout', type=int, default=300, help='Timeout in seconds for each test script')
     return parser.parse_args()
 

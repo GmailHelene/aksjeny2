@@ -852,7 +852,7 @@ app.register_blueprint(forum, url_prefix='/forum')
 if __name__ == '__main__':
     print("🚀 Starter Aksjeradar Production Server")
     print("======================================")
-    print("🌐 URL: http://localhost:5000")
+    print("🌐 URL: http://localhost:5002")
     print("📊 Database: SQLite (aksjeradar_prod.db)")
     print("🔒 Security: Production headers enabled")
     print("📱 PWA: Manifest og Service Worker enabled")
