@@ -28,3 +28,25 @@
 .card-header.bg-info, .card-header.bg-dark {
     color: white !important;
 }
+
+ .bg-primary .h5:not(.dropdown-item):not(.nav-link) {
+ color: #000000 !important;
+}
+
+/* Override for .alert-warning banners */
+.alert-warning {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* Override for .intelligence-header */
+.intelligence-header {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
+
+/* Override for .ai-insight */
+.ai-insight {
+    background-color: #0d47a1 !important;
+    color: white !important;
+}
