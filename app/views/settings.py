@@ -90,23 +90,19 @@ def update_settings():
     try:
         setting = request.form.get('setting')
         value = request.form.get('value') == 'true'
-        # Try to update in database if model exists
-        try:
-            from app.models import UserSettings
-            user_settings = UserSettings.query.filter_by(user_id=current_user.id).first()
-            if not user_settings:
-                user_settings = UserSettings(user_id=current_user.id)
-                db.session.add(user_settings)
-            # Update the specific setting
-            if hasattr(user_settings, setting):
-                setattr(user_settings, setting, value)
+        # Update the setting on the current_user if it exists
+        if hasattr(current_user, setting):
+            setattr(current_user, setting, value)
+            try:
                 db.session.commit()
                 return jsonify({'success': True, 'message': 'Innstilling oppdatert'})
-            else:
-                return jsonify({'success': False, 'error': 'Ugyldig innstilling'}), 400
-        except:
-            # If no model, just return success
-            return jsonify({'success': True, 'message': 'Innstilling oppdatert'})
+            except Exception as e:
+                db.session.rollback()
+                from flask import current_app
+                current_app.logger.error(f"DB commit error: {str(e)}")
+                return jsonify({'success': False, 'error': 'Kunne ikke lagre til databasen'}), 500
+        else:
+            return jsonify({'success': False, 'error': 'Ugyldig innstilling'}), 400
     except Exception as e:
         db.session.rollback()
         from flask import current_app
