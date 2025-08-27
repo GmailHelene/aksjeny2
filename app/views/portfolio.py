@@ -1,22 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app import app, db
+from app.extensions import db
 from app.models import Portfolio, Stock
 
-app = Blueprint('portfolio', __name__)
+portfolio_bp = Blueprint('portfolio', __name__)
 
-@app.route('/portfolio/<int:portfolio_id>/add', methods=['GET', 'POST'])
+@portfolio_bp.route('/portfolio/<int:portfolio_id>/add', methods=['GET', 'POST'])
 @login_required
 def portfolio_add(portfolio_id):
     portfolio = Portfolio.query.get_or_404(portfolio_id)
-    
     if request.method == 'POST':
         try:
             ticker = request.form.get('ticker')
             if not ticker:
                 flash('Ticker-symbol mangler', 'error')
                 return redirect(url_for('portfolio_add', portfolio_id=portfolio_id))
-            
             # Add stock to portfolio
             stock = PortfolioStock(
                 portfolio_id=portfolio_id,
@@ -31,10 +29,9 @@ def portfolio_add(portfolio_id):
         except Exception as e:
             db.session.rollback()
             flash('Kunne ikke legge til aksje', 'error')
-    
     return render_template('portfolio/add.html', portfolio=portfolio)
 
-@app.route('/portfolio/create', methods=['GET', 'POST'])
+@portfolio_bp.route('/portfolio/create', methods=['GET', 'POST'])
 @login_required
 def portfolio_create():
     if request.method == 'POST':

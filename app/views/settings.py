@@ -15,12 +15,14 @@ def delete_price_alert():
         db.session.rollback()
         flash(f'Feil ved sletting av prisvarsel: {str(e)}', 'error')
     return redirect(url_for('settings'))
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app import app, db
+from app.extensions import db
 from app.models import User
 
-@app.route('/settings')
+settings_bp = Blueprint('settings', __name__)
+
+@settings_bp.route('/settings')
 @login_required
 def settings():
     """Display user settings page"""
@@ -32,7 +34,6 @@ def settings():
             'push_notifications': False,
             'newsletter': True
         }
-        
         # Try to get actual settings if model exists
         try:
             from app.models import UserSettings

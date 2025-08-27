@@ -1,9 +1,11 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app import app, db
+from app.extensions import db
 from datetime import datetime, timedelta
 
-@app.route('/my-subscription')
+subscription_bp = Blueprint('subscription', __name__)
+
+@subscription_bp.route('/my-subscription')
 @login_required
 def my_subscription():
     """Display user's subscription details"""
@@ -19,24 +21,25 @@ def my_subscription():
         return render_template('subscription/my-subscription.html',
                              renewal_date=renewal_date)
     except Exception as e:
-        app.logger.error(f"Subscription page error: {str(e)}")
+    from flask import current_app
+    current_app.logger.error(f"Subscription page error: {str(e)}")
         flash('Kunne ikke laste abonnementsinformasjon', 'error')
         return redirect(url_for('index'))
 
-@app.route('/subscription/upgrade')
+@subscription_bp.route('/subscription/upgrade')
 @login_required
 def subscription_upgrade():
     """Redirect to upgrade page"""
     return render_template('subscription/upgrade.html')
 
-@app.route('/subscription/checkout/<plan>')
+@subscription_bp.route('/subscription/checkout/<plan>')
 @login_required
 def subscription_checkout(plan):
     """Handle subscription checkout"""
     plans = {
-        'monthly': {'name': 'Månedlig', 'price': 299},
-        'yearly': {'name': 'Årlig', 'price': 2499},
-        'lifetime': {'name': 'Livstid', 'price': 9999}
+    'monthly': {'name': 'Månedlig', 'price': 299},
+    'yearly': {'name': 'Årlig', 'price': 2499},
+    'lifetime': {'name': 'Livstid', 'price': 9999}
     }
     
     if plan not in plans:

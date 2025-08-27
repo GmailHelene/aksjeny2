@@ -298,8 +298,17 @@ def create_app(config_class=None):
     init_profile_routes(app)
     from app.views.advanced_analytics import init_advanced_analytics_routes
     init_advanced_analytics_routes(app)
-    # Do the same for other views if needed
-    import app.views.external_data
+    # Registrer blueprints
+    from app.views.external_data import external_data_bp
+    app.register_blueprint(external_data_bp)
+    from app.views.admin import admin_bp
+    app.register_blueprint(admin_bp)
+    from app.views.portfolio import portfolio_bp
+    app.register_blueprint(portfolio_bp)
+    from app.views.settings import settings_bp
+    app.register_blueprint(settings_bp)
+    from app.views.subscription import subscription_bp
+    app.register_blueprint(subscription_bp)
     return app
 
 def register_blueprints(app):
