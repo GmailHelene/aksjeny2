@@ -122,7 +122,7 @@ def get_free_translation_js():
     Returns JavaScript code that implements free translation
     Uses Google Translate widget (free) and dictionary replacements
     """
-    js_code = f"""
+    js_code = """
     // Free Translation System for Aksjeradar
     const TRANSLATIONS = {TRANSLATION_DICTIONARY};
     
