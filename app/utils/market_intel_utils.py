@@ -24,6 +24,36 @@ def get_sector_data():
         # If any error, return demo data
         return generate_demo_sectors()
 
+def generate_demo_sectors():
+    """Generate demo sector data for non-authenticated users"""
+    return [
+        {
+            'name': 'Energy',
+            'performance': 2.1,
+            'trend': 'Up'
+        },
+        {
+            'name': 'Technology',
+            'performance': 1.5,
+            'trend': 'Up'
+        },
+        {
+            'name': 'Healthcare',
+            'performance': 0.8,
+            'trend': 'Up'
+        },
+        {
+            'name': 'Finance',
+            'performance': 0.3,
+            'trend': 'Stable'
+        },
+        {
+            'name': 'Shipping',
+            'performance': -0.2,
+            'trend': 'Down'
+        }
+    ]
+
 def generate_demo_market_intelligence():
     """Generate demo market intelligence data for non-authenticated users"""
     return [
@@ -70,28 +100,16 @@ def get_market_intelligence_data(real=False):
                     if 'sector_performance' in overview:
                         summary = ', '.join([f"{s}: {d['performance']}% ({d['trend']})" for s, d in overview['sector_performance'].items()])
                         result.append({'title': 'Sector Performance', 'summary': summary})
+                    if 'market_sentiment' in overview:
+                        sentiment = overview['market_sentiment']
+                        summary = f"Overall: {sentiment['overall']}, Fear/Greed: {sentiment['fear_greed_index']}, Volatility: {sentiment['volatility_index']}"
+                        result.append({'title': 'Market Sentiment', 'summary': summary})
                     return result if result else generate_demo_market_intelligence()
                 else:
                     return generate_demo_market_intelligence()
             except ImportError:
                 # external_data service not available, return demo data
                 return generate_demo_market_intelligence()
-            except Exception as e:
-                # Any other error, return demo data
-                return generate_demo_market_intelligence()
-        else:
-            return generate_demo_market_intelligence()
-    except Exception as e:
-        # Fallback for any error
-        return generate_demo_market_intelligence()
-                    summary = ', '.join([f"{sector}: {data['performance']}% ({data['trend']})" for sector, data in overview['sector_performance'].items()])
-                    result.append({'title': 'Sector Performance', 'summary': summary})
-                if 'market_sentiment' in overview:
-                    sentiment = overview['market_sentiment']
-                    summary = f"Overall: {sentiment['overall']}, Fear/Greed: {sentiment['fear_greed_index']}, Volatility: {sentiment['volatility_index']}"
-                    result.append({'title': 'Market Sentiment', 'summary': summary})
-                return result
-        except Exception as e:
             except Exception as e:
                 # Any other error, return demo data
                 return generate_demo_market_intelligence()
