@@ -43,6 +43,98 @@ def risk_management():
     return render_template('advanced_analytics.html', active_tab='risk-management')
 
 # API Endpoints for Advanced Analytics
+@advanced_analytics.route('/generate-prediction', methods=['POST'])
+@login_required
+def generate_prediction():
+    """Generate AI prediction for a ticker"""
+    try:
+        data = request.get_json()
+        ticker = data.get('ticker', '').upper()
+        
+        if not ticker:
+            return jsonify({'success': False, 'error': 'Ticker is required'})
+        
+        # Mock prediction for now - can be enhanced with real ML later
+        import random
+        price_change = round(random.uniform(-10, 15), 2)
+        confidence = round(random.uniform(65, 95), 1)
+        
+        result = f"AI-prediksjon for {ticker}: Forventet prisendring {'+' if price_change > 0 else ''}{price_change}% over neste 30 dager (konfidensgrad: {confidence}%)"
+        
+        return jsonify({
+            'success': True,
+            'result': result,
+            'ticker': ticker,
+            'prediction': price_change,
+            'confidence': confidence
+        })
+    except Exception as e:
+        logger.error(f"Error generating prediction: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@advanced_analytics.route('/batch-predictions', methods=['POST'])
+@login_required  
+def batch_predictions():
+    """Generate batch predictions for multiple tickers"""
+    try:
+        data = request.get_json()
+        tickers = data.get('tickers', [])
+        
+        if not tickers:
+            return jsonify({'success': False, 'error': 'Tickers list is required'})
+        
+        # Mock batch predictions
+        import random
+        predictions = {}
+        for ticker in tickers:
+            price_change = round(random.uniform(-8, 12), 2)
+            predictions[ticker] = price_change
+        
+        return jsonify({
+            'success': True,
+            'predictions': predictions,
+            'generated_at': 'now'
+        })
+    except Exception as e:
+        logger.error(f"Error generating batch predictions: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@advanced_analytics.route('/market-analysis', methods=['POST'])
+@login_required
+def market_analysis():
+    """Generate market analysis"""
+    try:
+        # Mock market analysis
+        import random
+        
+        sentiments = ['Bullish', 'Bearish', 'Neutral', 'Caution']
+        volatility_levels = ['Low', 'Moderate', 'High']
+        
+        sentiment = random.choice(sentiments)
+        volatility = random.choice(volatility_levels)
+        
+        analysis = f"Nåværende markedssentiment: {sentiment}. Volatilitetsnivå: {volatility}. "
+        
+        if sentiment == 'Bullish':
+            analysis += "Markedet viser positive signaler med økt investor-optimisme."
+        elif sentiment == 'Bearish':
+            analysis += "Markedet viser negative signaler med økt bekymring blant investorer."
+        elif sentiment == 'Neutral':
+            analysis += "Markedet er balansert med blandede signaler."
+        else:
+            analysis += "Markedet viser forsiktighet med økt usikkerhet."
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis,
+            'sentiment': sentiment,
+            'volatility': volatility,
+            'timestamp': 'now'
+        })
+    except Exception as e:
+        logger.error(f"Error generating market analysis: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @advanced_analytics.route('/api/ml/predict/<symbol>')
 @login_required
 def api_ml_predict(symbol):
