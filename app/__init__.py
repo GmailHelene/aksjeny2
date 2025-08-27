@@ -281,10 +281,12 @@ def create_app(config_class=None):
                 app.logger.warning(f"Database initialization skipped: {e}")
         
         # After app is created and configured:
-        from app.views.stocks import init_stocks_routes
-        init_stocks_routes(app)
-        from app.views.analysis import init_analysis_routes
-        init_analysis_routes(app)
+    from app.views.stocks import init_stocks_routes
+    init_stocks_routes(app)
+    from app.views.analysis import init_analysis_routes
+    init_analysis_routes(app)
+    from app.views.market_intel import init_market_intel_routes
+    init_market_intel_routes(app)
         # Do the same for other views if needed
         return app
     except Exception as e:
