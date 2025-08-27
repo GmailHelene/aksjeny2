@@ -298,17 +298,35 @@ def create_app(config_class=None):
     init_profile_routes(app)
     from app.views.advanced_analytics import init_advanced_analytics_routes
     init_advanced_analytics_routes(app)
-    # Registrer blueprints
-    from app.views.external_data import external_data_bp
-    app.register_blueprint(external_data_bp)
-    from app.views.admin import admin_bp
-    app.register_blueprint(admin_bp)
-    from app.views.portfolio import portfolio_bp
-    app.register_blueprint(portfolio_bp)
-    from app.views.settings import settings_bp
-    app.register_blueprint(settings_bp)
-    from app.views.subscription import subscription_bp
-    app.register_blueprint(subscription_bp)
+    
+    # Registrer blueprints - FIX: Check if already registered before adding
+    registered_blueprints = [bp.name for bp in app.blueprints.values()]
+    
+    # Only register external_data_bp if not already registered
+    if 'external_data_bp' not in registered_blueprints and 'external_data' not in registered_blueprints:
+        try:
+            from app.views.external_data import external_data_bp
+            app.register_blueprint(external_data_bp)
+        except ImportError as e:
+            app.logger.warning(f"Could not import external_data_bp from views: {e}")
+    
+    # Register other blueprints with same check
+    if 'admin' not in registered_blueprints:
+        from app.views.admin import admin_bp
+        app.register_blueprint(admin_bp)
+    
+    if 'portfolio' not in registered_blueprints:
+        from app.views.portfolio import portfolio_bp as views_portfolio_bp
+        app.register_blueprint(views_portfolio_bp, url_prefix='/portfolio-views')
+    
+    if 'settings' not in registered_blueprints:
+        from app.views.settings import settings_bp
+        app.register_blueprint(settings_bp)
+    
+    if 'subscription' not in registered_blueprints:
+        from app.views.subscription import subscription_bp
+        app.register_blueprint(subscription_bp)
+    
     return app
 
 def register_blueprints(app):
@@ -377,7 +395,8 @@ def register_blueprints(app):
         ('.routes.dashboard', 'dashboard', None),
         ('.routes.pro_tools', 'pro_tools', '/pro-tools'),
         ('.routes.market_intel', 'market_intel', '/market-intel'),
-        ('.routes.external_data', 'external_data_bp', '/external-data'),
+        # FIX: Comment out external_data here since it's registered later
+        # ('.routes.external_data', 'external_data_bp', '/external-data'),
         ('.routes.backtest', 'backtest_bp', '/backtest'),
         ('.routes.seo_content', 'seo_content', '/content'),
         ('.routes.portfolio_advanced', 'portfolio_advanced', '/portfolio-advanced'),
