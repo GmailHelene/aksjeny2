@@ -1,5 +1,5 @@
 import os
-from app import create_app
+from app.__init__ import create_app
 
 # Railway production startup script
 os.environ.setdefault('EMAIL_USERNAME', 'support@luxushair.com')

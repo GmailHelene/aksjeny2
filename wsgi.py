@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 os.environ.setdefault('FLASK_ENV', 'production')
 
 try:
-    from app import create_app
+    from app.__init__ import create_app
     app = create_app('production')
     
     # Ensure app is ready
