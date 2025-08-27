@@ -357,8 +357,8 @@ def currency_convert():
             'success': False,
             'error': str(e)
         }), 500
-                                user_daily_change += (current_value - purchase_value)
-                                total_stocks += 1
+                        user_daily_change += (current_value - purchase_value)
+                        total_stocks += 1
                     except Exception as e:
                         logger.warning(f"Error calculating portfolio value: {e}")
                 

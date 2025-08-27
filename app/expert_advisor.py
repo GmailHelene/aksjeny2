@@ -375,3 +375,46 @@ def create_ea_from_strategy(strategy_name: str, symbol: str, **parameters) -> Op
         return strategies[strategy_name](symbol, **parameters)
     
     return None
+
+
+class ExpertAdvisorManager:
+    """Manager class for Expert Advisors"""
+    
+    def __init__(self):
+        self.active_eas = {}
+        self.ea_performance = {}
+        
+    def add_ea(self, ea_id: str, ea: ExpertAdvisor):
+        """Add an Expert Advisor to the manager"""
+        self.active_eas[ea_id] = ea
+        
+    def remove_ea(self, ea_id: str):
+        """Remove an Expert Advisor from the manager"""
+        if ea_id in self.active_eas:
+            del self.active_eas[ea_id]
+        if ea_id in self.ea_performance:
+            del self.ea_performance[ea_id]
+            
+    def get_active_eas(self) -> Dict[str, ExpertAdvisor]:
+        """Get all active Expert Advisors"""
+        return self.active_eas
+        
+    def get_ea_performance(self, ea_id: str) -> Optional[Dict[str, Any]]:
+        """Get performance metrics for a specific EA"""
+        if ea_id in self.active_eas:
+            ea = self.active_eas[ea_id]
+            return {
+                'ea_id': ea_id,
+                'name': ea.name,
+                'symbol': ea.symbol,
+                'current_capital': ea.current_capital,
+                'initial_capital': ea.initial_capital,
+                'total_trades': len(ea.trades_history),
+                'open_positions': len([p for p in ea.positions if p['status'] == 'OPEN']),
+                'performance_metrics': ea.get_performance_metrics() if hasattr(ea, 'get_performance_metrics') else {}
+            }
+        return None
+
+
+# Create a global instance of the Expert Advisor Manager
+expert_advisor_manager = ExpertAdvisorManager()
