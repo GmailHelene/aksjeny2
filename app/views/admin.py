@@ -47,10 +47,11 @@ def clear_cache():
         flash('All caches cleared successfully!', 'success')
         return jsonify({'success': True, 'message': 'All caches cleared'})
     except Exception as e:
-        app.logger.error(f"Cache clearing error: {str(e)}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    from flask import current_app
+    current_app.logger.error(f"Cache clearing error: {str(e)}")
+    return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/admin/clear-browser-cache')
+@admin_bp.route('/admin/clear-browser-cache')
 @admin_required  
 def clear_browser_cache_instructions():
     """Return instructions for clearing browser cache"""
