@@ -283,11 +283,10 @@ def create_app(config_class=None):
         # After app is created and configured:
         from app.views.stocks import init_stocks_routes
         init_stocks_routes(app)
-    
+        from app.views.analysis import init_analysis_routes
+        init_analysis_routes(app)
         # Do the same for other views if needed
-        
         return app
-        
     except Exception as e:
         app.logger.error(f"ERROR Critical error during app creation: {e}")
         raise
@@ -739,18 +738,4 @@ def register_template_filters(app):
         except (ValueError, TypeError):
             return str(value) if value is not None else "—"
 
-# Move all view imports to the very end, after app is fully initialized
-# This must be at the VERY END of the file
-def register_views():
-    # Register all view modules - called after app is initialized.
-    from app.views import stocks
-    from app.views import analysis
-    from app.views import portfolio
-    from app.views import forum
-    from app.views import admin
-    from app.views import settings
-    from app.views import advanced_analytics
-    from app.views import subscription
-
-# Call the registration at the very end
-register_views()
+## View registration now handled via init_*_routes functions after app creation
