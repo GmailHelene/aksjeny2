@@ -652,6 +652,16 @@ def create_portfolio():
     """Create a new portfolio with robust error handling"""
     try:
         if request.method == 'POST':
+            # Validate CSRF token if enabled
+            try:
+                csrf_token = request.form.get('csrf_token')
+                if csrf_token:  # Only validate if token was provided
+                    validate_csrf(csrf_token)
+            except Exception as csrf_error:
+                logger.warning(f"CSRF validation failed: {csrf_error}")
+                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
+                return render_template('portfolio/create.html')
+            
             name = request.form.get('name', '').strip()
             description = request.form.get('description', '').strip()
             initial_value = request.form.get('initial_value', '0')

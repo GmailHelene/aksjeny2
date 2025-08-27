@@ -20,6 +20,12 @@ TRANSLATION_DICTIONARY = {
     "Logg inn": "Login",
     "Registrer": "Register",
     "Logg ut": "Logout",
+    "Oversikt": "Overview",
+    "Konto": "Account",
+    "Varsler": "Alerts",
+    "Favoritter": "Favorites",
+    "Sammenlign": "Compare",
+    "Søk": "Search",
     
     # Common terms
     "Pris": "Price",
@@ -76,6 +82,12 @@ TRANSLATION_DICTIONARY = {
     "Amerikanske aksjer": "US Stocks",
     "Norske aksjer": "Norwegian Stocks",
     "Europeiske aksjer": "European Stocks",
+    "Globale aksjer": "Global Stocks",
+    "Kryptovalutaer": "Cryptocurrencies",
+    "Valuta": "Currency",
+    "Aksjekurser": "Stock Prices",
+    "Søk aksjer": "Search Stocks",
+    "Sammenlign aksjer": "Compare Stocks",
     
     # Features
     "Favoritter": "Favorites",
@@ -114,6 +126,12 @@ def get_free_translation_js():
     // Free Translation System for Aksjeradar
     const TRANSLATIONS = {TRANSLATION_DICTIONARY};
     
+    // Create reverse dictionary for English to Norwegian translation
+    const REVERSE_TRANSLATIONS = {};
+    Object.keys(TRANSLATIONS).forEach(key => {{
+        REVERSE_TRANSLATIONS[TRANSLATIONS[key]] = key;
+    }});
+    
     let currentLanguage = 'no'; // Default Norwegian
     
     function toggleLanguage() {{
@@ -135,8 +153,8 @@ def get_free_translation_js():
             // Translate to English using dictionary
             translateToEnglish();
         }} else {{
-            // Reload page to get original Norwegian
-            location.reload();
+            // Translate back to Norwegian using reverse dictionary
+            translateToNorwegian();
         }}
     }}
     
@@ -192,6 +210,57 @@ def get_free_translation_js():
         }});
     }}
     
+    function translateToNorwegian() {{
+        // Get all text nodes and translate back to Norwegian using reverse dictionary
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        
+        while (node = walker.nextNode()) {{
+            if (node.nodeValue.trim()) {{
+                textNodes.push(node);
+            }}
+        }}
+        
+        textNodes.forEach(textNode => {{
+            let text = textNode.nodeValue;
+            let translated = false;
+            
+            // Replace English terms with Norwegian
+            Object.keys(REVERSE_TRANSLATIONS).forEach(enTerm => {{
+                const norTerm = REVERSE_TRANSLATIONS[enTerm];
+                if (text.includes(enTerm)) {{
+                    text = text.replace(new RegExp(enTerm, 'g'), norTerm);
+                    translated = true;
+                }}
+            }});
+            
+            if (translated) {{
+                textNode.nodeValue = text;
+            }}
+        }});
+        
+        // Also translate common attributes back to Norwegian
+        const elements = document.querySelectorAll('[placeholder], [title], [alt]');
+        elements.forEach(el => {{
+            ['placeholder', 'title', 'alt'].forEach(attr => {{
+                const value = el.getAttribute(attr);
+                if (value) {{
+                    Object.keys(REVERSE_TRANSLATIONS).forEach(enTerm => {{
+                        if (value.includes(enTerm)) {{
+                            el.setAttribute(attr, value.replace(enTerm, REVERSE_TRANSLATIONS[enTerm]));
+                        }}
+                    }});
+                }}
+            }});
+        }});
+    }}
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {{
         // Check saved language preference

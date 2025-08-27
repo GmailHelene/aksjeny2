@@ -2292,34 +2292,126 @@ def api_demo_technical_data(symbol):
 @stocks.route('/api/chart-data/<symbol>')
 @demo_access
 def api_chart_data(symbol):
-    """API endpoint for stock chart data"""
-    # For nå, returner alltid demo-data
-    from datetime import datetime, timedelta
-    base_date = datetime.now() - timedelta(days=30)
-    dates = []
-    prices = []
-    volumes = []
-    
-    # Generate 30 days of demo data
-    base_price = 342.55 if 'EQNR' in symbol else 100.0
-    
-    for i in range(30):
-        date = base_date + timedelta(days=i)
-        dates.append(date.strftime('%Y-%m-%d'))
-        
-        # Add some realistic price movement
-        price_change = (i - 15) * 0.5 + (i % 7 - 3) * 2.1
-        prices.append(round(base_price + price_change, 2))
-        
-        # Realistic volume
-        volumes.append(1500000 + (i % 5) * 300000)
-    
-    return jsonify({
-        'dates': dates,
-        'prices': prices,
-        'volumes': volumes,
-        'currency': 'NOK' if 'OL' in symbol else 'USD'
-    })
+    """API endpoint for stock chart data - provides real data for authenticated users"""
+    try:
+        from flask import current_app
+        from datetime import datetime, timedelta
+        import random
+
+        # Check authentication status
+        user_authenticated = current_user.is_authenticated if current_user else False
+        current_app.logger.info(f"📊 Chart data request for {symbol} - User authenticated: {user_authenticated}")
+
+        # Get period from request args
+        period = request.args.get('period', '30d')
+        interval = request.args.get('interval', '1d')
+
+        # For authenticated users, try to get real historical data first
+        if user_authenticated:
+            current_app.logger.info(f"🔐 AUTHENTICATED USER: Getting REAL chart data for {symbol}")
+            try:
+                # Try to get real historical data
+                df = DataService.get_historical_data(symbol, period=period, interval=interval)
+
+                if df is not None and not df.empty and len(df) > 0:
+                    current_app.logger.info(f"✅ REAL DATA: Got {len(df)} data points for {symbol}")
+
+                    # Convert DataFrame to the expected format
+                    dates = []
+                    prices = []
+                    volumes = []
+
+                    for index, row in df.iterrows():
+                        if hasattr(index, 'strftime'):
+                            dates.append(index.strftime('%Y-%m-%d'))
+                        else:
+                            dates.append(str(index))
+
+                        # Handle different column names that might exist
+                        price = None
+                        if 'Close' in df.columns:
+                            price = row['Close']
+                        elif 'close' in df.columns:
+                            price = row['close']
+                        elif 'price' in df.columns:
+                            price = row['price']
+
+                        if price is not None:
+                            prices.append(float(price))
+
+                        # Handle volume
+                        volume = None
+                        if 'Volume' in df.columns:
+                            volume = row['Volume']
+                        elif 'volume' in df.columns:
+                            volume = row['volume']
+
+                        if volume is not None:
+                            volumes.append(int(volume))
+                        else:
+                            volumes.append(1000000)  # Default volume
+
+                    # Ensure we have data
+                    if len(dates) > 0 and len(prices) > 0:
+                        currency = 'NOK' if symbol.endswith('.OL') else 'USD'
+                        return jsonify({
+                            'dates': dates,
+                            'prices': prices,
+                            'volumes': volumes,
+                            'currency': currency,
+                            'data_source': 'REAL DATA - Premium Access',
+                            'period': period,
+                            'interval': interval
+                        })
+
+            except Exception as e:
+                current_app.logger.warning(f"⚠️ REAL DATA FAILED for authenticated user {symbol}: {e}")
+
+        # For non-authenticated users or if real data fails, return demo data
+        current_app.logger.info(f"📊 Using demo chart data for {symbol} (authenticated: {user_authenticated})")
+
+        # Generate demo data
+        base_date = datetime.now() - timedelta(days=30)
+        dates = []
+        prices = []
+        volumes = []
+
+        # Generate 30 days of demo data
+        base_price = 342.55 if 'EQNR' in symbol else 100.0 + (abs(hash(symbol)) % 200)
+
+        for i in range(30):
+            date = base_date + timedelta(days=i)
+            dates.append(date.strftime('%Y-%m-%d'))
+
+            # Add some realistic price movement
+            price_change = (i - 15) * 0.5 + (i % 7 - 3) * 2.1
+            prices.append(round(base_price + price_change, 2))
+
+            # Realistic volume
+            volumes.append(1500000 + (i % 5) * 300000)
+
+        currency = 'NOK' if 'OL' in symbol else 'USD'
+        return jsonify({
+            'dates': dates,
+            'prices': prices,
+            'volumes': volumes,
+            'currency': currency,
+            'data_source': 'DEMO DATA - Free Access',
+            'period': period,
+            'interval': interval
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error in chart data API for {symbol}: {e}")
+        # Return minimal demo data on error
+        return jsonify({
+            'dates': ['2024-01-01', '2024-01-02', '2024-01-03'],
+            'prices': [100.0, 101.0, 102.0],
+            'volumes': [1000000, 1100000, 1200000],
+            'currency': 'USD',
+            'data_source': 'ERROR FALLBACK',
+            'error': str(e)
+        })
 
 @stocks.route('/api/test-chart-data/<symbol>')
 def api_test_chart_data(symbol):

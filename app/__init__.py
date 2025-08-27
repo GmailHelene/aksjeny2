@@ -750,3 +750,17 @@ def register_template_filters(app):
             return str(value) if value is not None else "—"
 
 ## View registration now handled via init_*_routes functions after app creation
+
+# Create default app instance for backward compatibility
+try:
+    app = create_app()
+    app.logger.info("OK Default app instance created successfully")
+except Exception as e:
+    # Create a minimal app for import compatibility
+    app = Flask(__name__)
+    app.logger.error(f"Failed to create full app instance: {e}")
+    import sys
+    print(f"ERROR: Failed to create app instance: {e}", file=sys.stderr)
+
+# Export app instance for direct imports
+__all__ = ['create_app', 'db', 'app']
