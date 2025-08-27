@@ -327,6 +327,12 @@ def register_blueprints(app):
         app.register_blueprint(portfolio)
         blueprints_registered.append('portfolio')
         
+        # Explicitly import and register pricing blueprint
+        from .routes.pricing import pricing
+        app.register_blueprint(pricing, url_prefix='/pricing')
+        blueprints_registered.append('pricing')
+        app.logger.info("OK Registered Pricing blueprint")
+        
         # Register stocks blueprint
         from .routes.stocks import stocks
         app.register_blueprint(stocks, url_prefix='/stocks')
@@ -377,7 +383,6 @@ def register_blueprints(app):
         ('.routes.portfolio_advanced', 'portfolio_advanced', '/portfolio-advanced'),
         ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
         ('.professional_analytics', 'analytics_bp', '/analytics'),
-        ('.routes.pricing', 'pricing', '/pricing'),
         ('.routes.news', 'news_bp', '/news'),
         ('.routes.health', 'health', '/health'),
         ('.routes.admin', 'admin', '/admin'),
