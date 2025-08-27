@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, current_app
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -29,7 +29,7 @@ def init_stocks_routes(app):
                                  error=False)
                                  
         except Exception as e:
-            app.logger.error(f"Compare error: {str(e)}")
+            current_app.logger.error(f"Compare error: {str(e)}")
             return render_template('stocks/compare.html',
                                  error=True,
                                  message="Kunne ikke sammenligne aksjer")

@@ -1067,46 +1067,7 @@ const translations = {
     }
 };
 
-
-
-</html></body></script>
-function translatePage(targetLang) {
-    const dict = translations[targetLang] || translations['no'];
-    
-    // Translate all text nodes
-    document.querySelectorAll('*').forEach(element => {
-        if (element.childNodes.length =
-            const text = element.textContent.trim();
-            if (dict[text]) {
-                element.textContent = dict[text];
-            }
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const langToggle = document.getElementById('language-toggle');
-    if (langToggle) {
-        langToggle.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default link behavior
-            const currentLang = localStorage.getItem('lang') || 'no';
-            const newLang = currentLang === 'en' ? 'no' : 'en';
-            localStorage.setItem('lang', newLang);
-            translatePage(newLang);
-            this.textContent = newLang === 'en' ? 'Norsk' : 'English';
-            return false; // Prevent page jump
-        });
-    }
-    
-    // Apply saved language on page load
-    const savedLang = localStorage.getItem('lang') || 'no';
-    if (savedLang === 'en') {
-        translatePage('en');
-        if (langToggle) langToggle.textContent = 'Norsk';
-    }
-});
 </script>
 </body>
 </html>
-</body>
-</html>
+

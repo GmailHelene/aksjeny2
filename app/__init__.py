@@ -287,6 +287,8 @@ def create_app(config_class=None):
     init_analysis_routes(app)
     from app.views.market_intel import init_market_intel_routes
     init_market_intel_routes(app)
+    from app.views.profile import init_profile_routes
+    init_profile_routes(app)
         # Do the same for other views if needed
         return app
     except Exception as e:
