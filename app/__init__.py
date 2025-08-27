@@ -422,7 +422,7 @@ def register_blueprints(app):
                 app.logger.info(f"Starting {blueprint_name} blueprint registration...")
                 app.logger.info(f"Module path: {module_path}")
             
-            module = import_module(module_path, package=__name__)
+            module = import_module(module_path, package='app')
             blueprint = getattr(module, blueprint_name)
             
             # Register blueprint with appropriate prefix
