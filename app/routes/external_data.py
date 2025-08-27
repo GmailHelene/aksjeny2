@@ -177,55 +177,56 @@ def insider_trading_overview():
         return render_template('error.html', error="Kunne ikke hente innsidehandel data"), 200
 
 @external_data_bp.route('/analyst-coverage')
-@demo_access
 def analyst_coverage():
     """Show analyst coverage overview"""
     try:
-        from flask_login import current_user
-        from app.utils.market_intel_utils import get_analyst_coverage_data
-        
-        # Get analyst coverage data - use real data if user is authenticated
-        is_authenticated = hasattr(current_user, 'is_authenticated') and current_user.is_authenticated
-        analyst_data = get_analyst_coverage_data(real=is_authenticated)
-        
-        return render_template('external_data/analyst_coverage.html',
-                             analyst_coverage=analyst_data)
-                             
-    except Exception as e:
-        logger.error(f"Error in analyst coverage: {e}")
-        return render_template('error.html', error="Kunne ikke hente analytiker data"), 200
-
-@external_data_bp.route('/market-intelligence')
-@demo_access
-def market_intelligence():
-    """Comprehensive market intelligence dashboard"""
-    try:
-        from flask_login import current_user
-        from app.utils.market_intel_utils import get_market_intelligence_data, get_sector_data
-        
-        # Get market intelligence data - use real data if user is authenticated
-        is_authenticated = hasattr(current_user, 'is_authenticated') and current_user.is_authenticated
-        intelligence_data = get_market_intelligence_data(real=is_authenticated)
-        sector_data = get_sector_data()
-        
-        # Create market overview data for template
-        market_overview = {
-            'indices': {
-                'OSEBX': {'value': 1285.50, 'change': 1.2, 'change_percent': 0.09},
-                'S&P500': {'value': 4450.30, 'change': -8.20, 'change_percent': -0.18},
-                'NASDAQ': {'value': 13890.15, 'change': -25.40, 'change_percent': -0.18}
+        # Simple static data for testing
+        analyst_coverage = {
+            'EQNR': {
+                'ratings': {'consensus': 'BUY', 'target_price': 320, 'num_analysts': 8},
+                'consensus': {'recommendation': 'BUY'},
+                'technical': {'trend': 'Bullish', 'support': 310, 'resistance': 340}
             },
-            'currencies': {
-                'USDNOK': {'value': 10.45, 'change': 0.02},
-                'EURNOK': {'value': 11.28, 'change': -0.01}
+            'DNB': {
+                'ratings': {'consensus': 'HOLD', 'target_price': 195, 'num_analysts': 6},
+                'consensus': {'recommendation': 'HOLD'},
+                'technical': {'trend': 'Neutral', 'support': 185, 'resistance': 205}
+            },
+            'TEL': {
+                'ratings': {'consensus': 'BUY', 'target_price': 165, 'num_analysts': 7},
+                'consensus': {'recommendation': 'BUY'},
+                'technical': {'trend': 'Bullish', 'support': 155, 'resistance': 175}
             }
         }
         
+        return render_template('external_data/analyst_coverage.html',
+                             analyst_coverage=analyst_coverage)
+                             
+    except Exception as e:
+        logger.error(f"Error in analyst coverage: {e}")
+        return f"Error: {str(e)}", 500
+
+@external_data_bp.route('/market-intelligence')
+def market_intelligence():
+    """Comprehensive market intelligence dashboard"""
+    try:
+        # Simple static data for now to test if template works
+        market_overview = {
+            'indices': {
+                'OSEBX': {'value': 1285.50, 'change': 1.2, 'change_percent': 0.09},
+                'S&P500': {'value': 4450.30, 'change': -8.20, 'change_percent': -0.18}
+            }
+        }
+        
+        intelligence_data = [
+            {'title': 'OSEBX Index', 'summary': 'Test data - OSEBX performing well'},
+            {'title': 'Market Update', 'summary': 'Test summary for market update'}
+        ]
+        
         return render_template('external_data/market_intelligence.html',
                              market_overview=market_overview,
-                             data=intelligence_data,
-                             sector_data=sector_data)
+                             data=intelligence_data)
                              
     except Exception as e:
         logger.error(f"Error in market intelligence: {e}")
-        return render_template('error.html', error="Kunne ikke hente markedsintelligens"), 200
+        return f"Error: {str(e)}", 500
