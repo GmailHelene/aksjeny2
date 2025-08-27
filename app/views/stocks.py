@@ -1,3 +1,9 @@
+from flask import render_template, request, jsonify
+from app import app
+import yfinance as yf
+import pandas as pd
+from datetime import datetime, timedelta
+
 @app.route('/stocks/compare')
 def compare():
     try:

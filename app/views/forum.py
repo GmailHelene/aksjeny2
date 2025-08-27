@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from . import app, db
-from ..models import ForumTopic
+from app import app, db
+from app.models import ForumTopic, ForumPost
 
 @app.route('/forum/create_topic', methods=['GET', 'POST'])
 @login_required
