@@ -734,10 +734,10 @@ def register_template_filters(app):
                 return f"{value/1e6:.1f}M"
             elif abs(value) >= 1e3:
                 return f"{value/1e3:.1f}K"
-            else:):
-                return f"{value:,.0f}"    import app.views.stocks
-        except (ValueError, TypeError):app configuration...
-            return str(value) if value is not None else "—"    import app.views.portfolio
+            else:
+                return f"{value:,.0f}"
+        except (ValueError, TypeError):
+            return str(value) if value is not None else "—"
 y initialized
 # Create the Flask app instance first of the file
 app = Flask(__name__)settingser_views():
