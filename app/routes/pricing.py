@@ -78,8 +78,8 @@ def index():
     """Redirect to main pricing page"""
     return redirect(url_for('pricing.pricing_page'))
 
-@pricing.route('/')
-@pricing.route('')
+@pricing.route('/', endpoint='pricing_page')
+@pricing.route('', endpoint='pricing_page')
 def pricing_page():
     """Main pricing page showing subscription plans"""
     try:
