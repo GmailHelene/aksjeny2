@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.extensions import db
-from app.models import Portfolio, Stock
+from app.models.portfolio import Portfolio
+from app.models.stock import Stock
 
 portfolio_bp = Blueprint('portfolio', __name__)
 
