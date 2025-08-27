@@ -1,6 +1,8 @@
 import os
 import sys
-import importlib.util
+
+# Add the current directory to Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == '__main__':
     os.environ.setdefault('EMAIL_USERNAME', 'support@luxushair.com')
@@ -14,16 +16,12 @@ if __name__ == '__main__':
     print("Access reset password with token from email")
     print("\nServer starting...")
 
-    # Import the create_app function directly from __init__.py file
-    # This avoids the circular import issue
-    init_path = os.path.join(os.path.dirname(__file__), 'app', '__init__.py')
-    spec = importlib.util.spec_from_file_location("app_init", init_path)
-    app_init = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(app_init)
+    # Import after environment variables are set
+    from app import create_app
 
     port = int(os.environ.get('PORT', 5002))
     try:
-        app = app_init.create_app('development')
+        app = create_app('development')
         app.run(debug=True, host='0.0.0.0', port=port)
     except Exception as e:
         print(f"ERROR during Flask app startup: {e}", flush=True)
