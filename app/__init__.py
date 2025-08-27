@@ -280,6 +280,12 @@ def create_app(config_class=None):
             except Exception as e:
                 app.logger.warning(f"Database initialization skipped: {e}")
         
+        # After app is created and configured:
+        from app.views.stocks import init_stocks_routes
+        init_stocks_routes(app)
+    
+        # Do the same for other views if needed
+        
         return app
         
     except Exception as e:
@@ -728,21 +734,28 @@ def register_template_filters(app):
                 return f"{value/1e6:.1f}M"
             elif abs(value) >= 1e3:
                 return f"{value/1e3:.1f}K"
-            else:
-                return f"{value:,.0f}"
-        except (ValueError, TypeError):
-            return str(value) if value is not None else "—"
+            else:):
+                return f"{value:,.0f}"    import app.views.stocks
+        except (ValueError, TypeError):app configuration...
+            return str(value) if value is not None else "—"    import app.views.portfolio
+y initialized
+# Create the Flask app instance first of the file
+app = Flask(__name__)settingser_views():
+d after app is initialized"""
+# ...existing code for app configuration...n stocks
 
-# Import views at the end of the file
-from app.views import (
-    main,
-    auth,
-    stocks,
-    analysis,
-    portfolio,
-    forum,
-    admin,
-    settings,  # Add this
-    advanced_analytics,  # Add this
-    subscription  # Add this if not already there
-)
+# Move all view imports to the very end, after app is fully initialized
+# This must be at the VERY END of the file
+def register_views():
+    """Register all view modules - called after app is initialized"""
+    from app.views import stocks
+    from app.views import analysis
+    from app.views import portfolio
+    from app.views import forum
+    from app.views import admin
+    from app.views import settings
+    from app.views import advanced_analytics
+    from app.views import subscription
+
+# Call the registration at the very end
+register_views()
