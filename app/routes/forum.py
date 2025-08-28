@@ -100,12 +100,29 @@ def create_topic():
     form = TopicForm()
     if form.validate_on_submit():
         try:
-            from app.models.forum import ForumPost
+            from app.models.forum import ForumTopic, ForumPost
+            # Get category from form or default
+            category_id = request.form.get('category')
+            if not category_id:
+                flash('Kategori må velges.', 'error')
+                return render_template('forum/create_topic.html', form=form)
+            # Create topic
+            topic = ForumTopic(
+                title=form.title.data,
+                slug=form.title.data.replace(' ', '-').lower(),
+                content=form.content.data,
+                category_id=category_id,
+                author_id=current_user.id
+            )
+            db.session.add(topic)
+            db.session.flush()  # Get topic.id before commit
+            # Create initial post
             post = ForumPost(
                 title=form.title.data,
                 content=form.content.data,
-                user_id=current_user.id,
-                author_id=current_user.id
+                topic_id=topic.id,
+                author_id=current_user.id,
+                user_id=current_user.id
             )
             db.session.add(post)
             db.session.commit()

@@ -240,33 +240,69 @@
 <!-- Advanced Analytics Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // ML Prediction Form Handler
+
+    // ML Prediction Form Handler (AJAX)
     document.getElementById('ml-prediction-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const symbol = document.getElementById('prediction-symbol').value.toUpperCase();
         const days = parseInt(document.getElementById('prediction-days').value);
-        
-        if (window.advancedAnalytics) {
-            window.advancedAnalytics.predictStock(symbol, days);
-        }
+        fetch('/advanced-analytics/generate-prediction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticker: symbol, days: days })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const results = document.getElementById('ml-prediction-results');
+            if (data.success) {
+                results.innerHTML = `<div class='alert alert-success'><strong>Prediksjon:</strong> ${data.prediction}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'>${data.error || 'Ingen data.'}</div>`;
+            }
+        });
     });
 
-    // Batch Prediction Button
+    // Batch Prediction Button (AJAX)
     document.getElementById('batch-predict-btn').addEventListener('click', function() {
         const symbolsText = document.getElementById('batch-symbols').value;
         const symbols = symbolsText.split(',').map(s => s.trim().toUpperCase()).filter(s => s);
         const days = parseInt(document.getElementById('prediction-days').value);
-        
-        if (symbols.length > 0 && window.advancedAnalytics) {
-            window.advancedAnalytics.batchPredict(symbols, days);
-        }
+        fetch('/advanced-analytics/batch-predictions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tickers: symbols, days: days })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const results = document.getElementById('ml-prediction-results');
+            if (data.success && data.predictions) {
+                let html = '<div class="alert alert-success"><strong>Batch Prediksjoner:</strong><ul>';
+                for (const [sym, pred] of Object.entries(data.predictions)) {
+                    html += `<li>${sym}: ${pred}</li>`;
+                }
+                html += '</ul></div>';
+                results.innerHTML = html;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'>${data.error || 'Ingen data.'}</div>`;
+            }
+        });
     });
 
-    // Market Analysis Button
+    // Market Analysis Button (AJAX)
     document.getElementById('market-analysis-btn').addEventListener('click', function() {
-        if (window.advancedAnalytics) {
-            window.advancedAnalytics.getMarketAnalysis();
-        }
+        fetch('/advanced-analytics/market-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const results = document.getElementById('ml-prediction-results');
+            if (data.success && data.analysis) {
+                results.innerHTML = `<div class='alert alert-info'><strong>Markedsanalyse:</strong> ${data.analysis}</div>`;
+            } else {
+                results.innerHTML = `<div class='alert alert-danger'>${data.error || 'Ingen data.'}</div>`;
+            }
+        });
     });
 
     // Portfolio Optimization Form Handler

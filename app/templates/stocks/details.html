@@ -253,22 +253,17 @@
                         <!-- Chart Tab -->
                         <div class="tab-pane fade" id="chart" role="tabpanel">
                             <div class="tradingview-widget-container">
-                                <div id="tradingview_chart"></div>
+                                <div id="tradingview_widget_details" style="min-height:500px;"></div>
+                                <div id="chart-loading-details" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Laster TradingView...</span>
+                                    </div>
+                                    <div class="mt-2">Laster TradingView...</div>
+                                </div>
                                 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
                                 <script type="text/javascript">
-                                new TradingView.widget({
-                                    "width": "100%",
-                                    "height": 500,
-                                    "symbol": "{{ ticker }}",
-                                    "interval": "D",
-                                    "timezone": "Europe/Oslo",
-                                    "theme": "light",
-                                    "style": "1",
-                                    "locale": "no_NO",
-                                    "toolbar_bg": "#f1f3f6",
-                                    "enable_publishing": false,
-                                    "allow_symbol_change": false,
-                                    "container_id": "tradingview_chart"
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    initTradingViewWidget();
                                 });
                                 </script>
                             </div>
