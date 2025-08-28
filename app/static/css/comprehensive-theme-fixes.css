@@ -21,13 +21,12 @@
 
 .card-header h5,
 .card-header h6,
-.card-header span,
 .card-header .small {
     /* Color inherited from parent */
     color: inherit !important;
 }
 
-.card-header .btn,
+
 .card-header a {
     /* Color inherited from parent */
     color: inherit !important;

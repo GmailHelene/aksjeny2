@@ -1858,21 +1858,42 @@ def profile():
 def my_subscription():
     """Display user's subscription details"""
     try:
-        # Calculate renewal date if premium
-        renewal_date = None
-        if current_user.is_premium and hasattr(current_user, 'subscription_end'):
-            renewal_date = current_user.subscription_end
-        elif current_user.is_premium:
-            # Default to 30 days from now if no end date set
-            renewal_date = datetime.utcnow() + timedelta(days=30)
+        # Create subscription object that matches template expectations
+        subscription = None
+        if current_user.is_premium:
+            subscription = {
+                'is_active': True,
+                'plan': current_user.subscription_type if hasattr(current_user, 'subscription_type') else 'premium',
+                'end_date': current_user.subscription_end if hasattr(current_user, 'subscription_end') else None
+            }
         
         return render_template('subscription/my-subscription.html',
-                             renewal_date=renewal_date)
+                             subscription=subscription)
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Subscription page error: {str(e)}")
         flash('Kunne ikke laste abonnementsinformasjon', 'error')
         return redirect(url_for('main.index'))
+
+@main.route('/cancel-subscription')
+@login_required
+def cancel_subscription():
+    """Cancel user's subscription"""
+    try:
+        # For now, just show a placeholder page
+        flash('Kontakt oss på kontakt@aksjeradar.trade for å avbryte abonnementet ditt.', 'info')
+        return redirect(url_for('main.my_subscription'))
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f"Cancel subscription error: {str(e)}")
+        flash('Kunne ikke behandle forespørselen', 'error')
+        return redirect(url_for('main.my_subscription'))
+
+@main.route('/sector-analysis')
+@access_required
+def sector_analysis():
+    """Sector analysis redirect to market intel"""
+    return redirect(url_for('market_intel.sector_analysis'))
 
 @main.route('/set_language/<language>')
 def set_language(language=None):

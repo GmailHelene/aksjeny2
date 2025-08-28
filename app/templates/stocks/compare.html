@@ -1,53 +1,226 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Sammenlign aksjer | Aksjeradar{% endblock %}
+{% block title %}Sammenlign Aksjer - Aksjeradar{% endblock %}
 
 {% block head %}
-<!-- Chart.js and plugins -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<meta name="description" content="Sammenlign aksjer side-ved-side med avanserte analyser og tekniske indikatorer">
+<meta name="keywords" content="sammenlign aksjer, aktieanalyse, teknisk analyse, norske aksjer">
+
+<style>
+    .comparison-card {
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+    }
+    
+    .comparison-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .neutral { color: #6c757d; }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .stock-selector {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .correlation-matrix {
+        font-size: 0.9rem;
+    }
+    
+    .correlation-cell {
+        text-align: center;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .btn-compare {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-compare:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        color: white;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Error message display -->
-    {% if error_message %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        {{ error_message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-bar-chart-line"></i> Sammenlign Aksjer
+            </h1>
+            
+            <!-- Stock Selector -->
+            <div class="stock-selector">
+                <form method="GET" action="{{ url_for('stocks.compare') }}">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label for="symbols" class="form-label">
+                                <strong>Velg aksjer å sammenligne:</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="symbols" 
+                                   name="symbols" 
+                                   placeholder="F.eks: EQNR.OL,DNB.OL,TEL.OL (skill med komma)"
+                                   value="{{ tickers|join(',') if tickers else '' }}"
+                                   required>
+                            <div class="form-text">
+                                Skriv aksjesymbol (f.eks. EQNR.OL for Equinor). Maksimum 5 aksjer.
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="period" class="form-label">Periode:</label>
+                            <select class="form-select" name="period" id="period">
+                                <option value="1mo" {{ 'selected' if period == '1mo' else '' }}>1 måned</option>
+                                <option value="3mo" {{ 'selected' if period == '3mo' else '' }}>3 måneder</option>
+                                <option value="6mo" {{ 'selected' if period == '6mo' else '' }}>6 måneder</option>
+                                <option value="1y" {{ 'selected' if period == '1y' else '' }}>1 år</option>
+                                <option value="2y" {{ 'selected' if period == '2y' else '' }}>2 år</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-compare w-100">
+                                <i class="bi bi-search"></i> Sammenlign
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            {% if tickers and tickers|length > 0 %}
+            <!-- Price Chart -->
+            <div class="chart-container">
+                <h3><i class="bi bi-graph-up"></i> Prisutvikling</h3>
+                <canvas id="priceChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Current Metrics Overview -->
+            <div class="row mb-4">
+                {% for ticker in tickers %}
+                <div class="col-lg-{{ (12 / tickers|length)|int if tickers|length <= 4 else 3 }}">
+                    <div class="comparison-card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                {{ ticker }}
+                                {% if ticker_names and ticker in ticker_names %}
+                                <small class="d-block">{{ ticker_names[ticker] }}</small>
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Current Price -->
+                            <div class="metric-card">
+                                <div class="metric-value">
+                                    {% if current_prices and ticker in current_prices %}
+                                        {{ "%.2f"|format(current_prices[ticker]) }} NOK
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="metric-label">Gjeldende pris</div>
+                            </div>
+                            
+                            <!-- Price Change -->
+                            <div class="metric-card">
+                                <div class="metric-value {{ 'positive' if price_changes and ticker in price_changes and price_changes[ticker] > 0 else 'negative' if price_changes and ticker in price_changes and price_changes[ticker] < 0 else 'neutral' }}">
+                                    {% if price_changes and ticker in price_changes %}
+                                        {{ "%.2f"|format(price_changes[ticker]) }}%
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="metric-label">Endring</div>
+                            </div>
+                            
+                            <!-- Volatility -->
+                            <div class="metric-card">
+                                <div class="metric-value">
+                                    {% if volatility and ticker in volatility %}
+                                        {{ "%.2f"|format(volatility[ticker]) }}%
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="metric-label">Volatilitet</div>
+                            </div>
+                            
+                            <!-- Volume -->
+                            <div class="metric-card">
+                                <div class="metric-value">
+                                    {% if volumes and ticker in volumes %}
+                                        {{ "{:,}".format(volumes[ticker]|int) }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="metric-label">Volum</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <!-- No stocks selected -->
+            <div class="text-center py-5">
+                <i class="bi bi-graph-up" style="font-size: 4rem; color: #6c757d;"></i>
+                <h3 class="mt-3 text-muted">Sammenlign aksjer</h3>
+                <p class="text-muted">Skriv inn aksjesymbol over for å sammenligne aksjer side-ved-side</p>
+                <p class="text-muted"><strong>Eksempel:</strong> EQNR.OL,DNB.OL,TEL.OL</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
-
-    <nav aria-label="breadcrumb" class="my-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Hjem</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('stocks.list_oslo') }}">Aksjer</a></li>
-            <li class="breadcrumb-item active">Sammenlign aksjer</li>
-        </ol>
-    </nav>
-
-    <div class="card border-0 shadow mb-4">
-        <div class="card-header bg-primary text-white">
-            <h2 class="h5 mb-0">Sammenlign aksjer</h2>
-        </div>
-        <div class="card-body">
-            <form action="{{ url_for('stocks.compare') }}" method="get" id="compareForm">
-                <div class="row mb-3">
-                    <div class="col-md-3 mb-3 mb-md-0">
-                        <label for="ticker1" class="form-label">Aksje 1:</label>
-                        <input type="text" class="form-control" id="ticker1" name="tickers" value="{{ tickers[0] if tickers and tickers|length > 0 else 'EQNR.OL' }}" placeholder="f.eks. EQNR.OL" required>
+</div>
+{% endblock %}
                     </div>
                     <div class="col-md-3 mb-3 mb-md-0">
                         <label for="ticker2" class="form-label">Aksje 2:</label>

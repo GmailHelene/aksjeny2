@@ -36,7 +36,6 @@
 /* Card header styling fixes */
 .card-header h5,
 .card-header h6,
-.card-header .btn,
 .card-header a {
     color: inherit !important;
 }

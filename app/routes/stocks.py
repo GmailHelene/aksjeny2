@@ -2064,7 +2064,7 @@ def compare():
 
         logger.info(f"Processed {len(symbols)} symbols successfully")
 
-        return render_template('stocks/compare_minimal.html', 
+        return render_template('stocks/compare.html', 
                              tickers=symbols,
                              ticker_names=ticker_names,
                              current_prices=current_prices,
@@ -2089,7 +2089,7 @@ def compare():
         import traceback
         traceback.print_exc()
         flash('Det oppstod en teknisk feil ved sammenligning av aksjer.', 'error')
-        return render_template('stocks/compare_minimal.html', 
+        return render_template('stocks/compare.html', 
                              tickers=[], 
                              stocks=[], 
                              ticker_names={},

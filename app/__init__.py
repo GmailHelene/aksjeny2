@@ -296,8 +296,9 @@ def create_app(config_class=None):
     init_market_intel_routes(app)
     from app.views.profile import init_profile_routes
     init_profile_routes(app)
-    from app.views.advanced_analytics import init_advanced_analytics_routes
-    init_advanced_analytics_routes(app)
+    # DISABLED: Conflicting with Blueprint registration - old views system
+    # from app.views.advanced_analytics import init_advanced_analytics_routes
+    # init_advanced_analytics_routes(app)
     
     # Registrer blueprints - FIX: Check if already registered before adding
     registered_blueprints = [bp.name for bp in app.blueprints.values()]
