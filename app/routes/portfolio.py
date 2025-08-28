@@ -652,15 +652,17 @@ def create_portfolio():
     """Create a new portfolio with robust error handling"""
     try:
         if request.method == 'POST':
-            # Validate CSRF token if enabled
-            try:
-                csrf_token = request.form.get('csrf_token')
-                if csrf_token:  # Only validate if token was provided
+            # Validate CSRF token more robustly
+            csrf_token = request.form.get('csrf_token')
+            if csrf_token:  # Only validate if token was provided
+                try:
                     validate_csrf(csrf_token)
-            except Exception as csrf_error:
-                logger.warning(f"CSRF validation failed: {csrf_error}")
-                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
-                return render_template('portfolio/create.html')
+                except ValidationError as csrf_error:
+                    logger.warning(f"CSRF validation failed: {csrf_error}")
+                    flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
+                    return render_template('portfolio/create.html')
+            else:
+                logger.info("No CSRF token provided, but allowing request to proceed")
             
             name = request.form.get('name', '').strip()
             description = request.form.get('description', '').strip()
@@ -817,15 +819,17 @@ def add_stock_to_portfolio(id):
             return redirect(url_for('portfolio.index'))
         
         if request.method == 'POST':
-            # Validate CSRF token if enabled
-            try:
-                csrf_token = request.form.get('csrf_token')
-                if csrf_token:  # Only validate if token was provided
+            # Validate CSRF token more robustly
+            csrf_token = request.form.get('csrf_token')
+            if csrf_token:  # Only validate if token was provided
+                try:
                     validate_csrf(csrf_token)
-            except Exception as csrf_error:
-                logger.warning(f"CSRF validation failed: {csrf_error}")
-                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
-                return redirect(request.referrer or url_for('portfolio.index'))
+                except ValidationError as csrf_error:
+                    logger.warning(f"CSRF validation failed: {csrf_error}")
+                    flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
+                    return redirect(request.referrer or url_for('portfolio.add_stock_to_portfolio', id=id))
+            else:
+                logger.warning("No CSRF token provided, but allowing request to proceed")
                 
             # Get form data with validation
             ticker = request.form.get('ticker', '').strip().upper()

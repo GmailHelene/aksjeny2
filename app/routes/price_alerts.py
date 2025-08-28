@@ -155,6 +155,7 @@ def create():
                         
                         alert = PriceAlert(
                             user_id=current_user.id,
+                            ticker=symbol,  # Required by database
                             symbol=symbol,
                             target_price=target_price,
                             alert_type=alert_type,
