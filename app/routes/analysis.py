@@ -792,7 +792,6 @@ def warren_buffett():
                 'KO': {'name': 'The Coca-Cola Company', 'sector': 'Forbruksvarer'}
             }
 
-# Properly close previous try block
         return render_template(
             'analysis/warren_buffett.html',
             analysis=analysis_data,
@@ -803,8 +802,20 @@ def warren_buffett():
             title="Warren Buffett Analyse",
             description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
         )
-    except Exception:
-        pass
+        
+    except Exception as e:
+        logger.error(f"Critical error in Warren Buffett analysis: {e}")
+        flash('En feil oppstod under analysen. Prøv igjen senere.', 'error')
+        return render_template(
+            'analysis/warren_buffett.html',
+            analysis=None,
+            error="Kunne ikke laste analyse",
+            oslo_stocks={},
+            global_stocks={},
+            ticker="",
+            title="Warren Buffett Analyse",
+            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
+        )
     # AJAX/JSON endpoint for dynamic Buffett analysis
 # AJAX/JSON endpoint for dynamic Buffett analysis
 @analysis.route('/api/warren-buffett', methods=['GET'])

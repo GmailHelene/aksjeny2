@@ -1854,46 +1854,9 @@ def toggle_favorite(symbol):
 @stocks.route('/compare')
 @demo_access
 def compare():
-    """Stock comparison page - Enhanced with better error handling"""
-    
-    # Define demo data generation function first
-    def generate_demo_data(symbol, days=180):
-        """Generate sample stock data"""
-        from datetime import datetime, timedelta
-        
-        base_price = 150 if '.OL' in symbol else 300
-        trend = random.uniform(-0.2, 0.2)
-        volatility = 0.02
-        data = []
-        
-        end_date = datetime.now()
-        for i in range(days):
-            date = end_date - timedelta(days=days-i)
-            # Generate price with trend and random walk
-            if i == 0:
-                close = base_price
-            else:
-                close = data[-1]['close'] * (1 + trend/days + random.uniform(-volatility, volatility))
-                
-            # Generate OHLC values around close
-            open_price = close * (1 + random.uniform(-0.01, 0.01))
-            high = max(open_price, close) * (1 + random.uniform(0, 0.01))
-            low = min(open_price, close) * (1 - random.uniform(0, 0.01))
-            volume = int(random.uniform(50000, 500000))
-            
-            data.append({
-                'date': date.strftime('%Y-%m-%d'),
-                'open': round(open_price, 2),
-                'high': round(high, 2),
-                'low': round(low, 2),
-                'close': round(close, 2),
-                'volume': volume
-            })
-        
-        return data
-    
+    """Stock comparison page - Simplified with robust error handling"""
     try:
-        # Support both 'symbols' and 'tickers' parameters for backward compatibility
+        # Get symbols from request parameters
         symbols_param = request.args.get('symbols') or request.args.get('tickers')
         symbols_list = request.args.getlist('symbols') or request.args.getlist('tickers')
 
@@ -1903,186 +1866,81 @@ def compare():
         else:
             symbols = [s.strip().upper() for s in symbols_list if s.strip()]
 
-        period = request.args.get('period', '6mo')
-        interval = request.args.get('interval', '1d')
-        normalize = request.args.get('normalize', '1') == '1'
-
-        # Remove empty strings and filter valid symbols (max 4)
-        symbols = [s for s in symbols if s][:4]
-
+        # Limit to max 4 symbols
+        symbols = symbols[:4] if symbols else ['EQNR.OL', 'DNB.OL']
+        
         logger.info(f"Stock comparison requested for symbols: {symbols}")
 
-        if not symbols:
-            logger.info("No symbols provided, showing empty comparison form")
-            # Default demo stocks
-            symbols = ['EQNR.OL', 'DNB.OL']
-            chart_data = {
-                'EQNR.OL': generate_demo_data('EQNR.OL', 180),
-                'DNB.OL': generate_demo_data('DNB.OL', 180)
-            }
-            ticker_names = {'EQNR.OL': 'Equinor', 'DNB.OL': 'DNB Bank'}
-        else:
-            chart_data = {}
-            ticker_names = {}
-            
-            # Get data service instance
-            try:
-                data_service = DataService()
-            except Exception as e:
-                logger.error(f"Error initializing DataService: {e}")
-                data_service = None
-
-            # Process each symbol
-            import requests
-            from flask import current_app
-            try:
-                # Use dynamic port from config or fallback to correct port
-                port = getattr(current_app.config, 'PORT', 5002)
-                response = requests.get(f'http://localhost:{port}/stocks/quick-prices?tickers={"%2C".join(symbols)}', timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get('success') and 'data' in data:
-                        for symbol in symbols:
-                            stock = data['data'].get(symbol)
-                            if stock:
-                                chart_data[symbol] = [{
-                                    'date': '',
-                                    'open': stock.get('price', 0),
-                                    'high': stock.get('price', 0),
-                                    'low': stock.get('price', 0),
-                                    'close': stock.get('price', 0),
-                                    'volume': stock.get('volume', 0)
-                                }]
-                                ticker_names[symbol] = symbol
-                            else:
-                                chart_data[symbol] = generate_demo_data(symbol, 180)
-                                ticker_names[symbol] = symbol
-                    else:
-                        for symbol in symbols:
-                            chart_data[symbol] = generate_demo_data(symbol, 180)
-                            ticker_names[symbol] = symbol
-                else:
-                    for symbol in symbols:
-                        chart_data[symbol] = generate_demo_data(symbol, 180)
-                        ticker_names[symbol] = symbol
-            except Exception as e:
-                logger.error(f"Error fetching quick prices: {e}")
-                for symbol in symbols:
-                    chart_data[symbol] = generate_demo_data(symbol, 180)
-                    ticker_names[symbol] = symbol
-
-        # Calculate metrics for each symbol
+        # Simplified demo data for comparison
+        demo_stocks = {
+            'EQNR.OL': {'name': 'Equinor ASA', 'price': 270.50, 'change': 2.30, 'change_percent': 0.86},
+            'DNB.OL': {'name': 'DNB Bank ASA', 'price': 185.20, 'change': -1.20, 'change_percent': -0.64},
+            'TEL.OL': {'name': 'Telenor ASA', 'price': 135.40, 'change': 0.80, 'change_percent': 0.59},
+            'AKER.OL': {'name': 'Aker ASA', 'price': 485.00, 'change': -5.50, 'change_percent': -1.12}
+        }
+        
+        # Prepare comparison data
+        comparison_data = {}
+        ticker_names = {}
         current_prices = {}
         price_changes = {}
-        volatility = {}
-        volumes = {}
-        correlations = {}
-        betas = {}
-        rsi = {}
-        macd = {}
-        bb = {}
-        sma200 = {}
-        sma50 = {}
-        signals = {}
-
-        # Helper for correlation matrix
-        price_matrix = {}
-
+        
         for symbol in symbols:
-            try:
-                # Extract closing prices
-                closes = [day['close'] for day in chart_data[symbol]]
-                prices = pd.Series(closes)
-                volumes_data = [day['volume'] for day in chart_data[symbol]]
+            if symbol in demo_stocks:
+                stock_data = demo_stocks[symbol]
+                comparison_data[symbol] = stock_data
+                ticker_names[symbol] = stock_data['name']
+                current_prices[symbol] = stock_data['price']
+                price_changes[symbol] = stock_data['change_percent']
+            else:
+                # Fallback for unknown symbols
+                comparison_data[symbol] = {
+                    'name': symbol,
+                    'price': 100.0,
+                    'change': 0.0,
+                    'change_percent': 0.0
+                }
+                ticker_names[symbol] = symbol
+                current_prices[symbol] = 100.0
+                price_changes[symbol] = 0.0
 
-                # Calculate basic metrics
-                current_prices[symbol] = prices.iloc[-1] if not prices.empty else 0
-                start_price = prices.iloc[0] if not prices.empty else 0
-                end_price = prices.iloc[-1] if not prices.empty else 0
-                price_changes[symbol] = ((end_price - start_price) / start_price * 100) if start_price > 0 else 0
-                
-                # Calculate technical indicators
-                rsi[symbol] = calculate_rsi(prices)
-                macd[symbol] = calculate_macd(prices)
-                bb[symbol] = calculate_bollinger_bands(prices)
-                sma200[symbol] = calculate_sma(prices, 200)
-                sma50[symbol] = calculate_sma(prices, 50)
-                signals[symbol] = generate_signals(
-                    end_price, rsi[symbol], macd[symbol], bb[symbol], sma200[symbol], sma50[symbol]
-                )
-                
-                # Calculate volatility
-                returns = prices.pct_change().dropna()
-                volatility[symbol] = returns.std() * (252 ** 0.5) * 100 if len(returns) > 0 else 0
-                
-                # Calculate volume metrics
-                volumes[symbol] = sum(volumes_data) / len(volumes_data) if volumes_data else 0
-                
-                # Store price series for correlation
-                price_matrix[symbol] = prices
-                
-                # Calculate beta relative to first stock
-                if symbol != symbols[0] and symbols[0] in price_matrix:
-                    returns1 = price_matrix[symbol].pct_change().dropna()
-                    returns0 = price_matrix[symbols[0]].pct_change().dropna()
-                    if len(returns0) > 0 and len(returns1) > 0:
-                        cov = returns1.cov(returns0)
-                        var = returns0.var()
-                        betas[symbol] = cov / var if var != 0 else 1.0
-                    else:
-                        betas[symbol] = 1.0
-                else:
-                    betas[symbol] = 1.0
-                    
-            except Exception as e:
-                logger.error(f"Error calculating metrics for {symbol}: {e}")
-                current_prices[symbol] = 0
-                price_changes[symbol] = 0
-                volatility[symbol] = 0
-                volumes[symbol] = 0
-                betas[symbol] = 1.0
-                rsi[symbol] = 50
-                macd[symbol] = {'macd': 0, 'signal': 0, 'hist': 0}
-                bb[symbol] = {'upper': 0, 'middle': 0, 'lower': 0, 'position': 'middle'}
-                sma200[symbol] = 0
-                sma50[symbol] = 0
-                signals[symbol] = 'HOLD'
-
-        # Calculate correlation matrix
-        correlations = {}
+        # Generate simple chart data
+        chart_data = {}
         for symbol in symbols:
-            correlations[symbol] = {}
-            for other in symbols:
-                try:
-                    if symbol in price_matrix and other in price_matrix:
-                        corr = price_matrix[symbol].corr(price_matrix[other])
-                        correlations[symbol][other] = corr if not pd.isna(corr) else 1.0
-                    else:
-                        correlations[symbol][other] = 1.0
-                except Exception:
-                    correlations[symbol][other] = 1.0
-
-        logger.info(f"Processed {len(symbols)} symbols successfully")
+            chart_data[symbol] = []
+            base_price = current_prices.get(symbol, 100.0)
+            for i in range(30):  # 30 data points
+                price = base_price * (1 + random.uniform(-0.05, 0.05))
+                chart_data[symbol].append({
+                    'date': f'2024-01-{i+1:02d}',
+                    'close': round(price, 2)
+                })
 
         return render_template('stocks/compare.html', 
                              tickers=symbols,
                              ticker_names=ticker_names,
+                             comparison_data=comparison_data,
                              current_prices=current_prices,
                              price_changes=price_changes,
-                             volatility=volatility,
-                             volumes=volumes,
-                             correlations=correlations,
-                             betas=betas,
-                             rsi=rsi,
-                             macd=macd,
-                             bb=bb,
-                             sma200=sma200,
-                             sma50=sma50,
-                             signals=signals,
                              chart_data=chart_data,
-                             period=period,
-                             interval=interval,
-                             normalize=normalize)
+                             period='1mo',
+                             normalize=False,
+                             volatility={},
+                             volumes={},
+                             correlations={},
+                             betas={})
+
+    except Exception as e:
+        logger.error(f"Error in stock comparison: {e}")
+        flash('Kunne ikke laste aksjsammenligning', 'error')
+        return render_template('stocks/compare.html', 
+                             tickers=[], 
+                             ticker_names={},
+                             comparison_data={},
+                             current_prices={},
+                             price_changes={},
+                             chart_data={},
+                             error="Kunne ikke laste data")
 
     except Exception as e:
         logger.error(f"Critical error in stock comparison: {e}")

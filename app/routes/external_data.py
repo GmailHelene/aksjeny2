@@ -177,34 +177,54 @@ def insider_trading_overview():
         return render_template('error.html', error="Kunne ikke hente innsidehandel data"), 200
 
 @external_data_bp.route('/analyst-coverage')
+@access_required
 def analyst_coverage():
     """Show analyst coverage overview"""
     try:
-        # Simple static data for testing
+        # Enhanced static data for testing with more comprehensive coverage
         analyst_coverage = {
-            'EQNR': {
+            'EQNR.OL': {
                 'ratings': {'consensus': 'BUY', 'target_price': 320, 'num_analysts': 8},
                 'consensus': {'recommendation': 'BUY'},
                 'technical': {'trend': 'Bullish', 'support': 310, 'resistance': 340}
             },
-            'DNB': {
+            'DNB.OL': {
                 'ratings': {'consensus': 'HOLD', 'target_price': 195, 'num_analysts': 6},
                 'consensus': {'recommendation': 'HOLD'},
                 'technical': {'trend': 'Neutral', 'support': 185, 'resistance': 205}
             },
-            'TEL': {
+            'TEL.OL': {
                 'ratings': {'consensus': 'BUY', 'target_price': 165, 'num_analysts': 7},
                 'consensus': {'recommendation': 'BUY'},
                 'technical': {'trend': 'Bullish', 'support': 155, 'resistance': 175}
+            },
+            'MOWI.OL': {
+                'ratings': {'consensus': 'BUY', 'target_price': 225, 'num_analysts': 9},
+                'consensus': {'recommendation': 'BUY'},
+                'technical': {'trend': 'Strong Bullish', 'support': 200, 'resistance': 240}
+            },
+            'NHY.OL': {
+                'ratings': {'consensus': 'HOLD', 'target_price': 75, 'num_analysts': 5},
+                'consensus': {'recommendation': 'HOLD'},
+                'technical': {'trend': 'Neutral', 'support': 65, 'resistance': 80}
+            },
+            'YAR.OL': {
+                'ratings': {'consensus': 'SELL', 'target_price': 45, 'num_analysts': 4},
+                'consensus': {'recommendation': 'SELL'},
+                'technical': {'trend': 'Bearish', 'support': 40, 'resistance': 50}
             }
         }
+        
+        logger.info(f"Analyst coverage data prepared with {len(analyst_coverage)} stocks")
         
         return render_template('external_data/analyst_coverage.html',
                              analyst_coverage=analyst_coverage)
                              
     except Exception as e:
         logger.error(f"Error in analyst coverage: {e}")
-        return f"Error: {str(e)}", 500
+        return render_template('external_data/analyst_coverage.html',
+                             analyst_coverage={},
+                             error="Kunne ikke laste analytiker data"), 200
 
 @external_data_bp.route('/market-intelligence')
 def market_intelligence():

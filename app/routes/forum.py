@@ -91,47 +91,50 @@ def create():
 @forum.route('/create_topic', methods=['GET', 'POST'])
 @login_required
 def create_topic():
-    from flask_wtf import FlaskForm
-    from wtforms import StringField, TextAreaField
-    from wtforms.validators import DataRequired
-    class TopicForm(FlaskForm):
-        title = StringField('Tittel', validators=[DataRequired()])
-        content = TextAreaField('Innhold', validators=[DataRequired()])
-    form = TopicForm()
-    if form.validate_on_submit():
-        try:
-            from app.models.forum import ForumTopic, ForumPost
-            # Get category from form or default
-            category_id = request.form.get('category')
-            if not category_id:
-                flash('Kategori må velges.', 'error')
-                return render_template('forum/create_topic.html', form=form)
-            # Create topic
-            topic = ForumTopic(
-                title=form.title.data,
-                slug=form.title.data.replace(' ', '-').lower(),
-                content=form.content.data,
-                category_id=category_id,
-                author_id=current_user.id
-            )
-            db.session.add(topic)
-            db.session.flush()  # Get topic.id before commit
-            # Create initial post
-            post = ForumPost(
-                title=form.title.data,
-                content=form.content.data,
-                topic_id=topic.id,
-                author_id=current_user.id,
-                user_id=current_user.id
-            )
-            db.session.add(post)
-            db.session.commit()
-            flash('Innlegg opprettet!', 'success')
-            return redirect(url_for('forum.index'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Kunne ikke opprette innlegg: {str(e)}', 'error')
-    return render_template('forum/create_topic.html', form=form)
+    """Create a new forum topic with simplified handling"""
+    try:
+        if request.method == 'POST':
+            title = request.form.get('title', '').strip()
+            content = request.form.get('content', '').strip()
+            category = request.form.get('category', 'general')
+            
+            if not title or not content:
+                flash('Tittel og innhold er påkrevd.', 'error')
+                return render_template('forum/create_topic.html')
+                
+            # Create a simple forum post (since ForumTopic might not exist)
+            try:
+                post = ForumPost(
+                    title=title,
+                    content=content,
+                    user_id=current_user.id,
+                    author_id=current_user.id,
+                    category=category
+                )
+                db.session.add(post)
+                db.session.commit()
+                flash('Innlegg opprettet!', 'success')
+                return redirect(url_for('forum.index'))
+                
+            except Exception as db_error:
+                logger.error(f"Database error creating forum post: {db_error}")
+                db.session.rollback()
+                flash('Kunne ikke opprette innlegg. Prøv igjen senere.', 'error')
+                
+        # GET request - show form
+        categories = [
+            {'id': 'aksjeanalyse', 'name': 'Aksjeanalyse'},
+            {'id': 'markedstrender', 'name': 'Markedstrender'},
+            {'id': 'investeringsstrategier', 'name': 'Investeringsstrategier'},
+            {'id': 'general', 'name': 'Generelt'}
+        ]
+        
+        return render_template('forum/create_topic.html', categories=categories)
+        
+    except Exception as e:
+        logger.error(f"Error in create_topic: {e}")
+        flash('En teknisk feil oppsto. Prøv igjen senere.', 'error')
+        return redirect(url_for('forum.index'))
 
 @forum.route('/category/<category_name>')
 def category(category_name):

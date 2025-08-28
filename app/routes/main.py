@@ -1715,6 +1715,8 @@ def profile():
                     # Use the Favorites model
                     from ..models.favorites import Favorites
                     favorites = Favorites.query.filter_by(user_id=current_user.id).all()
+                    logger.info(f"Found {len(favorites)} favorites for user {current_user.id}")
+                    
                     user_favorites = []
                     
                     for fav in favorites:
@@ -1743,8 +1745,34 @@ def profile():
                     # Update favorite_stocks count
                     user_stats['favorite_stocks'] = len(user_favorites)
                     
+                    # If no favorites found, let's check if there might be another storage method
+                    if len(user_favorites) == 0:
+                        logger.warning(f"No favorites found for user {current_user.id} in Favorites table")
+                        # Try to check if user has any watchlist items that could be considered favorites
+                        try:
+                            from ..models.watchlist import WatchlistStock
+                            watchlist_items = WatchlistStock.query.filter_by(user_id=current_user.id).all()
+                            logger.info(f"Found {len(watchlist_items)} watchlist items for user {current_user.id}")
+                            
+                            # Convert watchlist items to favorites format
+                            for item in watchlist_items[:10]:  # Limit to 10 for performance
+                                favorite_info = {
+                                    'symbol': item.symbol,
+                                    'name': item.name or item.symbol,
+                                    'exchange': getattr(item, 'exchange', 'Unknown'),
+                                    'created_at': getattr(item, 'created_at', datetime.now())
+                                }
+                                user_favorites.append(favorite_info)
+                                
+                            if len(user_favorites) > 0:
+                                logger.info(f"Using {len(user_favorites)} watchlist items as favorites")
+                                user_stats['favorite_stocks'] = len(user_favorites)
+                                
+                        except Exception as watchlist_error:
+                            logger.warning(f"Could not check watchlist for favorites: {watchlist_error}")
+                    
             except Exception as fav_error:
-                logger.warning(f"Error loading favorites: {fav_error}")
+                logger.error(f"Error loading favorites: {fav_error}")
                 user_favorites = []
                 errors.append('favorites_failed')
             
@@ -1856,24 +1884,64 @@ def profile():
 @main.route('/my-subscription')
 @login_required
 def my_subscription():
-    """Display user's subscription details"""
+    """Display user's subscription details with improved error handling"""
     try:
-        # Create subscription object that matches template expectations
+        # Initialize subscription object
         subscription = None
-        if current_user.is_premium:
+        subscription_status = 'free'
+        
+        # Check subscription status using various methods
+        try:
+            # Check if user has active subscription attribute
+            if hasattr(current_user, 'has_subscription') and current_user.has_subscription:
+                subscription_status = 'premium'
+            elif hasattr(current_user, 'has_active_subscription') and callable(current_user.has_active_subscription):
+                if current_user.has_active_subscription():
+                    subscription_status = 'premium'
+            elif hasattr(current_user, 'is_premium') and current_user.is_premium:
+                subscription_status = 'premium'
+            # Check for exempt users (admin access)
+            elif current_user.email in EXEMPT_EMAILS:
+                subscription_status = 'premium'
+            
+        except Exception as status_error:
+            logger.warning(f"Error checking subscription status: {status_error}")
+            subscription_status = 'free'
+        
+        # Create subscription object based on status
+        if subscription_status == 'premium':
             subscription = {
                 'is_active': True,
-                'plan': current_user.subscription_type if hasattr(current_user, 'subscription_type') else 'premium',
-                'end_date': current_user.subscription_end if hasattr(current_user, 'subscription_end') else None
+                'plan': getattr(current_user, 'subscription_type', 'premium'),
+                'start_date': getattr(current_user, 'subscription_start', None),
+                'end_date': getattr(current_user, 'subscription_end', None),
+                'status': 'active'
+            }
+        else:
+            subscription = {
+                'is_active': False,
+                'plan': 'free',
+                'start_date': None,
+                'end_date': None,
+                'status': 'inactive'
             }
         
+        logger.info(f"Subscription page loaded for user {current_user.id}: {subscription_status}")
+        
         return render_template('subscription/my-subscription.html',
-                             subscription=subscription)
+                             subscription=subscription,
+                             subscription_status=subscription_status,
+                             user=current_user)
+                             
     except Exception as e:
-        from flask import current_app
-        current_app.logger.error(f"Subscription page error: {str(e)}")
+        logger.error(f"Subscription page error: {str(e)}")
         flash('Kunne ikke laste abonnementsinformasjon', 'error')
-        return redirect(url_for('main.index'))
+        # Return basic subscription info instead of redirecting
+        return render_template('subscription/my-subscription.html',
+                             subscription={'is_active': False, 'plan': 'free', 'status': 'error'},
+                             subscription_status='error',
+                             user=current_user,
+                             error="Kunne ikke laste abonnementsinformasjon")
 
 @main.route('/cancel-subscription')
 @login_required
