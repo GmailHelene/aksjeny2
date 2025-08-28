@@ -7,9 +7,203 @@ import functools
 from datetime import datetime, timedelta, timezone
 from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
+import os
+
+FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY', 'd2nrf11r01qsrqkpq0dgd2nrf11r01qsrqkpq0e0')
+FINNHUB_SECRET = os.environ.get('FINNHUB_SECRET', 'd2nrf11r01qsrqkpq0f0')
+
+ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY', 'J5VTVRL81XIDBR90')
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+def get_alpha_vantage_price(ticker):
+    """Get current price for a stock using Alpha Vantage API (free tier)."""
+    import requests
+    try:
+        url = f"https://www.alphavantage.co/query"
+        params = {
+            'function': 'GLOBAL_QUOTE',
+            'symbol': ticker,
+            'apikey': ALPHA_VANTAGE_API_KEY
+        }
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"Alpha Vantage API failed for {ticker}: HTTP {response.status_code}")
+            return None
+        data = response.json()
+        quote = data.get('Global Quote', {})
+        price_str = quote.get('05. price', None)
+        if price_str:
+            try:
+                price = float(price_str)
+                logger.info(f"Alpha Vantage price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse Alpha Vantage price for {ticker}: {price_str} ({e})")
+        else:
+            logger.warning(f"No price found for {ticker} in Alpha Vantage response")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching Alpha Vantage price for {ticker}: {e}")
+        return None
+
+def get_finnhub_price(ticker):
+    """Get current price for a stock using Finnhub API (free tier)."""
+    import requests
+    try:
+        url = f"https://finnhub.io/api/v1/quote"
+        params = {
+            'symbol': ticker,
+            'token': FINNHUB_API_KEY
+        }
+        headers = {
+            'X-Finnhub-Secret': FINNHUB_SECRET,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"Finnhub API failed for {ticker}: HTTP {response.status_code}")
+            return None
+        data = response.json()
+        price = data.get('c', None)  # 'c' is current price
+        if price:
+            try:
+                price = float(price)
+                logger.info(f"Finnhub price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse Finnhub price for {ticker}: {price} ({e})")
+        else:
+            logger.warning(f"No price found for {ticker} in Finnhub response")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching Finnhub price for {ticker}: {e}")
+        return None
+
+# --- NEW SCRAPING FUNCTION FOR OSLO BØRS ---
+def scrape_oslo_bors_price(ticker):
+    """Scrape current price for a Norwegian stock from Oslo Børs website using BeautifulSoup."""
+    import requests
+    from bs4 import BeautifulSoup
+    import re
+    try:
+        ticker_short = ticker.replace('.OL', '')
+        url = f"https://www.euronext.com/nb/market-data/stocks/quote/{ticker_short}-XOSL"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"Oslo Børs scraping failed for {ticker}: HTTP {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_tag = soup.find('span', {'class': re.compile(r'.*instrument-price-last.*')})
+        if price_tag:
+            price_str = price_tag.text.strip().replace(',', '.')
+            try:
+                price = float(price_str)
+                logger.info(f"Scraped Oslo Børs price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse price for {ticker}: {price_str} ({e})")
+        else:
+            logger.warning(f"Price tag not found for {ticker} on Oslo Børs")
+        return None
+    except Exception as e:
+        logger.error(f"Error scraping Oslo Børs for {ticker}: {e}")
+        return None
+
+def scrape_nasdaq_price(ticker):
+    """Scrape current price for a stock from Nasdaq website using BeautifulSoup."""
+    import requests
+    from bs4 import BeautifulSoup
+    try:
+        url = f"https://www.nasdaq.com/market-activity/stocks/{ticker.lower()}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"Nasdaq scraping failed for {ticker}: HTTP {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_tag = soup.find('div', {'class': 'symbol-page-header__pricing-price'})
+        if price_tag:
+            price_str = price_tag.text.strip().replace(',', '')
+            try:
+                price = float(price_str)
+                logger.info(f"Scraped Nasdaq price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse Nasdaq price for {ticker}: {price_str} ({e})")
+        else:
+            logger.warning(f"Price tag not found for {ticker} on Nasdaq")
+        return None
+    except Exception as e:
+        logger.error(f"Error scraping Nasdaq for {ticker}: {e}")
+        return None
+
+def scrape_euronext_price(ticker):
+    """Scrape current price for a stock from Euronext website using BeautifulSoup."""
+    import requests
+    from bs4 import BeautifulSoup
+    import re
+    try:
+        url = f"https://live.euronext.com/en/product/equities/{ticker}-XOSL"  # XOSL for Oslo, change for other markets
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"Euronext scraping failed for {ticker}: HTTP {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_tag = soup.find('span', {'class': re.compile(r'.*instrument-price-last.*')})
+        if price_tag:
+            price_str = price_tag.text.strip().replace(',', '.')
+            try:
+                price = float(price_str)
+                logger.info(f"Scraped Euronext price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse Euronext price for {ticker}: {price_str} ({e})")
+        else:
+            logger.warning(f"Price tag not found for {ticker} on Euronext")
+        return None
+    except Exception as e:
+        logger.error(f"Error scraping Euronext for {ticker}: {e}")
+        return None
+
+def scrape_dn_investor_price(ticker):
+    """Scrape current price for a stock from DN Investor using BeautifulSoup."""
+    import requests
+    from bs4 import BeautifulSoup
+    try:
+        url = f"https://investor.dn.no/#!/Aksje/S/{ticker.upper()}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            logger.warning(f"DN Investor scraping failed for {ticker}: HTTP {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_tag = soup.find('span', {'class': 'price'})
+        if price_tag:
+            price_str = price_tag.text.strip().replace(',', '.')
+            try:
+                price = float(price_str)
+                logger.info(f"Scraped DN Investor price for {ticker}: {price}")
+                return price
+            except Exception as e:
+                logger.warning(f"Failed to parse DN Investor price for {ticker}: {price_str} ({e})")
+        else:
+            logger.warning(f"Price tag not found for {ticker} on DN Investor")
+        return None
+    except Exception as e:
+        logger.error(f"Error scraping DN Investor for {ticker}: {e}")
+        return None
 
 # Safe imports with fallbacks
 try:

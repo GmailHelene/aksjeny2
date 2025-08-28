@@ -1,17 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
   <h1>Warren Buffett Analyse</h1>
-  <form method="get" action="">
+  <form id="buffett-search-form">
     <label for="ticker">Søk etter ticker:</label>
     <input type="text" id="ticker" name="ticker" value="{{ ticker }}" placeholder="F.eks. TSLA">
     <button type="submit">Søk</button>
   </form>
-  {% if error %}
-    <div class="alert alert-danger">Beklager, en feil oppsto. Prøv igjen senere.</div>
-  {% elif data %}
-    <h2>Analyse for {{ ticker }}</h2>
-    <pre>{{ data | tojson(indent=2) }}</pre>
-  {% else %}
-    <p>Ingen data funnet for valgt ticker.</p>
-  {% endif %}
+  <div id="buffett-analysis-results"></div>
+  <script>
+    document.getElementById('buffett-search-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+      if (!ticker) return;
+      fetch(`/analysis/api/warren-buffett?ticker=${ticker}`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('buffett-analysis-results');
+          if (data.success && data.analysis) {
+            const a = data.analysis;
+            container.innerHTML = `
+              <h2>Analyse for ${a.ticker}</h2>
+              <pre>${JSON.stringify(a, null, 2)}</pre>
+            `;
+          } else {
+            container.innerHTML = `<div class='alert alert-danger'>${data.error || 'Ingen data funnet.'}</div>`;
+          }
+        })
+        .catch(err => {
+          document.getElementById('buffett-analysis-results').innerHTML = `<div class='alert alert-danger'>Feil ved henting av data.</div>`;
+        });
+    });
+  </script>
 {% endblock %}

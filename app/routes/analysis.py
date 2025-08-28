@@ -803,6 +803,43 @@ def warren_buffett():
             description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
         )
 
+
+# AJAX/JSON endpoint for dynamic Buffett analysis
+@analysis.route('/api/warren-buffett', methods=['GET'])
+@access_required
+def warren_buffett_api():
+    ticker = request.args.get('ticker', '').strip().upper()
+    if not ticker or not ticker.replace('.', '').replace('-', '').isalnum():
+        return jsonify({'success': False, 'error': 'Ugyldig aksjesymbol.'}), 400
+    try:
+        stock_info = None
+        if DataService:
+            try:
+                stock_info = DataService.get_stock_info(ticker)
+            except Exception:
+                stock_info = None
+        real_analysis = None
+        if BuffettAnalyzer:
+            try:
+                real_analysis = BuffettAnalyzer.analyze_stock(ticker)
+            except Exception:
+                real_analysis = None
+        metrics = _generate_buffett_metrics(ticker, stock_info)
+        recommendation = _generate_buffett_recommendation(metrics)
+        analysis_data = real_analysis if real_analysis else {
+            'ticker': ticker,
+            'company_name': stock_info.get('longName', stock_info.get('shortName', ticker.replace('.OL', ' ASA'))) if stock_info else ticker,
+            'metrics': metrics,
+            'buffett_score': recommendation['score'],
+            'recommendation': recommendation,
+            'last_updated': datetime.now().strftime("%Y-%m-%d %H:%M"),
+            'is_fallback': not bool(real_analysis)
+        }
+        return jsonify({'success': True, 'analysis': analysis_data})
+    except Exception as e:
+        logger.error(f"Buffett API error: {e}")
+        return jsonify({'success': False, 'error': 'Kunne ikke analysere ticker.'}), 500
+
     except Exception as e:
         logger.error(f"Critical error in Warren Buffett analysis: {e}", exc_info=True)
         return render_template(

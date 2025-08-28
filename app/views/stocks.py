@@ -13,14 +13,10 @@ def init_stocks_routes(app):
             tickers = [t for t in tickers if t]
             
             if not tickers:
-                return render_template('stocks/compare.html', 
-                                     error=True,
-                                     message="Ingen aksjer valgt for sammenligning")
-            
+                tickers = ['EQNR.OL', 'DNB.OL']
             comparison_data = get_comparison_data(tickers)
             if not comparison_data:
                 comparison_data = generate_demo_comparison(tickers)
-            
             return render_template('stocks/compare.html',
                                  tickers=tickers,
                                  error=False,

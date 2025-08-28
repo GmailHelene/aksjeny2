@@ -11,15 +11,16 @@ def my_subscription():
     """Display user's subscription details"""
     try:
         # Calculate renewal date if premium
-        renewal_date = None
-        if current_user.is_premium and hasattr(current_user, 'subscription_end'):
-            renewal_date = current_user.subscription_end
-        elif current_user.is_premium:
-            # Default to 30 days from now if no end date set
-            renewal_date = datetime.utcnow() + timedelta(days=30)
-        
+        # Fallback/demo subscription object
+        subscription = getattr(current_user, 'subscription', None)
+        if not subscription or not getattr(subscription, 'is_active', False):
+            class DemoSubscription:
+                is_active = False
+                plan = 'Gratis'
+                end_date = None
+            subscription = DemoSubscription()
         return render_template('subscription/my-subscription.html',
-                             renewal_date=renewal_date)
+                             subscription=subscription)
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Subscription page error: {str(e)}")

@@ -221,24 +221,27 @@ def sector_analysis():
                 logger.error(f"ExternalAPIService failed in sector_analysis: {api_error}")
                 # API failed, so we will use fallback data
 
-        if not sector_data:
+        if not sector_data or not isinstance(sector_data, dict) or not sector_data:
             logger.warning("Using fallback data for sector_analysis.")
-            sector_data = {
-                'Energy': {'change_percent': 2.4, 'volume': 1500000},
-                'Technology': {'change_percent': -0.8, 'volume': 2300000},
-                'Financials': {'change_percent': 1.2, 'volume': 1800000},
-                'Healthcare': {'change_percent': 0.5, 'volume': 900000},
-                'Consumer Discretionary': {'change_percent': -1.1, 'volume': 1200000}
-            }
+            sector_data = [
+                {'name': 'Energy', 'performance': 2.4},
+                {'name': 'Technology', 'performance': -0.8},
+                {'name': 'Financials', 'performance': 1.2},
+                {'name': 'Healthcare', 'performance': 0.5},
+                {'name': 'Consumer Discretionary', 'performance': -1.1}
+            ]
+        else:
+            # Convert dict to list for template compatibility
+            sector_data = [{'name': k, 'performance': v.get('change_percent', 0)} for k, v in sector_data.items()]
+        if not screener_data:
             screener_data = [
                 {'symbol': 'EQNR', 'name': 'Equinor ASA', 'price': 280.50, 'change': 2.4},
                 {'symbol': 'DNB', 'name': 'DNB Bank ASA', 'price': 220.30, 'change': 1.2},
                 {'symbol': 'TEL', 'name': 'Telenor ASA', 'price': 165.80, 'change': -0.5}
             ]
-
-        return render_template('market_intel/sector_analysis.html',
-                             sector_data=sector_data,
-                             screener_data=screener_data[:20] if screener_data else [])
+        return render_template('market-intel/sector-analysis.html',
+                             sectors=sector_data,
+                             screener_data=screener_data[:20])
     except Exception as e:
         logger.error(f"Critical error in sector_analysis view: {e}", exc_info=True)
         return render_template('error.html', 
