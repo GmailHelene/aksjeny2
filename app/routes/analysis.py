@@ -804,6 +804,8 @@ def warren_buffett():
         )
 
 
+
+
 # AJAX/JSON endpoint for dynamic Buffett analysis
 @analysis.route('/api/warren-buffett', methods=['GET'])
 @access_required
@@ -839,18 +841,6 @@ def warren_buffett_api():
     except Exception as e:
         logger.error(f"Buffett API error: {e}")
         return jsonify({'success': False, 'error': 'Kunne ikke analysere ticker.'}), 500
-
-    except Exception as e:
-        logger.error(f"Critical error in Warren Buffett analysis: {e}", exc_info=True)
-        return render_template(
-            'analysis/warren_buffett.html',
-            analysis=None,
-            error="Warren Buffett-analyse er midlertidig utilgjengelig. Prøv igjen senere.",
-            oslo_stocks={},
-            global_stocks={},
-            ticker=None
-        )
-
 @analysis.route('/market-overview')
 @analysis.route('/market_overview')
 @access_required
