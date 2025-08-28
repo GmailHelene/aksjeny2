@@ -58,7 +58,7 @@ def settings():
             from flask import current_app
             current_app.logger.error(f"UserSettings missing for user {current_user.id}")
             flash('Innstillinger mangler for denne brukeren. Kontakt support.', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('settings'))
         # Fetch user's price alerts
         try:
             from app.models.price_alert import PriceAlert
@@ -72,8 +72,8 @@ def settings():
     except Exception as e:
         from flask import current_app
         current_app.logger.error(f"Settings error: {str(e)}")
-        flash('En feil oppstod ved lasting av innstillinger', 'error')
-        return redirect(url_for('index'))
+    flash('En feil oppstod ved lasting av innstillinger', 'error')
+    return redirect(url_for('settings'))
 
 @settings_bp.route('/settings/update', methods=['POST'])
 @login_required

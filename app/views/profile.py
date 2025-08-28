@@ -16,4 +16,5 @@ def init_profile_routes(app):
         except Exception as e:
             current_app.logger.error(f"Profile error: {str(e)}")
             flash('Kunne ikke laste profilen. Prøv igjen senere.', 'error')
-            return redirect(url_for('index'))
+            flash('Det oppstod en feil ved lasting av profilen. Prøv igjen senere.', 'error')
+            return redirect(url_for('profile'))
