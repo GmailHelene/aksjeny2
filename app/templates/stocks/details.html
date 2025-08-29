@@ -30,41 +30,6 @@
                 </div>
             </div>
 
-            <!-- Key Metrics - Only show on overview tab -->
-            <div id="key-metrics" class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Nøkkeltall</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="metric">
-                                <strong>P/E-forhold:</strong>
-                                <div class="h6 text-primary">{{ stock.pe_ratio or '15.2' }}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="metric">
-                                <strong>Markedsverdi:</strong>
-                                <div class="h6 text-primary">{{ stock.market_cap or '1.2T NOK' }}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="metric">
-                                <strong>Utbytte:</strong>
-                                <div class="h6 text-primary">{{ stock.dividend_yield or '3.5%' }}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="metric">
-                                <strong>Beta:</strong>
-                                <div class="h6 text-primary">{{ stock.beta or '1.15' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Navigation Tabs -->
             <ul class="nav nav-tabs mb-4" id="stockTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -126,6 +91,41 @@
                                         <tr><td>ROE:</td><td class="text-end">{{ stock.roe or '18.5%' }}</td></tr>
                                         <tr><td>Gjeldsgrad:</td><td class="text-end">{{ stock.debt_ratio or '25%' }}</td></tr>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Metrics -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Nøkkeltall</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <div class="metric">
+                                        <strong>P/E-forhold:</strong>
+                                        <div class="h6 text-primary">{{ stock.pe_ratio or '15.2' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric">
+                                        <strong>Markedsverdi:</strong>
+                                        <div class="h6 text-primary">{{ stock.market_cap or '1.2T NOK' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric">
+                                        <strong>Utbytte:</strong>
+                                        <div class="h6 text-primary">{{ stock.dividend_yield or '3.5%' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric">
+                                        <strong>Beta:</strong>
+                                        <div class="h6 text-primary">{{ stock.beta or '1.15' }}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -99,6 +99,7 @@ class ForumPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=True)  # Add title field for compatibility
     content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=True)  # Add category field for compatibility
     
     # Relationships
     topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id'), nullable=True)  # Make optional for standalone posts

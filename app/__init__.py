@@ -287,8 +287,9 @@ def create_app(config_class=None):
     init_analysis_routes(app)
     from app.views.market_intel import init_market_intel_routes
     init_market_intel_routes(app)
-    from app.views.profile import init_profile_routes
-    init_profile_routes(app)
+    # DISABLED: Conflicting with Blueprint registration - old profile view system  
+    # from app.views.profile import init_profile_routes
+    # init_profile_routes(app)
     # DISABLED: Conflicting with Blueprint registration - old views system
     # from app.views.advanced_analytics import init_advanced_analytics_routes
     # init_advanced_analytics_routes(app)

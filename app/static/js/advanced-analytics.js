@@ -5,7 +5,7 @@
 
 class AdvancedAnalytics {
     constructor() {
-        this.baseURL = '/api';
+        this.baseURL = '/advanced-analytics/api';
         this.initializeEventListeners();
     }
 
