@@ -1932,7 +1932,9 @@ def compare():
 
     except Exception as e:
         logger.error(f"Error in stock comparison: {e}")
-        flash('Kunne ikke laste aksjsammenligning', 'error')
+        import traceback
+        traceback.print_exc()
+        flash('Det oppstod en teknisk feil ved sammenligning av aksjer.', 'error')
         return render_template('stocks/compare.html', 
                              tickers=[], 
                              ticker_names={},
@@ -1940,20 +1942,8 @@ def compare():
                              current_prices={},
                              price_changes={},
                              chart_data={},
-                             error="Kunne ikke laste data")
-
-    except Exception as e:
-        logger.error(f"Critical error in stock comparison: {e}")
-        import traceback
-        traceback.print_exc()
-        flash('Det oppstod en teknisk feil ved sammenligning av aksjer.', 'error')
-        return render_template('stocks/compare.html', 
-                             tickers=[], 
-                             stocks=[], 
-                             ticker_names={},
-                             comparison_data={},
-                             current_prices={},
-                             price_changes={},
+                             period='1mo',
+                             normalize=False,
                              volatility={},
                              volumes={},
                              correlations={},
@@ -1963,8 +1953,7 @@ def compare():
                              bb={},
                              sma200={},
                              sma50={},
-                             signals={},
-                             chart_data={})
+                             signals={})
 
 
 # Helper route for demo data generation

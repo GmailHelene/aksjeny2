@@ -1369,7 +1369,7 @@ def roi_kalkulator():
 @access_required  
 def dashboard():
     """Main dashboard redirect to financial dashboard"""
-    return redirect(url_for('dashboard.financial_dashboard'))
+    return redirect(url_for('dashboard.main_dashboard'))
 
 @main.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

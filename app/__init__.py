@@ -16,8 +16,6 @@ from flask_migrate import Migrate
 import psutil
 import time
 import redis
-from add_missing_columns import add_missing_columns
-from add_browser_enabled_column import add_browser_enabled_column
 
 # Load environment variables
 load_dotenv()
@@ -51,13 +49,7 @@ def create_app(config_class=None):
     # Initialize Flask extensions
     db.init_app(app)
     
-    # Ensure notification columns exist
-    with app.app_context():
-        try:
-            add_missing_columns()
-            add_browser_enabled_column()
-        except Exception as e:
-            app.logger.error(f"Error adding missing columns: {e}")
+    # Initialize database and migrations
     migrate = Migrate(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
@@ -288,8 +280,9 @@ def create_app(config_class=None):
         app.logger.error(f"ERROR Critical error during app creation: {e}")
         raise
     # Register routes after try block
-    from app.views.stocks import init_stocks_routes
-    init_stocks_routes(app)
+    # DISABLED: Conflicting with Blueprint registration - old stocks view system
+    # from app.views.stocks import init_stocks_routes
+    # init_stocks_routes(app)
     from app.views.analysis import init_analysis_routes
     init_analysis_routes(app)
     from app.views.market_intel import init_market_intel_routes

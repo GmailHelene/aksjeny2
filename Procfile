@@ -1,1 +1,1 @@
-web: python start_fixed.py
+web: python3 main.py

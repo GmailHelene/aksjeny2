@@ -417,7 +417,7 @@ def calculate_user_portfolio_stats(user_id):
 
 @dashboard.route('/dashboard')
 @access_required
-def financial_dashboard():
+def main_dashboard():
     """Main financial dashboard route"""
     try:
         # Get user portfolio statistics
