@@ -46,8 +46,13 @@ class WatchlistService:
             if not watchlist:
                 return False, "Kunne ikke finne eller opprette watchlist"
 
-            # Check if symbol already exists
-            if any(s.ticker == symbol for s in watchlist.stocks):
+            # Check if symbol already exists in both old and new models
+            # Check new model (WatchlistItem)
+            if any(item.symbol == symbol for item in watchlist.items):
+                return False, "Aksjen er allerede i watchlist"
+            
+            # Check old model (WatchlistStock) for backward compatibility
+            if hasattr(watchlist, 'stocks') and any(s.ticker == symbol for s in watchlist.stocks):
                 return False, "Aksjen er allerede i watchlist"
 
             # Get stock info to validate symbol
@@ -55,10 +60,11 @@ class WatchlistService:
             if not stock_info:
                 return False, "Kunne ikke finne aksjen"
 
-            # Add using current model
-            stock = WatchlistStock(
+            # Add using new model (WatchlistItem)
+            from ..models.watchlist import WatchlistItem
+            stock = WatchlistItem(
                 watchlist_id=watchlist.id,
-                ticker=symbol
+                symbol=symbol
             )
             db.session.add(stock)
             db.session.commit()
@@ -77,7 +83,18 @@ class WatchlistService:
             if not watchlist:
                 return False, "Kunne ikke finne watchlist"
 
-            # Find and remove stock
+            # Find and remove stock from new model first
+            item = WatchlistItem.query.filter_by(
+                watchlist_id=watchlist.id,
+                symbol=symbol
+            ).first()
+
+            if item:
+                db.session.delete(item)
+                db.session.commit()
+                return True, "Aksjen ble fjernet fra watchlist"
+            
+            # Fallback: check old model for backward compatibility
             stock = WatchlistStock.query.filter_by(
                 watchlist_id=watchlist.id,
                 ticker=symbol
@@ -87,6 +104,7 @@ class WatchlistService:
                 db.session.delete(stock)
                 db.session.commit()
                 return True, "Aksjen ble fjernet fra watchlist"
+                
             return False, "Aksjen ble ikke funnet i watchlist"
 
         except Exception as e:

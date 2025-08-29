@@ -821,24 +821,39 @@ def warren_buffett():
 @analysis.route('/api/warren-buffett', methods=['GET'])
 @access_required
 def warren_buffett_api():
-    ticker = request.args.get('ticker', '').strip().upper()
-    if not ticker or not ticker.replace('.', '').replace('-', '').isalnum():
-        return jsonify({'success': False, 'error': 'Ugyldig aksjesymbol.'}), 400
+    """Warren Buffett API with robust error handling"""
     try:
+        ticker = request.args.get('ticker', '').strip().upper()
+        if not ticker or not ticker.replace('.', '').replace('-', '').isalnum():
+            return jsonify({'success': False, 'error': 'Ugyldig aksjesymbol.'}), 400
+        
+        logger.info(f"Warren Buffett API request for ticker: {ticker}")
+        
+        # Try to get real stock data
         stock_info = None
         if DataService:
             try:
                 stock_info = DataService.get_stock_info(ticker)
-            except Exception:
+                logger.info(f"Got stock data for {ticker}")
+            except Exception as data_error:
+                logger.warning(f"DataService failed for {ticker}: {data_error}")
                 stock_info = None
+        
+        # Try to get real analysis
         real_analysis = None
         if BuffettAnalyzer:
             try:
                 real_analysis = BuffettAnalyzer.analyze_stock(ticker)
-            except Exception:
+                logger.info(f"Got Buffett analysis for {ticker}")
+            except Exception as analysis_error:
+                logger.warning(f"BuffettAnalyzer failed for {ticker}: {analysis_error}")
                 real_analysis = None
+        
+        # Generate fallback metrics if needed
         metrics = _generate_buffett_metrics(ticker, stock_info)
         recommendation = _generate_buffett_recommendation(metrics)
+        
+        # Build response data
         analysis_data = real_analysis if real_analysis else {
             'ticker': ticker,
             'company_name': stock_info.get('longName', stock_info.get('shortName', ticker.replace('.OL', ' ASA'))) if stock_info else ticker,
@@ -848,10 +863,15 @@ def warren_buffett_api():
             'last_updated': datetime.now().strftime("%Y-%m-%d %H:%M"),
             'is_fallback': not bool(real_analysis)
         }
+        
+        logger.info(f"Successfully generated Buffett analysis for {ticker}")
         return jsonify({'success': True, 'analysis': analysis_data})
+        
     except Exception as e:
-        logger.error(f"Buffett API error: {e}")
-        return jsonify({'success': False, 'error': 'Kunne ikke analysere ticker.'}), 500
+        logger.error(f"Critical error in Warren Buffett API for ticker {ticker}: {e}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': 'En feil oppstod under analysen. Prøv igjen senere.'}), 500
 @analysis.route('/market-overview')
 @analysis.route('/market_overview')
 @access_required

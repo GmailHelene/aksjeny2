@@ -154,8 +154,13 @@ class PriceAlert(db.Model):
         for alert in old_alerts:
             db.session.delete(alert)
         
-        db.session.commit()
-        return len(old_alerts)
+        try:
+            db.session.commit()
+            return len(old_alerts)
+        except Exception as commit_error:
+            logger.error(f"Error committing alert cleanup: {commit_error}")
+            db.session.rollback()
+            return 0
 
 
 class AlertNotificationSettings(db.Model):

@@ -629,13 +629,39 @@ def view_watchlist(id):
     stock_data = []
     
     for item in watchlist.items:
-        data = analyzer.get_stock_data(item.symbol)
-        if data:
-            # Generer alerts for denne aksjen using the new notification settings
-            user_preferences = current_user.get_notification_settings()
-            alerts = analyzer.analyze_alerts(data, user_preferences)
-            data['alerts'] = alerts
-            stock_data.append(data)
+        try:
+            data = analyzer.get_stock_data(item.symbol)
+            if data:
+                # Generer alerts for denne aksjen using the new notification settings
+                user_preferences = current_user.get_notification_settings()
+                alerts = analyzer.analyze_alerts(data, user_preferences)
+                data['alerts'] = alerts
+                stock_data.append(data)
+            else:
+                # Fallback: show basic info even if data fetch fails
+                fallback_data = {
+                    'symbol': item.symbol,
+                    'name': item.symbol,
+                    'current_price': 100.0 + (hash(item.symbol) % 100),
+                    'price_change': ((hash(item.symbol) % 21) - 10) / 100,
+                    'volume': 1000000 + (hash(item.symbol) % 500000),
+                    'note': 'Demo data - kunne ikke hente ferske priser',
+                    'alerts': []
+                }
+                stock_data.append(fallback_data)
+        except Exception as e:
+            current_app.logger.error(f"Error getting data for {item.symbol}: {e}")
+            # Still show the stock with fallback data
+            fallback_data = {
+                'symbol': item.symbol,
+                'name': item.symbol,
+                'current_price': 100.0,
+                'price_change': 0.0,
+                'volume': 1000000,
+                'note': 'Feil ved henting av data',
+                'alerts': []
+            }
+            stock_data.append(fallback_data)
     
     return render_template('watchlist/view.html', watchlist=watchlist, stock_data=stock_data)
 
@@ -692,6 +718,49 @@ def remove_stock(item_id):
     
     flash(f'{symbol} fjernet fra watchlist', 'success')
     return redirect(url_for('watchlist_advanced.view_watchlist', id=watchlist.id))
+
+@watchlist_bp.route('/api/alerts')
+@login_required
+def get_all_alerts():
+    """API-endpoint for å hente alle aktive alerts fra alle watchlists"""
+    try:
+        # Get all user's watchlists
+        watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
+        
+        analyzer = WatchlistAnalyzer()
+        all_alerts = []
+        
+        for watchlist in watchlists:
+            for item in watchlist.items:
+                try:
+                    stock_data = analyzer.get_stock_data(item.symbol)
+                    if stock_data:
+                        # Use the new notification settings method
+                        user_preferences = current_user.get_notification_settings()
+                        alerts = analyzer.analyze_alerts(stock_data, user_preferences)
+                        for alert in alerts:
+                            alert['symbol'] = item.symbol
+                            alert['watchlist_name'] = watchlist.name
+                            all_alerts.append(alert)
+                except Exception as e:
+                    # Skip individual stock errors
+                    current_app.logger.warning(f"Error analyzing alerts for {item.symbol}: {e}")
+                    continue
+        
+        return jsonify({
+            'alerts': all_alerts,
+            'count': len(all_alerts),
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error fetching alerts: {e}")
+        return jsonify({
+            'alerts': [],
+            'count': 0,
+            'error': 'Could not load alerts',
+            'timestamp': datetime.now().isoformat()
+        })
 
 @watchlist_bp.route('/api/alerts/<int:watchlist_id>')
 @login_required

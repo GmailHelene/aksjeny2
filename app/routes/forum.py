@@ -100,7 +100,7 @@ def create():
 @forum.route('/create_topic', methods=['GET', 'POST'])
 @login_required
 def create_topic():
-    """Create a new forum topic with simplified handling"""
+    """Create a new forum topic with robust error handling"""
     try:
         if request.method == 'POST':
             # Validate CSRF token
@@ -119,43 +119,35 @@ def create_topic():
                 flash('Tittel og innhold er påkrevd.', 'error')
                 return render_template('forum/create_topic.html')
                 
-            # Create a simple forum post (since ForumTopic might not exist)
+            # Create the forum post with proper error handling
             try:
-                # Ensure database tables exist
+                # Ensure we have all required database tables
                 db.create_all()
                 
+                # Create the post
                 post = ForumPost(
                     title=title,
                     content=content,
                     user_id=current_user.id,
-                    author_id=current_user.id,
-                    category=category if hasattr(ForumPost, 'category') else None
+                    author_id=current_user.id
                 )
+                
+                # Try to add category if the field exists
+                if hasattr(ForumPost, 'category'):
+                    post.category = category
+                
                 db.session.add(post)
                 db.session.commit()
+                
                 flash('Innlegg opprettet!', 'success')
+                logger.info(f"Forum post created successfully by user {current_user.id}: {title}")
                 return redirect(url_for('forum.index'))
                 
             except Exception as db_error:
                 logger.error(f"Database error creating forum post: {db_error}")
                 db.session.rollback()
-                
-                # Try creating a basic post without category field
-                try:
-                    post = ForumPost(
-                        title=title,
-                        content=content,
-                        user_id=current_user.id,
-                        author_id=current_user.id
-                    )
-                    db.session.add(post)
-                    db.session.commit()
-                    flash('Innlegg opprettet!', 'success')
-                    return redirect(url_for('forum.index'))
-                except Exception as fallback_error:
-                    logger.error(f"Fallback forum post creation failed: {fallback_error}")
-                    db.session.rollback()
-                    flash('Kunne ikke opprette innlegg. Prøv igjen senere.', 'error')
+                flash('Kunne ikke opprette innlegg. Prøv igjen senere.', 'error')
+                return render_template('forum/create_topic.html')
                 
         # GET request - show form
         categories = [
@@ -168,7 +160,7 @@ def create_topic():
         return render_template('forum/create_topic.html', categories=categories)
         
     except Exception as e:
-        logger.error(f"Error in create_topic: {e}")
+        logger.error(f"Critical error in create_topic: {e}")
         import traceback
         logger.error(f"Full traceback: {traceback.format_exc()}")
         flash('En teknisk feil oppsto. Prøv igjen senere.', 'error')

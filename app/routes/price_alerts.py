@@ -153,6 +153,13 @@ def create():
                         from ..models.price_alert import PriceAlert
                         from .. import db
                         
+                        # Ensure clean transaction state
+                        try:
+                            if db.session.is_active:
+                                db.session.rollback()
+                        except:
+                            pass
+                        
                         alert = PriceAlert(
                             user_id=current_user.id,
                             ticker=symbol,  # Required by database
@@ -172,6 +179,10 @@ def create():
                         
                     except Exception as db_error:
                         logger.error(f"Direct database alert creation failed: {db_error}")
+                        try:
+                            db.session.rollback()
+                        except:
+                            pass
                         alert = None
                 
                 if alert:

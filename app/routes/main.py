@@ -1940,6 +1940,15 @@ def profile():
 def my_subscription():
     """Display user's subscription details with improved error handling"""
     try:
+        # Debug current user subscription info
+        logger.info(f"User {current_user.id} subscription check:")
+        logger.info(f"  has_subscription: {getattr(current_user, 'has_subscription', 'N/A')}")
+        logger.info(f"  subscription_type: {getattr(current_user, 'subscription_type', 'N/A')}")
+        logger.info(f"  subscription_start: {getattr(current_user, 'subscription_start', 'N/A')}")
+        logger.info(f"  subscription_end: {getattr(current_user, 'subscription_end', 'N/A')}")
+        logger.info(f"  is_premium: {getattr(current_user, 'is_premium', 'N/A')}")
+        logger.info(f"  email: {current_user.email}")
+        
         # Initialize subscription object
         subscription = None
         subscription_status = 'free'
@@ -1961,6 +1970,8 @@ def my_subscription():
         except Exception as status_error:
             logger.warning(f"Error checking subscription status: {status_error}")
             subscription_status = 'free'
+        
+        logger.info(f"Final subscription_status: {subscription_status}")
         
         # Create subscription object based on status
         if subscription_status == 'premium':

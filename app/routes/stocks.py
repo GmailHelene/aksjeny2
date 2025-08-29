@@ -1911,10 +1911,45 @@ def compare():
             base_price = current_prices.get(symbol, 100.0)
             for i in range(30):  # 30 data points
                 price = base_price * (1 + random.uniform(-0.05, 0.05))
+                volume = random.randint(100000, 2000000)  # Random volume
                 chart_data[symbol].append({
                     'date': f'2024-01-{i+1:02d}',
-                    'close': round(price, 2)
+                    'close': round(price, 2),
+                    'volume': volume
                 })
+
+        # Generate demo technical indicators and metrics
+        demo_metrics = {}
+        for symbol in symbols:
+            demo_metrics[symbol] = {
+                'volatility': round(random.uniform(10, 35), 2),
+                'volume': random.randint(500000, 5000000),
+                'rsi': round(random.uniform(30, 70), 2),
+                'beta': round(random.uniform(0.5, 1.8), 2),
+                'sma50': round(current_prices.get(symbol, 100) * random.uniform(0.95, 1.05), 2),
+                'sma200': round(current_prices.get(symbol, 100) * random.uniform(0.90, 1.10), 2),
+            }
+
+        # Create metric dictionaries for template
+        volatility = {symbol: demo_metrics[symbol]['volatility'] for symbol in symbols}
+        volumes = {symbol: demo_metrics[symbol]['volume'] for symbol in symbols}
+        rsi = {symbol: demo_metrics[symbol]['rsi'] for symbol in symbols}
+        betas = {symbol: demo_metrics[symbol]['beta'] for symbol in symbols}
+        sma50 = {symbol: demo_metrics[symbol]['sma50'] for symbol in symbols}
+        sma200 = {symbol: demo_metrics[symbol]['sma200'] for symbol in symbols}
+        
+        # Simple correlation matrix (demo data)
+        correlations = {}
+        for i, symbol1 in enumerate(symbols):
+            correlations[symbol1] = {}
+            for j, symbol2 in enumerate(symbols):
+                if symbol1 == symbol2:
+                    correlations[symbol1][symbol2] = 1.0
+                else:
+                    correlations[symbol1][symbol2] = round(random.uniform(0.2, 0.8), 2)
+
+        logger.info(f"Stock comparison data prepared - symbols: {symbols}, chart_data keys: {list(chart_data.keys())}")
+        logger.info(f"Chart data sample: {chart_data.get(symbols[0], [])[:3] if symbols else 'No symbols'}")
 
         return render_template('stocks/compare.html', 
                              tickers=symbols,
@@ -1925,15 +1960,15 @@ def compare():
                              chart_data=chart_data,
                              period='1mo',
                              normalize=False,
-                             volatility={},
-                             volumes={},
-                             correlations={},
-                             betas={},
-                             rsi={},
+                             volatility=volatility,
+                             volumes=volumes,
+                             correlations=correlations,
+                             betas=betas,
+                             rsi=rsi,
                              macd={},
                              bb={},
-                             sma200={},
-                             sma50={},
+                             sma200=sma200,
+                             sma50=sma50,
                              signals={})
 
     except Exception as e:

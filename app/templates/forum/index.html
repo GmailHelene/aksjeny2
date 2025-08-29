@@ -73,30 +73,17 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Forum Kategorier</h5>
                 </div>
-                <div class="card-body p-0">
-                    {% for category in categories %}
-                    <div class="d-flex align-items-center p-3 {% if not loop.last %}border-bottom{% endif %}">
-                        <div class="flex-shrink-0 me-3">
-                            <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                                <i class="{{ category.icon }} text-primary"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">
-                                <a href="{{ url_for('forum.category', category_name=category.name) }}" class="text-decoration-none">
-                                    {{ category.name }}
-                                </a>
-                            </h6>
-                            <p class="text-muted mb-0 small">{{ category.description }}</p>
-                        </div>
-                        <div class="text-end">
-                            <div class="small text-muted">
-                                <div><strong>{{ category.topics }}</strong> topics</div>
-                                <div><strong>{{ category.posts }}</strong> posts</div>
-                            </div>
-                        </div>
+                <div class="card-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
                     </div>
-                    {% endfor %}
+                    <h6 class="text-muted">Ingen diskusjoner ennå</h6>
+                    <p class="text-muted small">Bli den første til å starte en diskusjon!</p>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('forum.create_topic') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Start første diskusjon
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

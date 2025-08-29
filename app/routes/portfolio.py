@@ -306,79 +306,24 @@ def overview():
 @portfolio.route('/watchlist')
 @login_required
 def watchlist():
-    """User's watchlist"""
+    """User's watchlist - minimal test version"""
     try:
-        # Get user's watchlist items using correct models
-        from ..models import Watchlist, WatchlistStock
-        from ..services.data_service import DataService
+        current_app.logger.info("Loading watchlist test")
         
-        current_app.logger.info(f"🔐 AUTHENTICATED USER: Loading watchlist with REAL data for user {current_user.id}")
+        # Simple test data 
+        test_stocks = [
+            {'ticker': 'EQNR.OL', 'name': 'Equinor', 'last_price': 280, 'change': 2.1, 'data_source': 'TEST'}
+        ]
         
-        # Get user's watchlists and their stocks
-        user_watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
-        stocks = []
-        
-        for watchlist in user_watchlists:
-            watchlist_stocks = WatchlistStock.query.filter_by(watchlist_id=watchlist.id).all()
-            for ws in watchlist_stocks:
-                try:
-                    # STEP 14 FIX: Use consistent data access for watchlist
-                    current_app.logger.info(f"🎯 Getting REAL data for watchlist stock: {ws.ticker}")
-                    data_service = get_data_service()
-                    stock_data = data_service.get_stock_info(ws.ticker)
-                    
-                    if stock_data and stock_data.get('last_price') and stock_data.get('last_price') != 'N/A':
-                        current_app.logger.info(f"✅ REAL DATA: {ws.ticker} - Price: {stock_data.get('last_price')}")
-                        stocks.append({
-                            'ticker': ws.ticker,
-                            'name': stock_data.get('shortName', stock_data.get('name', ws.ticker)),
-                            'last_price': stock_data.get('last_price', 0),
-                            'change': stock_data.get('change', 0),
-                            'change_percent': stock_data.get('change_percent', 0),
-                            'watchlist_name': watchlist.name,
-                            'watchlist_id': watchlist.id,
-                            'data_source': 'REAL DATA'
-                        })
-                    else:
-                        current_app.logger.warning(f"⚠️ REAL DATA FAILED: No valid data for {ws.ticker}, using placeholder")
-                        stocks.append({
-                            'ticker': ws.ticker,
-                            'name': ws.ticker,
-                            'last_price': 'Ikke tilgjengelig',
-                            'change': 0,
-                            'change_percent': 0,
-                            'watchlist_name': watchlist.name,
-                            'watchlist_id': watchlist.id,
-                            'data_source': 'NO DATA AVAILABLE'
-                        })
-                except Exception as stock_error:
-                    current_app.logger.error(f"❌ ERROR getting real data for watchlist stock {ws.ticker}: {stock_error}")
-                    # Add stock with placeholder data for authenticated users
-                    stocks.append({
-                        'ticker': ws.ticker,
-                        'name': ws.ticker,
-                        'last_price': 'Feil ved henting',
-                        'change': 0,
-                        'change_percent': 0,
-                        'watchlist_name': watchlist.name,
-                        'watchlist_id': watchlist.id,
-                        'data_source': 'ERROR'
-                    })
-        
-        current_app.logger.info(f"📊 WATCHLIST LOADED: {len(stocks)} stocks for authenticated user")
-        
-        return render_template('portfolio/watchlist.html', 
-                             stocks=stocks, 
-                             watchlists=user_watchlists,
+        return render_template('portfolio/watchlist_simple.html', 
+                             stocks=test_stocks, 
+                             watchlists=[],
                              error=False)
         
     except Exception as e:
-        current_app.logger.error(f"Error in watchlist: {str(e)}")
-        flash('Det oppstod en feil ved lasting av favorittlisten.', 'danger')
-        return render_template('portfolio/watchlist.html', 
-                             stocks=[], 
-                             watchlists=[],
-                             error=True)
+        current_app.logger.error(f"Watchlist error: {e}")
+        # Return plain HTML on error
+        return '<h1>Watchlist Error</h1><p>Test page - error occurred</p>'
 
 # Get user data for portfolio display
 def get_user_data_for_portfolio():

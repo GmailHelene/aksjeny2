@@ -2,6 +2,38 @@
 
 {% block title %}Watchlist & Varsler - Aksjeradar{% endblock %}
 
+{% block head %}
+<style>
+.insight-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #007bff;
+    transition: transform 0.2s ease;
+}
+
+.insight-card:hover {
+    transform: translateX(5px);
+}
+
+.insight-card h6 {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.performance-chart-container {
+    min-height: 300px;
+    padding: 20px;
+}
+
+#performanceChart {
+    background: white;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row">

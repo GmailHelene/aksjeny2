@@ -135,12 +135,6 @@
             </div>
 
             {% if tickers and tickers|length > 0 %}
-            <!-- Price Chart -->
-            <div class="chart-container">
-                <h3><i class="bi bi-graph-up"></i> Prisutvikling</h3>
-                <canvas id="priceChart" width="400" height="200"></canvas>
-            </div>
-
             <!-- Current Metrics Overview -->
             <div class="row mb-4">
                 {% for ticker in tickers %}
