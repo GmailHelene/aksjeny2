@@ -387,12 +387,11 @@ def register_blueprints(app):
         ('.routes.dashboard', 'dashboard', None),
         ('.routes.pro_tools', 'pro_tools', '/pro-tools'),
         ('.routes.market_intel', 'market_intel', '/market-intel'),
-        # FIX: Comment out external_data here since it's registered later
-        # ('.routes.external_data', 'external_data_bp', '/external-data'),
+        # Use views.external_data since that's the working one
+        ('.views.external_data', 'external_data_bp', None),
         ('.routes.backtest', 'backtest_bp', '/backtest'),
         ('.routes.seo_content', 'seo_content', '/content'),
         ('.routes.portfolio_advanced', 'portfolio_advanced', '/portfolio-advanced'),
-        ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
         ('.professional_analytics', 'analytics_bp', '/analytics'),
         ('.routes.news', 'news_bp', '/news'),
         ('.routes.health', 'health', '/health'),
@@ -419,6 +418,7 @@ def register_blueprints(app):
         ('.routes.sentiment_tracker', 'sentiment_tracker', '/sentiment'),
         ('.routes.oil_correlation', 'oil_correlation', '/oil-correlation'),
         ('.routes.achievements', 'achievements_bp', '/achievements'),
+        ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
     ]
     
     app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")
@@ -477,7 +477,7 @@ def register_blueprints(app):
     # Register the watchlist_api blueprint
     try:
         from .routes.watchlist_api import watchlist_api
-        app.register_blueprint(watchlist_api)
+        app.register_blueprint(watchlist_api, url_prefix='/watchlist')
         blueprints_registered.append('watchlist_api')
         app.logger.info("OK Registered watchlist_api blueprint")
     except ImportError as e:

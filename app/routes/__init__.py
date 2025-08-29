@@ -30,6 +30,7 @@ from .analysis import analysis
 from .portfolio import portfolio
 from .advanced_features import advanced_features
 from .norwegian_intel import norwegian_intel
+from .forum import forum
 # from .news import news_bp as news  # Removed - file not found
 from .pricing import pricing
 from .insider_trading import insider_trading
@@ -48,6 +49,7 @@ def register_blueprints(app):
     app.register_blueprint(portfolio, url_prefix='/portfolio')
     app.register_blueprint(advanced_features, url_prefix='/advanced')
     app.register_blueprint(advanced_features, url_prefix='/advanced-features')  # Support both URL patterns
+    app.register_blueprint(forum, url_prefix='/forum')
     # app.register_blueprint(news, url_prefix='/news')  # Removed - file not found
     app.register_blueprint(pricing, url_prefix='/pricing')
     app.register_blueprint(insider_trading, url_prefix='/insider-trading')
@@ -173,6 +175,7 @@ def register_blueprints(app):
         ('.api', 'api', None),
         ('.blog', 'blog', '/blog'),
         ('.investment_guides', 'investment_guides', '/investment-guides'),
+        ('.forum', 'forum', '/forum'),
         ('.pricing', 'pricing', '/pricing'),
         ('.notifications', 'notifications_bp', '/notifications'),
         ('.notifications', 'notifications_web_bp', '/notifications'),  # Web interface blueprint

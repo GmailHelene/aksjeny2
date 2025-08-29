@@ -1709,17 +1709,64 @@ def profile():
                 }
                 errors.append('preferences_failed')
             
+            # Add debug logging before favorites loading
+            logger.info(f"PROFILE DEBUG: About to start favorites loading for user ID: {getattr(current_user, 'id', 'Unknown')}")
+            logger.info(f"PROFILE DEBUG: current_user.is_authenticated: {getattr(current_user, 'is_authenticated', False)}")
+            
             # Enhanced favorites loading with stock info
             try:
-                if hasattr(current_user, 'id'):
-                    # Use the Favorites model
+                # Try multiple approaches to get user ID for robustness
+                user_id = None
+                
+                # Method 1: Direct attribute access
+                if hasattr(current_user, 'id') and current_user.id:
+                    user_id = current_user.id
+                
+                # Method 2: Using get_id() method 
+                elif hasattr(current_user, 'get_id'):
+                    try:
+                        user_id_str = current_user.get_id()
+                        if user_id_str:
+                            user_id = int(user_id_str)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Method 3: Check if authenticated and try alternative approach
+                elif hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                    # Try to find user by other attributes
+                    if hasattr(current_user, 'username'):
+                        from ..models.user import User
+                        user_obj = User.query.filter_by(username=current_user.username).first()
+                        if user_obj:
+                            user_id = user_obj.id
+                
+                logger.info(f"Determined user_id: {user_id} for favorites loading")
+                
+                if user_id:
+                    logger.info(f"Step 1: About to query favorites for user {user_id}")
+                    # Use the Favorites model with explicit session management
                     from ..models.favorites import Favorites
-                    favorites = Favorites.query.filter_by(user_id=current_user.id).all()
-                    logger.info(f"Found {len(favorites)} favorites for user {current_user.id}")
+                    from ..extensions import db
+                    
+                    # Ensure we're using the current session and force a commit/flush
+                    try:
+                        db.session.commit()  # Ensure any pending transactions are committed
+                        favorites = Favorites.query.filter_by(user_id=user_id).all()
+                        logger.info(f"Step 2: Found {len(favorites)} favorites for user {user_id}")
+                        
+                        # Debug: Also try direct SQL to compare
+                        result = db.session.execute(db.text("SELECT * FROM favorites WHERE user_id = :user_id"), {"user_id": user_id})
+                        rows = result.fetchall()
+                        logger.info(f"Step 2b: Direct SQL found {len(rows)} favorites for user {user_id}")
+                        
+                    except Exception as query_error:
+                        logger.error(f"Database query error: {query_error}")
+                        favorites = []
                     
                     user_favorites = []
                     
-                    for fav in favorites:
+                    for i, fav in enumerate(favorites):
+                        logger.info(f"Step 3.{i}: Processing favorite {fav.symbol}")
                         favorite_info = {
                             'symbol': fav.symbol,
                             'name': fav.name or fav.symbol,
@@ -1729,6 +1776,7 @@ def profile():
                         
                         # Try to get current price if available
                         try:
+                            logger.info(f"Step 4.{i}: Getting price for {fav.symbol}")
                             from ..services.data_service import DataService
                             stock_info = DataService.get_stock_info(fav.symbol)
                             if stock_info:
@@ -1737,22 +1785,25 @@ def profile():
                                     'change': stock_info.get('change'),
                                     'change_percent': stock_info.get('change_percent')
                                 })
+                                logger.info(f"Step 5.{i}: Added price info for {fav.symbol}")
                         except Exception as price_error:
                             logger.debug(f"Could not get price for {fav.symbol}: {price_error}")
                             
                         user_favorites.append(favorite_info)
+                        logger.info(f"Step 6.{i}: Added {fav.symbol} to user_favorites list")
                         
                     # Update favorite_stocks count
                     user_stats['favorite_stocks'] = len(user_favorites)
+                    logger.info(f"Step 7: Built user_favorites list with {len(user_favorites)} items")
                     
                     # If no favorites found, let's check if there might be another storage method
                     if len(user_favorites) == 0:
-                        logger.warning(f"No favorites found for user {current_user.id} in Favorites table")
+                        logger.warning(f"No favorites found for user {user_id} in Favorites table")
                         # Try to check if user has any watchlist items that could be considered favorites
                         try:
                             from ..models.watchlist import WatchlistStock
-                            watchlist_items = WatchlistStock.query.filter_by(user_id=current_user.id).all()
-                            logger.info(f"Found {len(watchlist_items)} watchlist items for user {current_user.id}")
+                            watchlist_items = WatchlistStock.query.filter_by(user_id=user_id).all()
+                            logger.info(f"Found {len(watchlist_items)} watchlist items for user {user_id}")
                             
                             # Convert watchlist items to favorites format
                             for item in watchlist_items[:10]:  # Limit to 10 for performance
@@ -1773,6 +1824,7 @@ def profile():
                     
             except Exception as fav_error:
                 logger.error(f"Error loading favorites: {fav_error}")
+                logger.error(f"Favorites error traceback: {traceback.format_exc()}")
                 user_favorites = []
                 errors.append('favorites_failed')
             
@@ -1798,6 +1850,8 @@ def profile():
         user_favorites = user_favorites or []
         user_preferences = user_preferences or {}
         referral_stats = referral_stats or {}
+        
+        logger.info(f"Profile render: user_favorites has {len(user_favorites)} items before template")
         
         return render_template('profile.html',
             user=current_user,  # Always authenticated user

@@ -97,3 +97,121 @@ def remove_from_watchlist():
             'success': False,
             'error': str(e)
         }), 500
+
+@watchlist_api.route('/api/watchlist/update', methods=['POST'])
+@csrf.exempt
+@login_required
+def update_watchlist():
+    """Update watchlist name and description"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Data er påkrevd'
+            }), 400
+            
+        name = data.get('name', '').strip()
+        description = data.get('description', '').strip()
+        
+        if not name:
+            return jsonify({
+                'success': False,
+                'error': 'Navn er påkrevd'
+            }), 400
+        
+        # Get user's default watchlist (assuming single watchlist for now)
+        from ..models.watchlist import Watchlist
+        from ..extensions import db
+        
+        watchlist = Watchlist.query.filter_by(user_id=current_user.id).first()
+        if not watchlist:
+            # Create new watchlist if none exists
+            watchlist = Watchlist(
+                user_id=current_user.id,
+                name=name,
+                description=description
+            )
+            db.session.add(watchlist)
+        else:
+            # Update existing watchlist
+            watchlist.name = name
+            watchlist.description = description
+            
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Overvåkningsliste oppdatert'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating watchlist: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@watchlist_api.route('/api/notifications', methods=['POST'])
+@csrf.exempt
+@login_required
+def update_notifications():
+    """Update notification settings"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Data er påkrevd'
+            }), 400
+            
+        enabled = data.get('enabled', False)
+        
+        # Update user notification settings
+        if hasattr(current_user, 'notification_enabled'):
+            current_user.notification_enabled = enabled
+        
+        from ..extensions import db
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Varsler aktivert' if enabled else 'Varsler deaktivert'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error updating notifications: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@watchlist_api.route('/api/refresh', methods=['POST'])
+@csrf.exempt
+@login_required
+def refresh_watchlist_data():
+    """Refresh stock data for watchlist"""
+    try:
+        data = request.get_json()
+        symbols = data.get('symbols', []) if data else []
+        
+        if not symbols:
+            return jsonify({
+                'success': False,
+                'error': 'Ingen symboler å oppdatere'
+            }), 400
+        
+        # Get updated stock data
+        stocks = WatchlistService.get_watchlist_data(current_user.id, symbols=symbols)
+        
+        return jsonify({
+            'success': True,
+            'stocks': stocks
+        })
+        
+    except Exception as e:
+        logger.error(f"Error refreshing watchlist data: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

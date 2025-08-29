@@ -524,6 +524,36 @@ class DataService:
             result = rate_limiter.reset_circuit_breaker('yfinance')
             return {'reset': result}
         return {'reset': False}
+    
+    @staticmethod
+    def get_live_quote(symbol):
+        """Get live quote for a symbol using the working get_stock_info method"""
+        try:
+            # Use the working get_stock_info method that returns real data
+            stock_info = DataService.get_stock_info(symbol)
+            
+            if stock_info and stock_info.get('last_price', 0) > 0:
+                return {
+                    'symbol': symbol,
+                    'price': stock_info['last_price'],
+                    'change': stock_info.get('change', 0),
+                    'change_percent': stock_info.get('change_percent', 0),
+                    'volume': stock_info.get('volume', 0),
+                    'market_cap': stock_info.get('market_cap', 'N/A'),
+                    'pe_ratio': None,  # Not available in current data
+                    'dividend_yield': None,  # Not available in current data
+                    'last_updated': datetime.now(),
+                    'name': stock_info.get('name', symbol),
+                    'source': stock_info.get('data_source', 'Real Data')
+                }
+            else:
+                logger.warning(f"No valid data available for {symbol}")
+                return None
+            
+        except Exception as e:
+            logger.error(f"Error getting live quote for {symbol}: {e}")
+            return None
+            
     @staticmethod
     def get_crypto_overview():
         """Get crypto overview data with fallback"""
@@ -635,34 +665,6 @@ class DataService:
     rate_limiter = DummyRateLimiter()
     simple_cache = DummyCache()
 
-    @staticmethod
-    def get_live_quote(symbol):
-        """Get live quote for a symbol using the working get_stock_info method"""
-        try:
-            # Use the working get_stock_info method that returns real data
-            stock_info = DataService.get_stock_info(symbol)
-            
-            if stock_info and stock_info.get('last_price', 0) > 0:
-                return {
-                    'symbol': symbol,
-                    'price': stock_info['last_price'],
-                    'change': stock_info.get('change', 0),
-                    'change_percent': stock_info.get('change_percent', 0),
-                    'volume': stock_info.get('volume', 0),
-                    'market_cap': stock_info.get('market_cap', 'N/A'),
-                    'pe_ratio': None,  # Not available in current data
-                    'dividend_yield': None,  # Not available in current data
-                    'last_updated': datetime.now(),
-                    'name': stock_info.get('name', symbol),
-                    'source': stock_info.get('data_source', 'Real Data')
-                }
-            else:
-                logger.warning(f"No valid data available for {symbol}")
-                return None
-            
-        except Exception as e:
-            logger.error(f"Error getting live quote for {symbol}: {e}")
-            return None# Define some constants for demo data
 OSLO_BORS_TICKERS = [
     "EQNR.OL", "DNB.OL", "TEL.OL", "YAR.OL", "NHY.OL", "AKSO.OL", 
     "MOWI.OL", "ORK.OL", "SALM.OL", "AKERBP.OL", "SUBC.OL", "KAHOT.OL",
@@ -1529,6 +1531,35 @@ class DataService:
     def get_data_service():
         """Get data service instance - for compatibility with imports"""
         return DataService
+    
+    @staticmethod
+    def get_live_quote(symbol):
+        """Get live quote for a symbol using the working get_stock_info method"""
+        try:
+            # Use the working get_stock_info method that returns real data
+            stock_info = DataService.get_stock_info(symbol)
+            
+            if stock_info and stock_info.get('last_price', 0) > 0:
+                return {
+                    'symbol': symbol,
+                    'price': stock_info['last_price'],
+                    'change': stock_info.get('change', 0),
+                    'change_percent': stock_info.get('change_percent', 0),
+                    'volume': stock_info.get('volume', 0),
+                    'market_cap': stock_info.get('market_cap', 'N/A'),
+                    'pe_ratio': None,  # Not available in current data
+                    'dividend_yield': None,  # Not available in current data
+                    'last_updated': datetime.now(),
+                    'name': stock_info.get('name', symbol),
+                    'source': stock_info.get('data_source', 'Real Data')
+                }
+            else:
+                logger.warning(f"No valid data available for {symbol}")
+                return None
+            
+        except Exception as e:
+            logger.error(f"Error getting live quote for {symbol}: {e}")
+            return None
     
     @staticmethod
     def get_historical_data(symbol, period='3mo', interval='1d'):

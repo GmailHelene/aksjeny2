@@ -3,6 +3,7 @@ from app.extensions import db
 from app.models.forum import ForumPost
 from app.models.user import User
 from flask_login import login_required, current_user
+from flask_wtf.csrf import validate_csrf, ValidationError
 from datetime import datetime, timedelta
 import logging
 
@@ -70,6 +71,14 @@ def index():
 @login_required
 def create():
     if request.method == 'POST':
+        # Validate CSRF token
+        try:
+            validate_csrf(request.form.get('csrf_token'))
+        except ValidationError as e:
+            logger.warning(f"CSRF validation failed: {e}")
+            flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'error')
+            return redirect(url_for('forum.create'))
+            
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
         if not title or not content:
@@ -94,6 +103,14 @@ def create_topic():
     """Create a new forum topic with simplified handling"""
     try:
         if request.method == 'POST':
+            # Validate CSRF token
+            try:
+                validate_csrf(request.form.get('csrf_token'))
+            except ValidationError as e:
+                logger.warning(f"CSRF validation failed: {e}")
+                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'error')
+                return render_template('forum/create_topic.html')
+            
             title = request.form.get('title', '').strip()
             content = request.form.get('content', '').strip()
             category = request.form.get('category', 'general')

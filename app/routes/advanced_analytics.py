@@ -59,13 +59,13 @@ def generate_prediction():
         price_change = round(random.uniform(-10, 15), 2)
         confidence = round(random.uniform(65, 95), 1)
         
-        result = f"AI-prediksjon for {ticker}: Forventet prisendring {'+' if price_change > 0 else ''}{price_change}% over neste 30 dager (konfidensgrad: {confidence}%)"
+        prediction_text = f"AI-prediksjon for {ticker}: Forventet prisendring {'+' if price_change > 0 else ''}{price_change}% over neste 30 dager (konfidensgrad: {confidence}%)"
         
         return jsonify({
             'success': True,
-            'result': result,
+            'prediction': prediction_text,  # Change 'result' to 'prediction' to match JavaScript
             'ticker': ticker,
-            'prediction': price_change,
+            'price_change': price_change,
             'confidence': confidence
         })
     except Exception as e:

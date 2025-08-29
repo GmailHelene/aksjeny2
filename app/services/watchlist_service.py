@@ -95,15 +95,26 @@ class WatchlistService:
             return False, f"En feil oppstod: {str(e)}"
 
     @staticmethod
-    def get_watchlist_data(user_id):
-        """Get full watchlist data including real-time prices and info"""
+    def get_watchlist_data(user_id, symbols=None):
+        """Get full watchlist data including real-time prices and info
+        
+        Args:
+            user_id: User ID to get watchlist for
+            symbols: Optional list of symbols to filter by
+        """
         try:
             watchlist = WatchlistService.get_user_watchlist(user_id)
             if not watchlist:
                 return []
 
             stocks_data = []
-            for stock in watchlist.stocks:
+            stocks_to_process = watchlist.stocks
+            
+            # Filter by symbols if provided
+            if symbols:
+                stocks_to_process = [stock for stock in watchlist.stocks if stock.ticker in symbols]
+                
+            for stock in stocks_to_process:
                 try:
                     # Get real-time data
                     stock_info = DataService.get_stock_info(stock.ticker)
@@ -113,8 +124,10 @@ class WatchlistService:
                     change_percent = (change / prev_close * 100) if prev_close > 0 else 0
 
                     stocks_data.append({
+                        'symbol': stock.ticker,  # Use 'symbol' to match frontend expectations
                         'ticker': stock.ticker,
                         'name': stock_info.get('longName', stock.ticker) if stock_info else stock.ticker,
+                        'price': current_price,  # Use 'price' to match frontend expectations  
                         'current_price': current_price,
                         'change': change,
                         'change_percent': change_percent,
@@ -127,6 +140,7 @@ class WatchlistService:
                     logger.error(f"Error processing stock {stock.ticker}: {e}")
                     # Add basic info even if data fetch fails
                     stocks_data.append({
+                        'symbol': stock.ticker,
                         'ticker': stock.ticker,
                         'name': stock.ticker,
                         'error': True,

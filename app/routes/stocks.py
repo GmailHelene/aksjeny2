@@ -1928,7 +1928,13 @@ def compare():
                              volatility={},
                              volumes={},
                              correlations={},
-                             betas={})
+                             betas={},
+                             rsi={},
+                             macd={},
+                             bb={},
+                             sma200={},
+                             sma50={},
+                             signals={})
 
     except Exception as e:
         logger.error(f"Error in stock comparison: {e}")
