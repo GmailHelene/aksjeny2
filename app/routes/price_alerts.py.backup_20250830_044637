@@ -285,7 +285,7 @@ def delete(alert_id):
 @price_alerts.route('/settings', methods=['GET', 'POST'])
 @access_required
 def settings():
-    """Manage alert notification settings with enhanced error handling"""
+    """Manage alert notification settings"""
     if request.method == 'POST':
         try:
             settings_data = {

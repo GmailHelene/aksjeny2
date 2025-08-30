@@ -15,18 +15,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('portfolio.create_portfolio') }}">
+                    <form method="POST" action="{{ url_for('portfolio.create_portfolio') }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="mb-3">
                             <label for="name" class="form-label">Porteføljenavn</label>
