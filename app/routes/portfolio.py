@@ -6,6 +6,7 @@ from io import BytesIO
 import logging
 import json
 import os
+import traceback
 
 from ..models import Portfolio, PortfolioStock, StockTip, Watchlist, WatchlistStock
 from ..extensions import db
@@ -51,9 +52,9 @@ def get_reportlab():
 
 portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 
-@portfolio.route('/', endpoint='portfolio_index')
+@portfolio.route('/overview', endpoint='portfolio_overview')
 @access_required
-def portfolio_index():
+def portfolio_overview():
     """Portfolio overview with pagination and lazy loading"""
     try:
         # Get all portfolios for the current user
@@ -657,8 +658,8 @@ def create_portfolio():
         
     except Exception as e:
         logger.error(f"Critical error in create_portfolio: {e}")
-        flash('En teknisk feil oppstod. Prøv igjen senere.', 'error')
-        return render_template('portfolio/create.html', error=f"Teknisk feil: {str(e)}")
+        flash('En teknisk feil oppstod ved opprettelse av portefølje. Prøv igjen senere.', 'error')
+        return render_template('portfolio/create.html')
 
 @portfolio.route('/view/<int:id>')
 @login_required
@@ -827,7 +828,19 @@ def add_stock_to_portfolio(id):
                              
     except Exception as e:
         logger.error(f"Critical error in add_stock_to_portfolio: {e}")
-        flash('En teknisk feil oppstod. Prøv igjen senere.', 'error')
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        
+        # Test database connectivity
+        try:
+            db.session.execute('SELECT 1')
+            error_msg = 'En teknisk feil oppstod ved tillegging av aksje. Prøv igjen senere.'
+        except Exception as db_error:
+            logger.error(f"Database connectivity issue: {db_error}")
+            error_msg = 'Det oppstod en feil ved lasting av porteføljer. Database ikke tilgjengelig.'
+        
+        if request.is_json:
+            return jsonify({'success': False, 'error': error_msg}), 500
+        flash(error_msg, 'error')
         return redirect(url_for('portfolio.index'))
 
 @portfolio.route('/portfolio/<int:id>/remove/<int:stock_id>', methods=['POST'])

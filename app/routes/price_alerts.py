@@ -90,6 +90,17 @@ def create():
     """Create new price alert with comprehensive error handling"""
     if request.method == 'POST':
         try:
+            # Validate CSRF token first
+            try:
+                from flask_wtf.csrf import validate_csrf
+                csrf_token = request.form.get('csrf_token')
+                if csrf_token:
+                    validate_csrf(csrf_token)
+            except Exception as csrf_error:
+                logger.warning(f"CSRF validation failed: {csrf_error}")
+                flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'error')
+                return render_template('price_alerts/create.html')
+            
             # Get form data with validation
             symbol = request.form.get('symbol', '').upper().strip()
             target_price_str = request.form.get('target_price', '').strip()
