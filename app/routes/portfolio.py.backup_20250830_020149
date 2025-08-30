@@ -392,18 +392,6 @@ def get_user_data_for_portfolio():
 def index():
     """Portfolio main page with better error handling"""
     try:
-        # Test database connection first
-        try:
-            from ..models.portfolio import Portfolio
-            db.session.execute('SELECT 1')
-        except Exception as db_test_error:
-            logger.error(f"Database connection test failed: {db_test_error}")
-            return render_template('portfolio/index.html',
-                                 portfolios=[],
-                                 total_value=0,
-                                 total_profit_loss=0,
-                                 error_message="Database tilkobling ikke tilgjengelig. Prøv igjen senere.")
-        
         # Get user's portfolios with proper error handling
         portfolios = []
         if current_user and current_user.is_authenticated:
