@@ -25,7 +25,7 @@
                                 <p><strong>Fornyes:</strong> {{ subscription.end_date.strftime('%d.%m.%Y') if subscription.end_date else 'N/A' }}</p>
                                 {% endif %}
                             {% else %}
-                                <a href="{{ url_for('pricing.pricing_page') if url_for('pricing.pricing_page', _external=False, _scheme='') else '#' }}" class="btn btn-primary">
+                                <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">
                                     Oppgrader til Premium
                                 </a>
                             {% endif %}
@@ -74,7 +74,7 @@
                                     <h5>Månedlig</h5>
                                     <h3 class="text-primary">299 kr</h3>
                                     <p class="text-muted">per måned</p>
-                                    <a href="{{ url_for('pricing.pricing_page') if url_for('pricing.pricing_page', _external=False, _scheme='') else '#' }}" class="btn btn-outline-primary">Velg</a>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-outline-primary">Velg</a>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +85,7 @@
                                     <h5>Årlig</h5>
                                     <h3 class="text-primary">2499 kr</h3>
                                     <p class="text-muted">per år (spar 30%)</p>
-                                    <a href="{{ url_for('pricing.pricing_page') if url_for('pricing.pricing_page', _external=False, _scheme='') else '#' }}" class="btn btn-primary">Velg</a>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-primary">Velg</a>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +95,7 @@
                                     <h5>Livstid</h5>
                                     <h3 class="text-primary">9999 kr</h3>
                                     <p class="text-muted">engangsbetaling</p>
-                                    <a href="{{ url_for('pricing.pricing_page') if url_for('pricing.pricing_page', _external=False, _scheme='') else '#' }}" class="btn btn-outline-primary">Velg</a>
+                                    <a href="{{ url_for('pricing.pricing_page') }}" class="btn btn-outline-primary">Velg</a>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +106,7 @@
             
             {% if subscription and subscription.is_active %}
             <div class="mt-4 text-center">
-                <a href="{{ url_for('main.cancel_subscription') if url_for('main.cancel_subscription', _external=False, _scheme='') else '#' }}" class="btn btn-outline-danger">
+                <a href="{{ url_for('main.cancel_subscription') }}" class="btn btn-outline-danger">
                     Avbryt abonnement
                 </a>
             </div>

@@ -87,43 +87,35 @@ def index():
 @price_alerts.route('/create', methods=['GET', 'POST'])
 @access_required
 def create():
-    """Create new price alert with comprehensive error handling"""
+    """Create new price alert with improved error handling"""
     if request.method == 'POST':
         try:
-            # Get form data with validation
+            # Get form data
             symbol = request.form.get('symbol', '').upper().strip()
             target_price_str = request.form.get('target_price', '').strip()
             alert_type = request.form.get('alert_type', 'above')
             company_name = request.form.get('company_name', '').strip()
             notes = request.form.get('notes', '').strip()
             
-            logger.info(f"Creating price alert for user {current_user.id}: {symbol} at {target_price_str}")
-            
-            # Enhanced validation
+            # Validate input
             if not symbol:
                 flash('Aksjesymbol er påkrevd.', 'error')
                 return render_template('price_alerts/create.html')
             
-            if len(symbol) > 10:
-                flash('Aksjesymbol er for langt.', 'error')
-                return render_template('price_alerts/create.html')
-            
-            # Parse and validate target price
+            # Parse target price
             try:
-                target_price = float(target_price_str.replace(',', '.'))
+                target_price = float(target_price_str)
                 if target_price <= 0:
                     raise ValueError("Målpris må være større enn 0")
-                if target_price > 1000000:
-                    raise ValueError("Målpris er for høy")
-            except (ValueError, TypeError) as e:
-                flash(f'Ugyldig målpris: {str(e)}. Vennligst skriv inn et gyldig tall.', 'error')
+            except (ValueError, TypeError):
+                flash('Ugyldig målpris. Vennligst skriv inn et gyldig tall.', 'error')
                 return render_template('price_alerts/create.html')
             
             if alert_type not in ['above', 'below']:
                 flash('Ugyldig varseltype.', 'error')
                 return render_template('price_alerts/create.html')
             
-            # Check subscription limits with better error handling
+            # Check subscription limits
             try:
                 if not getattr(current_user, 'has_subscription', False):
                     from ..models.price_alert import PriceAlert
@@ -133,127 +125,128 @@ def create():
                     ).count()
                     
                     if active_count >= 3:
-                        flash('Du har nådd grensen for gratis prisvarsler (3 aktive). Oppgrader til Pro for ubegrenset tilgang.', 'warning')
+                        flash('Du har nådd grensen for gratis prisvarsler. Oppgrader til Pro for ubegrenset tilgang.', 'warning')
                         return render_template('price_alerts/create.html')
             except Exception as e:
                 logger.warning(f"Could not check subscription limits: {e}")
-                # Continue anyway for better user experience
             
-            # Enhanced alert creation with multiple fallback methods
-            alert_created = False
-            error_messages = []
-            
-            # Method 1: Try price monitor service
+            # Create the alert with improved fallback handling
             try:
-                alert = price_monitor.create_alert(
-                    user_id=current_user.id,
-                    symbol=symbol,
-                    target_price=target_price,
-                    alert_type=alert_type,
-                    company_name=company_name or f"Stock {symbol}",
-                    notes=notes or None
-                )
-                if alert:
-                    alert_created = True
-                    logger.info(f"Alert created via price monitor service")
-            except Exception as monitor_error:
-                logger.warning(f"Price monitor service failed: {monitor_error}")
-                error_messages.append(f"Monitor service: {str(monitor_error)}")
-            
-            # Method 2: Direct database creation if monitor failed
-            if not alert_created:
+                # Try the price monitor service first
+                alert = None
                 try:
-                    from ..models.price_alert import PriceAlert
-                    from .. import db
-                    
-                    # Ensure clean database state
-                    try:
-                        if db.session.is_active:
-                            db.session.rollback()
-                    except Exception:
-                        pass
-                    
-                    # Create alert object
-                    alert = PriceAlert(
+                    alert = price_monitor.create_alert(
                         user_id=current_user.id,
-                        ticker=symbol,  # Required for compatibility
                         symbol=symbol,
                         target_price=target_price,
                         alert_type=alert_type,
-                        company_name=company_name or f"Stock {symbol}",
-                        notes=notes or None,
-                        is_active=True,
-                        email_enabled=True,
-                        browser_enabled=bool(request.form.get('browser_enabled', False))
+                        company_name=company_name or None,
+                        notes=notes or None
                     )
-                    
-                    # Validate model before saving
-                    if hasattr(alert, 'validate'):
-                        alert.validate()
-                    
-                    db.session.add(alert)
-                    db.session.flush()  # Check for constraint errors before commit
-                    db.session.commit()
-                    
-                    alert_created = True
-                    logger.info(f"Alert created via direct database insertion")
-                    
-                except Exception as db_error:
-                    logger.error(f"Direct database creation failed: {db_error}")
-                    error_messages.append(f"Database: {str(db_error)}")
-                    try:
-                        db.session.rollback()
-                    except Exception:
-                        pass
-            
-            # Method 3: Simplified creation as last resort
-            if not alert_created:
-                try:
-                    from ..models.price_alert import PriceAlert
-                    from .. import db
-                    
-                    # Ultra-simple creation
-                    minimal_alert = PriceAlert()
-                    minimal_alert.user_id = current_user.id
-                    minimal_alert.ticker = symbol
-                    minimal_alert.symbol = symbol
-                    minimal_alert.target_price = target_price
-                    minimal_alert.alert_type = alert_type
-                    minimal_alert.is_active = True
-                    minimal_alert.email_enabled = True
-                    
-                    db.session.add(minimal_alert)
-                    db.session.commit()
-                    
-                    alert_created = True
-                    logger.info(f"Alert created via minimal approach")
-                    
-                except Exception as minimal_error:
-                    logger.error(f"Minimal creation also failed: {minimal_error}")
-                    error_messages.append(f"Minimal: {str(minimal_error)}")
-                    try:
-                        db.session.rollback()
-                    except Exception:
-                        pass
-            
-            # Return result
-            if alert_created:
-                flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
-                return redirect(url_for('price_alerts.index'))
-            else:
-                error_detail = "; ".join(error_messages) if error_messages else "Unknown error"
-                logger.error(f"All alert creation methods failed: {error_detail}")
-                flash('❌ Kunne ikke opprette prisvarsel. Teknisk feil - kontakt support hvis problemet vedvarer.', 'error')
-                return render_template('price_alerts/create.html')
+                except Exception as monitor_error:
+                    logger.warning(f"Price monitor service failed: {monitor_error}")
+                    alert = None
                 
+                # If price monitor failed, create alert directly
+                if not alert:
+                    try:
+                        from ..models.price_alert import PriceAlert
+                        from .. import db
+                        
+                        # Ensure clean transaction state
+                        try:
+                            if db.session.is_active:
+                                db.session.rollback()
+                        except:
+                            pass
+                        
+                        alert = PriceAlert(
+                            user_id=current_user.id,
+                            ticker=symbol,  # Required by database
+                            symbol=symbol,
+                            target_price=target_price,
+                            alert_type=alert_type,
+                            company_name=company_name or f"Stock {symbol}",
+                            notes=notes,
+                            is_active=True,
+                            browser_enabled=bool(request.form.get('browser_enabled', False))
+                        )
+                        
+                        db.session.add(alert)
+                        db.session.commit()
+                        
+                        logger.info(f"Created price alert directly for user {current_user.id}: {symbol} at {target_price}")
+                        
+                    except Exception as db_error:
+                        logger.error(f"Direct database alert creation failed: {db_error}")
+                        try:
+                            db.session.rollback()
+                        except:
+                            pass
+                        alert = None
+                
+                if alert:
+                    flash(f'Prisvarsel opprettet for {symbol} ved {target_price}!', 'success')
+                    return redirect(url_for('price_alerts.index'))
+                else:
+                    flash('Kunne ikke opprette prisvarsel. Prøv igjen.', 'error')
+                    return render_template('price_alerts/create.html')
+                    
+            except ValueError as ve:
+                flash(str(ve), 'error')
+                return render_template('price_alerts/create.html')
+            except Exception as e:
+                logger.error(f"Error creating price alert: {e}")
+                flash('Teknisk feil ved opprettelse av prisvarsel. Kontakt support hvis problemet vedvarer.', 'error')
+                return render_template('price_alerts/create.html')
+            
         except Exception as e:
-            logger.error(f"Unexpected error in alert creation: {e}")
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            flash('❌ Uventet feil ved opprettelse av prisvarsel.', 'error')
+            logger.error(f"Critical error in price alert creation: {e}")
+            flash('En uventet feil oppsto. Vennligst prøv igjen.', 'error')
             return render_template('price_alerts/create.html')
     
-    # GET request - show the form
-    return render_template('price_alerts/create.html')
+    # GET request - show create form
+    try:
+        # Get popular stocks for suggestions with fallback
+        popular_stocks = []
+        if DataService:
+            try:
+                oslo_data = DataService.get_oslo_bors_overview()
+                if oslo_data and isinstance(oslo_data, dict):
+                    # Convert dict to list format for template
+                    popular_stocks = [
+                        {
+                            'symbol': ticker,
+                            'name': data.get('name', ticker),
+                            'last_price': data.get('last_price', 0)
+                        }
+                        for ticker, data in list(oslo_data.items())[:10]  # Top 10
+                    ]
+            except Exception as e:
+                logger.warning(f"Could not load popular stocks: {e}")
+        
+        # Fallback popular stocks if DataService failed
+        if not popular_stocks:
+            popular_stocks = [
+                {'symbol': 'EQNR.OL', 'name': 'Equinor ASA', 'last_price': 278.50},
+                {'symbol': 'DNB.OL', 'name': 'DNB Bank ASA', 'last_price': 215.20},
+                {'symbol': 'TEL.OL', 'name': 'Telenor ASA', 'last_price': 145.80},
+                {'symbol': 'MOWI.OL', 'name': 'Mowi ASA', 'last_price': 189.50},
+                {'symbol': 'NHY.OL', 'name': 'Norsk Hydro ASA', 'last_price': 64.82},
+                {'symbol': 'AAPL', 'name': 'Apple Inc.', 'last_price': 195.89},
+                {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'last_price': 140.93},
+                {'symbol': 'MSFT', 'name': 'Microsoft Corporation', 'last_price': 384.52},
+                {'symbol': 'TSLA', 'name': 'Tesla Inc.', 'last_price': 248.50},
+                {'symbol': 'NVDA', 'name': 'NVIDIA Corporation', 'last_price': 485.20},
+            ]
+        
+        return render_template('price_alerts/create.html',
+                             popular_stocks=popular_stocks)
+                             
+    except Exception as e:
+        logger.error(f"Error loading create alert form: {e}")
+        flash('Kunne ikke laste skjema. Prøv igjen senere.', 'error')
+        return redirect(url_for('price_alerts.index'))
 
 @price_alerts.route('/delete/<int:alert_id>', methods=['POST'])
 @access_required

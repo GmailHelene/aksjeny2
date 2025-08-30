@@ -93,7 +93,7 @@
                                 <i class="bi bi-three-dots"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('watchlist_fixes.view_watchlist_fixed', id=watchlist.id) }}">Vis detaljer</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">Slett</a></li>
@@ -136,7 +136,7 @@
                     </div>
                     <div class="card-footer">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('watchlist_fixes.view_watchlist_fixed', id=watchlist.id) }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye"></i> Vis detaljer
                             </a>
                             <button class="btn btn-outline-info btn-sm" onclick="getWatchlistAlerts({{ watchlist.id }})">
@@ -392,13 +392,26 @@ async function loadActiveAlerts() {
                 setTimeout(() => reject(new Error('Timeout')), 2500)
             );
             
-            const fetchPromise = fetch('/watchlist/api/alerts', {
+            // Try primary endpoint first
+            let fetchPromise = fetch('/watchlist/api/alerts', {
                 headers: {
                     'X-CSRFToken': getCSRFToken()
                 }
             });
             
-            const response = await Promise.race([fetchPromise, timeoutPromise]);
+            let response;
+            try {
+                response = await Promise.race([fetchPromise, timeoutPromise]);
+            } catch (primaryError) {
+                console.log('Primary endpoint failed, trying fallback...');
+                // Try fallback endpoint
+                fetchPromise = fetch('/watchlist-fixed/api/alerts', {
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+                response = await Promise.race([fetchPromise, timeoutPromise]);
+            }
             
             if (response.ok) {
                 const data = await response.json();
@@ -478,8 +491,37 @@ async function loadActiveAlerts() {
 
 async function loadAIInsights() {
     try {
-        // Simuler AI-innsikt
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Try to fetch AI insights from API first
+        try {
+            const response = await fetch('/watchlist-fixed/ai-insights', {
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.insights && data.insights.length > 0) {
+                    const insightsHtml = data.insights.map(insight => `
+                        <div class="insight-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">${insight.title}</h6>
+                                <span class="badge bg-primary">${insight.confidence}% sikkerhet</span>
+                            </div>
+                            <p class="mb-0">${insight.message}</p>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('ai-insights').innerHTML = insightsHtml;
+                    return; // Success, exit function
+                }
+            }
+        } catch (apiError) {
+            console.log('AI insights API failed, using fallback');
+        }
+        
+        // Fallback: Simuler AI-innsikt lokalt
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         const insights = [
             {
@@ -504,7 +546,7 @@ async function loadAIInsights() {
         
         const insightsHtml = insights.map(insight => `
             <div class="insight-card">
-                <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex justify-content-between align-items-start mb-2">`
                     <h6 class="mb-0">${insight.title}</h6>
                     <span class="badge bg-primary">${insight.confidence}% sikkerhet</span>
                 </div>

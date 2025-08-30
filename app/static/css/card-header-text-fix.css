@@ -1,0 +1,70 @@
+/* Card Header Text Color Fix - August 29, 2025 */
+
+/* Remove problematic white text color from card headers */
+div.card-header {
+    color: #212529 !important; /* Dark text for visibility */
+}
+
+/* Ensure all text elements in card headers are visible */
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4,
+.card-header h5,
+.card-header h6,
+.card-header p,
+.card-header span,
+.card-header strong,
+.card-header small,
+.card-header i,
+.card-header .fa,
+.card-header .fas,
+.card-header .fab,
+.card-header .fal,
+.card-header .far,
+.card-header .bi {
+    color: #212529 !important;
+}
+
+/* Ensure links in card headers are visible */
+.card-header a,
+.card-header a:visited,
+.card-header a:hover,
+.card-header a:focus {
+    color: #0d6efd !important;
+}
+
+/* Buttons in card headers should have proper contrast */
+.card-header .btn {
+    color: inherit !important;
+}
+
+/* For dark-themed cards, use white text */
+.card-header.bg-dark,
+.card-header.bg-primary,
+.card-header.bg-secondary,
+.card-header.bg-success,
+.card-header.bg-danger {
+    color: #ffffff !important;
+}
+
+.card-header.bg-dark *,
+.card-header.bg-primary *,
+.card-header.bg-secondary *,
+.card-header.bg-success *,
+.card-header.bg-danger * {
+    color: #ffffff !important;
+}
+
+/* For light-themed cards, use dark text */
+.card-header.bg-light,
+.card-header.bg-warning,
+.card-header.bg-info {
+    color: #212529 !important;
+}
+
+.card-header.bg-light *,
+.card-header.bg-warning *,
+.card-header.bg-info * {
+    color: #212529 !important;
+}

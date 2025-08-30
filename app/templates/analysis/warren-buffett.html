@@ -172,6 +172,9 @@ $(document).ready(function() {
             url: `/analysis/api/warren-buffett?ticker=${encodeURIComponent(ticker)}`,
             method: 'GET',
             timeout: 30000,
+            headers: {
+                'X-CSRFToken': $('meta[name=csrf-token]').attr('content')
+            },
             success: function(data) {
                 loadingSpinner.hide();
                 
@@ -183,7 +186,16 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 loadingSpinner.hide();
-                let errorMsg = 'Feil ved henting av data';
+                let errorMsg = 'En feil oppstod under analysen. Prøv igjen senere.';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        errorMsg = response.error;
+                    }
+                } catch (e) {
+                    // Use default error message
+                }
                 
                 if (xhr.status === 404) {
                     errorMsg = 'Aksjen ble ikke funnet';

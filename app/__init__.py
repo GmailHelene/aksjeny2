@@ -400,6 +400,7 @@ def register_blueprints(app):
         ('.routes.blog', 'blog', '/blog'),
         ('.routes.investment_guides', 'investment_guides', '/investment-guides'),
         ('.routes.watchlist_advanced', 'watchlist_bp', '/watchlist'),
+        ('.routes.watchlist_fixes', 'watchlist_fixes', '/watchlist-fixed'),
         ('.routes.price_alerts', 'price_alerts', '/price-alerts'),
         ('.routes.seo_sitemap', 'seo_sitemap', None),
         ('.routes.resources', 'resources_bp', '/resources'),
@@ -474,12 +475,12 @@ def register_blueprints(app):
     except ImportError as e:
         app.logger.warning(f"Could not import realtime_api blueprint: {e}")
     
-    # Register the watchlist_api blueprint
+    # Register the watchlist_api blueprint with different prefix to avoid conflicts
     try:
         from .routes.watchlist_api import watchlist_api
-        app.register_blueprint(watchlist_api, url_prefix='/watchlist')
+        app.register_blueprint(watchlist_api, url_prefix='/watchlist-api')
         blueprints_registered.append('watchlist_api')
-        app.logger.info("OK Registered watchlist_api blueprint")
+        app.logger.info("OK Registered watchlist_api blueprint with prefix /watchlist-api")
     except ImportError as e:
         app.logger.warning(f"Could not import watchlist_api blueprint: {e}")
 

@@ -405,27 +405,8 @@ def index():
         
         # Calculate total portfolio value safely
         total_value = 0
-        total_profit_loss = 0  # KRITISK FIX: Legg til manglende total_profit_loss
+        total_profit_loss = 0
         portfolio_data = []
-        
-        for p in portfolios:
-            try:
-                portfolio_value = p.calculate_total_value() if hasattr(p, 'calculate_total_value') else 0
-                total_value += portfolio_value
-                portfolio_data.append({
-                    'id': p.id,
-                    'name': p.name,
-                    'value': portfolio_value,
-                    'created_at': p.created_at
-                })
-            except Exception as calc_error:
-                logger.error(f"Error calculating portfolio value for {p.name}: {calc_error}")
-                portfolio_data.append({
-                    'id': p.id,
-                    'name': p.name,
-                    'value': 0,
-                    'created_at': p.created_at
-                })
         
         # Initialize data service for stock prices
         try:
@@ -434,7 +415,7 @@ def index():
             logger.warning(f"Data service unavailable: {str(data_service_error)}")
             data_service = None
 
-        # Process each portfolio
+        # Process each portfolio once
         for p in portfolios:
             try:
                 portfolio_value = 0
@@ -501,11 +482,12 @@ def index():
                              
     except Exception as e:
         logger.error(f"Error in portfolio index: {e}")
-        flash('Det oppstod en feil ved lasting av porteføljer.', 'error')
+        # Don't flash error here - let the template handle the empty state gracefully
         return render_template('portfolio/index.html',
                              portfolios=[],
                              total_value=0,
-                             error="Det oppstod en feil ved lasting av porteføljer.")
+                             total_profit_loss=0,
+                             error_message="Kunne ikke laste porteføljer. Prøv å oppdatere siden.")
 
 @portfolio.route('/tips', methods=['GET', 'POST'])
 @access_required
@@ -655,8 +637,8 @@ def create_portfolio():
             except Exception as db_error:
                 logger.error(f"Database error creating portfolio: {db_error}")
                 db.session.rollback()
-                flash('Kunne ikke opprette portefølje i databasen. Prøv igjen.', 'error')
-                return render_template('portfolio/create.html', error=str(db_error))
+                flash('Kunne ikke opprette portefølje i databasen. Prøv igjen.', 'danger')
+                return render_template('portfolio/create.html')
                 
         # GET request - show form
         return render_template('portfolio/create.html')
@@ -750,7 +732,7 @@ def add_stock_to_portfolio(id):
         # Import required models at function level to avoid circular imports
         from ..models.portfolio import Portfolio, PortfolioStock
         
-        # Get portfolio with error handling
+        # Get portfolio with improved error handling
         try:
             portfolio_obj = Portfolio.query.get_or_404(id)
             
@@ -758,9 +740,10 @@ def add_stock_to_portfolio(id):
             if portfolio_obj.user_id != current_user.id:
                 flash('Du har ikke tilgang til denne porteføljen', 'danger')
                 return redirect(url_for('portfolio.index'))
+                
         except Exception as e:
             logger.error(f"Error getting portfolio {id}: {e}")
-            flash('Kunne ikke hente porteføljen. Prøv igjen.', 'danger')
+            flash(f'Portefølje med ID {id} ble ikke funnet eller du har ikke tilgang.', 'danger')
             return redirect(url_for('portfolio.index'))
         
         if request.method == 'POST':

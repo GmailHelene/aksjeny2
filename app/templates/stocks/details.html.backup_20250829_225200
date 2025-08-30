@@ -96,8 +96,8 @@
                         </div>
                     </div>
                     
-                    <!-- Key Metrics - Only shown on overview tab -->
-                    <div class="card mt-4" id="key-metrics-card">
+                    <!-- Key Metrics -->
+                    <div class="card mt-4">
                         <div class="card-header">
                             <h5 class="mb-0">Nøkkeltall</h5>
                         </div>
@@ -152,7 +152,6 @@
                     </div>
                 </div>
 
-                
                 <!-- Technical Analysis Tab -->
                 <div class="tab-pane fade" id="technical" role="tabpanel">
                     <div class="card">
@@ -170,16 +169,16 @@
                                 </div>
                             </div>
                             
-                            <!-- Simplified Technical Summary -->
+                            <!-- Technical Summary -->
                             <div id="technical-summary" class="alert alert-info mt-3">
-                                <strong>Teknisk sammendrag:</strong> Detaljert teknisk analyse vises i grafen ovenfor.
-                                <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span></small>
+                                <strong>Teknisk sammendrag:</strong> Teknisk analyse lastes via TradingView widget.
+                                <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">--</span></small>
                             </div>
                         </div>
                     </div>
                 </div>
 
-            <!-- Fundamentals Tab -->
+                <!-- Fundamentals Tab -->
                 <div class="tab-pane fade" id="fundamentals" role="tabpanel">
                     <div class="row">
                         <div class="col-md-6">
@@ -343,21 +342,18 @@ let tradingViewLoaded = false;
 let currentSymbol = '{{ stock.symbol }}';
 
 // Show/hide key metrics based on active tab
-
-// Fixed key metrics visibility - only show on overview tab
 function toggleKeyMetrics() {
-    const keyMetricsCard = document.getElementById('key-metrics-card');
+    const keyMetrics = document.getElementById('key-metrics');
     const overviewTab = document.getElementById('overview-tab');
     
-    if (keyMetricsCard) {
+    if (keyMetrics) {
         if (overviewTab && overviewTab.classList.contains('active')) {
-            keyMetricsCard.style.display = 'block';
+            keyMetrics.style.display = 'block';
         } else {
-            keyMetricsCard.style.display = 'none';
+            keyMetrics.style.display = 'none';
         }
     }
 }
-
 
 // Tab event listeners
 document.addEventListener('DOMContentLoaded', function() {
@@ -385,117 +381,33 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Chart initialization
-
-// Enhanced chart initialization with better error handling
 function initChart() {
-    console.log('🔄 Initializing chart for symbol:', currentSymbol);
-    
-    if (tradingViewLoaded) {
-        console.log('✅ TradingView already loaded');
-        return;
-    }
+    if (tradingViewLoaded) return;
     
     const container = document.getElementById('tradingview_widget_details');
     const loading = document.getElementById('chart-loading');
     
-    if (!container) {
-        console.error('❌ Chart container not found');
-        return;
-    }
+    if (!container) return;
     
-    // Show loading immediately
-    if (loading) {
-        loading.style.display = 'block';
-        console.log('📊 Showing chart loading indicator');
-    }
+    // Show loading
+    if (loading) loading.style.display = 'block';
     
-    // Convert symbol for TradingView with better mapping
+    // Convert symbol for TradingView
     let tvSymbol = currentSymbol;
     if (currentSymbol.endsWith('.OL')) {
         tvSymbol = 'OSE:' + currentSymbol.replace('.OL', '');
-    } else if (currentSymbol.endsWith('.ST')) {
-        tvSymbol = 'OMXSTO:' + currentSymbol.replace('.ST', '');
     } else if (currentSymbol.match(/^[A-Z]{1,5}$/)) {
         tvSymbol = 'NASDAQ:' + currentSymbol;
-    } else if (currentSymbol.includes('-USD')) {
-        // Crypto handling
-        tvSymbol = 'BINANCE:' + currentSymbol.replace('-USD', 'USDT');
     }
     
-    console.log(`📈 Using TradingView symbol: ${tvSymbol}`);
-    
-    // Load TradingView script with timeout
-    const loadTimeout = setTimeout(() => {
-        console.warn('⚠️ TradingView loading timeout, showing fallback');
-        showChartFallback(container, loading);
-    }, 15000);
-    
+    // Load TradingView script if needed
     if (!window.TradingView) {
-        loadTradingViewScript(() => {
-            clearTimeout(loadTimeout);
-            createChart(tvSymbol, container, loading);
-        });
+        loadTradingViewScript(() => createChart(tvSymbol, container, loading));
     } else {
-        clearTimeout(loadTimeout);
         createChart(tvSymbol, container, loading);
     }
 }
 
-function createChart(symbol, container, loading) {
-    try {
-        console.log('🎯 Creating TradingView chart with symbol:', symbol);
-        
-        new TradingView.widget({
-            "autosize": true,
-            "symbol": symbol,
-            "interval": "D",
-            "timezone": "Europe/Oslo",
-            "theme": "light",
-            "style": "1",
-            "locale": "no",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "withdateranges": true,
-            "range": "6M",
-            "hide_side_toolbar": false,
-            "allow_symbol_change": false,
-            "details": true,
-            "calendar": false,
-            "studies": [],
-            "container_id": "tradingview_widget_details",
-            "onChartReady": function() {
-                console.log('✅ TradingView chart loaded successfully');
-                if (loading) loading.style.display = 'none';
-                tradingViewLoaded = true;
-            },
-            "loading_screen": {
-                "backgroundColor": "#ffffff",
-                "foregroundColor": "#007bff"
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error creating TradingView chart:', error);
-        showChartError(container, loading);
-    }
-}
-
-function showChartFallback(container, loading) {
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center p-4">
-                <div class="alert alert-info">
-                    <i class="fas fa-chart-line me-2"></i>
-                    <strong>Graf ikke tilgjengelig</strong>
-                    <p class="mb-2">TradingView graf kunne ikke lastes for øyeblikket.</p>
-                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
-                        <i class="fas fa-redo me-1"></i>Prøv igjen
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    if (loading) loading.style.display = 'none';
-}
 function createChart(symbol, container, loading) {
     try {
         new TradingView.widget({

@@ -34,7 +34,7 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ url_for('forum.create_topic', category=category) }}" id="create-topic-form">
+                    <form method="POST" action="{{ url_for('forum.create_topic') }}" id="create-topic-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         
                         <!-- Category Selection -->
@@ -43,8 +43,8 @@
                             <label for="category" class="form-label">Kategori <span class="text-danger">*</span></label>
                             <select name="category" id="category" class="form-select" required>
                                 <option value="">Velg kategori...</option>
-                                {% for cat_key, cat_info in forum_categories.items() %}
-                                <option value="{{ cat_key }}">{{ cat_info.display_name }}</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
                                 {% endfor %}
                             </select>
                             <div class="form-text">Velg den kategorien som best passer til ditt tema.</div>
