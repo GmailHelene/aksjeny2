@@ -352,12 +352,15 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 results.innerHTML = `<div class='alert alert-danger'><strong>❌ Feil:</strong> ${data.error || 'Kunne ikke generere markedsanalyse.'}</div>`;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            results.innerHTML = `<div class='alert alert-danger'><strong>❌ Nettverksfeil:</strong> ${error.message}</div>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                results.innerHTML = `<div class='alert alert-danger'><strong>❌ Nettverksfeil:</strong> ${error.message}</div>`;
+            });
         });
-    });
+    } else {
+        console.log('Market Analysis button not found');
+    }
 
     // Simple placeholder handlers for other buttons
     document.getElementById('efficient-frontier-btn').addEventListener('click', function() {

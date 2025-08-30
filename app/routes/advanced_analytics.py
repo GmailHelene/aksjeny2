@@ -4,7 +4,8 @@ Handles ML predictions, portfolio optimization, and risk management
 """
 
 from flask import Blueprint, render_template, request, jsonify
-from flask_login import login_required, current_user
+from flask_login import current_user
+from ..utils.access_control import demo_access  # Import demo_access
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,38 +14,38 @@ logger = logging.getLogger(__name__)
 advanced_analytics = Blueprint('advanced_analytics', __name__)
 
 @advanced_analytics.route('/')
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def index():
     """Advanced analytics dashboard"""
     return render_template('advanced_analytics.html')
 
 @advanced_analytics.route('/dashboard')
-@login_required  
+@demo_access  # Changed from @login_required to @demo_access  
 def dashboard():
     """Advanced analytics dashboard (alias for index)"""
     return render_template('advanced_analytics.html')
 
 @advanced_analytics.route('/ml-predictions')
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def ml_predictions():
     """ML predictions page"""
     return render_template('advanced_analytics.html', active_tab='ml-predictions')
 
 @advanced_analytics.route('/portfolio-optimization')
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def portfolio_optimization():
     """Portfolio optimization page"""
     return render_template('advanced_analytics.html', active_tab='portfolio-optimization')
 
 @advanced_analytics.route('/risk-management')
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def risk_management():
     """Risk management page"""
     return render_template('advanced_analytics.html', active_tab='risk-management')
 
 # API Endpoints for Advanced Analytics
 @advanced_analytics.route('/generate-prediction', methods=['POST'])
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def generate_prediction():
     """Generate AI prediction for a ticker"""
     try:
@@ -73,7 +74,7 @@ def generate_prediction():
         return jsonify({'success': False, 'error': str(e)})
 
 @advanced_analytics.route('/batch-predictions', methods=['POST'])
-@login_required  
+@demo_access  # Changed from @login_required to @demo_access  
 def batch_predictions():
     """Generate batch predictions for multiple tickers"""
     try:
@@ -100,7 +101,7 @@ def batch_predictions():
         return jsonify({'success': False, 'error': str(e)})
 
 @advanced_analytics.route('/market-analysis', methods=['POST'])
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def market_analysis():
     """Generate market analysis"""
     try:
@@ -136,7 +137,7 @@ def market_analysis():
         return jsonify({'success': False, 'error': str(e)})
 
 @advanced_analytics.route('/api/ml/predict/<symbol>')
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def api_ml_predict(symbol):
     """ML prediction API endpoint"""
     try:
@@ -182,7 +183,7 @@ def api_ml_predict(symbol):
         }), 500
 
 @advanced_analytics.route('/api/portfolio/optimize', methods=['POST'])
-@login_required
+@demo_access  # Changed from @login_required to @demo_access
 def api_portfolio_optimize():
     """Portfolio optimization API endpoint"""
     try:

@@ -279,11 +279,12 @@
         </div>
         <div class="card-body">
             {% if chart_data and chart_data|length > 0 %}
-                <div class="chart-container" style="position: relative; height:60vh; width:100%">
-                    <canvas id="priceChart"></canvas>
+                <div class="alert alert-info mb-3">
+                    <strong>Chart Status:</strong> Laster inn prisgraf for {{ tickers|join(', ') }}...
+                    <div id="chart-status" class="mt-2 small text-muted">Initialiserer Chart.js...</div>
                 </div>
-                <div class="chart-container mt-4" style="position: relative; height:30vh; width:100%">
-                    <canvas id="volumeChart"></canvas>
+                <div class="chart-container" style="position: relative; height:500px; width:100%; min-height:500px;">
+                    <canvas id="priceChart" style="display: block; box-sizing: border-box; height: 500px; width: 100%;"></canvas>
                 </div>
             {% else %}
                 {% if tickers and tickers|length > 0 %}
@@ -462,25 +463,55 @@
         console.log('Tickers:', {{ tickers|tojson }});
         console.log('Chart data:', {{ chart_data|tojson }});
         
-        // Create price chart
-        const priceCtx = document.getElementById('priceChart').getContext('2d');
-        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        document.getElementById('chart-status').textContent = 'Klargjør data...';
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded!');
+            document.getElementById('chart-status').textContent = 'Feil: Chart.js ikke lastet';
+            return;
+        }
+        
+        // Get canvas elements
+        const priceCanvas = document.getElementById('priceChart');
+        
+        if (!priceCanvas) {
+            console.error('Price canvas element not found!');
+            document.getElementById('chart-status').textContent = 'Feil: Canvas element ikke funnet';
+            return;
+        }
+        
+        // Create contexts
+        const priceCtx = priceCanvas.getContext('2d');
+        
+        if (!priceCtx) {
+            console.error('Canvas context could not be created!');
+            document.getElementById('chart-status').textContent = 'Feil: Canvas kontekst kunne ikke opprettes';
+            return;
+        }
+        
+        document.getElementById('chart-status').textContent = 'Bygger datasett...';
         
         // Prepare datasets for price chart
         const priceDatasets = [];
-        const volumeDatasets = [];
         const colors = ['#0d6efd', '#dc3545', '#198754', '#6f42c1', '#fd7e14'];
         
         {% for ticker in tickers %}
         if ('{{ ticker }}' in {{ chart_data|tojson }}) {
             const tickerData = {{ chart_data|tojson }}['{{ ticker }}'];
-            console.log('Chart data for {{ ticker }}:', tickerData);
+            console.log('Processing chart data for {{ ticker }}:', tickerData);
             
             if (tickerData && tickerData.length > 0) {
+                // Convert date strings to Date objects for Chart.js
+                const processedData = tickerData.map(d => ({
+                    x: new Date(d.date), // Convert string date to Date object
+                    y: d.close
+                }));
+                
                 // Price dataset
                 priceDatasets.push({
                     label: '{{ ticker }}',
-                    data: tickerData.map(d => ({x: d.date, y: d.close})),
+                    data: processedData,
                     borderColor: colors[{{ loop.index0 }} % colors.length],
                     backgroundColor: 'transparent',
                     borderWidth: 2,
@@ -489,137 +520,81 @@
                     pointHoverRadius: 5
                 });
                 
-                // Volume dataset
-                volumeDatasets.push({
-                    label: '{{ ticker }} Volume',
-                    data: tickerData.map(d => ({x: d.date, y: d.volume})),
-                    backgroundColor: colors[{{ loop.index0 }} % colors.length] + '80',
-                    borderColor: colors[{{ loop.index0 }} % colors.length],
-                    borderWidth: 1
-                });
+                console.log('Added dataset for {{ ticker }}');
             }
         }
         {% endfor %}
         
-        if (priceDatasets.length > 0) {
-            // Create price chart
-            const priceChart = new Chart(priceCtx, {
-                type: 'line',
-                data: {
-                    datasets: priceDatasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
-                                tooltipFormat: 'dd.MM.yyyy',
-                                displayFormats: {
-                                    day: 'dd.MM',
-                                    week: 'dd.MM',
-                                    month: 'MM.yyyy'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Dato'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: '{{ 'Normalisert pris (%)' if normalize else 'Pris' }}'
-                            }
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Prissammenligning'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    return `${label}: ${value.toFixed(2)}{{ ' %' if normalize else '' }}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            document.getElementById('priceChart').style.display = 'none';
-            document.querySelector('.chart-container').innerHTML = '<div class="alert alert-warning">Ingen chart data tilgjengelig</div>';
-        }
+        console.log('Price datasets:', priceDatasets);
+        console.log('Volume datasets:', volumeDatasets);
         
-        if (volumeDatasets.length > 0) {
-            // Create volume chart
-            const volumeChart = new Chart(volumeCtx, {
-                type: 'bar',
-                data: {
-                    datasets: volumeDatasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
+        document.getElementById('chart-status').textContent = 'Oppretter grafer...';
+        
+        if (priceDatasets.length > 0) {
+            try {
+                // Create price chart
+                const priceChart = new Chart(priceCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: priceDatasets
                     },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: '{{ 'day' if interval == '1d' else 'week' if interval == '1wk' else 'month' }}',
-                                tooltipFormat: 'dd.MM.yyyy',
-                                displayFormats: {
-                                    day: 'dd.MM',
-                                    week: 'dd.MM',
-                                    month: 'MM.yyyy'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day',
+                                    tooltipFormat: 'dd.MM.yyyy',
+                                    displayFormats: {
+                                        day: 'dd.MM'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Dato'
                                 }
                             },
-                            title: {
-                                display: true,
-                                text: 'Dato'
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Pris (NOK)'
+                                }
                             }
                         },
-                        y: {
+                        plugins: {
                             title: {
                                 display: true,
-                                text: 'Volum'
+                                text: 'Prissammenligning - {{ tickers|join(", ") }}'
                             },
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Volumsammenligning'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    return `${label}: ${new Intl.NumberFormat().format(value)}`;
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        const value = context.parsed.y;
+                                        return `${label}: ${value.toFixed(2)} NOK`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
+                console.log('Price chart created successfully');
+                document.getElementById('chart-status').textContent = 'Prisgraf opprettet! ✓';
+                document.getElementById('chart-status').className = 'mt-2 small text-success';
+            } catch (error) {
+                console.error('Error creating price chart:', error);
+                document.getElementById('chart-status').textContent = 'Feil ved opprettelse av prisgraf: ' + error.message;
+            }
         } else {
-            document.getElementById('volumeChart').style.display = 'none';
-            document.querySelector('.chart-container:nth-of-type(2)').innerHTML = '<div class="alert alert-warning">Ingen volum data tilgjengelig</div>';
+            console.warn('No price datasets available');
+            priceCanvas.style.display = 'none';
+            priceCanvas.parentNode.innerHTML = '<div class="alert alert-warning">Ingen prisdata tilgjengelig</div>';
         }
         {% else %}
         // Debug logging for troubleshooting

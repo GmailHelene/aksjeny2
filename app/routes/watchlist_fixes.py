@@ -133,7 +133,7 @@ def view_watchlist_fixed(id):
     except Exception as e:
         logger.error(f"Error viewing watchlist {id}: {e}")
         # Redirect to main page instead of showing error
-        return redirect(url_for('watchlist.index'))
+        return redirect(url_for('watchlist_advanced.index'))
 
 @watchlist_fixes.route('/ai-insights')
 @demo_access

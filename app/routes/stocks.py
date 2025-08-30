@@ -1906,14 +1906,18 @@ def compare():
 
         # Generate simple chart data
         chart_data = {}
+        from datetime import datetime, timedelta
+        base_date = datetime.now() - timedelta(days=30)
+        
         for symbol in symbols:
             chart_data[symbol] = []
             base_price = current_prices.get(symbol, 100.0)
             for i in range(30):  # 30 data points
+                current_date = base_date + timedelta(days=i)
                 price = base_price * (1 + random.uniform(-0.05, 0.05))
                 volume = random.randint(100000, 2000000)  # Random volume
                 chart_data[symbol].append({
-                    'date': f'2024-01-{i+1:02d}',
+                    'date': current_date.strftime('%Y-%m-%d'),
                     'close': round(price, 2),
                     'volume': volume
                 })
