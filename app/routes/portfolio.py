@@ -388,37 +388,7 @@ def get_user_data_for_portfolio():
     
     return render_template('portfolio/watchlist.html', watchlist=watchlist_data, stocks=watchlist_data)
 
-@portfolio.route('/')
-@access_required  # Changed from @login_required to @access_required for consistency
-def index():
-    """Portfolio main page with enhanced error handling"""
-    try:
-        # Always define context variables for template
-        portfolios = []
-        total_value = 0
-        total_profit_loss = 0
-        error_message = None
-        holdings = []
-        if current_user and current_user.is_authenticated:
-            try:
-                from ..models.portfolio import Portfolio
-                db.session.execute('SELECT 1')
-                portfolios = Portfolio.query.filter_by(user_id=current_user.id).all() or []
-                for portfolio in portfolios:
-                    # Build holdings for each portfolio
-                    for stock in portfolio.stocks:
-                        holdings.append(stock)
-            except Exception as e:
-                error_message = str(e)
-        # Always pass holdings and portfolios to template
-        return render_template('portfolio/view.html', portfolios=portfolios, holdings=holdings, total_value=total_value, total_profit_loss=total_profit_loss, error_message=error_message)
-    except Exception as e:
-        logger.error(f"Critical error in portfolio index: {e}")
-        return render_template('portfolio/index.html',
-                             portfolios=[],
-                             total_value=0,
-                             total_profit_loss=0,
-                             error_message="En uventet feil oppstod. Prøv igjen senere.")
+# Removed duplicate index route - using portfolio_overview as main route
 @portfolio.route('/tips', methods=['GET', 'POST'])
 @access_required
 def stock_tips():

@@ -674,6 +674,9 @@ def _generate_buffett_recommendation(metrics):
 def warren_buffett():
     """Warren Buffett analysis with enhanced error handling"""
     try:
+        # Import datetime for this function
+        from datetime import datetime
+        
         # Get and validate ticker from both GET and POST requests
         ticker = None
         if request.method == 'POST':
@@ -800,23 +803,42 @@ def warren_buffett():
         
     except Exception as e:
         logger.error(f"Critical error in Warren Buffett analysis: {e}")
-        # Always provide safe fallback with basic data
-        return render_template(
-            'analysis/warren_buffett.html',
-            analysis=None,
-            error=None,  # Don't show the technical error to user
-            oslo_stocks={
-                'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
-                'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'}
-            },
-            global_stocks={
-                'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
-                'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'}
-            },
-            ticker="",
-            title="Warren Buffett Analyse",
-            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
-        )
+        import traceback
+        logger.error(f"Warren Buffett traceback: {traceback.format_exc()}")
+        
+        # Simple fallback template rendering
+        try:
+            return render_template(
+                'analysis/warren_buffett.html',
+                analysis=None,
+                error=None,
+                oslo_stocks={
+                    'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
+                    'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'}
+                },
+                global_stocks={
+                    'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
+                    'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'}
+                },
+                ticker="",
+                title="Warren Buffett Analyse",
+                description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
+            )
+        except Exception as template_error:
+            logger.error(f"Template error in Warren Buffett fallback: {template_error}")
+            # Final fallback - simple error message
+            from flask import make_response
+            response = make_response(f"""
+            <html>
+            <head><title>Warren Buffett Analyse - Teknisk Feil</title></head>
+            <body>
+                <h1>Teknisk feil</h1>
+                <p>Det oppstod en teknisk feil med Warren Buffett analysen. Prøv igjen senere.</p>
+                <p><a href="/analysis">Tilbake til analyse</a></p>
+            </body>
+            </html>
+            """, 500)
+            return response
 
 
 # AJAX/JSON endpoint for dynamic Buffett analysis

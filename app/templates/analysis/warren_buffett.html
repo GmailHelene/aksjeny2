@@ -4,8 +4,17 @@
 {% block description %}Utfør fundamental analyse basert på Warren Buffett's investeringsprinsipper. Finn kvalitetsselskaper med varig konkurransefortrinn.{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    {% include 'analysis/_menu.html' %}
+<div class="container m                        {% if analysis and analysis.ticker %}
+                        <a href="/stocks/details/{{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-info-circle me-1"></i>Detaljer
+                        </a>
+                        <a href="/analysis/technical?ticker={{ analysis.ticker }}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-graph-up me-1"></i>Teknisk analyse
+                        </a>
+                        <a href="/analysis/benjamin-graham?ticker={{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-calculator me-1"></i>Graham-analyse
+                        </a>
+                        {% endif %}  {% include 'analysis/_menu.html' %}
     
     <!-- Header Section -->
     <div class="row mb-4">
@@ -16,8 +25,8 @@
                 </h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
-                        <li class="breadcrumb-item"><a href="{{ url_for('analysis.index') }}">Analyse</a></li>
+                        <li class="breadcrumb-item"><a href="/">Hjem</a></li>
+                        <li class="breadcrumb-item"><a href="/analysis">Analyse</a></li>
                         <li class="breadcrumb-item active">Warren Buffett</li>
                     </ol>
                 </nav>
@@ -53,7 +62,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ url_for('analysis.warren_buffett') }}">
+                    <form method="GET" action="/analysis/warren-buffett">
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label for="ticker" class="form-label">Aksjesymbol</label>
@@ -375,13 +384,13 @@
 
 <script>
 function newAnalysis() {
-    window.location.href = "{{ url_for('analysis.warren_buffett') }}";
+    window.location.href = "/analysis/warren-buffett";
 }
 
 function analyzeCustomTicker() {
     const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
     if (ticker) {
-        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + ticker;
+        window.location.href = "/analysis/warren-buffett?ticker=" + ticker;
     }
 }
 
@@ -411,6 +420,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="global-stocks-data" data-stocks="{{ global_stocks|tojson }}"></div>
 
 <!-- Include Warren Buffett search script -->
-<script src="{{ url_for('static', filename='js/warren-buffett-search.js') }}"></script>
+<script src="/static/js/warren-buffett-search.js"></script>
 {% endblock %}
 {% endblock %}
