@@ -10,9 +10,79 @@ def init_profile_routes(app):
         try:
             user = current_user
             portfolios = Portfolio.query.filter_by(user_id=user.id).all()
-            return render_template('profile/profile.html', 
-                                 user=user, 
-                                 portfolios=portfolios)
+            # --- Load additional context ---
+            # Favorites
+            try:
+                user_favorites = user.favorites if hasattr(user, 'favorites') else []
+            except Exception:
+                user_favorites = []
+            # Subscription status
+            try:
+                subscription_status = user.subscription_type if hasattr(user, 'subscription_type') else 'free'
+                subscription = getattr(user, 'subscription', None)
+            except Exception:
+                subscription_status = 'free'
+                subscription = None
+            # Referral code and stats
+            try:
+                referral_code = getattr(user, 'referral_code', user.username)
+                referrals_made = getattr(user, 'referrals_made', 0)
+                referral_earnings = getattr(user, 'referral_earnings', 0)
+            except Exception:
+                referral_code = user.username
+                referrals_made = 0
+                referral_earnings = 0
+            # Preferences
+            try:
+                user_language = getattr(user, 'language', 'nb')
+                user_display_mode = getattr(user, 'display_mode', 'auto')
+                user_number_format = getattr(user, 'number_format', 'norwegian')
+                user_dashboard_widgets = getattr(user, 'dashboard_widgets', '[]')
+            except Exception:
+                user_language = 'nb'
+                user_display_mode = 'auto'
+                user_number_format = 'norwegian'
+                user_dashboard_widgets = '[]'
+            # Notification settings
+            try:
+                email_notifications_enabled = getattr(user, 'email_notifications_enabled', False)
+                price_alerts_enabled = getattr(user, 'price_alerts_enabled', False)
+                market_news_enabled = getattr(user, 'market_news_enabled', False)
+                portfolio_updates_enabled = getattr(user, 'portfolio_updates_enabled', False)
+                ai_insights_enabled = getattr(user, 'ai_insights_enabled', False)
+                weekly_reports_enabled = getattr(user, 'weekly_reports_enabled', False)
+            except Exception:
+                email_notifications_enabled = False
+                price_alerts_enabled = False
+                market_news_enabled = False
+                portfolio_updates_enabled = False
+                ai_insights_enabled = False
+                weekly_reports_enabled = False
+            # Errors (for template)
+            errors = []
+            # Render template with all context
+            return render_template(
+                'profile/profile.html',
+                user=user,
+                portfolios=portfolios,
+                user_favorites=user_favorites,
+                subscription_status=subscription_status,
+                subscription=subscription,
+                referral_code=referral_code,
+                referrals_made=referrals_made,
+                referral_earnings=referral_earnings,
+                user_language=user_language,
+                user_display_mode=user_display_mode,
+                user_number_format=user_number_format,
+                user_dashboard_widgets=user_dashboard_widgets,
+                email_notifications_enabled=email_notifications_enabled,
+                price_alerts_enabled=price_alerts_enabled,
+                market_news_enabled=market_news_enabled,
+                portfolio_updates_enabled=portfolio_updates_enabled,
+                ai_insights_enabled=ai_insights_enabled,
+                weekly_reports_enabled=weekly_reports_enabled,
+                errors=errors
+            )
         except Exception as e:
             current_app.logger.error(f"Profile error: {str(e)}")
             flash('Kunne ikke laste profilen. Prøv igjen senere.', 'error')
