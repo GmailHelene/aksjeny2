@@ -139,8 +139,8 @@
                             <h5 class="mb-0">Kursgraf - {{ stock.symbol }}</h5>
                         </div>
                         <div class="card-body">
-                            <div class="tradingview-widget-container" style="min-height: 500px;">
-                                <div id="tradingview_widget_details" style="height: 500px;"></div>
+                            <div class="tradingview-widget-container" style="min-height: 400px;">
+                                <div id="tradingview_widget_details" style="height: 400px;"></div>
                                 <div id="chart-loading" class="text-center py-4" style="display: none;">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">Laster graf...</span>
@@ -160,8 +160,8 @@
                             <h5 class="mb-0">Teknisk Analyse - {{ stock.symbol }}</h5>
                         </div>
                         <div class="card-body">
-                            <div class="tradingview-widget-container" style="min-height: 500px;">
-                                <div id="tradingview_technical_widget" style="height: 500px;"></div>
+                            <div class="tradingview-widget-container" style="min-height: 400px;">
+                                <div id="tradingview_technical_widget" style="height: 400px;"></div>
                                 <div id="technical-loading" class="text-center py-4" style="display: none;">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="visually-hidden">Laster teknisk analyse...</span>
@@ -170,9 +170,9 @@
                                 </div>
                             </div>
                             
-                            <!-- Simplified Technical Summary -->
-                            <div id="technical-summary" class="alert alert-info mt-3">
-                                <strong>Teknisk sammendrag:</strong> Detaljert teknisk analyse vises i grafen ovenfor.
+                            <!-- Technical Summary -->
+                            <div id="technical-summary" class="alert alert-info mt-3 mb-0">
+                                <strong>Teknisk sammendrag:</strong> Detaljert teknisk analyse vises i grafen ovenfor med RSI, MACD og Bollinger Bands.
                                 <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span></small>
                             </div>
                         </div>
@@ -344,13 +344,13 @@ let currentSymbol = '{{ stock.symbol }}';
 
 // Show/hide key metrics based on active tab
 
-// Fixed key metrics visibility - only show on overview tab
+// Key metrics should only be visible on overview tab
 function toggleKeyMetrics() {
     const keyMetricsCard = document.getElementById('key-metrics-card');
-    const overviewTab = document.getElementById('overview-tab');
+    const overviewTabButton = document.getElementById('overview-tab');
     
-    if (keyMetricsCard) {
-        if (overviewTab && overviewTab.classList.contains('active')) {
+    if (keyMetricsCard && overviewTabButton) {
+        if (overviewTabButton.classList.contains('active')) {
             keyMetricsCard.style.display = 'block';
         } else {
             keyMetricsCard.style.display = 'none';
@@ -424,11 +424,11 @@ function initChart() {
     
     console.log(`📈 Using TradingView symbol: ${tvSymbol}`);
     
-    // Load TradingView script with timeout
+    // Shorter timeout and better fallback
     const loadTimeout = setTimeout(() => {
         console.warn('⚠️ TradingView loading timeout, showing fallback');
         showChartFallback(container, loading);
-    }, 15000);
+    }, 8000); // Reduced to 8 seconds
     
     if (!window.TradingView) {
         loadTradingViewScript(() => {

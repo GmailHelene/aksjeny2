@@ -336,9 +336,19 @@ def register_blueprints(app):
         blueprints_registered.append('main')
         
         # Explicitly import and register portfolio blueprint
-        from .routes.portfolio import portfolio
-        app.register_blueprint(portfolio)
-        blueprints_registered.append('portfolio')
+        try:
+            from .routes.portfolio import portfolio
+            app.register_blueprint(portfolio)
+            blueprints_registered.append('portfolio')
+            app.logger.info("✅ OK Registered Portfolio blueprint")
+        except ImportError as e:
+            app.logger.error(f"❌ Failed to import Portfolio blueprint: {e}")
+            import traceback
+            app.logger.error(f"Portfolio import traceback: {traceback.format_exc()}")
+        except Exception as e:
+            app.logger.error(f"❌ Error registering Portfolio blueprint: {e}")
+            import traceback
+            app.logger.error(f"Portfolio registration traceback: {traceback.format_exc()}")
         
         # Explicitly import and register pricing blueprint
         from .routes.pricing import pricing
