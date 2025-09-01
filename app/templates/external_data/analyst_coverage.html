@@ -470,17 +470,26 @@
     </div>
 </div>
 
+
 {% block extra_js %}
 {{ super() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Analyst Coverage: Initializing filter functionality...');
+    
     // Filter functionality for analyst coverage
     const filterButtons = document.querySelectorAll('[data-filter]');
     const analysisCards = document.querySelectorAll('.analyst-card');
     const tableRows = document.querySelectorAll('#analyst-table tbody tr');
     
+    console.log(`Found ${filterButtons.length} filter buttons`);
+    console.log(`Found ${tableRows.length} table rows to filter`);
+    
     filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Filter button clicked:', this.getAttribute('data-filter'));
+            
             // Update button states
             filterButtons.forEach(btn => {
                 btn.classList.remove('active', 'btn-light');
@@ -490,11 +499,17 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active', 'btn-light');
             
             const filter = this.getAttribute('data-filter');
+            console.log('Applying filter:', filter);
+            
+            let visibleCount = 0;
             
             // Filter table rows
             tableRows.forEach(row => {
                 const ratingBadge = row.querySelector('.badge');
-                if (!ratingBadge) return;
+                if (!ratingBadge) {
+                    console.log('No rating badge found in row');
+                    return;
+                }
                 
                 const rating = ratingBadge.textContent.toLowerCase().trim();
                 let show = false;
@@ -514,12 +529,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         break;
                 }
                 
-                row.style.display = show ? '' : 'none';
+                if (show) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
             
+            console.log(`Filter applied: ${filter}, showing ${visibleCount} rows`);
+            
             // Show feedback message
-            const activeRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
-            console.log(`Viser ${activeRows.length} analyser for filter: ${filter}`);
+            const feedbackElement = document.getElementById('filter-feedback');
+            if (feedbackElement) {
+                feedbackElement.textContent = `Viser ${visibleCount} analyser for filter: ${filter}`;
+                feedbackElement.style.display = 'block';
+                setTimeout(() => {
+                    feedbackElement.style.display = 'none';
+                }, 3000);
+            }
         });
     });
     
@@ -527,14 +555,18 @@ document.addEventListener('DOMContentLoaded', function() {
     analysisCards.forEach(card => {
         card.addEventListener('mouseenter', function() {
             this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.2s ease';
         });
         
         card.addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0)';
         });
     });
+    
+    console.log('Analyst Coverage: Filter functionality initialized successfully');
 });
 </script>
 {% endblock %}
+
 
 {% endblock %}

@@ -669,7 +669,7 @@ def _generate_buffett_recommendation(metrics):
     return recommendation
 
 @analysis.route('/warren-buffett', methods=['GET', 'POST'])
-@demo_access  # Changed from @access_required to allow demo access
+@access_required  # Fixed: Changed back to @access_required from @demo_access
 def warren_buffett():
     """Warren Buffett analysis with simplified error handling"""
     try:

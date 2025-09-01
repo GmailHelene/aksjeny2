@@ -389,119 +389,57 @@ def get_user_data_for_portfolio():
     return render_template('portfolio/watchlist.html', watchlist=watchlist_data, stocks=watchlist_data)
 
 @portfolio.route('/')
-@login_required
+@access_required  # Changed from @login_required to @access_required for consistency
 def index():
-    """Portfolio main page with better error handling"""
+    """Portfolio main page with enhanced error handling"""
     try:
-        # Test database connection first
-        try:
-            from ..models.portfolio import Portfolio
-            db.session.execute('SELECT 1')
-        except Exception as db_test_error:
-            logger.error(f"Database connection test failed: {db_test_error}")
-            return render_template('portfolio/index.html',
-                                 portfolios=[],
-                                 total_value=0,
-                                 total_profit_loss=0,
-                                 error_message="Database tilkobling ikke tilgjengelig. Prøv igjen senere.")
-        
         # Get user's portfolios with proper error handling
         portfolios = []
-        if current_user and current_user.is_authenticated:
-            try:
-                # Safely get portfolios with database connection check
-                from ..models.portfolio import Portfolio
-                portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
-            except Exception as db_error:
-                logger.error(f"Database error getting portfolios for user {current_user.id}: {db_error}")
-                portfolios = []
-        
-        # Calculate total portfolio value safely
         total_value = 0
         total_profit_loss = 0
-        portfolio_data = []
+        error_message = None
         
-        # Initialize data service for stock prices
-        try:
-            data_service = get_data_service()
-        except Exception as data_service_error:
-            logger.warning(f"Data service unavailable: {str(data_service_error)}")
-            data_service = None
-
-        # Process each portfolio once
-        for p in portfolios:
+        if current_user and current_user.is_authenticated:
             try:
-                portfolio_value = 0
-                portfolio_gain_loss = 0
-                stock_data = []
-
-                # Process stocks in portfolio
-                for stock in p.stocks:
+                # Import Portfolio model safely
+                from ..models.portfolio import Portfolio
+                
+                # Test database connection
+                db.session.execute('SELECT 1')
+                
+                # Get portfolios safely
+                portfolios = Portfolio.query.filter_by(user_id=current_user.id).all() or []
+                
+                # Calculate totals
+                for portfolio in portfolios:
                     try:
-                        # Get current price with fallback to purchase price
-                        current_price = stock.purchase_price  # Default to purchase price
-                        if data_service:
-                            try:
-                                current_data = data_service.get_stock_info(stock.ticker)
-                                if current_data and 'regularMarketPrice' in current_data:
-                                    current_price = current_data.get('regularMarketPrice', stock.purchase_price)
-                                elif current_data and 'last_price' in current_data:
-                                    current_price = current_data.get('last_price', stock.purchase_price)
-                            except Exception as price_error:
-                                logger.warning(f"Price fetch error for {stock.ticker}: {str(price_error)}")
-                                current_price = stock.purchase_price
-
-                        # Calculate gain/loss
-                        gain_loss = (current_price - stock.purchase_price) * stock.shares
-                        portfolio_gain_loss += gain_loss
-
-                        stock_data.append({
-                            'ticker': stock.ticker,
-                            'quantity': stock.shares,  # Display as 'quantity' but use stock.shares
-                            'purchase_price': stock.purchase_price,
-                            'current_price': current_price,
-                            'gain_loss': gain_loss
-                        })
-
-                        portfolio_value += current_price * stock.shares
-                    except Exception as stock_error:
-                        logger.error(f"Error processing stock {stock.ticker}: {stock_error}")
-
-                total_value += portfolio_value
-                total_profit_loss += portfolio_gain_loss  # KRITISK FIX: Akkumuler total profit/loss
-                portfolio_data.append({
-                    'id': p.id,
-                    'name': p.name,
-                    'value': portfolio_value,
-                    'gain_loss': portfolio_gain_loss,
-                    'stocks': stock_data,
-                    'created_at': p.created_at
-                })
-            except Exception as calc_error:
-                logger.error(f"Error calculating portfolio data for {p.name}: {calc_error}")
-                portfolio_data.append({
-                    'id': p.id,
-                    'name': p.name,
-                    'value': 0,
-                    'gain_loss': 0,
-                    'stocks': [],
-                    'created_at': p.created_at
-                })
+                        if hasattr(portfolio, 'total_value') and portfolio.total_value:
+                            total_value += float(portfolio.total_value)
+                        if hasattr(portfolio, 'profit_loss') and portfolio.profit_loss:
+                            total_profit_loss += float(portfolio.profit_loss)
+                    except (ValueError, TypeError, AttributeError):
+                        continue
+                        
+            except Exception as db_error:
+                logger.error(f"Database error in portfolio index: {db_error}")
+                error_message = "Database tilkobling ikke tilgjengelig. Prøv igjen senere."
+                portfolios = []
+                total_value = 0
+                total_profit_loss = 0
         
         return render_template('portfolio/index.html',
-                             portfolios=portfolio_data,
+                             portfolios=portfolios,
                              total_value=total_value,
-                             total_profit_loss=total_profit_loss)  # KRITISK FIX: Send total_profit_loss til template
+                             total_profit_loss=total_profit_loss,
+                             error_message=error_message)
                              
     except Exception as e:
-        logger.error(f"Error in portfolio index: {e}")
-        # Don't flash error here - let the template handle the empty state gracefully
+        logger.error(f"Critical error in portfolio index: {e}")
         return render_template('portfolio/index.html',
                              portfolios=[],
                              total_value=0,
                              total_profit_loss=0,
-                             error_message="Kunne ikke laste porteføljer. Prøv å oppdatere siden.")
-
+                             error_message="En uventet feil oppstod. Prøv igjen senere.")
 @portfolio.route('/tips', methods=['GET', 'POST'])
 @access_required
 def stock_tips():
