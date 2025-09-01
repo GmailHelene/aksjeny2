@@ -398,27 +398,6 @@ def index():
                 error_message = str(e)
         # Always pass holdings and portfolios to template
         return render_template('portfolio/view.html', portfolios=portfolios, holdings=holdings, total_value=total_value, total_profit_loss=total_profit_loss, error_message=error_message)
-                    try:
-                        if hasattr(portfolio, 'total_value') and portfolio.total_value:
-                            total_value += float(portfolio.total_value)
-                        if hasattr(portfolio, 'profit_loss') and portfolio.profit_loss:
-                            total_profit_loss += float(portfolio.profit_loss)
-                    except (ValueError, TypeError, AttributeError):
-                        continue
-                        
-            except Exception as db_error:
-                logger.error(f"Database error in portfolio index: {db_error}")
-                error_message = "Database tilkobling ikke tilgjengelig. Prøv igjen senere."
-                portfolios = []
-                total_value = 0
-                total_profit_loss = 0
-        
-        return render_template('portfolio/index.html',
-                             portfolios=portfolios,
-                             total_value=total_value,
-                             total_profit_loss=total_profit_loss,
-                             error_message=error_message)
-                             
     except Exception as e:
         logger.error(f"Critical error in portfolio index: {e}")
         return render_template('portfolio/index.html',
