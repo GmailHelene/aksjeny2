@@ -2568,3 +2568,14 @@ def advanced_crypto_dashboard():
         return render_template('error.html', 
                              title="Crypto Dashboard",
                              error="Crypto dashboard er midlertidig utilgjengelig. Prøv igjen senere.")
+
+@main.route('/mobile-trading')
+@login_required
+def mobile_trading_redirect():
+    """Redirect to mobile trading dashboard as a backup for direct blueprint access"""
+    try:
+        return render_template('mobile_trading/dashboard.html',
+                             title='Mobile Trading Dashboard')
+    except Exception as e:
+        logger.error(f"Mobile dashboard error: {e}")
+        return render_template('error.html', error=str(e)), 500
