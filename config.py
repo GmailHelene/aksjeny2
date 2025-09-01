@@ -98,4 +98,4 @@ config = {
     'production': ProductionConfig,
     'default': DevelopmentConfig
 }
-    ASSETS_VERSION = "1756519317"
+    ASSETS_VERSION = "1756734079"
