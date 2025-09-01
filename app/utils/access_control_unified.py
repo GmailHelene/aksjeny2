@@ -49,13 +49,10 @@ DEMO_ACCESSIBLE = {
     'stocks.search', 
     'stocks.list_currency',
     'analysis.index',
-    'analysis.warren_buffett',  # Moved from premium to demo
     'market.overview',
     'market.sectors',
     'market_intel.insider_trading',
     'portfolio.portfolio_index',  # Basic portfolio view
-    'portfolio.index',  # Basic portfolio access
-    'main.profile',  # Profile page access
     'price_alerts.index'  # Basic alerts view
 }
 
@@ -69,6 +66,7 @@ PREMIUM_ONLY = {
     'stocks.compare',
     'analysis.ai',
     'analysis.technical',
+    'analysis.warren_buffett',
     'analysis.prediction',
     'analysis.market_overview',
     'portfolio.create_portfolio',

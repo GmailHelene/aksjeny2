@@ -13,7 +13,8 @@ def init_profile_routes(app):
             # --- Load additional context ---
             # Favorites
             try:
-                user_favorites = user.favorites if hasattr(user, 'favorites') else []
+                from app.models.favorites import Favorites
+                user_favorites = Favorites.get_user_favorites(user.id)
             except Exception:
                 user_favorites = []
             # Subscription status

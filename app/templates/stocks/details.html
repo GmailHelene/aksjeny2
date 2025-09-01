@@ -160,6 +160,7 @@
                             <h5 class="mb-0">Teknisk Analyse - {{ stock.symbol }}</h5>
                         </div>
                         <div class="card-body">
+                            {% if stock.rsi or stock.macd or stock.bb %}
                             <div class="tradingview-widget-container" style="min-height: 400px;">
                                 <div id="tradingview_technical_widget" style="height: 400px;"></div>
                                 <div id="technical-loading" class="text-center py-4" style="display: none;">
@@ -169,12 +170,13 @@
                                     <div class="mt-2">Laster teknisk analyse...</div>
                                 </div>
                             </div>
-                            
-                            <!-- Technical Summary -->
                             <div id="technical-summary" class="alert alert-info mt-3 mb-0">
                                 <strong>Teknisk sammendrag:</strong> Detaljert teknisk analyse vises i grafen ovenfor med RSI, MACD og Bollinger Bands.
                                 <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span></small>
                             </div>
+                            {% else %}
+                            <div class="text-center text-muted py-4">Ingen tekniske indikatorer tilgjengelig.</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -663,7 +665,7 @@ function addToWatchlist(symbol) {
         body: JSON.stringify({ symbol: symbol })
     })
     .then(response => response.json())
-    .then(data => {
+    .then data => {
         if (data.success) {
             showToast('✅ Lagt til i favoritter', 'success');
         } else {
