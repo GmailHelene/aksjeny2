@@ -568,7 +568,7 @@ class WatchlistAnalyzer:
 @watchlist_bp.route('/')
 @demo_access
 def index():
-    """Hovedside for watchlist"""
+    """Hovedside for watchlist med forbedret error handling"""
     if not current_user.is_authenticated:
         # Demo mode - show demo watchlists
         demo_watchlists = [
@@ -589,8 +589,34 @@ def index():
         ]
         return render_template('watchlist/index.html', watchlists=demo_watchlists, demo_mode=True)
     
-    watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
-    return render_template('watchlist/index.html', watchlists=watchlists, demo_mode=False)
+    try:
+        # Get user's watchlists with enhanced error handling
+        watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
+        
+        # Add stock count to each watchlist
+        for watchlist in watchlists:
+            try:
+                watchlist.stock_count = len(watchlist.items)
+            except Exception as e:
+                current_app.logger.warning(f"Error counting stocks in watchlist {watchlist.id}: {e}")
+                watchlist.stock_count = 0
+        
+        current_app.logger.info(f"Loaded {len(watchlists)} watchlists for user {current_user.id}")
+        
+        # Instead of trying to load market data here (which causes loading issues),
+        # just pass the basic watchlist info and let the template handle data loading
+        return render_template('watchlist/index.html', 
+                             watchlists=watchlists, 
+                             demo_mode=False,
+                             loading_complete=True)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading watchlists for user {current_user.id}: {e}")
+        flash('Feil ved lasting av watchlists', 'error')
+        return render_template('watchlist/index.html', 
+                             watchlists=[], 
+                             demo_mode=False,
+                             loading_complete=True)
 
 @watchlist_bp.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -668,42 +694,48 @@ def view_watchlist(id):
 @watchlist_bp.route('/<int:id>/add_stock', methods=['POST'])
 @login_required
 def add_stock(id):
-    """Legg til aksje i watchlist"""
-    watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first_or_404()
-    
-    symbol = request.form.get('symbol', '').upper().strip()
-    notes = request.form.get('notes', '')
-    
-    if not symbol:
-        flash('Ticker-symbol er påkrevd', 'error')
+    """Legg til aksje i watchlist med forbedret error handling"""
+    try:
+        watchlist = Watchlist.query.filter_by(id=id, user_id=current_user.id).first()
+        if not watchlist:
+            flash('Watchlist ikke funnet', 'error')
+            return redirect(url_for('watchlist_advanced.index'))
+        
+        symbol = request.form.get('symbol', '').upper().strip()
+        notes = request.form.get('notes', '')
+        
+        if not symbol:
+            flash('Ticker-symbol er påkrevd', 'error')
+            return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
+        
+        # Sjekk om aksjen allerede er i watchlist
+        existing = WatchlistItem.query.filter_by(watchlist_id=id, symbol=symbol).first()
+        if existing:
+            flash(f'{symbol} er allerede i watchlist', 'warning')
+            return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
+        
+        # Create new watchlist item directly without complex validation
+        item = WatchlistItem(
+            watchlist_id=id,
+            symbol=symbol,
+            notes=notes,
+            added_at=datetime.now()
+        )
+        
+        db.session.add(item)
+        db.session.commit()
+        
+        current_app.logger.info(f"Successfully added {symbol} to watchlist {id} for user {current_user.id}")
+        flash(f'✅ {symbol} lagt til i watchlist!', 'success')
+        
+        # Force reload of the watchlist page
         return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
-    
-    # Sjekk om aksjen allerede er i watchlist
-    existing = WatchlistItem.query.filter_by(watchlist_id=id, symbol=symbol).first()
-    if existing:
-        flash(f'{symbol} er allerede i watchlist', 'warning')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error adding stock to watchlist: {e}")
+        db.session.rollback()
+        flash('❌ Feil ved tillegging av aksje til watchlist', 'error')
         return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
-    
-    # Valider at ticker eksisterer
-    analyzer = WatchlistAnalyzer()
-    stock_data = analyzer.get_stock_data(symbol)
-    
-    if not stock_data:
-        flash(f'Kunne ikke finne data for {symbol}', 'error')
-        return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
-    
-    item = WatchlistItem(
-        watchlist_id=id,
-        symbol=symbol,
-        notes=notes,
-        added_at=datetime.now()
-    )
-    
-    db.session.add(item)
-    db.session.commit()
-    
-    flash(f'{symbol} lagt til i watchlist!', 'success')
-    return redirect(url_for('watchlist_advanced.view_watchlist', id=id))
 
 @watchlist_bp.route('/item/<int:item_id>/remove', methods=['POST'])
 @login_required

@@ -672,13 +672,37 @@ def _generate_buffett_recommendation(metrics):
 @analysis.route('/warren_buffett', methods=['GET', 'POST'])  # Support both URL formats
 @access_required  # Fixed: Changed back to @access_required from @demo_access
 def warren_buffett():
-    """Warren Buffett analysis with simplified error handling"""
+    """Warren Buffett analysis with enhanced error handling"""
     try:
-        # Get and validate ticker
-        ticker = (request.args.get('ticker') or request.form.get('ticker', '')).strip().upper()
+        # Get and validate ticker from both GET and POST requests
+        ticker = None
+        if request.method == 'POST':
+            ticker = request.form.get('ticker', '').strip().upper()
+        else:
+            ticker = request.args.get('ticker', '').strip().upper()
+        
         analysis_data = None
-        oslo_stocks = {}
-        global_stocks = {}
+        
+        # Define stock lists first (moved up to ensure they're always available)
+        oslo_stocks = {
+            'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
+            'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'},
+            'MOWI.OL': {'name': 'Mowi ASA', 'sector': 'Sjømat'},
+            'TEL.OL': {'name': 'Telenor ASA', 'sector': 'Telekom'},
+            'NHY.OL': {'name': 'Norsk Hydro ASA', 'sector': 'Materialer'},
+            'YAR.OL': {'name': 'Yara International ASA', 'sector': 'Materialer'},
+            'ORK.OL': {'name': 'Orkla ASA', 'sector': 'Forbruksvarer'}
+        }
+
+        global_stocks = {
+            'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
+            'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'},
+            'GOOGL': {'name': 'Alphabet Inc.', 'sector': 'Teknologi'},
+            'BRK-B': {'name': 'Berkshire Hathaway', 'sector': 'Finans'},
+            'JNJ': {'name': 'Johnson & Johnson', 'sector': 'Helse'},
+            'PG': {'name': 'Procter & Gamble', 'sector': 'Forbruksvarer'},
+            'KO': {'name': 'The Coca-Cola Company', 'sector': 'Forbruksvarer'}
+        }
 
         if ticker:
             logger.info(f"Processing Warren Buffett analysis for: {ticker}")
@@ -686,38 +710,113 @@ def warren_buffett():
             # Basic validation
             if not ticker.replace('.', '').replace('-', '').replace('_', '').isalnum():
                 flash('Ugyldig aksjesymbol. Prøv med f.eks. EQNR.OL eller AAPL.', 'warning')
-                return redirect(url_for('analysis.warren_buffett'))
+                return render_template(
+                    'analysis/warren_buffett.html',
+                    analysis=None,
+                    error=None,
+                    oslo_stocks=oslo_stocks,
+                    global_stocks=global_stocks,
+                    ticker="",
+                    title="Warren Buffett Analyse",
+                    description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
+                )
 
-            # Simple demo analysis generation
-            ticker_hash = sum(ord(c) for c in ticker)
-            
-            # Generate realistic-looking metrics
-            price = 100 + (ticker_hash % 300)
-            pe_ratio = 10 + (ticker_hash % 25)
-            dividend_yield = (ticker_hash % 8) / 2.0
-            profit_margin = 5 + (ticker_hash % 20)
-            debt_to_equity = (ticker_hash % 15) / 10.0
-            current_ratio = 1.0 + (ticker_hash % 20) / 10.0
-            roe = 8 + (ticker_hash % 15)
-            
-            # Calculate Buffett score based on criteria
-            score = 50  # Base score
-            if pe_ratio < 20: score += 10
-            if dividend_yield > 2: score += 10
-            if profit_margin > 15: score += 10
-            if debt_to_equity < 0.5: score += 10
-            if current_ratio > 1.5: score += 5
-            if roe > 15: score += 5
-            
-            # Determine recommendation
-            if score >= 85:
-                action = 'KJØP'
-                reasons = ['Utmerket finansiell helse', 'Sterke konkurranse fortrinn', 'Attraktiv verdsettelse']
-                risk_level = 'Lav'
-            elif score >= 70:
-                action = 'HOLD'
-                reasons = ['Solid selskap', 'Moderat verdsettelse', 'Stabil inntjening']
-                risk_level = 'Medium'
+            try:
+                # Simple demo analysis generation
+                ticker_hash = sum(ord(c) for c in ticker)
+                
+                # Generate realistic-looking metrics
+                price = 100 + (ticker_hash % 300)
+                pe_ratio = 10 + (ticker_hash % 25)
+                dividend_yield = (ticker_hash % 8) / 2.0
+                profit_margin = 5 + (ticker_hash % 20)
+                debt_to_equity = (ticker_hash % 15) / 10.0
+                current_ratio = 1.0 + (ticker_hash % 20) / 10.0
+                roe = 8 + (ticker_hash % 15)
+                
+                # Calculate Buffett score based on criteria
+                score = 50  # Base score
+                if pe_ratio < 20: score += 10
+                if dividend_yield > 2: score += 10
+                if profit_margin > 15: score += 10
+                if debt_to_equity < 0.5: score += 10
+                if current_ratio > 1.5: score += 5
+                if roe > 15: score += 5
+                
+                # Determine recommendation
+                if score >= 85:
+                    action = 'KJØP'
+                    reasons = ['Utmerket finansiell helse', 'Sterke konkurranse fortrinn', 'Attraktiv verdsettelse']
+                    risk_level = 'Lav'
+                elif score >= 70:
+                    action = 'HOLD'
+                    reasons = ['Solid selskap', 'Moderat verdsettelse', 'Stabil inntjening']
+                    risk_level = 'Medium'
+                else:
+                    action = 'VURDER'
+                    reasons = ['Høy risiko', 'Usikker lønnsomhet', 'Må undersøkes nærmere']
+                    risk_level = 'Høy'
+
+                analysis_data = {
+                    'ticker': ticker,
+                    'company_name': ticker.replace('.OL', ' ASA') if '.OL' in ticker else f'{ticker} Inc.',
+                    'metrics': {
+                        'price': price,
+                        'pe_ratio': pe_ratio,
+                        'dividend_yield': dividend_yield,
+                        'profit_margin': profit_margin,
+                        'debt_to_equity': debt_to_equity,
+                        'current_ratio': current_ratio,
+                        'roe': roe
+                    },
+                    'buffett_score': score,
+                    'recommendation': {
+                        'score': score,
+                        'action': action,
+                        'reasons': reasons,
+                        'risk_level': risk_level
+                    },
+                    'last_updated': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    'is_fallback': True
+                }
+                
+                logger.info(f"Successfully generated Warren Buffett analysis for {ticker}")
+                
+            except Exception as analysis_error:
+                logger.error(f"Error generating analysis for {ticker}: {analysis_error}")
+                flash('En feil oppstod under analysen. Prøv igjen senere.', 'error')
+                analysis_data = None
+
+        return render_template(
+            'analysis/warren_buffett.html',
+            analysis=analysis_data,
+            error=None,
+            oslo_stocks=oslo_stocks,
+            global_stocks=global_stocks,
+            ticker=ticker or '',
+            title="Warren Buffett Analyse",
+            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
+        )
+        
+    except Exception as e:
+        logger.error(f"Critical error in Warren Buffett analysis: {e}")
+        # Always provide safe fallback with basic data
+        return render_template(
+            'analysis/warren_buffett.html',
+            analysis=None,
+            error=None,  # Don't show the technical error to user
+            oslo_stocks={
+                'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
+                'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'}
+            },
+            global_stocks={
+                'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
+                'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'}
+            },
+            ticker="",
+            title="Warren Buffett Analyse",
+            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
+        )
             else:
                 action = 'VURDER'
                 reasons = ['Høy risiko', 'Usikker lønnsomhet', 'Må undersøkes nærmere']

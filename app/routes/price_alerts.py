@@ -150,110 +150,53 @@ def create():
                 logger.warning(f"Could not check subscription limits: {e}")
                 # Continue anyway for better user experience
             
-            # Enhanced alert creation with multiple fallback methods
-            alert_created = False
-            error_messages = []
-            
-            # Method 1: Try price monitor service
+            # Enhanced alert creation with simplified, working approach
             try:
-                alert = price_monitor.create_alert(
+                from ..models.price_alert import PriceAlert
+                from ..extensions import db
+                from datetime import datetime
+                
+                # Ensure clean database state
+                db.session.rollback()
+                
+                # Create alert with all required fields
+                new_alert = PriceAlert(
                     user_id=current_user.id,
+                    ticker=symbol,  # Required field
                     symbol=symbol,
                     target_price=target_price,
                     alert_type=alert_type,
+                    current_price=None,  # Will be updated by monitor
+                    is_active=True,
+                    is_triggered=False,  # Required field
+                    created_at=datetime.utcnow(),
+                    triggered_at=None,
+                    last_checked=datetime.utcnow(),
+                    email_sent=False,
+                    email_enabled=True,
+                    browser_enabled=bool(request.form.get('browser_enabled', False)),
+                    notify_email=True,  # Required field
+                    notify_push=False,  # Required field
+                    auto_disable=False,  # Required field
+                    threshold_price=target_price,  # Required field
+                    threshold_percent=None,
+                    last_price=None,
+                    updated_at=datetime.utcnow(),  # Required field
                     company_name=company_name or f"Stock {symbol}",
-                    notes=notes or None
+                    exchange='Oslo Børs',  # Default exchange
+                    notes=notes
                 )
-                if alert:
-                    alert_created = True
-                    logger.info(f"Alert created via price monitor service")
-            except Exception as monitor_error:
-                logger.warning(f"Price monitor service failed: {monitor_error}")
-                error_messages.append(f"Monitor service: {str(monitor_error)}")
-            
-            # Method 2: Direct database creation if monitor failed
-            if not alert_created:
-                try:
-                    from ..models.price_alert import PriceAlert
-                    from .. import db
-                    
-                    # Ensure clean database state
-                    try:
-                        if db.session.is_active:
-                            db.session.rollback()
-                    except Exception:
-                        pass
-                    
-                    # Create alert object
-                    alert = PriceAlert(
-                        user_id=current_user.id,
-                        ticker=symbol,  # Required for compatibility
-                        symbol=symbol,
-                        target_price=target_price,
-                        alert_type=alert_type,
-                        company_name=company_name or f"Stock {symbol}",
-                        notes=notes or None,
-                        is_active=True,
-                        email_enabled=True,
-                        browser_enabled=bool(request.form.get('browser_enabled', False))
-                    )
-                    
-                    # Validate model before saving
-                    if hasattr(alert, 'validate'):
-                        alert.validate()
-                    
-                    db.session.add(alert)
-                    db.session.flush()  # Check for constraint errors before commit
-                    db.session.commit()
-                    
-                    alert_created = True
-                    logger.info(f"Alert created via direct database insertion")
-                    
-                except Exception as db_error:
-                    logger.error(f"Direct database creation failed: {db_error}")
-                    error_messages.append(f"Database: {str(db_error)}")
-                    try:
-                        db.session.rollback()
-                    except Exception:
-                        pass
-            
-            # Method 3: Simplified creation as last resort
-            if not alert_created:
-                try:
-                    from ..models.price_alert import PriceAlert
-                    from .. import db
-                    
-                    # Ultra-simple creation
-                    minimal_alert = PriceAlert()
-                    minimal_alert.user_id = current_user.id
-                    minimal_alert.ticker = symbol
-                    minimal_alert.symbol = symbol
-                    minimal_alert.target_price = target_price
-                    minimal_alert.alert_type = alert_type
-                    minimal_alert.is_active = True
-                    minimal_alert.email_enabled = True
-                    
-                    db.session.add(minimal_alert)
-                    db.session.commit()
-                    
-                    alert_created = True
-                    logger.info(f"Alert created via minimal approach")
-                    
-                except Exception as minimal_error:
-                    logger.error(f"Minimal creation also failed: {minimal_error}")
-                    error_messages.append(f"Minimal: {str(minimal_error)}")
-                    try:
-                        db.session.rollback()
-                    except Exception:
-                        pass
-            
-            # Return result
-            if alert_created:
+                
+                db.session.add(new_alert)
+                db.session.commit()
+                
+                logger.info(f"Price alert created successfully for user {current_user.id}: {symbol} at {target_price}")
                 flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
                 return redirect(url_for('price_alerts.index'))
-            else:
-                error_detail = "; ".join(error_messages) if error_messages else "Unknown error"
-                logger.error(f"All alert creation methods failed: {error_detail}")
+                
+            except Exception as e:
+                logger.error(f"Error creating price alert: {e}")
+                db.session.rollback()
                 flash('❌ Kunne ikke opprette prisvarsel. Teknisk feil - kontakt support hvis problemet vedvarer.', 'error')
                 return render_template('price_alerts/create.html')
                 

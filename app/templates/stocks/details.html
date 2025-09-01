@@ -316,23 +316,28 @@
             </div>
 
             <!-- Latest News -->
-            {% if stock_news %}
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0">Siste Nyheter</h5>
                 </div>
                 <div class="card-body">
-                    {% for news in stock_news[:3] %}
-                    <div class="border-bottom py-2">
-                        <a href="{{ news.url }}" target="_blank" class="text-decoration-none">
-                            <h6 class="mb-1">{{ news.title }}</h6>
-                        </a>
-                        <small class="text-muted">{{ news.published_at }} • {{ news.source }}</small>
-                    </div>
-                    {% endfor %}
+                    {% if stock_news %}
+                        {% for news in stock_news[:3] %}
+                        <div class="border-bottom py-2">
+                            <a href="{{ news.url }}" target="_blank" class="text-decoration-none">
+                                <h6 class="mb-1">{{ news.title }}</h6>
+                            </a>
+                            <small class="text-muted">{{ news.published_at }} • {{ news.source }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">
+                            <i class="fas fa-newspaper me-2"></i>
+                            Ingen nyheter tilgjengelig for øyeblikket.
+                        </p>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -406,6 +411,19 @@ function initChart() {
         console.log('📊 Showing chart loading indicator');
     }
     
+    // Immediate fallback message
+    container.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="height: 380px;">
+            <div class="text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Laster...</span>
+                </div>
+                <div class="h5 text-muted">Laster kursgraf...</div>
+                <div class="text-muted">Dette kan ta noen sekunder</div>
+            </div>
+        </div>
+    `;
+    
     // Convert symbol for TradingView with better mapping
     let tvSymbol = currentSymbol;
     if (currentSymbol.endsWith('.OL')) {
@@ -421,11 +439,11 @@ function initChart() {
     
     console.log(`📈 Using TradingView symbol: ${tvSymbol}`);
     
-    // Shorter timeout and better fallback
+    // Extended timeout and better fallback
     const loadTimeout = setTimeout(() => {
         console.warn('⚠️ TradingView loading timeout, showing fallback');
         showChartFallback(container, loading);
-    }, 8000); // Reduced to 8 seconds
+    }, 15000); // Increased to 15 seconds
     
     if (!window.TradingView) {
         loadTradingViewScript(() => {
@@ -455,9 +473,9 @@ function createChart(symbol, container, loading) {
             "withdateranges": true,
             "range": "6M",
             "hide_side_toolbar": false,
-            "allow_symbol_change": false,
+            "allow_symbol_change": true,
             "details": true,
-            "calendar": false,
+            "calendar": true,
             "studies": [],
             "container_id": "tradingview_widget_details",
             "onChartReady": function() {
@@ -492,36 +510,6 @@ function showChartFallback(container, loading) {
         `;
     }
     if (loading) loading.style.display = 'none';
-}
-function createChart(symbol, container, loading) {
-    try {
-        new TradingView.widget({
-            "autosize": true,
-            "symbol": symbol,
-            "interval": "D",
-            "timezone": "Europe/Oslo",
-            "theme": "light",
-            "style": "1",
-            "locale": "no",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "withdateranges": true,
-            "range": "6M",
-            "hide_side_toolbar": false,
-            "allow_symbol_change": true,
-            "details": true,
-            "calendar": true,
-            "container_id": "tradingview_widget_details",
-            "onChartReady": function() {
-                console.log('✅ TradingView chart loaded successfully');
-                if (loading) loading.style.display = 'none';
-                tradingViewLoaded = true;
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error creating TradingView chart:', error);
-        showChartError(container, loading);
-    }
 }
 
 // Technical analysis initialization
@@ -601,13 +589,35 @@ function updateTechnicalSummary() {
 // Utility functions
 function loadTradingViewScript(callback) {
     if (document.querySelector('script[src*="tradingview"]')) {
-        callback();
+        if (window.TradingView) {
+            callback();
+        } else {
+            // Script loaded but TradingView not ready yet, wait a bit
+            setTimeout(() => {
+                if (window.TradingView) {
+                    callback();
+                } else {
+                    console.error('❌ TradingView script loaded but not ready');
+                }
+            }, 1000);
+        }
         return;
     }
     
+    console.log('📥 Loading TradingView script...');
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/tv.js';
-    script.onload = callback;
+    script.onload = function() {
+        console.log('✅ TradingView script loaded successfully');
+        // Wait for TradingView to be available
+        setTimeout(() => {
+            if (window.TradingView) {
+                callback();
+            } else {
+                console.error('❌ TradingView not available after script load');
+            }
+        }, 500);
+    };
     script.onerror = function() {
         console.error('❌ Failed to load TradingView script');
     };

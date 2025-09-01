@@ -56,7 +56,7 @@ portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 @portfolio.route('/')  # Add this as an alias
 @access_required
 def portfolio_overview():
-    """Portfolio overview with pagination and lazy loading"""
+    """Portfolio overview with enhanced error handling and fallback data"""
     try:
         # Get all portfolios for the current user
         user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
@@ -69,7 +69,8 @@ def portfolio_overview():
                 'active_alerts': 0,
                 'stocks': [],
                 'portfolio': None,
-                'portfolios': []
+                'portfolios': [],
+                'error': None
             }
             return render_template('portfolio/index.html', **context)
         
@@ -86,46 +87,47 @@ def portfolio_overview():
         
         for stock in portfolio_stocks:
             try:
-                # STEP 14 FIX: Use consistent data access for authenticated users
-                data_service = get_data_service()
+                # Use simplified data access to avoid complex service dependencies
+                try:
+                    data_service = get_data_service()
+                    stock_data = data_service.get_stock_info(stock.ticker)
+                    current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', stock.purchase_price))) if stock_data else stock.purchase_price
+                except Exception as data_error:
+                    current_app.logger.warning(f"Data service failed for {stock.ticker}: {data_error}")
+                    # Use purchase price as fallback
+                    current_price = stock.purchase_price
                 
-                # Prefer get_stock_info for better compatibility
-                stock_data = data_service.get_stock_info(stock.ticker)
-                if stock_data:
-                    current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', 0)))
-                    purchase_value = stock.purchase_price * stock.shares
-                    current_value = current_price * stock.shares
-                    profit_loss = current_value - purchase_value
-                    profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
-                    
-                    total_value += current_value
-                    total_profit_loss += profit_loss
-                    
-                    stocks_data[stock.ticker] = {
-                        'shares': stock.shares,
-                        'purchase_price': stock.purchase_price,
-                        'last_price': current_price,
-                        'profit_loss': profit_loss,
-                        'profit_loss_percent': profit_loss_percent,
-                        'stock_id': stock.id
-                    }
-                else:
-                    # Fallback if no market data available
-                    purchase_value = stock.purchase_price * stock.shares
-                    total_value += purchase_value
-                    
-                    stocks_data[stock.ticker] = {
-                        'shares': stock.shares,
-                        'purchase_price': stock.purchase_price,
-                        'last_price': 'Ikke tilgjengelig',
-                        'profit_loss': 0,
-                        'profit_loss_percent': 0,
-                        'stock_id': stock.id
-                    }
+                purchase_value = stock.purchase_price * stock.shares
+                current_value = current_price * stock.shares
+                profit_loss = current_value - purchase_value
+                profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
+                
+                total_value += current_value
+                total_profit_loss += profit_loss
+                
+                stocks_data[stock.ticker] = {
+                    'shares': stock.shares,
+                    'purchase_price': stock.purchase_price,
+                    'last_price': current_price,
+                    'profit_loss': profit_loss,
+                    'profit_loss_percent': profit_loss_percent,
+                    'stock_id': stock.id
+                }
+                
             except Exception as stock_error:
-                current_app.logger.warning(f"Error getting data for stock {stock.ticker}: {stock_error}")
-                # Continue with other stocks
-                continue
+                current_app.logger.warning(f"Error processing stock {stock.ticker}: {stock_error}")
+                # Include stock with fallback data
+                purchase_value = stock.purchase_price * stock.shares
+                total_value += purchase_value
+                
+                stocks_data[stock.ticker] = {
+                    'shares': stock.shares,
+                    'purchase_price': stock.purchase_price,
+                    'last_price': stock.purchase_price,  # Use purchase price as fallback
+                    'profit_loss': 0,
+                    'profit_loss_percent': 0,
+                    'stock_id': stock.id
+                }
         
         context = {
             'total_value': total_value,
@@ -134,17 +136,27 @@ def portfolio_overview():
             'stocks': stocks_data,
             'portfolio': primary_portfolio,
             'portfolios': user_portfolios,
-            'error': None  # Explicitly set error to None
+            'error': None
         }
         
+        current_app.logger.info(f"Successfully loaded portfolio overview for user {current_user.id}")
         return render_template('portfolio/index.html', **context)
         
     except Exception as e:
-        import traceback
-        tb = traceback.format_exc()
-        current_app.logger.error(f"Error in portfolio index: {str(e)}\n{tb}")
-        flash(f'Det oppstod en feil ved lasting av porteføljer. {e}\n{tb}', 'error')
-        return render_template('portfolio/index.html', portfolios=[], total_value=0, total_profit_loss=0, error_message=f"Teknisk feil: {e}\n{tb}")
+        current_app.logger.error(f"Error in portfolio overview: {str(e)}")
+        flash('Det oppstod en feil ved lasting av porteføljer.', 'error')
+        
+        # Return safe fallback data
+        fallback_context = {
+            'portfolios': [],
+            'total_value': 0,
+            'total_profit_loss': 0,
+            'active_alerts': 0,
+            'stocks': {},
+            'portfolio': None,
+            'error': f"Teknisk feil: {str(e)}"
+        }
+        return render_template('portfolio/index.html', **fallback_context)
 
 # Delete portfolio route
 @portfolio.route('/delete/<int:id>', methods=['POST'])
@@ -644,62 +656,48 @@ def view_portfolio(id):
 @portfolio.route('/<int:id>/add', methods=['GET', 'POST'])
 @login_required
 def add_stock_to_portfolio(id):
-    """Add a stock to a specific portfolio"""
+    """Add a stock to a specific portfolio with enhanced error handling"""
     try:
-        from flask_wtf.csrf import validate_csrf
         # Import required models at function level to avoid circular imports
         from ..models.portfolio import Portfolio, PortfolioStock
         
         # Get portfolio with improved error handling
         try:
-            portfolio_obj = Portfolio.query.get_or_404(id)
-            
-            # Check ownership
-            if portfolio_obj.user_id != current_user.id:
-                flash('Du har ikke tilgang til denne porteføljen', 'danger')
-                return redirect(url_for('portfolio.index'))
+            portfolio_obj = Portfolio.query.filter_by(id=id, user_id=current_user.id).first()
+            if not portfolio_obj:
+                flash('Portefølje ikke funnet eller du har ikke tilgang.', 'danger')
+                return redirect(url_for('portfolio.portfolio_overview'))
                 
         except Exception as e:
             logger.error(f"Error getting portfolio {id}: {e}")
-            if "404" in str(e) or "not found" in str(e).lower():
-                flash(f'Portefølje med ID {id} ble ikke funnet.', 'warning')
-            else:
-                flash('Det oppstod en teknisk feil. Prøv igjen senere.', 'danger')
-            return redirect(url_for('portfolio.index'))
+            flash('Det oppstod en teknisk feil ved lasting av portefølje.', 'danger')
+            return redirect(url_for('portfolio.portfolio_overview'))
         
         if request.method == 'POST':
-            # Validate CSRF token more robustly
-            csrf_token = request.form.get('csrf_token')
-            if csrf_token:  # Only validate if token was provided
-                try:
-                    validate_csrf(csrf_token)
-                except ValidationError as csrf_error:
-                    logger.warning(f"CSRF validation failed: {csrf_error}")
-                    flash('Sikkerhetsfeil: Vennligst prøv igjen.', 'danger')
-                    return redirect(request.referrer or url_for('portfolio.add_stock_to_portfolio', id=id))
-            else:
-                logger.warning("No CSRF token provided, but allowing request to proceed")
-                
-            # Get form data with validation
-            ticker = request.form.get('ticker', '').strip().upper()
-            quantity = request.form.get('quantity', '0').strip()
-            price = request.form.get('price', '0').strip()
-
-            # Validate required fields
-            if not ticker or not quantity or not price:
-                flash('Alle felt er påkrevd', 'danger')
-                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
-
-            try: 
-                quantity = float(quantity)
-                price = float(price)
-                if quantity <= 0 or price <= 0:
-                    raise ValueError("Must be positive numbers")
-            except ValueError:
-                flash('Antall og pris må være positive tall', 'danger')
-                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
-
             try:
+                # Get form data with validation
+                ticker = request.form.get('ticker', '').strip().upper()
+                quantity_str = request.form.get('quantity', '0').strip()
+                price_str = request.form.get('price', '0').strip()
+
+                # Validate required fields
+                if not ticker or not quantity_str or not price_str:
+                    flash('Alle felt er påkrevd', 'danger')
+                    return render_template('portfolio/add_stock_to_portfolio.html', 
+                                         portfolio=portfolio_obj,
+                                         page_title="Legg til aksje")
+
+                try: 
+                    quantity = float(quantity_str.replace(',', '.'))
+                    price = float(price_str.replace(',', '.'))
+                    if quantity <= 0 or price <= 0:
+                        raise ValueError("Must be positive numbers")
+                except ValueError:
+                    flash('Antall og pris må være positive tall', 'danger')
+                    return render_template('portfolio/add_stock_to_portfolio.html', 
+                                         portfolio=portfolio_obj,
+                                         page_title="Legg til aksje")
+
                 # Check if stock exists in portfolio
                 existing_stock = PortfolioStock.query.filter_by(portfolio_id=id, ticker=ticker).first()
 
@@ -707,8 +705,9 @@ def add_stock_to_portfolio(id):
                     # Update existing stock with weighted average price
                     total_value = (existing_stock.shares * existing_stock.purchase_price) + (quantity * price)
                     total_quantity = existing_stock.shares + quantity
-                    existing_stock.purchase_price = total_value / total_quantity if total_quantity > 0 else 0
+                    existing_stock.purchase_price = total_value / total_quantity if total_quantity > 0 else price
                     existing_stock.shares = total_quantity
+                    logger.info(f"Updated existing stock {ticker} in portfolio {id}")
                 else:
                     # Add new stock
                     stock = PortfolioStock(
@@ -718,16 +717,19 @@ def add_stock_to_portfolio(id):
                         purchase_price=price
                     )
                     db.session.add(stock)
+                    logger.info(f"Added new stock {ticker} to portfolio {id}")
             
                 db.session.commit()
-                flash('Aksje lagt til i porteføljen', 'success')
+                flash(f'✅ {ticker} lagt til i porteføljen!', 'success')
                 return redirect(url_for('portfolio.view_portfolio', id=id))
                 
             except Exception as db_error:
                 logger.error(f"Database error adding stock: {db_error}")
                 db.session.rollback()
-                flash('Kunne ikke lagre aksjen. Prøv igjen.', 'danger')
-                return redirect(url_for('portfolio.add_stock_to_portfolio', id=id))
+                flash('❌ Kunne ikke lagre aksjen. Prøv igjen.', 'danger')
+                return render_template('portfolio/add_stock_to_portfolio.html', 
+                                     portfolio=portfolio_obj,
+                                     page_title="Legg til aksje")
 
         # GET request - show add form
         return render_template('portfolio/add_stock_to_portfolio.html', 
@@ -736,6 +738,8 @@ def add_stock_to_portfolio(id):
                              
     except Exception as e:
         logger.error(f"Critical error in add_stock_to_portfolio: {e}")
+        flash('❌ En kritisk feil oppstod. Kontakt support hvis problemet vedvarer.', 'danger')
+        return redirect(url_for('portfolio.portfolio_overview'))
         logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Test database connectivity

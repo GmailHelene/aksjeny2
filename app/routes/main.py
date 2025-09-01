@@ -1662,7 +1662,7 @@ def internal_error(error):
     return render_template('errors/500.html'), 500
 
 @main.route('/profile')
-@login_required  # Require authentication for profile access
+@login_required
 def profile():
     """User profile page with simplified, robust error handling"""
     try:
@@ -1670,11 +1670,17 @@ def profile():
         from ..models.user import User
         from ..models.favorites import Favorites
         from ..models.referral import Referral
+        from ..utils.access_control import EXEMPT_EMAILS
         from ..extensions import db
         import traceback
         from datetime import datetime
         
         logger.info(f"Loading profile for user ID: {getattr(current_user, 'id', 'Unknown')}")
+        
+        # Verify user is authenticated
+        if not current_user.is_authenticated:
+            flash('Du må logge inn for å se profilen din.', 'warning')
+            return redirect(url_for('auth.login'))
         
         # Initialize default values
         errors = []
@@ -1729,31 +1735,72 @@ def profile():
             'weekly_reports': True
         }
         
-        # Try to get user favorites
+        # Try to get user favorites with improved error handling
         try:
-            user_favorites = Favorites.query.filter_by(user_id=current_user.id).all()
-            user_stats['favorite_stocks'] = len(user_favorites)
+            # First try to get favorites from the Favorites table
+            user_favorites = Favorites.get_user_favorites(current_user.id)
+            logger.info(f"Found {len(user_favorites)} favorites in Favorites table for user {current_user.id}")
             
-            # If no favorites found, check other storage methods
             if len(user_favorites) == 0:
+                # If no favorites found, check alternative storage methods
                 try:
+                    # Check watchlist items as potential favorites
                     from ..models.watchlist import WatchlistStock
                     watchlist_items = WatchlistStock.query.filter_by(user_id=current_user.id).all()
                     logger.info(f"Found {len(watchlist_items)} watchlist items for user {current_user.id}")
                     
-                    # Convert watchlist items to favorites format
+                    # Convert watchlist items to favorites format for display
+                    favorites_from_watchlist = []
                     for item in watchlist_items[:10]:  # Limit to 10 for performance
-                        favorite_info = {
+                        favorite_data = {
+                            'id': item.id,
                             'symbol': item.symbol,
                             'name': item.name or item.symbol,
                             'exchange': getattr(item, 'exchange', 'Unknown'),
                             'created_at': getattr(item, 'created_at', datetime.now())
                         }
-                        user_favorites.append(favorite_info)
+                        favorites_from_watchlist.append(favorite_data)
+                    
+                    if favorites_from_watchlist:
+                        user_favorites = favorites_from_watchlist
+                        logger.info(f"Using {len(user_favorites)} watchlist items as favorites")
+                    
                 except Exception as watchlist_error:
                     logger.warning(f"Could not check watchlist for favorites: {watchlist_error}")
-        except Exception as sub_error:
-            logger.error(f"Error getting favorites: {sub_error}")
+                
+                # If still no favorites, try to check the user's favorite stocks from session or other methods
+                if len(user_favorites) == 0:
+                    try:
+                        # Check if user has favorites stored in other ways
+                        from sqlalchemy import text
+                        favorites_query = text("""
+                            SELECT symbol, name, created_at FROM favorites 
+                            WHERE user_id = :user_id 
+                            ORDER BY created_at DESC LIMIT 20
+                        """)
+                        result = db.session.execute(favorites_query, {'user_id': current_user.id})
+                        
+                        raw_favorites = result.fetchall()
+                        if raw_favorites:
+                            user_favorites = [
+                                {
+                                    'symbol': row[0],
+                                    'name': row[1] or row[0],
+                                    'exchange': 'Oslo Børs',
+                                    'created_at': row[2] if row[2] else datetime.now()
+                                }
+                                for row in raw_favorites
+                            ]
+                            logger.info(f"Found {len(user_favorites)} favorites via raw SQL query")
+                        
+                    except Exception as sql_error:
+                        logger.warning(f"Raw SQL favorites query failed: {sql_error}")
+            
+            # Update user stats with correct favorite count
+            user_stats['favorite_stocks'] = len(user_favorites)
+            
+        except Exception as fav_error:
+            logger.error(f"Error getting favorites: {fav_error}")
             user_favorites = []
             errors.append('favorites_failed')
         

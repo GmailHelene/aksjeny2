@@ -279,6 +279,7 @@
         </div>
         <div class="card-body">
             {% if chart_data and chart_data|length > 0 %}
+                <div id="chart-status" class="mt-2 small text-muted text-center">Laster prisdiagram...</div>
                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-height:500px;">
                     <canvas id="priceChart" style="display: block; box-sizing: border-box; height: 500px; width: 100%;"></canvas>
                 </div>

@@ -1932,6 +1932,16 @@ def compare():
                 'beta': round(random.uniform(0.5, 1.8), 2),
                 'sma50': round(current_prices.get(symbol, 100) * random.uniform(0.95, 1.05), 2),
                 'sma200': round(current_prices.get(symbol, 100) * random.uniform(0.90, 1.10), 2),
+                'macd': {
+                    'macd': round(random.uniform(-2, 2), 2),
+                    'signal': round(random.uniform(-1.5, 1.5), 2),
+                },
+                'bb': {
+                    'position': random.choice(['upper', 'middle', 'lower']),
+                    'upper': round(current_prices.get(symbol, 100) * 1.05, 2),
+                    'lower': round(current_prices.get(symbol, 100) * 0.95, 2),
+                },
+                'signal': random.choice(['BUY', 'SELL', 'HOLD', 'HOLD', 'HOLD'])  # More HOLDs
             }
 
         # Create metric dictionaries for template
@@ -1941,6 +1951,9 @@ def compare():
         betas = {symbol: demo_metrics[symbol]['beta'] for symbol in symbols}
         sma50 = {symbol: demo_metrics[symbol]['sma50'] for symbol in symbols}
         sma200 = {symbol: demo_metrics[symbol]['sma200'] for symbol in symbols}
+        macd = {symbol: demo_metrics[symbol]['macd'] for symbol in symbols}
+        bb = {symbol: demo_metrics[symbol]['bb'] for symbol in symbols}
+        signals = {symbol: demo_metrics[symbol]['signal'] for symbol in symbols}
         
         # Simple correlation matrix (demo data)
         correlations = {}
@@ -1969,11 +1982,11 @@ def compare():
                              correlations=correlations,
                              betas=betas,
                              rsi=rsi,
-                             macd={},
-                             bb={},
+                             macd=macd,
+                             bb=bb,
                              sma200=sma200,
                              sma50=sma50,
-                             signals={})
+                             signals=signals)
 
     except Exception as e:
         logger.error(f"Error in stock comparison: {e}")
