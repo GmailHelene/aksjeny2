@@ -379,25 +379,25 @@ def get_user_data_for_portfolio():
 def index():
     """Portfolio main page with enhanced error handling"""
     try:
-        # Get user's portfolios with proper error handling
+        # Always define context variables for template
         portfolios = []
         total_value = 0
         total_profit_loss = 0
         error_message = None
-        
+        holdings = []
         if current_user and current_user.is_authenticated:
             try:
-                # Import Portfolio model safely
                 from ..models.portfolio import Portfolio
-                
-                # Test database connection
                 db.session.execute('SELECT 1')
-                
-                # Get portfolios safely
                 portfolios = Portfolio.query.filter_by(user_id=current_user.id).all() or []
-                
-                # Calculate totals
                 for portfolio in portfolios:
+                    # Build holdings for each portfolio
+                    for stock in portfolio.stocks:
+                        holdings.append(stock)
+            except Exception as e:
+                error_message = str(e)
+        # Always pass holdings and portfolios to template
+        return render_template('portfolio/view.html', portfolios=portfolios, holdings=holdings, total_value=total_value, total_profit_loss=total_profit_loss, error_message=error_message)
                     try:
                         if hasattr(portfolio, 'total_value') and portfolio.total_value:
                             total_value += float(portfolio.total_value)

@@ -769,11 +769,11 @@ def warren_buffett():
 
         return render_template(
             'analysis/warren_buffett.html',
-            analysis=analysis_data,
+            analysis=analysis_data or {},
             error=None,
-            oslo_stocks=oslo_stocks,
-            global_stocks=global_stocks,
-            ticker=ticker,
+            oslo_stocks=oslo_stocks or {},
+            global_stocks=global_stocks or {},
+            ticker=ticker or '',
             title="Warren Buffett Analyse",
             description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
         )

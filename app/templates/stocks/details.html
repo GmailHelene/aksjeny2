@@ -97,7 +97,7 @@
                     </div>
                     
                     <!-- Key Metrics - Only shown on overview tab -->
-                    <div class="card mt-4" id="key-metrics-card">
+                    <div class="card mt-4" id="key-metrics-card" style="display:block;">
                         <div class="card-header">
                             <h5 class="mb-0">Nøkkeltall</h5>
                         </div>
@@ -350,7 +350,6 @@ let currentSymbol = '{{ stock.symbol }}';
 function toggleKeyMetrics() {
     const keyMetricsCard = document.getElementById('key-metrics-card');
     const overviewTabButton = document.getElementById('overview-tab');
-    
     if (keyMetricsCard && overviewTabButton) {
         if (overviewTabButton.classList.contains('active')) {
             keyMetricsCard.style.display = 'block';
@@ -360,8 +359,6 @@ function toggleKeyMetrics() {
     }
 }
 
-
-// Tab event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Listen for tab changes
     const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
@@ -369,7 +366,6 @@ document.addEventListener('DOMContentLoaded', function() {
         tab.addEventListener('shown.bs.tab', function(e) {
             const targetTab = e.target.getAttribute('data-bs-target');
             toggleKeyMetrics();
-            
             // Initialize specific content based on tab
             switch(targetTab) {
                 case '#chart':
@@ -381,7 +377,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
     // Initial state
     toggleKeyMetrics();
 });

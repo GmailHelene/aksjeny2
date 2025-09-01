@@ -62,27 +62,28 @@ def init_profile_routes(app):
             # Errors (for template)
             errors = []
             # Render template with all context
+            # Always pass all context variables, even if empty
             return render_template(
                 'profile/profile.html',
                 user=user,
-                portfolios=portfolios,
-                user_favorites=user_favorites,
-                subscription_status=subscription_status,
+                portfolios=portfolios or [],
+                user_favorites=user_favorites or [],
+                subscription_status=subscription_status or 'free',
                 subscription=subscription,
-                referral_code=referral_code,
-                referrals_made=referrals_made,
-                referral_earnings=referral_earnings,
-                user_language=user_language,
-                user_display_mode=user_display_mode,
-                user_number_format=user_number_format,
-                user_dashboard_widgets=user_dashboard_widgets,
+                referral_code=referral_code or '',
+                referrals_made=referrals_made or 0,
+                referral_earnings=referral_earnings or 0,
+                user_language=user_language or 'nb',
+                user_display_mode=user_display_mode or 'auto',
+                user_number_format=user_number_format or 'norwegian',
+                user_dashboard_widgets=user_dashboard_widgets or '[]',
                 email_notifications_enabled=email_notifications_enabled,
                 price_alerts_enabled=price_alerts_enabled,
                 market_news_enabled=market_news_enabled,
                 portfolio_updates_enabled=portfolio_updates_enabled,
                 ai_insights_enabled=ai_insights_enabled,
                 weekly_reports_enabled=weekly_reports_enabled,
-                errors=errors
+                errors=errors or []
             )
         except Exception as e:
             current_app.logger.error(f"Profile error: {str(e)}")
