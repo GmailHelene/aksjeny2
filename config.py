@@ -21,7 +21,7 @@ class Config:
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
     
     # Enhanced Authentication Settings
-    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
+    SESSION_COOKIE_SECURE = False  # Set to True only in production with HTTPS
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = timedelta(days=31)

@@ -434,31 +434,39 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     """Load user for Flask-Login with error handling"""
     try:
-        # Use a simple query first to avoid column errors
-        user = db.session.execute(
-            text("SELECT id, username, email, password_hash, has_subscription FROM users WHERE id = :user_id"),
-            {'user_id': int(user_id)}
-        ).fetchone()
-        
+        # Use the ORM to load the user properly
+        user = User.query.get(int(user_id))
         if user:
-            # Create a minimal user object
-            user_obj = User()
-            user_obj.id = user[0]
-            user_obj.username = user[1] 
-            user_obj.email = user[2]
-            user_obj.password_hash = user[3]
-            user_obj.has_subscription = user[4] if user[4] is not None else False
-            
-            # Set safe defaults for other fields
-            user_obj.subscription_type = 'free'
-            user_obj.is_admin = False
-            user_obj.email_verified = True
-            
-            return user_obj
+            return user
         return None
     except Exception as e:
         print(f"Error loading user {user_id}: {e}")
-        return None
+        # Fallback to raw SQL if ORM fails
+        try:
+            user = db.session.execute(
+                text("SELECT id, username, email, password_hash, has_subscription FROM users WHERE id = :user_id"),
+                {'user_id': int(user_id)}
+            ).fetchone()
+            
+            if user:
+                # Create a minimal user object
+                user_obj = User()
+                user_obj.id = user[0]
+                user_obj.username = user[1] 
+                user_obj.email = user[2]
+                user_obj.password_hash = user[3]
+                user_obj.has_subscription = user[4] if user[4] is not None else False
+                
+                # Set safe defaults for other fields
+                user_obj.subscription_type = 'free'
+                user_obj.is_admin = False
+                user_obj.email_verified = True
+                
+                return user_obj
+            return None
+        except Exception as fallback_error:
+            print(f"Fallback user loading also failed for {user_id}: {fallback_error}")
+            return None
 
 # Database table creation is handled in main.py and app initialization
 # No need to create tables at import time
