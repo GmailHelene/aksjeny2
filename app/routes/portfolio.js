@@ -23,11 +23,11 @@ async function createPortfolio(userId, name) {
 
 router.get('/', async (req, res) => {
     try {
-        const portfolios = await getUserPortfolios(req.user.id); // Make sure this returns an array, not null
-        res.render('portfolio', { portfolios });
+        const portfolios = await getUserPortfolios(req.user.id);
+        res.render('portfolio', { portfolios: portfolios || [] });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error', { error: "Teknisk feil ved lasting av portefølje." });
+        res.render('portfolio', { portfolios: [], error: "Teknisk feil ved lasting av portefølje." });
     }
 });
 

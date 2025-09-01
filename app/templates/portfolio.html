@@ -25,6 +25,10 @@
                 </a>
             </div>
             <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+                
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <div class="card bg-light">
