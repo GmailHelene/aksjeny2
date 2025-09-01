@@ -779,11 +779,13 @@ def warren_buffett():
         )
         
     except Exception as e:
-        logger.error(f"Error in Warren Buffett analysis: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        logger.error(f"Error in Warren Buffett analysis: {e}\n{tb}")
         return render_template(
             'analysis/warren_buffett.html',
             analysis=None,
-            error="Teknisk feil - prøv igjen eller kontakt support",
+            error=f"Teknisk feil - prøv igjen eller kontakt support.\n{e}\n{tb}",
             oslo_stocks={},
             global_stocks={},
             ticker="",

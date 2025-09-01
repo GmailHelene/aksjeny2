@@ -140,9 +140,11 @@ def portfolio_overview():
         return render_template('portfolio/index.html', **context)
         
     except Exception as e:
-        current_app.logger.error(f"Error in portfolio index: {str(e)}")
-        flash('Det oppstod en feil ved lasting av porteføljer.', 'error')
-        return redirect('/')
+        import traceback
+        tb = traceback.format_exc()
+        current_app.logger.error(f"Error in portfolio index: {str(e)}\n{tb}")
+        flash(f'Det oppstod en feil ved lasting av porteføljer. {e}\n{tb}', 'error')
+        return render_template('portfolio/index.html', portfolios=[], total_value=0, total_profit_loss=0, error_message=f"Teknisk feil: {e}\n{tb}")
 
 # Delete portfolio route
 @portfolio.route('/delete/<int:id>', methods=['POST'])
