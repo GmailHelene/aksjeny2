@@ -1865,8 +1865,7 @@ def profile():
             # Final fallback with flash message instead of direct return
             flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
             return redirect(url_for('main.index'))
-            'favorite_stocks': 0
-        }
+            
         user_favorites = []
         subscription = None
         

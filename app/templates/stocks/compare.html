@@ -282,21 +282,114 @@
                 <div class="chart-container" style="position: relative; height:500px; width:100%; min-height:500px;">
                     <canvas id="priceChart" style="display: block; box-sizing: border-box; height: 500px; width: 100%;"></canvas>
                 </div>
+                
+                <!-- Add chart initialization script -->
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    try {
+                        const ctx = document.getElementById('priceChart').getContext('2d');
+                        const chartData = {{ chart_data|tojson }};
+                        const tickers = {{ tickers|tojson }};
+                        
+                        // Generate colors for each ticker
+                        const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545'];
+                        
+                        const datasets = [];
+                        tickers.forEach((ticker, index) => {
+                            if (chartData[ticker] && chartData[ticker].length > 0) {
+                                datasets.push({
+                                    label: ticker,
+                                    data: chartData[ticker].map(d => ({
+                                        x: d.date,
+                                        y: d.close
+                                    })),
+                                    borderColor: colors[index % colors.length],
+                                    backgroundColor: colors[index % colors.length] + '20',
+                                    tension: 0.1,
+                                    fill: false
+                                });
+                            }
+                        });
+                        
+                        if (datasets.length > 0) {
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: { datasets: datasets },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        x: {
+                                            type: 'time',
+                                            time: {
+                                                parser: 'YYYY-MM-DD',
+                                                displayFormats: {
+                                                    day: 'MMM DD'
+                                                }
+                                            }
+                                        },
+                                        y: {
+                                            beginAtZero: false,
+                                            title: {
+                                                display: true,
+                                                text: 'Pris (NOK/USD)'
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top'
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            // Show message if no data to display
+                            const canvas = document.getElementById('priceChart');
+                            const parent = canvas.parentElement;
+                            parent.innerHTML = `
+                                <div class="alert alert-warning text-center">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <h5>Ingen diagramdata tilgjengelig</h5>
+                                    <p>Kan ikke vise prisdiagram for valgte aksjer.</p>
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        console.error('Error creating chart:', error);
+                        const canvas = document.getElementById('priceChart');
+                        const parent = canvas.parentElement;
+                        parent.innerHTML = `
+                            <div class="alert alert-info text-center">
+                                <i class="bi bi-info-circle"></i>
+                                <h5>Diagram ikke tilgjengelig</h5>
+                                <p>Prisdiagram kan ikke vises for øyeblikket.</p>
+                            </div>
+                        `;
+                    }
+                });
+                </script>
             {% else %}
                 {% if tickers and tickers|length > 0 %}
                     <div class="alert alert-warning text-center my-4">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Ingen kurs- eller volumdata tilgjengelig for valgte tickere.
-                        <br><small>Vennligst prøv igjen med gyldige Oslo Børs eller internasjonale tickere.</small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h5>Ingen kurs- eller volumdata tilgjengelig</h5>
+                        <p>Kunne ikke hente data for valgte aksjer: {{ tickers|join(', ') }}</p>
+                        <small>Vennligst prøv igjen med gyldige Oslo Børs eller internasjonale tickere.</small>
                     </div>
                 {% else %}
                     <div class="alert alert-info text-center my-4">
-                        <i class="fas fa-chart-line"></i>
+                        <i class="bi bi-chart-line"></i>
                         <h5 class="alert-heading">Sammenlign aksjer</h5>
                         <p>Velg opptil 4 aksjer for å sammenligne priser, volum og tekniske indikatorer.</p>
                         <hr>
                         <p class="mb-0">
-                            <strong>Eksempler:</strong> EQUI.OL, AKER.OL, DNB.OL, AAPL, TSLA, MSFT
+                            <strong>Eksempler:</strong> EQNR.OL, AKER.OL, DNB.OL, AAPL, TSLA, MSFT
                         </p>
                     </div>
                 {% endif %}

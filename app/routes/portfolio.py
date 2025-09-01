@@ -830,33 +830,125 @@ def create_watchlist():
 @access_required
 def add_to_watchlist(id):
     """Add a stock to a watchlist"""
-    watchlist = Watchlist.query.get_or_404(id)
+    try:
+        # For POST requests, handle both JSON and form data
+        if request.method == 'POST':
+            # Get ticker/symbol from JSON or form data
+            if request.is_json:
+                data = request.get_json()
+                ticker = data.get('symbol') or data.get('ticker')
+            else:
+                ticker = request.form.get('ticker') or request.form.get('symbol')
 
-    # Sjekk eierskap
-    if watchlist.user_id != current_user.id:
-        flash('Du har ikke tilgang til denne favorittlisten', 'danger')
+            if not ticker:
+                if request.is_json:
+                    return jsonify({'success': False, 'message': 'Ticker/symbol er påkrevd'}), 400
+                flash('Ticker er påkrevd', 'danger')
+                return redirect(url_for('portfolio.add_to_watchlist', id=id))
+
+            # Clean ticker symbol
+            ticker = ticker.strip().upper()
+
+            # Get or create watchlist
+            watchlist_obj = None
+            if current_user.is_authenticated:
+                try:
+                    watchlist_obj = Watchlist.query.filter_by(id=id, user_id=current_user.id).first()
+                except Exception as e:
+                    current_app.logger.error(f"Error finding watchlist {id}: {e}")
+
+            # If no specific watchlist found, try to find any user watchlist
+            if not watchlist_obj and current_user.is_authenticated:
+                try:
+                    watchlist_obj = Watchlist.query.filter_by(user_id=current_user.id).first()
+                    if watchlist_obj:
+                        current_app.logger.info(f"Using alternative watchlist {watchlist_obj.id} for user {current_user.id}")
+                except Exception as e:
+                    current_app.logger.error(f"Error finding alternative watchlist: {e}")
+
+            if not watchlist_obj:
+                # Create a new watchlist for the user
+                try:
+                    watchlist_obj = Watchlist(
+                        name=f"Min Watchlist",
+                        description="Automatisk opprettet watchlist",
+                        user_id=current_user.id
+                    )
+                    db.session.add(watchlist_obj)
+                    db.session.commit()
+                    current_app.logger.info(f"Created new watchlist {watchlist_obj.id} for user {current_user.id}")
+                except Exception as create_error:
+                    current_app.logger.error(f"Error creating watchlist: {create_error}")
+                    if request.is_json:
+                        return jsonify({'success': False, 'message': 'Kunne ikke opprette watchlist'}), 500
+                    flash('Kunne ikke opprette watchlist', 'danger')
+                    return redirect(url_for('portfolio.watchlist'))
+
+            # Check if stock already exists in watchlist
+            try:
+                existing = WatchlistStock.query.filter_by(
+                    watchlist_id=watchlist_obj.id, 
+                    symbol=ticker
+                ).first()
+
+                if existing:
+                    message = f'Aksjen {ticker} er allerede i watchlist'
+                    if request.is_json:
+                        return jsonify({'success': True, 'message': message})
+                    flash(message, 'warning')
+                else:
+                    # Add stock to watchlist
+                    stock = WatchlistStock(
+                        watchlist_id=watchlist_obj.id, 
+                        symbol=ticker,
+                        name=ticker,  # Will be updated when stock info is fetched
+                        added_date=datetime.now()
+                    )
+                    db.session.add(stock)
+                    db.session.commit()
+                    
+                    message = f'Aksje {ticker} lagt til i watchlist!'
+                    current_app.logger.info(f"Added {ticker} to watchlist {watchlist_obj.id}")
+                    
+                    if request.is_json:
+                        return jsonify({'success': True, 'message': message})
+                    flash(message, 'success')
+
+            except Exception as stock_error:
+                current_app.logger.error(f"Error handling stock {ticker}: {stock_error}")
+                if request.is_json:
+                    return jsonify({'success': False, 'message': 'Teknisk feil ved tillegging av aksje'}), 500
+                flash('Teknisk feil ved tillegging av aksje', 'danger')
+
+            # Redirect based on request type
+            if request.is_json:
+                return jsonify({'success': True, 'message': f'{ticker} behandlet'})
+            
+            return redirect(url_for('watchlist.view_watchlist', id=watchlist_obj.id))
+
+        # GET request - show add form
+        watchlist_obj = None
+        if current_user.is_authenticated:
+            try:
+                watchlist_obj = Watchlist.query.filter_by(id=id, user_id=current_user.id).first()
+            except Exception as e:
+                current_app.logger.error(f"Error getting watchlist for form: {e}")
+
+        if not watchlist_obj:
+            flash('Watchlist ikke funnet', 'danger')
+            return redirect(url_for('portfolio.watchlist'))
+
+        return render_template('portfolio/add_to_watchlist.html', watchlist=watchlist_obj)
+
+    except Exception as e:
+        current_app.logger.error(f"Error in add_to_watchlist: {e}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        
+        if request.is_json:
+            return jsonify({'success': False, 'message': 'Teknisk feil'}), 500
+        flash('Teknisk feil oppstod', 'danger')
         return redirect(url_for('portfolio.watchlist'))
-
-    if request.method == 'POST':
-        ticker = request.form.get('ticker')
-
-        if not ticker:
-            flash('Ticker er påkrevd', 'danger')
-            return redirect(url_for('portfolio.add_to_watchlist', id=id))
-
-        existing = WatchlistStock.query.filter_by(watchlist_id=id, ticker=ticker).first()
-
-        if existing:
-            flash('Aksjen er allerede i favorittlisten', 'warning')
-        else:
-            stock = WatchlistStock(watchlist_id=id, ticker=ticker)
-            db.session.add(stock)
-            db.session.commit()
-            flash('Aksje lagt til i favorittlisten', 'success')
-
-        return redirect(url_for('portfolio.watchlist'))
-
-    return render_template('portfolio/add_to_watchlist.html', watchlist=watchlist)
 
 @portfolio.route('/tips/add', methods=['GET', 'POST'])
 @access_required
