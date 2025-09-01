@@ -659,14 +659,3 @@ function showErrorToast(message) {
 }
 </script>
 {% endblock %}
-    const bootstrapToast = new bootstrap.Toast(toast);
-    bootstrapToast.show();
-    
-    // Remove from DOM after hiding
-    toast.addEventListener('hidden.bs.toast', function() {
-        toast.remove();
-    });
-}
-</script>
-{% endblock %}
-

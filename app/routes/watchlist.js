@@ -36,9 +36,11 @@ async function getUserWatchlists(userId) {
 router.post('/:id/add', async (req, res) => {
     try {
         const { symbol } = req.body;
-        await addStockToWatchlist(req.params.id, symbol, req.user.id); // Implement real add
-        const updatedList = await getWatchlist(req.params.id, req.user.id); // Fetch updated list
-        res.json({ success: true, watchlist: updatedList });
+        await addStockToWatchlist(req.params.id, symbol, req.user.id);
+        // Fetch updated watchlist after add
+        const updatedWatchlist = await getWatchlist(req.params.id, req.user.id);
+        // Respond with updated data for AJAX or redirect for form
+        res.json({ success: true, watchlist: updatedWatchlist });
     } catch (err) {
         res.status(500).json({ success: false, error: "Teknisk feil." });
     }
@@ -48,8 +50,8 @@ router.post('/:id/add', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const watchlist = await getWatchlist(req.params.id, req.user.id);
-        const aiInsights = await getAIInsightsForWatchlist(req.params.id); // Implement real AI insights
-        const marketTrends = await getMarketTrendsForWatchlist(req.params.id); // Implement real market trends
+        const aiInsights = await getAIInsightsForWatchlist(req.params.id);
+        const marketTrends = await getMarketTrendsForWatchlist(req.params.id);
         res.render('watchlist_detail', {
             watchlist,
             aiInsights,
@@ -64,7 +66,8 @@ router.get('/:id', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const lists = await getUserWatchlists(req.user.id);
-        res.render('watchlists', { lists });
+        const alerts = await getUserAlerts(req.user.id);
+        res.render('watchlists', { lists, alerts });
     } catch (err) {
         res.status(500).render('error', { error: "Teknisk feil." });
     }

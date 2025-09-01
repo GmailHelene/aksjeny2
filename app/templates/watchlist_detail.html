@@ -20,7 +20,7 @@
             </div>
 
             <!-- Stocks in Watchlist -->
-            <h3>Aksjer i Watchlist</h3>
+            <h2>Aksjer i listen</h2>
             {% if watchlist.stocks and watchlist.stocks|length > 0 %}
                 <ul>
                 {% for stock in watchlist.stocks %}
@@ -28,7 +28,7 @@
                 {% endfor %}
                 </ul>
             {% else %}
-                <p>Ingen aksjer lagt til ennå</p>
+                <div class="alert alert-info">Ingen aksjer lagt til ennå.<br>Start med å bygge overvåkningslisten din ved å legge til aksjer du vil følge.</div>
             {% endif %}
 
             <!-- AI Insights Section -->
@@ -40,7 +40,7 @@
                 {% endfor %}
                 </ul>
             {% else %}
-                <p>Ingen AI-innsikt tilgjengelig.</p>
+                <div class="alert alert-secondary">Ingen AI-innsikt tilgjengelig for denne listen.</div>
             {% endif %}
 
             <!-- Market Trends Section -->
@@ -52,7 +52,14 @@
                 {% endfor %}
                 </ul>
             {% else %}
-                <p>Ingen markedstrender tilgjengelig.</p>
+                <div class="alert alert-secondary">Ingen markedstrender tilgjengelig for denne listen.</div>
+            {% endif %}
+
+            <h3>📊 Watchlist Ytelse</h3>
+            {% if watchlist.performance %}
+                <div>{{ watchlist.performance }}</div>
+            {% else %}
+                <div class="alert alert-secondary">Ingen ytelsesdata tilgjengelig.</div>
             {% endif %}
         </div>
     </div>

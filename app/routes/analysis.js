@@ -1,7 +1,7 @@
 const { BuffettAnalysis } = require('../models'); // Example model import
 
 async function getBuffettAnalysis(query) {
-    // Replace with your actual DB query
+    // Replace with your actual DB query logic
     return await BuffettAnalysis.findOne({ where: { symbol: query } });
 }
 
@@ -10,15 +10,14 @@ async function getBuffettAnalysis(query) {
 router.post('/warren-buffett/search', async (req, res) => {
     try {
         const { query } = req.body;
-        // Fetch real analysis data for the query
-        const result = await getBuffettAnalysis(query); // Implement this function to fetch real data
+        const result = await getBuffettAnalysis(query);
         if (!result) {
             return res.status(404).json({ success: false, error: "Ingen resultater funnet." });
         }
         res.json({ success: true, data: result });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, error: "Teknisk feil. Prøv igjen senere." });
+        res.status(500).json({ success: false, error: "En feil oppstod under analysen. Prøv igjen senere." });
     }
 });
 

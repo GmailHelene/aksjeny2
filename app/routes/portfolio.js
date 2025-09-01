@@ -23,33 +23,45 @@ async function createPortfolio(userId, name) {
 
 router.get('/', async (req, res) => {
     try {
-        const portfolios = await getUserPortfolios(req.user.id);
+        const portfolios = await getUserPortfolios(req.user.id); // Make sure this returns an array, not null
         res.render('portfolio', { portfolios });
     } catch (err) {
-        res.status(500).render('error', { error: "Teknisk feil." });
+        console.error(err);
+        res.status(500).render('error', { error: "Teknisk feil ved lasting av portefølje." });
     }
 });
 
 router.post('/:id/add', async (req, res) => {
     try {
         const { symbol, amount } = req.body;
-        await addStockToPortfolio(req.params.id, symbol, amount, req.user.id); // Implement real add
+        if (!symbol || !amount) {
+            return res.status(400).json({ success: false, error: "Ugyldig input." });
+        }
+        await addStockToPortfolio(req.params.id, symbol, amount, req.user.id);
         const updatedPortfolio = await getPortfolio(req.params.id, req.user.id);
+        if (!updatedPortfolio) {
+            return res.status(404).json({ success: false, error: "Portefølje ikke funnet." });
+        }
         res.json({ success: true, portfolio: updatedPortfolio });
     } catch (err) {
-        res.status(500).json({ success: false, error: "Teknisk feil." });
+        console.error(err);
+        res.status(500).json({ success: false, error: "Teknisk feil ved lasting av portefølje." });
     }
 });
 
 router.post('/create', async (req, res) => {
     try {
         const { name } = req.body;
-        const portfolio = await createPortfolio(req.user.id, name); // Implement real creation
-        if (!portfolio) {
-            return res.status(400).json({ success: false, error: "Kunne ikke opprette portefølje." });
+        if (!name) {
+            return res.status(400).json({ success: false, error: "Navn på portefølje mangler." });
+        }
+        const portfolio = await createPortfolio(req.user.id, name);
+        if (!portfolio || !portfolio.id) {
+            return res.status(500).json({ success: false, error: "Kunne ikke opprette portefølje." });
         }
         res.json({ success: true, portfolio });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ success: false, error: "Teknisk feil." });
     }
 });

@@ -10,14 +10,24 @@ router.get('/', async (req, res) => {
         return res.redirect('/login');
     }
     
-    // Fetch user data and favorites
-    const userData = await getUserData(req.user.id);
-    const favorites = await getUserFavorites(req.user.id);
-
-    res.render('profile', {
-        title: 'Min Profil - Aksjeradar',
-        user: userData,
-        favorites,
-        csrfToken: req.csrfToken()
-    });
+    try {
+        const favorites = await getUserFavorites(req.user.id);
+        // ...fetch other profile data as needed...
+        res.render('profile', {
+            title: 'Min Profil - Aksjeradar',
+            user: userData,
+            favorites,
+            csrfToken: req.csrfToken(),
+            error: null
+        });
+    } catch (err) {
+        console.error(err);
+        res.render('profile', {
+            title: 'Min Profil - Aksjeradar',
+            user: userData,
+            favorites: [],
+            csrfToken: req.csrfToken(),
+            error: "Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere."
+        });
+    }
 });

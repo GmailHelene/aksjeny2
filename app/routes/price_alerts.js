@@ -13,9 +13,14 @@ async function createPriceAlert(userId, symbol, price, direction) {
 router.post('/create', async (req, res) => {
     try {
         const { symbol, price, direction } = req.body;
+        // Validate input
+        if (!symbol || !price || !direction) {
+            return res.status(400).json({ success: false, error: "Ugyldig input." });
+        }
+        // Create alert in DB
         const alert = await createPriceAlert(req.user.id, symbol, price, direction);
-        if (!alert) {
-            return res.status(400).json({ success: false, error: "Kunne ikke opprette prisvarsel." });
+        if (!alert || !alert.id) {
+            return res.status(500).json({ success: false, error: "Kunne ikke opprette prisvarsel." });
         }
         res.json({ success: true, alert });
     } catch (err) {
