@@ -1664,115 +1664,266 @@ def internal_error(error):
 @main.route('/profile')
 @login_required  # Require authentication for profile access
 def profile():
-    """User profile page with simplified, robust error handling"""
+    """User profile page with comprehensive error handling and fallbacks"""
     try:
-        # Import required modules
-        from ..models.user import User
-        from ..models.favorites import Favorites
-        from ..models.referral import Referral
-        from ..extensions import db
-        import traceback
-        from datetime import datetime
+        # Initialize all required variables first to prevent undefined variable errors
+        errors = []
+        is_authenticated = True
+        subscription_status = 'free'
+        user_stats = {}
+        user_favorites = []
+        user_preferences = {}
+        referral_stats = {}
+        subscription = None
         
         logger.info(f"Loading profile for user ID: {getattr(current_user, 'id', 'Unknown')}")
         
-        # Initialize default values
-        errors = []
-        subscription_status = 'basic'
+        # Get basic user information with fallbacks
         user_stats = {
             'member_since': getattr(current_user, 'created_at', datetime.now()),
             'last_login': getattr(current_user, 'last_login', datetime.now()),
             'total_searches': getattr(current_user, 'total_searches', 0),
-            'favorite_stocks': 0
+            'favorite_stocks': 0  # Will be updated if favorites can be loaded
         }
-        user_favorites = []
-        subscription = None
         
-        # Subscription status - simplified
+        # Enhanced subscription status check for authenticated users
         try:
-            if hasattr(current_user, 'email') and current_user.email in EXEMPT_EMAILS:
+            # Check if user is in exempt emails (admin users)
+            if current_user.email in EXEMPT_EMAILS:
                 subscription_status = 'premium'
+            # Check if user has active subscription
             elif getattr(current_user, 'has_subscription', False):
                 subscription_status = getattr(current_user, 'subscription_type', 'premium')
+            # Check trial status
             elif getattr(current_user, 'trial_start', None) and not getattr(current_user, 'trial_used', True):
                 subscription_status = 'trial'
+            # For any authenticated user, give them at least basic access
             else:
                 subscription_status = 'basic'  # Changed from 'free' to ensure real data
-        except Exception as e:
-            logger.warning(f"Error checking subscription status: {e}")
-            errors.append('subscription_check_failed')
-        
-        # Basic referral stats
-        referral_stats = {
-            'referrals_made': 0,
-            'referral_earnings': 0,
-            'referral_code': f'REF{getattr(current_user, "id", "001")}'
-        }
-        try:
-            referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
-            referral_stats['referrals_made'] = referrals
-            referral_stats['referral_earnings'] = referrals * 100
-        except Exception as e:
-            logger.warning(f"Error loading referral stats: {e}")
-            errors.append('referral_stats_failed')
-        
-        # User preferences - simplified
-        user_preferences = {
-            'display_mode': 'light',
-            'number_format': 'norwegian',
-            'dashboard_widgets': '[]',
-            'email_notifications': True,
-            'price_alerts': True,
-            'market_news': True,
-            'portfolio_updates': True,
-            'ai_insights': True,
-            'weekly_reports': True
-        }
-        
-        # Try to get user favorites
-        try:
-            user_favorites = Favorites.query.filter_by(user_id=current_user.id).all()
-            user_stats['favorite_stocks'] = len(user_favorites)
-            
-            # If no favorites found, check other storage methods
-            if len(user_favorites) == 0:
-                try:
-                    from ..models.watchlist import WatchlistStock
-                    watchlist_items = WatchlistStock.query.filter_by(user_id=current_user.id).all()
-                    logger.info(f"Found {len(watchlist_items)} watchlist items for user {current_user.id}")
-                    
-                    # Convert watchlist items to favorites format
-                    for item in watchlist_items[:10]:  # Limit to 10 for performance
-                        favorite_info = {
-                            'symbol': item.symbol,
-                            'name': item.name or item.symbol,
-                            'exchange': getattr(item, 'exchange', 'Unknown'),
-                            'created_at': getattr(item, 'created_at', datetime.now())
-                        }
-                        user_favorites.append(favorite_info)
-                except Exception as watchlist_error:
-                    logger.warning(f"Could not check watchlist for favorites: {watchlist_error}")
         except Exception as sub_error:
-            logger.error(f"Error getting favorites: {sub_error}")
-            user_favorites = []
-            errors.append('favorites_failed')
-        
-        # Try to get subscription info
-        try:
-            if subscription_status != 'free':
-                subscription = {
-                    'type': current_user.subscription_type,
-                    'start_date': current_user.subscription_start,
-                    'end_date': current_user.subscription_end,
-                    'is_trial': bool(current_user.trial_start and not current_user.trial_used),
-                    'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
+            logger.warning(f"Error checking subscription status: {sub_error}")
+            subscription_status = 'basic'  # Default to basic for authenticated users
+            errors.append('subscription_check_failed')
+            
+            # Enhanced referral stats with error handling
+            try:
+                from ..models.referral import Referral
+                referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
+                referral_stats = {
+                    'referrals_made': referrals,
+                    'referral_earnings': referrals * 100,  # 100 NOK per referral
+                    'referral_code': f'REF{current_user.id}'
                 }
-            else:
+                logger.info(f"Successfully loaded referral stats for user {current_user.id}: {referrals} referrals")
+            except Exception as ref_error:
+                logger.error(f"Error loading referral stats for user {current_user.id}: {ref_error}")
+                referral_stats = {
+                    'referrals_made': 0,
+                    'referral_earnings': 0,
+                    'referral_code': f'REF{getattr(current_user, "id", "001")}'
+                }
+                errors.append('referral_stats_failed')
+            
+            # Get user preferences with defaults
+            try:
+                import json
+                notification_settings = getattr(current_user, 'notification_settings', None)
+                if notification_settings:
+                    notification_settings = json.loads(notification_settings)
+                else:
+                    notification_settings = {}
+                    
+                user_preferences = {
+                    'display_mode': notification_settings.get('display_mode', 'light'),
+                    'number_format': notification_settings.get('number_format', 'norwegian'),
+                    'dashboard_widgets': notification_settings.get('dashboard_widgets', '[]'),
+                    'email_notifications': getattr(current_user, 'email_notifications_enabled', True),
+                    'price_alerts': getattr(current_user, 'price_alerts_enabled', True),
+                    'market_news': getattr(current_user, 'market_news_enabled', True),
+                    'portfolio_updates': getattr(current_user, 'portfolio_updates_enabled', True),
+                    'ai_insights': getattr(current_user, 'ai_insights_enabled', True),
+                    'weekly_reports': getattr(current_user, 'weekly_reports_enabled', True)
+                }
+            except Exception as pref_error:
+                logger.warning(f"Error loading user preferences: {pref_error}")
+                user_preferences = {
+                    'display_mode': 'light',
+                    'number_format': 'norwegian',
+                    'dashboard_widgets': '[]',
+                    'email_notifications': True,
+                    'price_alerts': True,
+                    'market_news': True,
+                    'portfolio_updates': True,
+                    'ai_insights': True,
+                    'weekly_reports': True
+                }
+                errors.append('preferences_failed')
+            
+            # Add debug logging before favorites loading
+            logger.info(f"PROFILE DEBUG: About to start favorites loading for user ID: {getattr(current_user, 'id', 'Unknown')}")
+            logger.info(f"PROFILE DEBUG: current_user.is_authenticated: {getattr(current_user, 'is_authenticated', False)}")
+            
+            # Enhanced favorites loading with stock info
+            try:
+                # Try multiple approaches to get user ID for robustness
+                user_id = None
+                
+                # Method 1: Direct attribute access
+                if hasattr(current_user, 'id') and current_user.id:
+                    user_id = current_user.id
+                
+                # Method 2: Using get_id() method 
+                elif hasattr(current_user, 'get_id'):
+                    try:
+                        user_id_str = current_user.get_id()
+                        if user_id_str:
+                            user_id = int(user_id_str)
+                    except (ValueError, TypeError):
+                        pass
+                
+                # Method 3: Check if authenticated and try alternative approach
+                elif hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                    # Try to find user by other attributes
+                    if hasattr(current_user, 'username'):
+                        from ..models.user import User
+                        user_obj = User.query.filter_by(username=current_user.username).first()
+                        if user_obj:
+                            user_id = user_obj.id
+                
+                logger.info(f"Determined user_id: {user_id} for favorites loading")
+                
+                if user_id:
+                    logger.info(f"Step 1: About to query favorites for user {user_id}")
+                    # Use the Favorites model with explicit session management
+                    from ..models.favorites import Favorites
+                    from ..extensions import db
+                    
+                    # Ensure we're using the current session and force a commit/flush
+                    try:
+                        db.session.commit()  # Ensure any pending transactions are committed
+                        favorites = Favorites.query.filter_by(user_id=user_id).all()
+                        logger.info(f"Step 2: Found {len(favorites)} favorites for user {user_id}")
+                        
+                        # Debug: Also try direct SQL to compare
+                        result = db.session.execute(db.text("SELECT * FROM favorites WHERE user_id = :user_id"), {"user_id": user_id})
+                        rows = result.fetchall()
+                        logger.info(f"Step 2b: Direct SQL found {len(rows)} favorites for user {user_id}")
+                        
+                    except Exception as query_error:
+                        logger.error(f"Database query error: {query_error}")
+                        favorites = []
+                    
+                    user_favorites = []
+                    
+                    for i, fav in enumerate(favorites):
+                        logger.info(f"Step 3.{i}: Processing favorite {fav.symbol}")
+                        
+                        # Enhanced name resolution with multiple fallbacks
+                        display_name = fav.name
+                        if not display_name or display_name.strip() == '':
+                            # Try to get name from DataService if available
+                            try:
+                                from ..services.data_service import DataService
+                                stock_info = DataService.get_stock_info(fav.symbol)
+                                if stock_info and stock_info.get('name'):
+                                    display_name = stock_info.get('name')
+                                else:
+                                    display_name = fav.symbol  # Final fallback to symbol
+                            except Exception:
+                                display_name = fav.symbol  # Fallback to symbol
+                        
+                        # Enhanced exchange resolution
+                        exchange = fav.exchange
+                        if not exchange or exchange.strip() == '':
+                            # Determine exchange based on symbol pattern
+                            if fav.symbol.endswith('.OL'):
+                                exchange = 'Oslo Børs'
+                            elif fav.symbol.endswith('.ST'):
+                                exchange = 'Stockholm'
+                            elif fav.symbol.endswith('.CO'):
+                                exchange = 'Copenhagen'
+                            elif '.' not in fav.symbol:
+                                exchange = 'NASDAQ/NYSE'  # US stocks typically have no suffix
+                            else:
+                                exchange = 'Unknown'
+                        
+                        favorite_info = {
+                            'symbol': fav.symbol,
+                            'name': display_name,
+                            'exchange': exchange,
+                            'created_at': fav.created_at
+                        }
+                        
+                        # Try to get current price if available
+                        try:
+                            logger.info(f"Step 4.{i}: Getting price for {fav.symbol}")
+                            from ..services.data_service import DataService
+                            stock_info = DataService.get_stock_info(fav.symbol)
+                            if stock_info:
+                                favorite_info.update({
+                                    'price': stock_info.get('last_price'),
+                                    'change': stock_info.get('change'),
+                                    'change_percent': stock_info.get('change_percent')
+                                })
+                                logger.info(f"Step 5.{i}: Added price info for {fav.symbol}")
+                        except Exception as price_error:
+                            logger.debug(f"Could not get price for {fav.symbol}: {price_error}")
+                            
+                        user_favorites.append(favorite_info)
+                        logger.info(f"Step 6.{i}: Added {fav.symbol} ({display_name}) to user_favorites list")
+                        
+                    # Update favorite_stocks count
+                    user_stats['favorite_stocks'] = len(user_favorites)
+                    logger.info(f"Step 7: Built user_favorites list with {len(user_favorites)} items")
+                    
+                    # If no favorites found, let's check if there might be another storage method
+                    if len(user_favorites) == 0:
+                        logger.warning(f"No favorites found for user {user_id} in Favorites table")
+                        # Try to check if user has any watchlist items that could be considered favorites
+                        try:
+                            from ..models.watchlist import WatchlistStock
+                            watchlist_items = WatchlistStock.query.filter_by(user_id=user_id).all()
+                            logger.info(f"Found {len(watchlist_items)} watchlist items for user {user_id}")
+                            
+                            # Convert watchlist items to favorites format
+                            for item in watchlist_items[:10]:  # Limit to 10 for performance
+                                favorite_info = {
+                                    'symbol': item.symbol,
+                                    'name': item.name or item.symbol,
+                                    'exchange': getattr(item, 'exchange', 'Unknown'),
+                                    'created_at': getattr(item, 'created_at', datetime.now())
+                                }
+                                user_favorites.append(favorite_info)
+                                
+                            if len(user_favorites) > 0:
+                                logger.info(f"Using {len(user_favorites)} watchlist items as favorites")
+                                user_stats['favorite_stocks'] = len(user_favorites)
+                                
+                        except Exception as watchlist_error:
+                            logger.warning(f"Could not check watchlist for favorites: {watchlist_error}")
+                    
+            except Exception as fav_error:
+                logger.error(f"Error loading favorites: {fav_error}")
+                logger.error(f"Favorites error traceback: {traceback.format_exc()}")
+                user_favorites = []
+                errors.append('favorites_failed')
+            
+            # Try to get subscription info
+            try:
+                if subscription_status != 'free':
+                    subscription = {
+                        'type': current_user.subscription_type,
+                        'start_date': current_user.subscription_start,
+                        'end_date': current_user.subscription_end,
+                        'is_trial': bool(current_user.trial_start and not current_user.trial_used),
+                        'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
+                    }
+                else:
+                    subscription = None
+            except Exception as sub_info_error:
+                logger.warning(f"Error getting subscription info: {sub_info_error}")
                 subscription = None
-        except Exception as sub_info_error:
-            logger.warning(f"Error getting subscription info: {sub_info_error}")
-            subscription = None
-            errors.append('subscription_info_failed')
+                errors.append('subscription_info_failed')
         
         # Ensure all variables are defined
         user_stats = user_stats or {}
@@ -1865,116 +2016,6 @@ def profile():
             # Final fallback with flash message instead of direct return
             flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
             return redirect(url_for('main.index'))
-            'favorite_stocks': 0
-        }
-        user_favorites = []
-        subscription = None
-        
-        # Subscription status - simplified
-        try:
-            if hasattr(current_user, 'email') and current_user.email in EXEMPT_EMAILS:
-                subscription_status = 'premium'
-            elif getattr(current_user, 'has_subscription', False):
-                subscription_status = getattr(current_user, 'subscription_type', 'premium')
-            elif getattr(current_user, 'trial_start', None) and not getattr(current_user, 'trial_used', True):
-                subscription_status = 'trial'
-        except Exception as e:
-            logger.warning(f"Error checking subscription status: {e}")
-            errors.append('subscription_check_failed')
-        
-        # Basic referral stats
-        referral_stats = {
-            'referrals_made': 0,
-            'referral_earnings': 0,
-            'referral_code': f'REF{getattr(current_user, "id", "001")}'
-        }
-        try:
-            referrals = Referral.query.filter_by(referrer_id=current_user.id).count()
-            referral_stats['referrals_made'] = referrals
-            referral_stats['referral_earnings'] = referrals * 100
-        except Exception as e:
-            logger.warning(f"Error loading referral stats: {e}")
-            errors.append('referral_stats_failed')
-        
-        # User preferences - simplified
-        user_preferences = {
-            'display_mode': 'light',
-            'number_format': 'norwegian',
-            'dashboard_widgets': '[]',
-            'email_notifications': True,
-            'price_alerts': True,
-            'market_news': True,
-            'portfolio_updates': True,
-            'ai_insights': True,
-            'weekly_reports': True
-        }
-        
-        # SIMPLIFIED FAVORITES LOADING
-        try:
-            user_id = getattr(current_user, 'id', None)
-            logger.info(f"Loading favorites for user ID: {user_id}")
-            
-            if user_id:
-                favorites = Favorites.query.filter_by(user_id=user_id).all()
-                logger.info(f"Found {len(favorites)} favorites for user {user_id}")
-                
-                for fav in favorites:
-                    favorite_info = {
-                        'symbol': fav.symbol,
-                        'name': fav.name or fav.symbol,
-                        'exchange': fav.exchange or 'Unknown',
-                        'created_at': fav.created_at
-                    }
-                    user_favorites.append(favorite_info)
-                
-                user_stats['favorite_stocks'] = len(user_favorites)
-        except Exception as e:
-            logger.error(f"Error loading favorites: {e}")
-            logger.error(traceback.format_exc())
-            errors.append('favorites_failed')
-        
-        # Basic subscription info
-        if subscription_status != 'basic' and subscription_status != 'free':
-            try:
-                subscription = {
-                    'type': getattr(current_user, 'subscription_type', 'unknown'),
-                    'start_date': getattr(current_user, 'subscription_start', None),
-                    'end_date': getattr(current_user, 'subscription_end', None),
-                    'is_trial': bool(getattr(current_user, 'trial_start', None) and not getattr(current_user, 'trial_used', True)),
-                    'status': 'active' if subscription_status in ['premium', 'pro'] else 'inactive'
-                }
-            except Exception as e:
-                logger.warning(f"Error getting subscription info: {e}")
-                errors.append('subscription_info_failed')
-        
-        # Return complete template
-        return render_template('profile.html',
-            user=current_user,
-            subscription=subscription,
-            subscription_status=subscription_status,
-            user_stats=user_stats,
-            user_language=getattr(current_user, 'language', 'nb'),
-            user_display_mode=user_preferences.get('display_mode', 'light'),
-            user_number_format=user_preferences.get('number_format', 'norwegian'),
-            user_dashboard_widgets=user_preferences.get('dashboard_widgets', '[]'),
-            user_favorites=user_favorites,
-            favorites=user_favorites,
-            email_notifications=user_preferences.get('email_notifications', True),
-            price_alerts=user_preferences.get('price_alerts', True),
-            market_news=user_preferences.get('market_news', True),
-            portfolio_updates=user_preferences.get('portfolio_updates', True),
-            ai_insights=user_preferences.get('ai_insights', True),
-            weekly_reports=user_preferences.get('weekly_reports', True),
-            referrals_made=referral_stats.get('referrals_made', 0),
-            referral_earnings=referral_stats.get('referral_earnings', 0),
-            referral_code=referral_stats.get('referral_code', ''),
-            errors=errors if errors else None)
-    
-    except Exception as e:
-        logger.error(f"Critical error in fixed profile page: {e}")
-        logger.error(traceback.format_exc())
-        flash('Det oppstod en teknisk feil under lasting av profilen. Prøv igjen senere.', 'warning')
-        return redirect(url_for('main.index'))
 
 @main.route('/my-subscription')
 @login_required

@@ -57,13 +57,15 @@
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label for="ticker" class="form-label">Aksjesymbol</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="ticker" 
-                                       name="ticker" 
-                                       placeholder="F.eks: OSL:EQNR, KO, JNJ"
-                                       value="{{ request.args.get('ticker', '') }}"
-                                       required>
+                                <div class="ticker-autocomplete-container position-relative">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="ticker" 
+                                           name="ticker" 
+                                           placeholder="F.eks: EQNR.OL, KO, JNJ"
+                                           value="{{ request.args.get('ticker', '') }}"
+                                           required>
+                                </div>
                                 <div class="form-text">Skriv inn ticker-symbol for aksjen du vil analysere</div>
                             </div>
                             <div class="col-md-4 d-flex align-items-end">
@@ -403,4 +405,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<!-- Hidden data for autocomplete -->
+<div id="oslo-stocks-data" data-stocks="{{ oslo_stocks|tojson }}"></div>
+<div id="global-stocks-data" data-stocks="{{ global_stocks|tojson }}"></div>
+
+<!-- Include Warren Buffett search script -->
+<script src="{{ url_for('static', filename='js/warren-buffett-search.js') }}"></script>
+{% endblock %}
 {% endblock %}

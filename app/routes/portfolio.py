@@ -52,7 +52,8 @@ def get_reportlab():
 
 portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 
-@portfolio.route('/overview', endpoint='portfolio_overview')
+@portfolio.route('/overview')
+@portfolio.route('/')  # Add this as an alias
 @access_required
 def portfolio_overview():
     """Portfolio overview with pagination and lazy loading"""
@@ -132,7 +133,8 @@ def portfolio_overview():
             'active_alerts': 0,  # Could be calculated from actual alerts
             'stocks': stocks_data,
             'portfolio': primary_portfolio,
-            'portfolios': user_portfolios
+            'portfolios': user_portfolios,
+            'error': None  # Explicitly set error to None
         }
         
         return render_template('portfolio/index.html', **context)
@@ -181,23 +183,7 @@ def delete_portfolio(id):
             return jsonify({'success': False, 'error': 'Kunne ikke slette porteføljen. Prøv igjen senere.'}), 200
         return redirect(url_for('portfolio.overview'))
 
-@portfolio.route('/overview')
-@access_required
-def overview():
-    """Portfolio overview page with enhanced error handling"""
-    error = None
-    try:
-        # Get user portfolios with error handling
-        try:
-            user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
-        except Exception as db_error:
-            current_app.logger.error(f"Database error in portfolio overview: {str(db_error)}")
-            user_portfolios = []
-            error = 'Kunne ikke laste porteføljedata fra databasen.'
-        
-        # Initialize totals
-        total_value = 0
-        total_gain_loss = 0
+# Route already defined above
         portfolio_data = []
         
         # Try to get data service with fallback
