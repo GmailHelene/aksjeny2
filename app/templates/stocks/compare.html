@@ -490,6 +490,7 @@
         
         // Prepare datasets for price chart
         const priceDatasets = [];
+        const volumeDatasets = []; // Initialize volume datasets array
         const colors = ['#0d6efd', '#dc3545', '#198754', '#6f42c1', '#fd7e14'];
         
         {% for ticker in tickers %}
@@ -501,12 +502,12 @@
                 // Convert date strings to Date objects for Chart.js
                 const processedData = tickerData.map(d => ({
                     x: new Date(d.date), // Convert string date to Date object
-                    y: d.close
+                    y: d.close || d.price || 0 // Handle both 'close' and 'price' fields
                 }));
                 
                 // Price dataset
                 priceDatasets.push({
-                    label: '{{ ticker }}',
+                    label: '{{ ticker_names.get(ticker, ticker) }}',
                     data: processedData,
                     borderColor: colors[{{ loop.index0 }} % colors.length],
                     backgroundColor: 'transparent',

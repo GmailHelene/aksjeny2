@@ -427,26 +427,102 @@ def api_price_alerts():
             # Create new price alert
             data = request.get_json()
             
+            # Validate required fields
+            if not data or not data.get('symbol'):
+                return jsonify({
+                    'success': False, 
+                    'message': 'Symbol er påkrevd'
+                }), 400
+                
+            # Standardize condition value
+            condition = data.get('condition', '').lower()
+            if condition not in ['above', 'below', 'over', 'under']:
+                return jsonify({
+                    'success': False, 
+                    'message': 'Ugyldig betingelse. Bruk "over" eller "under".'
+                }), 400
+            
+            # Map Norwegian terms to English
+            if condition == 'over':
+                condition = 'above'
+            elif condition == 'under':
+                condition = 'below'
+            
+            # Validate and parse target price
+            try:
+                target_price = float(data.get('target_price', 0))
+                if target_price <= 0:
+                    raise ValueError("Target price must be positive")
+            except (ValueError, TypeError):
+                return jsonify({
+                    'success': False, 
+                    'message': 'Ugyldig målpris. Angi et positivt tall.'
+                }), 400
+            
+            # Create the alert
+            alert_id = f"ALERT{datetime.now().strftime('%Y%m%d%H%M%S')}"
+            
+            # Store in database would happen here in a real system
+            # For demo, just return success response
+            
             alert_data = {
                 'success': True,
-                'alert_id': f"ALERT{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                'message': 'Prisvarsel opprettet',
+                'alert_id': alert_id,
                 'symbol': data.get('symbol', '').upper(),
-                'condition': data.get('condition'),  # 'above', 'below'
-                'target_price': data.get('target_price'),
-                'current_price': data.get('current_price'),
+                'condition': condition,
+                'target_price': target_price,
+                'current_price': data.get('current_price', 0),
                 'enabled': True,
                 'created': datetime.now().isoformat()
             }
             
+            logger.info(f"Price alert created: {alert_data}")
             return jsonify(alert_data)
         
         else:
-            # Get existing alerts
-            alerts_data = {
+            # Get existing alerts (demo data)
+            symbol_filter = request.args.get('symbol', '').upper()
+            
+            alerts = [
+                {
+                    'alert_id': 'ALERT20250723140000',
+                    'symbol': 'AAPL',
+                    'condition': 'above',
+                    'target_price': 220.50,
+                    'current_price': 215.75,
+                    'enabled': True,
+                    'created': '2025-07-23T14:00:00',
+                    'percent_to_target': 2.2
+                },
+                {
+                    'alert_id': 'ALERT20250723135800',
+                    'symbol': 'EQNR.OL',
+                    'condition': 'below',
+                    'target_price': 250.00,
+                    'current_price': 265.80,
+                    'enabled': True,
+                    'created': '2025-07-23T13:58:00',
+                    'percent_to_target': -5.9
+                }
+            ]
+            
+            # Filter by symbol if requested
+            if symbol_filter:
+                alerts = [alert for alert in alerts if alert['symbol'] == symbol_filter]
+            
+            return jsonify({
                 'success': True,
-                'alerts': [
-                    {
-                        'alert_id': 'ALERT20250723140000',
+                'alerts': alerts,
+                'count': len(alerts)
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in price alerts API: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'En teknisk feil oppstod. Prøv igjen senere.'
+        }), 500
                         'symbol': 'AAPL',
                         'condition': 'above',
                         'target_price': 155.00,

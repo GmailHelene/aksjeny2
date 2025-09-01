@@ -669,6 +669,7 @@ def _generate_buffett_recommendation(metrics):
     return recommendation
 
 @analysis.route('/warren-buffett', methods=['GET', 'POST'])
+@analysis.route('/warren_buffett', methods=['GET', 'POST'])  # Support both URL formats
 @access_required  # Fixed: Changed back to @access_required from @demo_access
 def warren_buffett():
     """Warren Buffett analysis with simplified error handling"""

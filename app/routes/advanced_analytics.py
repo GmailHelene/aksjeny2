@@ -4,7 +4,7 @@ Handles ML predictions, portfolio optimization, and risk management
 """
 
 from flask import Blueprint, render_template, request, jsonify
-from flask_login import current_user
+from flask_login import current_user, login_required
 from ..utils.access_control import demo_access  # Import demo_access
 import logging
 

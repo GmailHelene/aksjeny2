@@ -36,6 +36,7 @@ from .pricing import pricing
 from .insider_trading import insider_trading
 from .market_intel import market_intel
 from .pro_tools import pro_tools
+from .advanced_analytics import advanced_analytics  # Added import for advanced analytics
 
 # Remove these if they exist as separate files but are duplicates:
 # from .dashboard import dashboard  # Consolidate into main
@@ -49,6 +50,7 @@ def register_blueprints(app):
     app.register_blueprint(portfolio, url_prefix='/portfolio')
     app.register_blueprint(advanced_features, url_prefix='/advanced')
     app.register_blueprint(advanced_features, url_prefix='/advanced-features')  # Support both URL patterns
+    app.register_blueprint(advanced_analytics, url_prefix='/advanced-analytics')  # Register advanced analytics with correct URL
     app.register_blueprint(forum, url_prefix='/forum')
     # app.register_blueprint(news, url_prefix='/news')  # Removed - file not found
     app.register_blueprint(pricing, url_prefix='/pricing')

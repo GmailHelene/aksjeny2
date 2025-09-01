@@ -945,16 +945,50 @@ function displayPriceAlerts(alerts) {
 
 function createPriceAlert() {
     if (!selectedStockData) {
-        alert('Please select a stock first');
+        alert('Velg en aksje først');
         return;
     }
     
-    const condition = prompt('Enter condition (above/below):');
-    const targetPrice = prompt('Enter target price:');
+    const condition = prompt('Angi betingelse (over/under):');
+    if (!condition || !['over', 'under', 'above', 'below'].includes(condition.toLowerCase())) {
+        alert('Ugyldig betingelse. Bruk "over" eller "under".');
+        return;
+    }
+    
+    const targetPrice = prompt('Angi målpris:');
+    if (!targetPrice || isNaN(parseFloat(targetPrice))) {
+        alert('Ugyldig pris. Angi et gyldig tall.');
+        return;
+    }
     
     if (condition && targetPrice) {
-        // Mock alert creation
-        alert(`Price alert created for ${selectedStockData.symbol} ${condition} ${formatCurrency(parseFloat(targetPrice))}`);
+        // Create price alert via API
+        fetch('/mobile-trading/api/price-alerts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            body: JSON.stringify({
+                symbol: selectedStockData.symbol,
+                condition: condition.toLowerCase(),
+                target_price: parseFloat(targetPrice),
+                current_price: selectedStockData.price || 0
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Prisvarsel opprettet for ${selectedStockData.symbol} ${condition} ${formatCurrency(parseFloat(targetPrice))}`);
+                loadPriceAlerts();
+            } else {
+                alert('Kunne ikke opprette prisvarsel: ' + (data.message || 'Ukjent feil'));
+            }
+        })
+        .catch(error => {
+            console.error('Error creating price alert:', error);
+            alert('En feil oppstod ved oppretting av prisvarsel');
+        });
     }
 }
 

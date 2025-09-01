@@ -1943,6 +1943,7 @@ def profile():
             user_number_format=user_preferences.get('number_format', 'norwegian'),
             user_dashboard_widgets=user_preferences.get('dashboard_widgets', '[]'),
             user_favorites=user_favorites,
+            favorites=user_favorites,  # Added this to fix the template variable reference
             email_notifications=user_preferences.get('email_notifications', True),
             price_alerts=user_preferences.get('price_alerts', True),
             market_news=user_preferences.get('market_news', True),
@@ -1997,6 +1998,7 @@ def profile():
                 user_number_format='norwegian',
                 user_dashboard_widgets='[]',
                 user_favorites=[],
+                favorites=[],  # Added this to fix the template variable reference
                 email_notifications=True,
                 price_alerts=True,
                 market_news=True,

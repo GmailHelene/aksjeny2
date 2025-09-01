@@ -418,6 +418,7 @@
                     </div>
                     
                     <!-- RSI Chart -->
+                    {% if technical_data and technical_data.rsi_data %}
                     <div class="card shadow-sm mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">RSI Indikator</h5>
@@ -426,8 +427,10 @@
                             <canvas id="rsiChart" height="200"></canvas>
                         </div>
                     </div>
+                    {% endif %}
                     
                     <!-- MACD Chart -->
+                    {% if technical_data and technical_data.macd_data %}
                     <div class="card shadow-sm">
                         <div class="card-header">
                             <h5 class="mb-0">MACD Indikator</h5>
@@ -436,6 +439,7 @@
                             <canvas id="macdChart" height="200"></canvas>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="col-lg-4">
                     <div class="card shadow-sm">
@@ -453,6 +457,9 @@
                                 <a href="{{ url_for('stocks.compare') }}?tickers={{ ticker }}" class="btn btn-outline-warning">
                                     <i class="bi bi-arrows-angle-expand"></i> Sammenlign
                                 </a>
+                                <button class="btn btn-outline-danger" onclick="createPriceAlert('{{ ticker }}')">
+                                    <i class="bi bi-bell"></i> Opprett prisvarsel
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1313,27 +1320,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize RSI chart  
     function initializeRSIChart() {
+        const rsiElement = document.getElementById('rsiChart');
+        if (!rsiElement) {
+            console.log('RSI chart element not found, skipping initialization');
+            return;
+        }
+        
         const { dates, prices } = generatePriceData();
         const rsiData = calculateRSI(prices);
         
-        const ctx = document.getElementById('rsiChart');
-        if (ctx) {
-            // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
-            if (window.rsiChart instanceof Chart) {
-                window.rsiChart.destroy();
-            }
-            
-            window.rsiChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'RSI',
-                        data: rsiData,
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        if (window.rsiChart instanceof Chart) {
+            window.rsiChart.destroy();
+        }
+        
+        window.rsiChart = new Chart(rsiElement.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'RSI',
+                    data: rsiData,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
                         tension: 0.4,
                         pointRadius: 1,
                         pointHoverRadius: 4
@@ -1380,26 +1391,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize MACD chart
     function initializeMACDChart() {
+        const macdElement = document.getElementById('macdChart');
+        if (!macdElement) {
+            console.log('MACD chart element not found, skipping initialization');
+            return;
+        }
+        
         const { dates } = generatePriceData();
         const { macd, signal } = calculateMACD(dates);
         
-        const ctx = document.getElementById('macdChart');
-        if (ctx) {
-            // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
-            if (window.macdChart instanceof Chart) {
-                window.macdChart.destroy();
-            }
-            
-            window.macdChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'MACD',
-                        data: macd,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        borderWidth: 2,
+        // DESTROY EXISTING CHART TO PREVENT CANVAS REUSE ERROR
+        if (window.macdChart instanceof Chart) {
+            window.macdChart.destroy();
+        }
+        
+        window.macdChart = new Chart(macdElement.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'MACD',
+                    data: macd,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
                         fill: false,
                         pointRadius: 1,
                         pointHoverRadius: 4
@@ -1554,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 "toolbar_bg": "#f1f3f6",
                 "enable_publishing": false,
                 "allow_symbol_change": true,
-                "container_id": "tradingview_widget",
+                "container_id": "tradingview_main_widget",
                 "height": 600,
                 "studies": [
                     "RSI@tv-basicstudies",
@@ -1778,10 +1793,59 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Price Alert Function 
+function createPriceAlert(ticker) {
+    // Get current price for reference
+    const currentPrice = {{ stock_info.get('regularMarketPrice', 100) if stock_info else 100 }};
+    
+    // Create dialog
+    const condition = prompt('Angi betingelse (over/under):', 'over');
+    if (!condition || !['over', 'under', 'above', 'below'].includes(condition.toLowerCase())) {
+        showToast('Ugyldig betingelse. Bruk "over" eller "under".', 'warning');
+        return;
+    }
+    
+    const targetPrice = prompt(`Angi målpris (nåværende pris: ${currentPrice.toFixed(2)}):`, currentPrice.toFixed(2));
+    if (!targetPrice || isNaN(parseFloat(targetPrice))) {
+        showToast('Ugyldig pris. Angi et gyldig tall.', 'warning');
+        return;
+    }
+    
+    // Create price alert via API
+    fetch('/mobile-trading/api/price-alerts', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            symbol: ticker,
+            condition: condition.toLowerCase(),
+            target_price: parseFloat(targetPrice),
+            current_price: currentPrice
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Prisvarsel opprettet for ${ticker} ${condition} ${parseFloat(targetPrice).toFixed(2)}`, 'success');
+        } else {
+            showToast('Kunne ikke opprette prisvarsel: ' + (data.message || 'Ukjent feil'), 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating price alert:', error);
+        showToast('En feil oppstod ved oppretting av prisvarsel', 'danger');
+    });
+}
 </script>
 
 <!-- Chart.js -->
+<!-- Scripts for Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- TradingView Widget Script -->
+<script src="https://s3.tradingview.com/tv.js"></script>
 
 <!-- TradingView Charting Library -->
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
