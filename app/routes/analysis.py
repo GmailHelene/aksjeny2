@@ -817,81 +817,8 @@ def warren_buffett():
             title="Warren Buffett Analyse",
             description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
         )
-            else:
-                action = 'VURDER'
-                reasons = ['Høy risiko', 'Usikker lønnsomhet', 'Må undersøkes nærmere']
-                risk_level = 'Høy'
 
-            analysis_data = {
-                'ticker': ticker,
-                'company_name': ticker.replace('.OL', ' ASA') if '.OL' in ticker else f'{ticker} Inc.',
-                'metrics': {
-                    'price': price,
-                    'pe_ratio': pe_ratio,
-                    'dividend_yield': dividend_yield,
-                    'profit_margin': profit_margin,
-                    'debt_to_equity': debt_to_equity,
-                    'current_ratio': current_ratio,
-                    'roe': roe
-                },
-                'buffett_score': score,
-                'recommendation': {
-                    'score': score,
-                    'action': action,
-                    'reasons': reasons,
-                    'risk_level': risk_level
-                },
-                'last_updated': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                'is_fallback': True
-            }
 
-        # Prepare stock lists for selection (simplified)
-        oslo_stocks = {
-            'EQNR.OL': {'name': 'Equinor ASA', 'sector': 'Energi'},
-            'DNB.OL': {'name': 'DNB Bank ASA', 'sector': 'Finans'},
-            'MOWI.OL': {'name': 'Mowi ASA', 'sector': 'Sjømat'},
-            'TEL.OL': {'name': 'Telenor ASA', 'sector': 'Telekom'},
-            'NHY.OL': {'name': 'Norsk Hydro ASA', 'sector': 'Materialer'},
-            'YAR.OL': {'name': 'Yara International ASA', 'sector': 'Materialer'},
-            'ORK.OL': {'name': 'Orkla ASA', 'sector': 'Forbruksvarer'}
-        }
-
-        global_stocks = {
-            'AAPL': {'name': 'Apple Inc.', 'sector': 'Teknologi'},
-            'MSFT': {'name': 'Microsoft Corporation', 'sector': 'Teknologi'},
-            'GOOGL': {'name': 'Alphabet Inc.', 'sector': 'Teknologi'},
-            'BRK-B': {'name': 'Berkshire Hathaway', 'sector': 'Finans'},
-            'JNJ': {'name': 'Johnson & Johnson', 'sector': 'Helse'},
-            'PG': {'name': 'Procter & Gamble', 'sector': 'Forbruksvarer'},
-            'KO': {'name': 'The Coca-Cola Company', 'sector': 'Forbruksvarer'}
-        }
-
-        return render_template(
-            'analysis/warren_buffett.html',
-            analysis=analysis_data or {},
-            error=None,
-            oslo_stocks=oslo_stocks or {},
-            global_stocks=global_stocks or {},
-            ticker=ticker or '',
-            title="Warren Buffett Analyse",
-            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
-        )
-        
-    except Exception as e:
-        import traceback
-        tb = traceback.format_exc()
-        logger.error(f"Error in Warren Buffett analysis: {e}\n{tb}")
-        return render_template(
-            'analysis/warren_buffett.html',
-            analysis=None,
-            error=f"Teknisk feil - prøv igjen eller kontakt support.\n{e}\n{tb}",
-            oslo_stocks={},
-            global_stocks={},
-            ticker="",
-            title="Warren Buffett Analyse",
-            description="Analyser aksjer med Warren Buffetts investeringsprinsipper"
-        )
-    # AJAX/JSON endpoint for dynamic Buffett analysis
 # AJAX/JSON endpoint for dynamic Buffett analysis
 @analysis.route('/api/warren-buffett', methods=['GET'])
 @demo_access  # Changed from @access_required to allow demo access
