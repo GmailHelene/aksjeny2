@@ -1,13 +1,8 @@
 /* Card Header Text Color Fix - August 29, 2025 */
 
-/* Remove problematic white text color from card headers */
-div.card-header {
-    color: #212529 !important; /* Dark text for visibility */
-}
 
 /* Ensure all text elements in card headers are visible */
 .card-header h1,
-.card-header h2,
 .card-header h3,
 .card-header h4,
 .card-header h6,

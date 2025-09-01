@@ -756,10 +756,7 @@ def add_stock_to_portfolio(id):
                 
         except Exception as e:
             logger.error(f"Error getting portfolio {id}: {e}")
-            if "404" in str(e) or "not found" in str(e).lower():
-                flash(f'Portefølje med ID {id} ble ikke funnet.', 'warning')
-            else:
-                flash('Det oppstod en teknisk feil. Prøv igjen senere.', 'danger')
+            flash(f'Portefølje med ID {id} ble ikke funnet eller du har ikke tilgang.', 'danger')
             return redirect(url_for('portfolio.index'))
         
         if request.method == 'POST':

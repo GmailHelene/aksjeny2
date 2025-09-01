@@ -812,20 +812,21 @@ def get_user_watchlist():
 @api.route('/watchlist/add', methods=['POST'])
 @csrf.exempt
 def add_to_watchlist():
-    """Add symbol to watchlist with proper UI refresh"""
+    """Add symbol to watchlist - Global API endpoint for template compatibility"""
     try:
         data = request.get_json()
         symbol = data.get('symbol', '').upper().strip() if data else None
         
         if not symbol:
-            return jsonify({'success': False, 'error': 'Symbol er påkrevd'}), 400
+            response = jsonify({'success': False, 'error': 'Symbol er påkrevd'})
+            response.status_code = 400
+            return response
         
         # For demo/unauthenticated users, just return success
         if not current_user.is_authenticated:
             return jsonify({
                 'success': True,
-                'message': f'{symbol} lagt til i watchlist (demo mode)',
-                'action': 'reload'  # Signal UI to reload
+                'message': f'{symbol} lagt til i watchlist (demo mode)'
             })
         
         from app.models.watchlist import Watchlist, WatchlistItem
@@ -845,34 +846,24 @@ def add_to_watchlist():
         ).first()
         
         if existing_item:
-            return jsonify({
-                'success': False, 
-                'error': f'{symbol} er allerede i watchlist'
-            })
+            return jsonify({'success': False, 'error': f'{symbol} er allerede i watchlist'})
         
         # Add new item
         new_item = WatchlistItem(
             watchlist_id=watchlist.id,
-            symbol=symbol,
-            added_at=datetime.now()
+            symbol=symbol
         )
         db.session.add(new_item)
         db.session.commit()
         
-        return jsonify({
-            'success': True, 
-            'message': f'{symbol} lagt til i watchlist',
-            'action': 'reload',  # Signal UI to reload
-            'item_count': WatchlistItem.query.filter_by(watchlist_id=watchlist.id).count()
-        })
+        return jsonify({'success': True, 'message': f'{symbol} lagt til i watchlist'})
         
     except Exception as e:
         db.session.rollback()
         logger.error(f"Error adding to watchlist: {e}")
-        return jsonify({
-            'success': False, 
-            'error': 'Kunne ikke legge til i watchlist'
-        }), 500
+        response = jsonify({'success': False, 'error': 'Kunne ikke legge til i watchlist'})
+        response.status_code = 500
+        return response
 
 @api.route('/watchlist/remove', methods=['POST', 'DELETE'])
 @login_required
