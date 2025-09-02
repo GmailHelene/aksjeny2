@@ -3,8 +3,8 @@ Advanced Risk Management Service
 Comprehensive risk assessment, stress testing, and scenario analysis
 """
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional, Union, Any
 import logging

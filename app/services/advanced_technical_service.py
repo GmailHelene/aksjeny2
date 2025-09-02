@@ -3,8 +3,8 @@ Advanced Technical Analysis Service
 Provides comprehensive technical analysis with multiple indicators, patterns, and signals
 """
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Any

@@ -351,10 +351,19 @@ def register_blueprints(app):
             app.logger.error(f"Portfolio registration traceback: {traceback.format_exc()}")
         
         # Explicitly import and register pricing blueprint
-        from .routes.pricing import pricing
-        app.register_blueprint(pricing, url_prefix='/pricing')
-        blueprints_registered.append('pricing')
-        app.logger.info("OK Registered Pricing blueprint")
+        try:
+            from .routes.pricing import pricing
+            app.register_blueprint(pricing, url_prefix='/pricing')
+            blueprints_registered.append('pricing')
+            app.logger.info("OK Registered Pricing blueprint")
+        except ImportError as e:
+            app.logger.error(f"❌ Failed to import Pricing blueprint: {e}")
+            import traceback
+            app.logger.error(f"Pricing import traceback: {traceback.format_exc()}")
+        except Exception as e:
+            app.logger.error(f"❌ Error registering Pricing blueprint: {e}")
+            import traceback
+            app.logger.error(f"Pricing registration traceback: {traceback.format_exc()}")
         
         # NOTE: stocks blueprint is registered via blueprint_configs below
         

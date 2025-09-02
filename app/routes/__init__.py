@@ -26,7 +26,7 @@ config = {
 # Blueprint imports
 from .main import main
 from .stocks import stocks
-from .analysis import analysis
+# from .analysis import analysis
 from .portfolio import portfolio
 from .advanced_features import advanced_features
 from .norwegian_intel import norwegian_intel

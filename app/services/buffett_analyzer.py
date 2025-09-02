@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request
 from flask_login import current_user
 # import yfinance as yf  # Disabled for demo stability
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 from ..utils.access_control import access_required
 import logging
 

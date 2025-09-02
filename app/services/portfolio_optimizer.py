@@ -3,11 +3,11 @@ Advanced Portfolio Optimization Service
 Modern Portfolio Theory, Risk Management, and Asset Allocation
 """
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional, Any, Union
-from pandas import DataFrame, Series
+# from pandas import DataFrame, Series
 import logging
 import warnings
 

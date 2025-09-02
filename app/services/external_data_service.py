@@ -8,7 +8,7 @@ try:
     import yfinance as yf
 except ImportError:
     yf = None
-import pandas as pd
+# import pandas as pd
 from datetime import datetime, timedelta
 import logging
 from typing import Dict, List, Optional, Any

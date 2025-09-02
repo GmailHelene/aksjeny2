@@ -8,7 +8,7 @@ except ImportError:
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
-import pandas as pd
+# import pandas as pd
 from flask import current_app
 from ..services.cache_service import get_cache_service
 from ..services.rate_limiter import rate_limiter

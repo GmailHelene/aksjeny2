@@ -6,8 +6,8 @@ Integrates Expert Advisors, advanced orders, risk management, backtesting, indic
 from flask import Blueprint, render_template, jsonify, request, session, current_app
 from datetime import datetime, timedelta
 import json
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 from typing import Dict, List, Any, Optional
 import logging
 

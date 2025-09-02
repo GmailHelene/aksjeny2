@@ -62,12 +62,12 @@ def get_fallback_stock_info(symbol):
 
 def get_fallback_history(symbol, period='1mo', interval='1d'):
     """Get fallback price history when yfinance is not available"""
-    import pandas as pd
+    # import pandas as pd
     from datetime import datetime, timedelta
-    import numpy as np
+    # import numpy as np
     
-    if pd is None:
-        return None
+    # if pd is None:
+    return None
     
     # Generate fake but realistic price data
     base_price = get_fallback_price(symbol)

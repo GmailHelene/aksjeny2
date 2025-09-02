@@ -10,7 +10,7 @@ from .services.risk_manager import RiskManager
 from .services.insider_trading_service import InsiderTradingService
 from .services.financial_data_aggregator import FinancialDataAggregator
 import logging
-import numpy as np
+# import numpy as np
 
 logger = logging.getLogger(__name__)
 

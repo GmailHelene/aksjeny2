@@ -11,7 +11,8 @@ except ImportError:
     DataService = None
 
 try:
-    from ..services.analysis_service import AnalysisService
+    # from ..services.analysis_service import AnalysisService
+    AnalysisService = None  # Temporarily disabled
 except ImportError:
     AnalysisService = None
 

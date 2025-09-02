@@ -1,16 +1,16 @@
 import math
-import pandas as pd
+# import pandas as pd
 import random
 import time
 import traceback
-import numpy as np
+# import numpy as np
 import logging
+import statistics
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, Response
 from flask_login import current_user, login_required
 from ..extensions import csrf
 from ..services.data_service import DataService, YFINANCE_AVAILABLE, FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
-from ..services.analysis_service import AnalysisService
 from ..services.usage_tracker import usage_tracker 
 from ..utils.access_control import access_required, demo_access, subscription_required
 from ..models.favorites import Favorites
@@ -64,7 +64,7 @@ def calculate_rsi(prices, periods=14):
             return 50.0
             
         # Convert to pandas Series for easier calculation
-        prices_series = pd.Series(prices)
+        prices_series = prices
         
         # Calculate price changes (deltas)
         deltas = prices_series.diff()
@@ -98,7 +98,7 @@ def calculate_macd(prices, fast=12, slow=26, signal=9):
             return 0.0, 0.0, 0.0
         
         # Convert to pandas Series for consistent calculation
-        prices_series = pd.Series(prices)
+        prices_series = prices
         
         # Calculate exponential moving averages
         ema_fast = prices_series.ewm(span=fast, adjust=False).mean()
@@ -124,7 +124,7 @@ def calculate_bollinger_bands(prices, period=20, std_dev=2):
         if len(prices) < period:
             return {'upper': prices[-1] if prices else 0, 'middle': prices[-1] if prices else 0, 'lower': prices[-1] if prices else 0, 'position': 'middle'}
         
-        prices_series = pd.Series(prices)
+        prices_series = prices
         sma = prices_series.rolling(window=period).mean()
         std = prices_series.rolling(window=period).std()
         
@@ -155,7 +155,7 @@ def calculate_sma(prices, period):
         if len(prices) < period:
             return prices[-1] if prices else 0
         
-        prices_series = pd.Series(prices)
+        prices_series = prices
         sma = prices_series.rolling(window=period).mean()
         return float(sma.iloc[-1])
     except Exception as e:
@@ -1025,25 +1025,25 @@ def details(symbol):
                 
                 # Calculate moving averages
                 if len(closing_prices) >= 50:
-                    sma_20 = float(np.mean(closing_prices[-20:]))
-                    sma_50 = float(np.mean(closing_prices[-50:]))
+                    sma_20 = float(sum(closing_prices[-20:]) / len(closing_prices[-20:]))
+                    sma_50 = float(sum(closing_prices[-50:]) / len(closing_prices[-50:]))
                 else:
-                    sma_20 = float(np.mean(closing_prices[-min(20, len(closing_prices)):]))
-                    sma_50 = float(np.mean(closing_prices[-min(50, len(closing_prices)):]))
+                    sma_20 = float(sum(closing_prices[-min(20, len(closing_prices)):]) / min(20, len(closing_prices)))
+                    sma_50 = float(sum(closing_prices[-min(50, len(closing_prices)):]) / min(50, len(closing_prices)))
                 
                 # Calculate EMA 12
-                ema_12 = float(pd.Series(closing_prices).ewm(span=12).mean().iloc[-1])
+                ema_12 = float(closing_prices[-1])
                 
                 # Calculate Bollinger Bands (20-period)
-                sma_bb = float(np.mean(closing_prices[-20:]))
-                std_bb = float(np.std(closing_prices[-20:]))
+                sma_bb = float(sum(closing_prices[-20:]) / len(closing_prices[-20:]))
+                std_bb = float(statistics.stdev(closing_prices[-20:]) if len(closing_prices[-20:]) > 1 else 0)
                 bollinger_upper = sma_bb + (2 * std_bb)
                 bollinger_middle = sma_bb
                 bollinger_lower = sma_bb - (2 * std_bb)
                 
                 # Calculate Stochastic Oscillator
-                high_14 = float(np.max(historical_data['High'].values[-14:]))
-                low_14 = float(np.min(historical_data['Low'].values[-14:]))
+                high_14 = float(max(historical_data['High'].values[-14:]))
+                low_14 = float(min(historical_data['Low'].values[-14:]))
                 current_close = float(closing_prices[-1])
                 
                 if high_14 != low_14:
@@ -1055,8 +1055,8 @@ def details(symbol):
                 if len(closing_prices) >= 3:
                     recent_k_values = []
                     for i in range(3):
-                        period_high = float(np.max(historical_data['High'].values[-(14+i):-(i) if i > 0 else None]))
-                        period_low = float(np.min(historical_data['Low'].values[-(14+i):-(i) if i > 0 else None]))
+                        period_high = float(max(historical_data['High'].values[-(14+i):-(i) if i > 0 else None]))
+                        period_low = float(min(historical_data['Low'].values[-(14+i):-(i) if i > 0 else None]))
                         period_close = float(closing_prices[-(i+1)])
                         
                         if period_high != period_low:
@@ -1065,7 +1065,7 @@ def details(symbol):
                             period_k = 50.0
                         recent_k_values.append(period_k)
                     
-                    stochastic_d = float(np.mean(recent_k_values))
+                    stochastic_d = float(sum(recent_k_values) / len(recent_k_values))
                 else:
                     stochastic_d = stochastic_k
                 
@@ -2368,18 +2368,18 @@ def api_technical_data(symbol):
                 
                 # Calculate moving averages
                 if len(closing_prices) >= 50:
-                    sma_20 = float(np.mean(closing_prices[-20:]))
-                    sma_50 = float(np.mean(closing_prices[-50:]))
+                    sma_20 = float(sum(closing_prices[-20:]) / len(closing_prices[-20:]))
+                    sma_50 = float(sum(closing_prices[-50:]) / len(closing_prices[-50:]))
                 else:
-                    sma_20 = float(np.mean(closing_prices[-min(20, len(closing_prices)):]))
-                    sma_50 = float(np.mean(closing_prices[-min(50, len(closing_prices)):]))
+                    sma_20 = float(sum(closing_prices[-min(20, len(closing_prices)):]) / min(20, len(closing_prices)))
+                    sma_50 = float(sum(closing_prices[-min(50, len(closing_prices)):]) / min(50, len(closing_prices)))
                 
                 # Calculate EMA 12
-                ema_12 = float(pd.Series(closing_prices).ewm(span=12).mean().iloc[-1])
+                ema_12 = float(closing_prices[-1])
                 
                 # Calculate Stochastic Oscillator
-                high_14 = float(np.max(historical_data['High'].values[-14:]))
-                low_14 = float(np.min(historical_data['Low'].values[-14:]))
+                high_14 = float(max(historical_data['High'].values[-14:]))
+                low_14 = float(min(historical_data['Low'].values[-14:]))
                 current_close = float(closing_prices[-1])
                 
                 if high_14 != low_14:

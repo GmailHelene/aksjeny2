@@ -8,12 +8,14 @@ except ImportError:
     yf = None
 
 try:
-    import pandas as pd
+    # import pandas as pd
+    pd = None
 except ImportError:
     pd = None
 
 try:
-    import numpy as np
+    # import numpy as np
+    np = None
 except ImportError:
     np = None
 

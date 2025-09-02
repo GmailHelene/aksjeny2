@@ -17,7 +17,7 @@ import threading
 import time
 from app.extensions import db
 from dataclasses import dataclass, asdict
-import numpy as np
+# import numpy as np
 from collections import defaultdict, deque
 import queue
 import random

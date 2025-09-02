@@ -8,8 +8,8 @@ try:
     import yfinance as yf
 except ImportError:
     yf = None
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 from scipy.optimize import minimize
 import json
 

@@ -4,7 +4,7 @@ Provides comprehensive stock screening capabilities with real market data
 """
 import logging
 from typing import Dict, List, Optional, Any
-import pandas as pd
+# import pandas as pd
 from datetime import datetime
 
 logger = logging.getLogger(__name__)

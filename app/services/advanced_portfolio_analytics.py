@@ -9,8 +9,8 @@ Author: Aksjeradar Development Team
 Date: July 2025
 """
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 from datetime import datetime, timedelta
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Tuple, Any

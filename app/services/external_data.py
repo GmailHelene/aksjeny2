@@ -4,7 +4,7 @@ Integrates with various global and Norwegian financial data sources
 """
 
 import requests
-import pandas as pd
+# import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import logging

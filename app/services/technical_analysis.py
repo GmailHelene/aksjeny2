@@ -3,8 +3,8 @@ Enhanced Technical Analysis Module for Aksjeradar
 This module provides real technical indicator calculations instead of synthetic demo data.
 """
 
-import pandas as pd
-import numpy as np
+# import pandas as pd
+# import numpy as np
 from typing import Dict, Optional, Any
 
 def calculate_rsi(prices: pd.Series, period: int = 14) -> float:
