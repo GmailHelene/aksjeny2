@@ -6,7 +6,7 @@ from ..models.favorites import Favorites
 from ..extensions import db
 from ..utils.market_open import is_market_open, is_oslo_bors_open
 from ..utils.access_control import access_required, demo_access
-from ..services.dashboard_service import DashboardService
+# from ..services.dashboard_service import DashboardService
 import logging
 import os
 from datetime import datetime, timedelta
@@ -273,7 +273,7 @@ PREMIUM_ENDPOINTS = {
     'analysis.market_overview',
     
     # Portfolio endpoints
-    'portfolio.portfolio_index',
+    'portfolio.portfolio_overview',
     'portfolio.create_portfolio',
     'portfolio.view_portfolio',
     'portfolio.edit_stock',

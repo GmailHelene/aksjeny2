@@ -4,7 +4,7 @@ API routes for Aksjeradar
 from flask import Blueprint, jsonify, request
 from flask_login import current_user
 from datetime import datetime, timedelta
-from .services.ml_prediction_service import MLPredictionService
+# from .services.ml_prediction_service import MLPredictionService
 from .services.portfolio_optimizer import PortfolioOptimizer  
 from .services.risk_manager import RiskManager
 from .services.insider_trading_service import InsiderTradingService
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 api = Blueprint('api', __name__)
 
 # Initialize services
-ml_service = MLPredictionService()
+# ml_service = MLPredictionService()
 portfolio_optimizer = PortfolioOptimizer()
 risk_manager = RiskManager()
 insider_service = InsiderTradingService()

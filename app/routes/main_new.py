@@ -197,7 +197,7 @@ PREMIUM_ENDPOINTS = {
     'analysis.market_overview',
     
     # Portfolio endpoints
-    'portfolio.portfolio_index',
+    'portfolio.portfolio_overview',
     'portfolio.create_portfolio',
     'portfolio.view_portfolio',
     'portfolio.edit_stock',

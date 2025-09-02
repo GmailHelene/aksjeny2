@@ -511,11 +511,11 @@
                                                 </ul>
                                             </li>
                                             <li class="nav-item dropdown">
-                                                <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
+                                                <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.portfolio_overview') }}" role="button" data-bs-toggle="dropdown">
                                                     <i class="fas fa-briefcase"></i> Portfolio
                                                 </a>
                                                 <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
+                                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.portfolio_overview') }}"><i class="fas fa-briefcase"></i> Mine porteføljer</a></li>
                                                     <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}"><i class="fas fa-plus-circle"></i> Opprett portefølje</a></li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li><a class="dropdown-item" href="{{ url_for('portfolio.watchlist') }}"><i class="fas fa-eye"></i> Watchlist</a></li>

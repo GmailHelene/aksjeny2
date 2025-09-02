@@ -52,7 +52,7 @@ DEMO_ACCESSIBLE = {
     'market.overview',
     'market.sectors',
     'market_intel.insider_trading',
-    'portfolio.portfolio_index',  # Basic portfolio view
+    'portfolio.portfolio_overview',  # Basic portfolio view
     'price_alerts.index'  # Basic alerts view
 }
 

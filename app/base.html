@@ -601,12 +601,12 @@
                     
                     <!-- Portfolio Dropdown - EXPANDED -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.index') }}" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="{{ url_for('portfolio.portfolio_overview') }}" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-briefcase"></i> Portfolio
                         </a>
                         <ul class="dropdown-menu">
                             <!-- Oversikt removed - was causing 500 errors and redundant -->
-                            <li><a class="dropdown-item" href="{{ url_for('portfolio.index') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('portfolio.portfolio_overview') }}">
                                 <i class="bi bi-briefcase"></i> Mine porteføljer
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('portfolio.create_portfolio') }}">

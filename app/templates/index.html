@@ -169,7 +169,7 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="quick-action-wrapper position-relative">
-                                    <a href="{{ url_for('portfolio.index') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Administrer din portefølje">
+                                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3 quick-action-btn" data-bs-toggle="tooltip" title="Administrer din portefølje">
                                         <i class="bi bi-briefcase-fill fs-1 mb-2 text-success"></i>
                                         <span class="fw-bold">Portefølje</span>
                                         <small class="text-muted mt-1 d-none d-md-block">Investeringer</small>
@@ -449,7 +449,7 @@
                         <div class="row mt-4">
                             <div class="col-12">
                                 <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                    <a href="{{ url_for('portfolio.index') }}" class="btn btn-success rounded-pill">
+                                    <a href="{{ url_for('portfolio.portfolio_overview') }}" class="btn btn-success rounded-pill">
                                         <i class="bi bi-briefcase me-2"></i>Administrer portefølje
                                     </a>
                                     <a href="{{ url_for('analysis.ai_predictions') }}" class="btn btn-primary rounded-pill">

@@ -556,7 +556,7 @@ def view_portfolio(id):
         portfolio_obj = Portfolio.query.filter_by(id=id, user_id=current_user.id).first()
         if not portfolio_obj:
             flash('Portefølje ikke funnet', 'error')
-            return redirect(url_for('portfolio.index'))
+            return redirect(url_for('portfolio.portfolio_overview'))
         
         # Get portfolio stocks
         portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=id).all()
@@ -621,7 +621,7 @@ def view_portfolio(id):
     except Exception as e:
         current_app.logger.error(f"Error viewing portfolio {id}: {e}")
         flash('Feil ved lasting av portefølje', 'error')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/<int:id>/add', methods=['GET', 'POST'])
 @login_required
@@ -723,7 +723,7 @@ def add_stock_to_portfolio(id):
         if request.is_json:
             return jsonify({'success': False, 'error': error_msg}), 500
         flash(error_msg, 'error')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/portfolio/<int:id>/remove/<int:stock_id>', methods=['POST'])
 @access_required
@@ -738,7 +738,7 @@ def remove_stock_from_portfolio(id, stock_id):
             if request.headers.get('Accept') == 'application/json':
                 return jsonify({'success': False, 'error': error_msg}), 403
             flash(error_msg, 'danger')
-            return redirect(url_for('portfolio.index'))
+            return redirect(url_for('portfolio.portfolio_overview'))
 
         stock = PortfolioStock.query.get_or_404(stock_id)
 
@@ -978,7 +978,7 @@ def quick_add_stock(ticker):
 
     db.session.commit()
     flash(f"Aksje {ticker} lagt til i din portefølje!", "success")
-    return redirect(url_for('portfolio.index'))
+    return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/add', methods=['GET', 'POST'])
 @access_required
@@ -1035,7 +1035,7 @@ def add_stock():
             if request.is_json:
                 return jsonify({'success': True, 'message': success_msg})
             flash(success_msg, 'success')
-            return redirect(url_for('portfolio.index'))
+            return redirect(url_for('portfolio.portfolio_overview'))
             
         except Exception as e:
             db.session.rollback()
@@ -1057,7 +1057,7 @@ def edit_stock(ticker):
     user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
     if not user_portfolio:
         flash('Du har ingen portefølje ennå.', 'warning')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_overview'))
     
     # Finn aksjen
     portfolio_stock = PortfolioStock.query.filter_by(
@@ -1079,7 +1079,7 @@ def edit_stock(ticker):
         db.session.commit()
         
         flash(f'{ticker} oppdatert i porteføljen.', 'success')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_overview'))
     
     return render_template('portfolio/edit_stock.html', stock=portfolio_stock)
 
@@ -1091,7 +1091,7 @@ def remove_stock(ticker):
     user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
     if not user_portfolio:
         flash('Du har ingen portefølje ennå.', 'warning')
-        return redirect(url_for('portfolio.index'))
+        return redirect(url_for('portfolio.portfolio_overview'))
     
     # Finn aksjen
     portfolio_stock = PortfolioStock.query.filter_by(
@@ -1104,7 +1104,7 @@ def remove_stock(ticker):
     db.session.commit()
     
     flash(f'{ticker} fjernet fra porteføljen.', 'success')
-    return redirect(url_for('portfolio.index'))
+    return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/transactions')
 @access_required
