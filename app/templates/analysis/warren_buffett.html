@@ -4,17 +4,8 @@
 {% block description %}Utfør fundamental analyse basert på Warren Buffett's investeringsprinsipper. Finn kvalitetsselskaper med varig konkurransefortrinn.{% endblock %}
 
 {% block content %}
-<div class="container m                        {% if analysis and analysis.ticker %}
-                        <a href="/stocks/details/{{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-info-circle me-1"></i>Detaljer
-                        </a>
-                        <a href="/analysis/technical?ticker={{ analysis.ticker }}" class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-graph-up me-1"></i>Teknisk analyse
-                        </a>
-                        <a href="/analysis/benjamin-graham?ticker={{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-calculator me-1"></i>Graham-analyse
-                        </a>
-                        {% endif %}  {% include 'analysis/_menu.html' %}
+<div class="container mt-4">
+    {% include 'analysis/_menu.html' %}
     
     <!-- Header Section -->
     <div class="row mb-4">
@@ -33,6 +24,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Action Buttons -->
+    {% if analysis and analysis.ticker %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="/stocks/details/{{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-info-circle me-1"></i>Detaljer
+                </a>
+                <a href="/analysis/technical?ticker={{ analysis.ticker }}" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-graph-up me-1"></i>Teknisk analyse
+                </a>
+                <a href="/analysis/benjamin-graham?ticker={{ analysis.ticker }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-calculator me-1"></i>Graham-analyse
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Intro Section -->
     {% if not analysis %}
@@ -62,7 +72,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="/analysis/warren-buffett">
+                    <form method="GET" action="{{ url_for('analysis.warren_buffett') }}">
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label for="ticker" class="form-label">Aksjesymbol</label>
@@ -72,7 +82,7 @@
                                            id="ticker" 
                                            name="ticker" 
                                            placeholder="F.eks: EQNR.OL, KO, JNJ"
-                                           value="{{ request.args.get('ticker', '') }}"
+                                           value="{{ ticker }}"
                                            required>
                                 </div>
                                 <div class="form-text">Skriv inn ticker-symbol for aksjen du vil analysere</div>
@@ -384,13 +394,13 @@
 
 <script>
 function newAnalysis() {
-    window.location.href = "/analysis/warren-buffett";
+    window.location.href = "{{ url_for('analysis.warren_buffett') }}";
 }
 
 function analyzeCustomTicker() {
     const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
     if (ticker) {
-        window.location.href = "/analysis/warren-buffett?ticker=" + ticker;
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + ticker;
     }
 }
 
@@ -421,5 +431,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Include Warren Buffett search script -->
 <script src="/static/js/warren-buffett-search.js"></script>
-{% endblock %}
 {% endblock %}

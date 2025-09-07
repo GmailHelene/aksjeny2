@@ -439,6 +439,7 @@ def register_blueprints(app):
         ('.routes.oil_correlation', 'oil_correlation', '/oil-correlation'),
         ('.routes.achievements', 'achievements_bp', '/achievements'),
         ('.routes.advanced_analytics', 'advanced_analytics', '/advanced-analytics'),
+        ('.routes.profile', 'profile', '/profile'),
     ]
     
     app.logger.info(f"Starting to register {len(blueprint_configs)} blueprints...")

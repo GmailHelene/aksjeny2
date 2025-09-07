@@ -37,6 +37,7 @@ from .insider_trading import insider_trading
 from .market_intel import market_intel
 from .pro_tools import pro_tools
 from .advanced_analytics import advanced_analytics  # Added import for advanced analytics
+from .profile import profile  # Added import for profile blueprint
 
 # Remove these if they exist as separate files but are duplicates:
 # from .dashboard import dashboard  # Consolidate into main
@@ -57,6 +58,7 @@ def register_blueprints(app):
     app.register_blueprint(insider_trading, url_prefix='/insider-trading')
     app.register_blueprint(market_intel, url_prefix='/market-intel')
     app.register_blueprint(pro_tools, url_prefix='/pro-tools')
+    app.register_blueprint(profile, url_prefix='/user')  # Register profile blueprint with /user prefix
     
     # Add insider trading to analysis blueprint instead of separate
     # app.register_blueprint(insider_trading, url_prefix='/insider-trading')

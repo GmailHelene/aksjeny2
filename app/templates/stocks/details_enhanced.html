@@ -1,6 +1,36 @@
 {% extends "base.html" %}
 {% block title %}{{ stock_info.get('longName', ticker) }} - Aksjedetaljer{% endblock %}
 
+{% block head %}
+<style>
+    /* Fix for Nøkkeltall card in tab content */
+    .tab-pane {
+        opacity: 1 !important;
+    }
+    
+    /* Hide empty technical indicators */
+    #technical .empty-indicator {
+        display: none;
+    }
+    
+    /* Ensure cards in inactive tabs don't show */
+    .tab-pane:not(.active) .key-metrics-card {
+        display: none !important;
+    }
+    
+    /* Fix for tab transitions */
+    .tab-content {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    /* TradingView loading indicator */
+    #loading-indicator {
+        padding: 2rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <!-- Breadcrumb Navigation -->
@@ -217,12 +247,33 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="tradingview_technical_analysis" style="height: 350px;">
-                                        <div class="text-center p-4">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Laster teknisk analyse...</span>
-                                            </div>
-                                            <p class="text-muted mt-3">Laster teknisk analyse...</p>
-                                        </div>
+                                        <!-- TradingView Technical Analysis Widget -->
+                                        <script type="text/javascript">
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            if (typeof TradingView !== 'undefined') {
+                                                try {
+                                                    new TradingView.widget({
+                                                        "container_id": "tradingview_technical_analysis",
+                                                        "width": "100%",
+                                                        "height": "100%",
+                                                        "symbol": "{{ ticker }}",
+                                                        "interval": "D",
+                                                        "timezone": "Europe/Oslo",
+                                                        "theme": "light",
+                                                        "style": "1",
+                                                        "locale": "no",
+                                                        "toolbar_bg": "#f1f3f6",
+                                                        "withdateranges": true,
+                                                        "allow_symbol_change": false,
+                                                        "save_image": false,
+                                                        "details": true
+                                                    });
+                                                } catch (e) {
+                                                    console.error('Error initializing technical analysis widget:', e);
+                                                }
+                                            }
+                                        });
+                                        </script>
                                     </div>
                                 </div>
                             </div>
@@ -234,14 +285,41 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="tradingview_market_overview" style="height: 350px;">
-                                        <div class="text-center p-4">
-                                            <i class="bi bi-graph-up text-primary mb-2" style="font-size: 2rem;"></i>
-                                            <h6>Markedsoversikt</h6>
-                                            <p class="text-muted small">Laster markeds-indikatorer...</p>
-                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                                <span class="visually-hidden">Laster...</span>
-                                            </div>
-                                        </div>
+                                        <!-- TradingView Market Overview Widget -->
+                                        <script type="text/javascript">
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            if (typeof TradingView !== 'undefined') {
+                                                try {
+                                                    new TradingView.widget({
+                                                        "container_id": "tradingview_market_overview",
+                                                        "width": "100%",
+                                                        "height": "100%",
+                                                        "showChart": false,
+                                                        "showStats": true,
+                                                        "locale": "no",
+                                                        "largeChartUrl": "",
+                                                        "gridLineColor": "#F0F3FA",
+                                                        "colorTheme": "light",
+                                                        "isTransparent": false,
+                                                        "tabs": [
+                                                            {
+                                                                "title": "Indekser",
+                                                                "symbols": [
+                                                                    {"s": "INDEX:SPX", "d": "S&P 500"},
+                                                                    {"s": "INDEX:IXIC", "d": "Nasdaq"},
+                                                                    {"s": "INDEX:OSEBX", "d": "Oslo Børs"},
+                                                                    {"s": "INDEX:STOXX", "d": "Euro Stoxx 50"}
+                                                                ],
+                                                                "originalTitle": "Indekser"
+                                                            }
+                                                        ]
+                                                    });
+                                                } catch (e) {
+                                                    console.error('Error initializing market overview widget:', e);
+                                                }
+                                            }
+                                        });
+                                        </script>
                                     </div>
                                 </div>
                             </div>
@@ -260,7 +338,7 @@
                 </div>
                 <div class="col-lg-4">
                     <!-- Quick Stats -->
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm key-metrics-card">
                         <div class="card-header">
                             <h5 class="mb-0">Nøkkeltall</h5>
                         </div>
@@ -343,7 +421,7 @@
                             <div class="row" id="technicalIndicators">
                                 {% if technical_data %}
                                 <!-- RSI -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 {% if not technical_data or not technical_data.rsi %}empty-indicator{% endif %}">
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>RSI (14)</span>
@@ -359,7 +437,7 @@
                                 </div>
                                 
                                 <!-- MACD -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 {% if not technical_data or not technical_data.macd %}empty-indicator{% endif %}">
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>MACD</span>
@@ -372,7 +450,7 @@
                                 </div>
                                 
                                 <!-- Moving Averages -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 {% if not technical_data or not technical_data.sma_20 %}empty-indicator{% endif %}">
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>SMA 20</span>
@@ -386,7 +464,7 @@
                                 </div>
                                 
                                 <!-- Bollinger Bands -->
-                                <div class="col-md-6">
+                                <div class="col-md-6 {% if not technical_data or not technical_data.bollinger_upper %}empty-indicator{% endif %}">
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
                                             <span>Bollinger Upper</span>
@@ -427,11 +505,29 @@
                             <canvas id="rsiChart" height="200"></canvas>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="card shadow-sm mb-4 empty-indicator">
+                        <div class="card-header">
+                            <h5 class="mb-0">RSI Indikator</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="rsiChart" height="200"></canvas>
+                        </div>
+                    </div>
                     {% endif %}
                     
                     <!-- MACD Chart -->
                     {% if technical_data and technical_data.macd_data %}
                     <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">MACD Indikator</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="macdChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card shadow-sm empty-indicator">
                         <div class="card-header">
                             <h5 class="mb-0">MACD Indikator</h5>
                         </div>
@@ -905,6 +1001,86 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.portfolioActionsManager && typeof window.portfolioActionsManager.initializeFavoriteButtonStates === 'function') {
         window.portfolioActionsManager.initializeFavoriteButtonStates();
     }
+    
+    // Load TradingView chart on initial page load
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+    
+    // IMMEDIATE LOADING: Initialize TradingView main chart
+    try {
+        console.log('Initializing TradingView main chart immediately');
+        const mainChartContainer = document.getElementById('tradingview_main_widget');
+        if (mainChartContainer) {
+            // Format symbol for TradingView
+            let symbol = "{{ ticker }}";
+            let formattedSymbol = symbol;
+            
+            // Handle Oslo Børs symbols
+            if (symbol.endsWith('.OL')) {
+                const ticker = symbol.replace('.OL', '');
+                formattedSymbol = `OSE:${ticker}`;
+            } 
+            // Handle US exchanges
+            else if (!symbol.includes(':') && symbol.match(/^[A-Z]{1,5}$/)) {
+                formattedSymbol = `NASDAQ:${symbol}`;
+            }
+            
+            if (typeof TradingView !== 'undefined') {
+                console.log(`Loading main TradingView chart for ${formattedSymbol}`);
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": formattedSymbol,
+                    "interval": "D",
+                    "timezone": "Europe/Oslo",
+                    "theme": "light",
+                    "style": "1",
+                    "locale": "no",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "allow_symbol_change": true,
+                    "container_id": "tradingview_main_widget",
+                    "hide_side_toolbar": false,
+                    "studies": [
+                        "RSI@tv-basicstudies",
+                        "MACD@tv-basicstudies"
+                    ],
+                    "onChartReady": function() {
+                        console.log("Main TradingView chart loaded successfully");
+                        if (loadingIndicator) loadingIndicator.style.display = 'none';
+                    },
+                    "loading_screen": {
+                        "backgroundColor": "#ffffff",
+                        "foregroundColor": "#2962FF"
+                    }
+                });
+                window.tradingViewLoaded = true;
+            } else {
+                console.error('TradingView library not loaded for main chart');
+                // Try to load the script first
+                function loadTradingViewScriptForMain() {
+                    console.log('Loading TradingView script for main chart');
+                    const script = document.createElement('script');
+                    script.src = 'https://s3.tradingview.com/tv.js';
+                    script.async = true;
+                    script.onload = function() {
+                        console.log('TradingView script loaded successfully for main chart');
+                        // Initialize widget once loaded
+                        initializeTradingViewWidget();
+                    };
+                    script.onerror = function() {
+                        console.error('Failed to load TradingView script for main chart');
+                    };
+                    document.head.appendChild(script);
+                }
+                loadTradingViewScriptForMain();
+            }
+        }
+    } catch (error) {
+        console.error('Error initializing main chart:', error);
+    }
+    
+    // Also initialize the other widgets 
+    initializeTradingViewWidget();
     
     // Enhanced price chart with volume bars and improved color contrast
     if (document.getElementById('priceChart') && window.Chart) {
@@ -1556,7 +1732,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Default to NASDAQ for bare US symbols
         else if (!symbol.includes(':')) {
             formattedSymbol = `NASDAQ:${symbol}`;
-        }            console.log(`Loading TradingView widget for symbol: ${formattedSymbol}`);
+        }
+        console.log(`Loading TradingView widget for symbol: ${formattedSymbol}`);
             
             new TradingView.widget({
                 "autosize": true,
@@ -1570,27 +1747,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 "enable_publishing": false,
                 "allow_symbol_change": true,
                 "container_id": "tradingview_main_widget",
-                "height": 600,
-                "studies": [
-                    "RSI@tv-basicstudies",
-                    "MACD@tv-basicstudies",
-                    "BB@tv-basicstudies",
-                    "Volume@tv-basicstudies"
-                ],
-                "show_popup_button": true,
-                "popup_width": "1200",
-                "popup_height": "800",
-                "saved_items": {
-                    "chartproperties": {
-                        "showLegend": true
-                    }
-                },
                 "hide_side_toolbar": false,
                 "details": true,
                 "hotlist": true,
                 "calendar": true,
+                "studies": [
+                    "RSI@tv-basicstudies",
+                    "MACD@tv-basicstudies"
+                ],
                 "onChartReady": function() {
                     console.log("TradingView chart loaded successfully");
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
                 },
                 "loading_screen": {
                     "backgroundColor": "#ffffff",
@@ -1598,6 +1766,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         } else {
+            console.error('TradingView library not loaded');
+            loadTradingViewScript(loadTradingViewWidget);
+        }
+    }
+    
+    // Function to initialize TradingView Widget
+    function initializeTradingViewWidget() {
+        console.log('Initializing TradingView Widget');
+        // Check if TradingView library is already loaded
+        if (typeof TradingView !== 'undefined') {
+            loadTradingViewWidget();
+        } else {
+            // Load TradingView script and then initialize the widget
+            loadTradingViewScript(loadTradingViewWidget);
+        }
+    }
             // Fallback if TradingView not loaded
             console.error('TradingView library not loaded, adding fallback');
             document.getElementById('tradingview_widget').innerHTML = 
@@ -1793,6 +1977,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Function to load TradingView script
+function loadTradingViewScript(callback) {
+    console.log('Loading TradingView script dynamically');
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.onload = function() {
+        console.log('TradingView script loaded successfully');
+        if (typeof callback === 'function') {
+            callback();
+        }
+    };
+    script.onerror = function() {
+        console.error('Failed to load TradingView script');
+    };
+    document.head.appendChild(script);
+}
 
 // Price Alert Function 
 function createPriceAlert(ticker) {

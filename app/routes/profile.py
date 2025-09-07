@@ -10,7 +10,7 @@ from datetime import datetime
 profile = Blueprint('profile', __name__)
 logger = logging.getLogger(__name__)
 
-@profile.route('/profile')
+@profile.route('/')
 @login_required
 def profile_page():
     """User profile page"""
