@@ -68,6 +68,8 @@ portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 def portfolio_overview():
     """Portfolio overview with enhanced error handling and fallback data"""
     try:
+        current_app.logger.info(f"Loading portfolio overview for user {current_user.id}")
+        
         # Get all portfolios for the current user
         user_portfolios = Portfolio.query.filter_by(user_id=current_user.id).all()
         
@@ -77,40 +79,70 @@ def portfolio_overview():
                 'total_value': 0,
                 'total_profit_loss': 0,
                 'active_alerts': 0,
-                'stocks': [],
+                'stocks': {},
                 'portfolio': None,
                 'portfolios': [],
                 'error': None
             }
+            current_app.logger.info(f"No portfolios found for user {current_user.id}")
             return render_template('portfolio/index.html', **context)
         
         # Get the first portfolio to display (or could be selected portfolio)
         primary_portfolio = user_portfolios[0]
+        current_app.logger.info(f"Using portfolio {primary_portfolio.id} as primary")
         
         # Get stocks in the primary portfolio
-        portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=primary_portfolio.id).all()
+        try:
+            portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=primary_portfolio.id).all()
+            current_app.logger.info(f"Found {len(portfolio_stocks)} stocks in portfolio {primary_portfolio.id}")
+        except Exception as db_error:
+            current_app.logger.error(f"Database error retrieving portfolio stocks: {db_error}")
+            portfolio_stocks = []
         
-        # Calculate portfolio values
+        # Calculate portfolio values with robust error handling
         total_value = 0
         total_profit_loss = 0
         stocks_data = {}
         
         for stock in portfolio_stocks:
             try:
-                # Use simplified data access to avoid complex service dependencies
+                current_app.logger.debug(f"Processing stock {stock.ticker}")
+                # Use simplified data access with multiple fallback layers
                 try:
                     data_service = get_data_service()
                     stock_data = data_service.get_stock_info(stock.ticker)
-                    current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', stock.purchase_price))) if stock_data else stock.purchase_price
+                    
+                    if stock_data and ('last_price' in stock_data or 'regularMarketPrice' in stock_data):
+                        current_price = float(stock_data.get('last_price', stock_data.get('regularMarketPrice', stock.purchase_price)))
+                        current_app.logger.debug(f"Got current price for {stock.ticker}: {current_price}")
+                    else:
+                        current_app.logger.warning(f"No price data found for {stock.ticker}, using purchase price")
+                        current_price = stock.purchase_price
                 except Exception as data_error:
                     current_app.logger.warning(f"Data service failed for {stock.ticker}: {data_error}")
                     # Use purchase price as fallback
                     current_price = stock.purchase_price
                 
+                # Safety check for invalid values
+                if not current_price or not isinstance(current_price, (int, float)) or current_price <= 0:
+                    current_price = stock.purchase_price if stock.purchase_price and stock.purchase_price > 0 else 1.0
+                    current_app.logger.warning(f"Invalid price for {stock.ticker}, using fallback: {current_price}")
+                
+                # Safety check for purchase price
+                if not stock.purchase_price or not isinstance(stock.purchase_price, (int, float)) or stock.purchase_price <= 0:
+                    stock.purchase_price = current_price
+                    current_app.logger.warning(f"Invalid purchase price for {stock.ticker}, using current price")
+                
                 purchase_value = stock.purchase_price * stock.shares
                 current_value = current_price * stock.shares
                 profit_loss = current_value - purchase_value
-                profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
+                
+                # Safe calculation of percentage
+                try:
+                    profit_loss_percent = ((current_price / stock.purchase_price) - 1) * 100 if stock.purchase_price > 0 else 0
+                except ZeroDivisionError:
+                    profit_loss_percent = 0
+                    current_app.logger.warning(f"Division by zero when calculating profit percent for {stock.ticker}")
                 
                 total_value += current_value
                 total_profit_loss += profit_loss
@@ -125,20 +157,25 @@ def portfolio_overview():
                 }
                 
             except Exception as stock_error:
-                current_app.logger.warning(f"Error processing stock {stock.ticker}: {stock_error}")
+                current_app.logger.error(f"Error processing stock {stock.ticker}: {stock_error}")
                 # Include stock with fallback data
-                purchase_value = stock.purchase_price * stock.shares
-                total_value += purchase_value
-                
-                stocks_data[stock.ticker] = {
-                    'shares': stock.shares,
-                    'purchase_price': stock.purchase_price,
-                    'last_price': stock.purchase_price,  # Use purchase price as fallback
-                    'profit_loss': 0,
-                    'profit_loss_percent': 0,
-                    'stock_id': stock.id
-                }
+                try:
+                    purchase_value = stock.purchase_price * stock.shares
+                    total_value += purchase_value
+                    
+                    stocks_data[stock.ticker] = {
+                        'shares': stock.shares,
+                        'purchase_price': stock.purchase_price,
+                        'last_price': stock.purchase_price,  # Use purchase price as fallback
+                        'profit_loss': 0,
+                        'profit_loss_percent': 0,
+                        'stock_id': stock.id
+                    }
+                except Exception as fallback_error:
+                    current_app.logger.error(f"Critical error with fallback for {stock.ticker}: {fallback_error}")
+                    # Skip this stock completely if it's causing serious issues
         
+        # Prepare the context data for the template
         context = {
             'total_value': total_value,
             'total_profit_loss': total_profit_loss,
@@ -153,7 +190,9 @@ def portfolio_overview():
         return render_template('portfolio/index.html', **context)
         
     except Exception as e:
-        current_app.logger.error(f"Error in portfolio overview: {str(e)}")
+        current_app.logger.error(f"Critical error in portfolio overview: {str(e)}")
+        import traceback
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         flash('Det oppstod en feil ved lasting av porteføljer.', 'error')
         
         # Return safe fallback data

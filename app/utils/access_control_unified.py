@@ -53,7 +53,12 @@ DEMO_ACCESSIBLE = {
     'market.sectors',
     'market_intel.insider_trading',
     'portfolio.portfolio_overview',  # Basic portfolio view
-    'price_alerts.index'  # Basic alerts view
+    'price_alerts.index',  # Basic alerts view
+    'main.profile',  # Basic profile view for all authenticated users
+    'profile.profile_page',  # Profile blueprint's profile page
+    'main.update_profile',  # Update profile in main blueprint
+    'profile.update_profile',  # Update profile in profile blueprint
+    'profile.remove_favorite'  # Remove favorite in profile blueprint
 }
 
 # Premium endpoints (require active subscription)

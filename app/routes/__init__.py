@@ -43,25 +43,26 @@ from .profile import profile  # Added import for profile blueprint
 # from .dashboard import dashboard  # Consolidate into main
 # from .external_data import external_data  # Consolidate into analysis
 
-def register_blueprints(app):
-    """Register all blueprints with the app"""
-    app.register_blueprint(main)
-    app.register_blueprint(stocks, url_prefix='/stocks')
-    app.register_blueprint(analysis, url_prefix='/analysis')
-    app.register_blueprint(portfolio, url_prefix='/portfolio')
-    app.register_blueprint(advanced_features, url_prefix='/advanced')
-    app.register_blueprint(advanced_features, url_prefix='/advanced-features')  # Support both URL patterns
-    app.register_blueprint(advanced_analytics, url_prefix='/advanced-analytics')  # Register advanced analytics with correct URL
-    app.register_blueprint(forum, url_prefix='/forum')
-    # app.register_blueprint(news, url_prefix='/news')  # Removed - file not found
-    app.register_blueprint(pricing, url_prefix='/pricing')
-    app.register_blueprint(insider_trading, url_prefix='/insider-trading')
-    app.register_blueprint(market_intel, url_prefix='/market-intel')
-    app.register_blueprint(pro_tools, url_prefix='/pro-tools')
-    app.register_blueprint(profile, url_prefix='/user')  # Register profile blueprint with /user prefix
-    
-    # Add insider trading to analysis blueprint instead of separate
-    # app.register_blueprint(insider_trading, url_prefix='/insider-trading')
+# This function has been consolidated with the one below
+# def register_blueprints(app):
+#     """Register all blueprints with the app"""
+#     app.register_blueprint(main)
+#     app.register_blueprint(stocks, url_prefix='/stocks')
+#     app.register_blueprint(analysis, url_prefix='/analysis')
+#     app.register_blueprint(portfolio, url_prefix='/portfolio')
+#     app.register_blueprint(advanced_features, url_prefix='/advanced')
+#     app.register_blueprint(advanced_features, url_prefix='/advanced-features')  # Support both URL patterns
+#     app.register_blueprint(advanced_analytics, url_prefix='/advanced-analytics')  # Register advanced analytics with correct URL
+#     app.register_blueprint(forum, url_prefix='/forum')
+#     # app.register_blueprint(news, url_prefix='/news')  # Removed - file not found
+#     app.register_blueprint(pricing, url_prefix='/pricing')
+#     app.register_blueprint(insider_trading, url_prefix='/insider-trading')
+#     app.register_blueprint(market_intel, url_prefix='/market-intel')
+#     app.register_blueprint(pro_tools, url_prefix='/pro-tools')
+#     app.register_blueprint(profile, url_prefix='/user')  # Register profile blueprint with /user prefix
+#     
+#     # Add insider trading to analysis blueprint instead of separate
+#     # app.register_blueprint(insider_trading, url_prefix='/insider-trading')
 def create_app(config_name='default'):
     """Production-ready app factory with Railway compatibility"""
     app = Flask(__name__)
@@ -185,7 +186,7 @@ def register_blueprints(app):
         ('.notifications', 'notifications_web_bp', '/notifications'),  # Web interface blueprint
         ('.admin', 'admin', None),
         ('.features', 'features', None),
-        ('.analysis', 'analysis', None),
+        ('.analysis', 'analysis', '/analysis'),  # Fixed to have URL prefix
         ('.health', 'health', '/health'),
         ('.health', 'health', '/'),
         ('.news', 'news_bp', '/news'),

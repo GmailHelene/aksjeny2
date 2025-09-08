@@ -6,6 +6,7 @@ from ..models.favorites import Favorites
 from ..extensions import db
 from ..utils.market_open import is_market_open, is_oslo_bors_open
 from ..utils.access_control import access_required, demo_access
+from ..utils.access_control_unified import unified_access_required
 # from ..services.dashboard_service import DashboardService
 import logging
 import os
@@ -1663,17 +1664,22 @@ def internal_error(error):
 
 @main.route('/profile', strict_slashes=False)
 @login_required
+@unified_access_required
 def profile():
     """Display user profile directly instead of redirecting"""
-    # Import the blueprint view function to avoid circular import
-    from .profile import profile_page
-    
-    # Call the actual profile page implementation from the blueprint
-    return profile_page()
+    try:
+        # Import the blueprint view function to avoid circular import
+        from .profile import profile_page
+        
+        # Call the actual profile page implementation from the blueprint
+        return profile_page()
+    except Exception as e:
         import traceback
+        logger.error(f"Profile page error: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         flash('Det oppstod en teknisk feil under lasting av profilen', 'error')
-        return redirect(url_for('main.index'))
+        return render_template('errors/500.html', 
+                             error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."), 500
 
 @main.route('/my-subscription')
 @login_required
@@ -2043,6 +2049,7 @@ def update_notification_settings():
 
 @main.route('/update-profile', methods=['POST'])
 @login_required
+@unified_access_required
 def update_profile():
     """Update user profile information"""
     try:
