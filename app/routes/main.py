@@ -1661,7 +1661,7 @@ def internal_error(error):
     db.session.rollback()
     return render_template('errors/500.html'), 500
 
-@main.route('/profile')
+@main.route('/profile', strict_slashes=False)
 @login_required
 def profile():
     """Display user profile directly instead of redirecting"""
@@ -1698,6 +1698,10 @@ def profile():
         
     except Exception as e:
         logger.error(f"Error in profile page: {e}")
+        flash('Det oppstod en teknisk feil under lasting av profilen', 'error')
+        # Return error page with status code 500 instead of redirecting
+        return render_template('errors/500.html', 
+                              error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."), 500
         import traceback
         logger.error(f"Traceback: {traceback.format_exc()}")
         flash('Det oppstod en teknisk feil under lasting av profilen', 'error')

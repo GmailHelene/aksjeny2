@@ -32,22 +32,33 @@ with app.test_client() as client:
         
         # Make request to profile page
         logger.info("Making request to profile page...")
-        response = client.get('/profile')
         
-        logger.info(f"Response status: {response.status_code}")
-        if response.status_code == 302:
-            logger.info(f"Redirected to: {response.location}")
-        
-        # Check if the response contains our favorites
-        if response.status_code == 200:
-            content = response.get_data(as_text=True)
+        # Test both /profile and /profile/ to ensure both work
+        for path in ['/profile', '/profile/']:
+            response = client.get(path)
             
-            # Check for the specific template content
-            if 'Du har ingen favoritter ennå' in content:
-                logger.error("❌ Page shows 'no favorites' message")
-            elif 'AAPL' in content or 'TSLA' in content:
-                logger.info("✅ Page shows favorites content")
+            logger.info(f"Request to {path} - Response status: {response.status_code}")
+            if response.status_code == 302:
+                logger.info(f"Redirected to: {response.location}")
+            
+            # Check if the response contains our favorites
+            if response.status_code == 200:
+                content = response.get_data(as_text=True)
+                
+                # Check for the specific template content
+                if 'Du har ingen favoritter ennå' in content:
+                    logger.info("Page shows 'no favorites' message")
+                elif 'AAPL' in content or 'TSLA' in content:
+                    logger.info("✅ Page shows favorites content")
+                else:
+                    logger.info("Page loaded but did not find favorites content")
+                    
+                if 'Brukerinformasjon' in content:
+                    logger.info("✅ Profile page content loaded correctly")
+                else:
+                    logger.error("❌ Profile page content missing!")
             else:
+                logger.error(f"❌ Failed to load {path}: Status code {response.status_code}")
                 logger.warning("⚠️  Cannot determine favorites status from page content")
                 
             # Look for any error messages in the page
