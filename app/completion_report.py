@@ -72,7 +72,7 @@ def generate_completion_report():
         ],
         "exempt_users": [
             "helene721@gmail.com",
-            "helene@luxushair.com", 
+            "testuser@aksjeradar.tradeshair.com", 
             "eiriktollan.berntsen@gmail.com",
             "tonjekit91@gmail.com"
         ],
@@ -165,7 +165,7 @@ def print_completion_report():
     print("-" * 30)
     exempt_users = [
         "helene721@gmail.com",
-        "helene@luxushair.com",
+        "testuser@aksjeradar.tradeshair.com",
         "eiriktollan.berntsen@gmail.com", 
         "tonjekit91@gmail.com"
     ]

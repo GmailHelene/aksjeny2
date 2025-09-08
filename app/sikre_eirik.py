@@ -14,7 +14,7 @@ from datetime import datetime
 def sikre_Helene_tilgang():
     app = create_app()
     with app.app_context():
-        email = "helene@luxushair.com"
+        email = "testuser@aksjeradar.tradeshair.com"
         user = User.query.filter_by(email=email).first()
         
         if user:

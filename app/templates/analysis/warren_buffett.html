@@ -72,7 +72,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ url_for('analysis.warren_buffett') }}">
+                    <form method="GET" action="{{ url_for('analysis.warren_buffett') }}" id="warren-buffett-form">
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label for="ticker" class="form-label">Aksjesymbol</label>
@@ -83,12 +83,13 @@
                                            name="ticker" 
                                            placeholder="F.eks: EQNR.OL, KO, JNJ"
                                            value="{{ ticker }}"
+                                           autocomplete="off"
                                            required>
                                 </div>
                                 <div class="form-text">Skriv inn ticker-symbol for aksjen du vil analysere</div>
                             </div>
                             <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-success w-100">
+                                <button type="submit" class="btn btn-success w-100" id="analyze-button">
                                     <i class="bi bi-graph-up"></i> Analyser
                                 </button>
                             </div>
@@ -400,16 +401,56 @@ function newAnalysis() {
 function analyzeCustomTicker() {
     const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
     if (ticker) {
-        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + ticker;
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + encodeURIComponent(ticker);
+    }
+}
+
+// Manual form submission handling
+function directSubmitTickerForm() {
+    const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+    if (ticker) {
+        window.location.href = "{{ url_for('analysis.warren_buffett') }}?ticker=" + encodeURIComponent(ticker);
+        return false;
+    } else {
+        alert('Vennligst skriv inn et aksjesymbol');
+        return false;
     }
 }
 
 // Auto-complete for ticker input
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("Warren Buffett template script loaded");
+    
+    // Handle form submission directly
+    const warrenForm = document.getElementById('warren-buffett-form');
+    if (warrenForm) {
+        warrenForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            return directSubmitTickerForm();
+        });
+    }
+    
+    // Handle analyze button click directly
+    const analyzeBtn = document.getElementById('analyze-button');
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            return directSubmitTickerForm();
+        });
+    }
+    
     const tickerInput = document.getElementById('ticker');
     if (tickerInput) {
         tickerInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
+        });
+        
+        // Handle Enter key press
+        tickerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return directSubmitTickerForm();
+            }
         });
     }
     

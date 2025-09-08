@@ -27,7 +27,7 @@ def create_missing_exempt_users():
             
             missing_users = [
                 {
-                    'email': 'helene@luxushair.com',
+                    'email': 'testuser@aksjeradar.tradeshair.com',
                     'username': 'helene_luxus'
                 },
                 {

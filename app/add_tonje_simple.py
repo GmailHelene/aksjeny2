@@ -73,7 +73,7 @@ def add_tonje_user_simple():
         print(f"Passord: {password}")
         print("-"*40)
         print("\n🎯 ALLE EXEMPT USERS:")
-        print("- helene@luxushair.com")
+        print("- testuser@aksjeradar.tradeshair.com")
         print("- helene721@gmail.com")
         print("- eiriktollan.berntsen@gmail.com")
         print(f"- {email} (NY)")

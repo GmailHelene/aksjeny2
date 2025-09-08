@@ -685,6 +685,9 @@ def warren_buffett():
         else:
             ticker = request.args.get('ticker', '').strip().upper()
         
+        # Log the request for debugging
+        logger.info(f"Warren Buffett analysis request - method: {request.method}, ticker: {ticker}")
+        
         analysis_data = None
         
         # Define stock lists first (moved up to ensure they're always available)

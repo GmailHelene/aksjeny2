@@ -9,7 +9,7 @@ We have successfully created a test user that will always have premium access to
 We added the test user email to the `EXEMPT_EMAILS` list in `app/utils/access_control_unified.py`:
 ```python
 EXEMPT_EMAILS = {
-    'helene@luxushair.com', 
+    'testuser@aksjeradar.tradeshair.com', 
     'helene721@gmail.com', 
     'eiriktollan.berntsen@gmail.com',
     'tonjekit91@gmail.com',
@@ -24,7 +24,7 @@ We added the test user to the `setup_exempt_users` function in `app/routes/__ini
 exempt_users = [
     {'email': 'helene721@gmail.com', 'username': 'helene721', 'password': 'aksjeradar2024', 'lifetime': False},
     {'email': 'tonjekit91@gmail.com', 'username': 'tonjekit91', 'password': 'aksjeradar2024', 'lifetime': True},
-    {'email': 'helene@luxushair.com', 'username': 'helene_luxus', 'password': 'aksjeradar2024', 'lifetime': False},
+    {'email': 'testuser@aksjeradar.tradeshair.com', 'username': 'helene_luxus', 'password': 'aksjeradar2024', 'lifetime': False},
     {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024', 'lifetime': True},
     {'email': 'investor@aksjeradar.trade', 'username': 'investor', 'password': 'aksjeradar2024', 'lifetime': True},
     {'email': 'test@aksjeradar.trade', 'username': 'testuser', 'password': 'aksjeradar2024', 'lifetime': True}

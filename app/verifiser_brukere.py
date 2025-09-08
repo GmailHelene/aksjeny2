@@ -12,7 +12,7 @@ from app.models.user import User
 def verifiser_brukere():
     app = create_app()
     with app.app_context():
-        exempt_emails = ['helene@luxushair.com', 'helene@luxushair.com', 'helene721@gmail.com']
+        exempt_emails = ['testuser@aksjeradar.tradeshair.com', 'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com']
         
         print("🔍 Verifiserer alle exempt brukere:")
         print("=" * 50)

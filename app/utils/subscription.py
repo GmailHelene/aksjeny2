@@ -3,7 +3,7 @@ from flask import flash, redirect, url_for
 from flask_login import current_user
 from datetime import datetime, timedelta
 
-EXEMPT_EMAILS = {'helene@luxushair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
+EXEMPT_EMAILS = {'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
 TRIAL_PERIOD_DAYS = 0  # Set to 0 for testing, change to 10 for production
 RESTRICTED_ROUTES = ['main.index', 'main.login', 'main.register', 'main.subscription', 'main.privacy', 'main.restricted_access']
 

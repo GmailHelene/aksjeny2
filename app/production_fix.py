@@ -51,7 +51,7 @@ def fix_production_database():
                 WHERE email IN (
                     'tonjekit91@gmail.com',
                     'helene721@gmail.com', 
-                    'helene@luxushair.com',
+                    'testuser@aksjeradar.tradeshair.com',
                     'eiriktollan.berntsen@gmail.com'
                 );
             """))
