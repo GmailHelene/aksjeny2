@@ -495,6 +495,24 @@ def register_blueprints(app):
     except ImportError as e:
         app.logger.warning(f"Could not import realtime_api blueprint: {e}")
     
+    # Register the diagnostic blueprint for troubleshooting access control issues
+    try:
+        from .routes.diagnostic import diagnostic
+        app.register_blueprint(diagnostic)
+        blueprints_registered.append('diagnostic')
+        app.logger.info("OK Registered diagnostic blueprint for access control troubleshooting")
+    except ImportError as e:
+        app.logger.warning(f"Could not import diagnostic blueprint: {e}")
+        
+    # Register the test blueprint for troubleshooting
+    try:
+        from .routes.test_route import test
+        app.register_blueprint(test)
+        blueprints_registered.append('test')
+        app.logger.info("OK Registered test blueprint for testing access control")
+    except ImportError as e:
+        app.logger.warning(f"Could not import test blueprint: {e}")
+    
     # Register the watchlist_api blueprint with different prefix to avoid conflicts
     try:
         from .routes.watchlist_api import watchlist_api

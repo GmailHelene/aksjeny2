@@ -40,10 +40,12 @@ ALWAYS_ACCESSIBLE = {
     'main.manifest',
     'main.favicon',
     'main.offline',
-    'main.offline_html'
+    'main.offline_html',
+    'diagnostic.auth_status',  # Diagnostic route
+    'test.test_access_control'  # Test route
 }
 
-# Demo accessible endpoints (available for trial users)
+# Demo accessible endpoints (available for authenticated users)
 DEMO_ACCESSIBLE = {
     'stocks.index',
     'stocks.search', 
@@ -52,11 +54,32 @@ DEMO_ACCESSIBLE = {
     'market.overview',
     'market.sectors',
     'market_intel.insider_trading',
+    
+    # Portfolio routes
     'portfolio.portfolio_overview',  # Basic portfolio view
+    'portfolio.create_portfolio',    # Create portfolio
+    'portfolio.view_portfolio',      # View portfolio
+    'portfolio.index',               # Portfolio index
+    'portfolio.delete_portfolio',    # Delete portfolio
+    'portfolio.add_stock_to_portfolio',  # Add stock to portfolio
+    'portfolio.remove_stock_from_portfolio',  # Remove stock from portfolio
+    'portfolio.watchlist',           # Watchlist
+    'portfolio.stock_tips',          # Stock tips
+    'portfolio.stock_tips_feedback', # Stock tips feedback
+    'portfolio.quick_add_stock',     # Quick add stock
+    'portfolio.create_watchlist',    # Create watchlist
+    'portfolio.add_to_watchlist',    # Add to watchlist
+    'portfolio.add_tip',             # Add tip
+    'portfolio.tip_feedback',        # Tip feedback
+    'portfolio.watchlist',           # User's watchlist
+    
+    # Price alerts
     'price_alerts.index',  # Basic alerts view
-    'main.profile',  # Basic profile view for all authenticated users
+    
+    # Profile routes
+    'main.profile',          # Main blueprint profile route
+    'main.update_profile',   # Update profile in main blueprint
     'profile.profile_page',  # Profile blueprint's profile page
-    'main.update_profile',  # Update profile in main blueprint
     'profile.update_profile',  # Update profile in profile blueprint
     'profile.remove_favorite'  # Remove favorite in profile blueprint
 }
@@ -83,27 +106,77 @@ PREMIUM_ONLY = {
 
 def is_exempt_user():
     """Check if current user is exempt from access restrictions"""
-    return (current_user.is_authenticated and 
-            hasattr(current_user, 'email') and 
-            current_user.email in EXEMPT_EMAILS)
+    is_authenticated = current_user.is_authenticated
+    has_email = hasattr(current_user, 'email')
+    email = current_user.email if has_email else None
+    is_exempt = email in EXEMPT_EMAILS if email else False
+    
+    try:
+        current_app.logger.info(f"EXEMPT CHECK: auth={is_authenticated}, has_email={has_email}, email={email}, is_exempt={is_exempt}")
+    except Exception:
+        pass  # Don't break on logging errors
+    
+    return is_authenticated and has_email and is_exempt
 
 
 def has_active_subscription():
     """Check if current user has an active subscription"""
     if not current_user.is_authenticated:
+        try:
+            current_app.logger.info("SUBSCRIPTION CHECK: User not authenticated")
+        except Exception:
+            pass
         return False
         
     # Exempt users always have access
     if is_exempt_user():
+        try:
+            current_app.logger.info(f"SUBSCRIPTION CHECK: User is exempt")
+        except Exception:
+            pass
         return True
         
     # Check subscription methods
-    if hasattr(current_user, 'has_active_subscription'):
-        return current_user.has_active_subscription()
+    has_subscription_method = hasattr(current_user, 'has_active_subscription')
+    if has_subscription_method:
+        try:
+            is_active = current_user.has_active_subscription()
+            current_app.logger.info(f"SUBSCRIPTION CHECK: has_active_subscription() = {is_active}")
+            return is_active
+        except Exception as e:
+            current_app.logger.error(f"Error calling has_active_subscription(): {e}")
         
-    if hasattr(current_user, 'subscription_type'):
-        return current_user.subscription_type in ['premium', 'pro', 'yearly', 'lifetime', 'active']
-        
+    has_subscription_type = hasattr(current_user, 'subscription_type')
+    if has_subscription_type:
+        subscription_type = current_user.subscription_type
+        is_premium = subscription_type in ['premium', 'pro', 'yearly', 'lifetime', 'active']
+        try:
+            current_app.logger.info(f"SUBSCRIPTION CHECK: subscription_type = {subscription_type}, is_premium = {is_premium}")
+        except Exception:
+            pass
+        return is_premium
+    
+    # Enhanced fallback checks
+    fallback_attrs = {
+        'subscription_status': ['active', 'premium', 'pro', 'trial', 'yearly', 'lifetime'],
+        'is_premium': True,
+        'demo_access': True,
+        'lifetime_access': True
+    }
+    
+    for attr, valid_values in fallback_attrs.items():
+        if hasattr(current_user, attr):
+            attr_value = getattr(current_user, attr)
+            if isinstance(valid_values, list):
+                if attr_value in valid_values:
+                    return True
+            elif attr_value == valid_values:
+                return True
+    
+    try:
+        current_app.logger.info(f"SUBSCRIPTION CHECK: No subscription methods found")
+    except Exception:
+        pass
     return False
 
 
@@ -112,15 +185,37 @@ def get_access_level():
     Get current user's access level
     Returns: 'admin', 'premium', 'demo', or 'none'
     """
+    try:
+        is_auth = current_user.is_authenticated
+        current_app.logger.info(f"ACCESS LEVEL CHECK: is_authenticated = {is_auth}")
+    except Exception:
+        pass
+    
     if is_exempt_user():
+        try:
+            current_app.logger.info("ACCESS LEVEL: admin (exempt user)")
+        except Exception:
+            pass
         return 'admin'
         
     if has_active_subscription():
+        try:
+            current_app.logger.info("ACCESS LEVEL: premium (active subscription)")
+        except Exception:
+            pass
         return 'premium'
         
     if current_user.is_authenticated:
+        try:
+            current_app.logger.info("ACCESS LEVEL: demo (authenticated user)")
+        except Exception:
+            pass
         return 'demo'  # Authenticated users get demo access
-        
+    
+    try:
+        current_app.logger.info("ACCESS LEVEL: none (unauthenticated user)")
+    except Exception:
+        pass
     return 'none'
 
 
@@ -129,35 +224,76 @@ def check_endpoint_access(endpoint):
     Check if current user can access the given endpoint
     Returns: (allowed: bool, redirect_to: str|None, message: str|None)
     """
+    try:
+        current_app.logger.info(f"CHECKING ACCESS FOR: {endpoint}")
+    except Exception:
+        pass
+    
     # Always accessible endpoints
     if endpoint in ALWAYS_ACCESSIBLE:
+        try:
+            current_app.logger.info(f"ENDPOINT {endpoint} is ALWAYS_ACCESSIBLE")
+        except Exception:
+            pass
         return True, None, None
         
     access_level = get_access_level()
+    try:
+        current_app.logger.info(f"USER ACCESS LEVEL: {access_level}")
+    except Exception:
+        pass
     
     # Admin/exempt users can access everything
     if access_level == 'admin':
+        try:
+            current_app.logger.info(f"ADMIN ACCESS GRANTED for {endpoint}")
+        except Exception:
+            pass
         return True, None, None
         
     # Premium users can access everything except admin-only
     if access_level == 'premium':
+        try:
+            current_app.logger.info(f"PREMIUM ACCESS GRANTED for {endpoint}")
+        except Exception:
+            pass
         return True, None, None
         
     # Demo users can access demo endpoints
     if access_level == 'demo':
         if endpoint in DEMO_ACCESSIBLE:
+            try:
+                current_app.logger.info(f"DEMO ACCESS GRANTED for {endpoint} (in DEMO_ACCESSIBLE)")
+            except Exception:
+                pass
             return True, None, None
         elif endpoint in PREMIUM_ONLY:
+            try:
+                current_app.logger.info(f"DEMO ACCESS DENIED for {endpoint} (in PREMIUM_ONLY)")
+            except Exception:
+                pass
             return False, 'pricing.index', 'Denne funksjonen krever premium-abonnement'
         else:
             # Unknown endpoint - allow for backwards compatibility
+            try:
+                current_app.logger.info(f"DEMO ACCESS GRANTED for {endpoint} (unknown endpoint - backwards compat)")
+            except Exception:
+                pass
             return True, None, None
             
     # Unauthenticated users - redirect to demo for most things
     if access_level == 'none':
         if endpoint in DEMO_ACCESSIBLE or endpoint in PREMIUM_ONLY:
+            try:
+                current_app.logger.info(f"ANON ACCESS DENIED for {endpoint} - redirecting to demo")
+            except Exception:
+                pass
             return False, 'main.demo', 'Vennligst logg inn eller prøv demo-versjonen'
         else:
+            try:
+                current_app.logger.info(f"ANON ACCESS DENIED for {endpoint} - redirecting to login")
+            except Exception:
+                pass
             return False, 'main.login', 'Vennligst logg inn for å fortsette'
 
 
@@ -168,22 +304,39 @@ def unified_access_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        current_app.logger.info(f"ACCESS CHECK for {request.endpoint} - URL: {request.url}")
+        
+        # Get user information for debugging
+        user_id = getattr(current_user, 'id', 'anonymous')
+        is_auth = current_user.is_authenticated
+        user_email = getattr(current_user, 'email', 'none') if is_auth else 'none'
+        
+        current_app.logger.info(f"USER: id={user_id}, auth={is_auth}, email={user_email}")
+        
         # Skip check if we're already on an always-accessible page
         if request.endpoint in ALWAYS_ACCESSIBLE:
+            current_app.logger.info(f"ALWAYS ACCESSIBLE: {request.endpoint}")
             return f(*args, **kwargs)
             
         # Prevent redirect loops for demo page
         if request.endpoint == 'main.demo':
+            current_app.logger.info(f"DEMO PAGE: {request.endpoint}")
             return f(*args, **kwargs)
             
         # Check access
+        access_level = get_access_level()
+        current_app.logger.info(f"ACCESS LEVEL: {access_level}")
+        
         allowed, redirect_to, message = check_endpoint_access(request.endpoint)
+        current_app.logger.info(f"ACCESS CHECK RESULT: allowed={allowed}, redirect_to={redirect_to}, message={message}")
         
         if allowed:
+            current_app.logger.info(f"ACCESS GRANTED for {request.endpoint}")
             return f(*args, **kwargs)
         else:
             if message:
                 flash(message, 'info')
+                current_app.logger.info(f"ACCESS DENIED: {message}")
             
             # Prevent infinite redirects
             if redirect_to and redirect_to != request.endpoint:
@@ -196,6 +349,7 @@ def unified_access_required(f):
                     return redirect(url_for('main.index'))
             else:
                 # Fallback for edge cases
+                current_app.logger.info(f"FALLBACK REDIRECT to main.index")
                 return redirect(url_for('main.index'))
                 
     return decorated_function

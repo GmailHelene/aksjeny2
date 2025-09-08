@@ -11,6 +11,7 @@ import traceback
 from ..models import Portfolio, PortfolioStock, StockTip, Watchlist, WatchlistStock
 from ..extensions import db
 from ..utils.access_control import access_required, demo_access
+from ..utils.access_control_unified import unified_access_required
 from ..utils.error_handler import (
     handle_api_error, format_number_norwegian, format_currency_norwegian,
     format_percentage_norwegian, safe_api_call, validate_stock_symbol,
@@ -64,7 +65,7 @@ portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
 
 @portfolio.route('/overview')
 @portfolio.route('/')  # Add this as an alias
-@access_required
+@unified_access_required
 def portfolio_overview():
     """Portfolio overview with enhanced error handling and fallback data"""
     try:
@@ -439,7 +440,7 @@ def get_user_data_for_portfolio():
 
 # Removed duplicate index route - using portfolio_overview as main route
 @portfolio.route('/tips', methods=['GET', 'POST'])
-@access_required
+@unified_access_required
 def stock_tips():
     """Stock tips page with enhanced error handling"""
     try:
@@ -496,7 +497,7 @@ def stock_tips():
 
 
 @portfolio.route('/tips/feedback/<int:tip_id>', methods=['POST'])
-@access_required
+@unified_access_required
 def stock_tips_feedback(tip_id):
     """Handle feedback on stock tips"""
     try:
@@ -523,7 +524,7 @@ def stock_tips_feedback(tip_id):
 
 @portfolio.route('/create', methods=['GET', 'POST'])
 @login_required
-@access_required
+@unified_access_required
 def create_portfolio():
     """Create a new portfolio with robust error handling"""
     try:
@@ -775,7 +776,7 @@ def add_stock_to_portfolio(id):
         return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/portfolio/<int:id>/remove/<int:stock_id>', methods=['POST'])
-@access_required
+@unified_access_required
 def remove_stock_from_portfolio(id, stock_id):
     """Remove a stock from a specific portfolio"""
     try:
@@ -817,7 +818,7 @@ def remove_stock_from_portfolio(id, stock_id):
         return redirect(url_for('portfolio.view_portfolio', id=id))
 
 @portfolio.route('/watchlist/create', methods=['GET', 'POST'])
-@access_required
+@unified_access_required
 def create_watchlist():
     """Create a new watchlist"""
     if request.method == 'POST':
