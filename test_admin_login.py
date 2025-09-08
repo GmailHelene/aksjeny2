@@ -113,7 +113,7 @@ def test_admin_login():
     test_users = [
         {'email': 'test@aksjeradar.trade', 'password': 'aksjeradar2024'},
         {'email': 'investor@aksjeradar.trade', 'password': 'aksjeradar2024'},
-        {'email': 'testuser@aksjeradar.trade', 'password': 'aksjeradar2024'}  # Known admin user as a control
+        {'email': 'testuser@aksjeradar.trade', 'password': 'aksjeradar2024'}  # Known best  admin user as a control
     ]
     
     fixed_users = []
