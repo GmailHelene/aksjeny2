@@ -69,38 +69,46 @@ def fix_user_password(email, password):
     """Fix a user's password"""
     try:
         app = create_app()
-        
         with app.app_context():
-            # Find the user
             user = User.query.filter_by(email=email).first()
-            
             if not user:
-                print(f"❌ User with email {email} not found!")
-                return False
-            
-            # Set new password hash
-            user.password_hash = generate_password_hash(password)
-            
-            # Ensure premium access
-            user.has_subscription = True
-            user.subscription_type = 'lifetime'
-            user.subscription_start = datetime.utcnow()
-            user.subscription_end = None
-            user.is_admin = True
-            
-            # Save changes
-            db.session.commit()
-            
-            print(f"✅ Password updated for {email}!")
-            
+                print(f"User with email {email} not found, creating new user...")
+                # Use sensible defaults for missing fields
+                username = email.split('@')[0]
+                user = User(
+                    email=email,
+                    username=username,
+                    password_hash=generate_password_hash(password),
+                    has_subscription=True,
+                    subscription_type='lifetime',
+                    subscription_start=datetime.utcnow(),
+                    subscription_end=None,
+                    is_admin=True,
+                    trial_used=True,
+                    created_at=datetime.utcnow()
+                )
+                db.session.add(user)
+                db.session.commit()
+                print(f"✅ Created new user: {email}")
+            else:
+                # Set new password hash
+                user.password_hash = generate_password_hash(password)
+                user.has_subscription = True
+                user.subscription_type = 'lifetime'
+                user.subscription_start = datetime.utcnow()
+                user.subscription_end = None
+                user.is_admin = True
+                user.trial_used = True
+                db.session.commit()
+                print(f"✅ Password updated for {email}!")
             # Verify the fix
-            if check_password_hash(user.password_hash, password):
+            user_check = User.query.filter_by(email=email).first()
+            if user_check and check_password_hash(user_check.password_hash, password):
                 print(f"✅ Password verification successful!")
                 return True
             else:
                 print(f"❌ Password verification failed!")
                 return False
-                
     except Exception as e:
         print(f"❌ Error fixing user password: {e}")
         import traceback
