@@ -1665,43 +1665,11 @@ def internal_error(error):
 @login_required
 def profile():
     """Display user profile directly instead of redirecting"""
-    try:
-        # Get user favorites
-        user_favorites = []
-        if current_user.is_authenticated:
-            try:
-                from sqlalchemy import text
-                favorites_query = text("""
-                    SELECT symbol, company_name, price, change, change_percent, date_added 
-                    FROM favorites 
-                    WHERE user_id = :user_id 
-                    ORDER BY date_added DESC
-                """)
-                favorites_result = db.session.execute(favorites_query, {'user_id': current_user.id})
-                user_favorites = [dict(row._mapping) for row in favorites_result]
-                logger.info(f"Loaded {len(user_favorites)} favorites for user {current_user.id}")
-            except Exception as e:
-                logger.error(f"Error fetching favorites: {e}")
-                user_favorites = []
-        
-        # Get user statistics
-        user_stats = {
-            'total_favorites': len(user_favorites),
-            'member_since': current_user.created_at.strftime('%B %Y') if hasattr(current_user, 'created_at') and current_user.created_at else 'Ukjent',
-            'last_login': current_user.last_login.strftime('%d.%m.%Y %H:%M') if hasattr(current_user, 'last_login') and current_user.last_login else 'Ukjent'
-        }
-        
-        return render_template('profile.html', 
-                             user=current_user,
-                             favorites=user_favorites,
-                             user_stats=user_stats)
-        
-    except Exception as e:
-        logger.error(f"Error in profile page: {e}")
-        flash('Det oppstod en teknisk feil under lasting av profilen', 'error')
-        # Return error page with status code 500 instead of redirecting
-        return render_template('errors/500.html', 
-                              error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."), 500
+    # Import the blueprint view function to avoid circular import
+    from .profile import profile_page
+    
+    # Call the actual profile page implementation from the blueprint
+    return profile_page()
         import traceback
         logger.error(f"Traceback: {traceback.format_exc()}")
         flash('Det oppstod en teknisk feil under lasting av profilen', 'error')
