@@ -13,7 +13,9 @@ EXEMPT_EMAILS = {
     'helene@luxushair.com', 
     'helene721@gmail.com', 
     'eiriktollan.berntsen@gmail.com',
-    'tonjekit91@gmail.com'
+    'tonjekit91@gmail.com',
+    'investor@aksjeradar.trade',    # Test user for investors
+    'test@aksjeradar.trade'         # General test user with premium access
 }
 
 # Always accessible endpoints (no authentication required)
@@ -77,7 +79,7 @@ DEMO_ACCESSIBLE = {
     # Price alerts
     'price_alerts.index',  # Basic alerts view
     
-    # Profile routes
+    # Profile routes - accessible to all authenticated users
     'main.profile',          # Main blueprint profile route
     'main.update_profile',   # Update profile in main blueprint
     'profile.profile_page',  # Profile blueprint's profile page

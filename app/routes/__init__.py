@@ -160,8 +160,14 @@ def register_blueprints(app):
         app.logger.info("✅ Registered auth blueprint")
         # Explicitly import and register portfolio blueprint
         from .portfolio import portfolio
-        app.register_blueprint(portfolio)
+        app.register_blueprint(portfolio, url_prefix='/portfolio')
         blueprints_registered.append('portfolio')
+        
+        # Explicitly import and register profile blueprint
+        from .profile import profile
+        app.register_blueprint(profile, url_prefix='/profile')
+        blueprints_registered.append('profile')
+        
         # Register Stripe blueprint
         try:
             from .stripe_routes import stripe_bp
@@ -231,6 +237,15 @@ def register_blueprints(app):
         app.logger.info("✅ Registered details_debug blueprint")
     except ImportError as e:
         app.logger.warning(f"Could not import details_debug blueprint: {e}")
+        
+    # Register diagnostic blueprint
+    try:
+        from .diagnostic import diagnostic
+        app.register_blueprint(diagnostic, url_prefix='/diagnostic')
+        blueprints_registered.append('diagnostic')
+        app.logger.info("✅ Registered diagnostic blueprint")
+    except ImportError as e:
+        app.logger.warning(f"Could not import diagnostic blueprint: {e}")
         blueprints_registered.append('realtime_api')
         app.logger.info("✅ Registered realtime_api blueprint")
     except ImportError as e:
@@ -259,7 +274,9 @@ def setup_exempt_users(app):
             {'email': 'helene721@gmail.com', 'username': 'helene721', 'password': 'aksjeradar2024', 'lifetime': False},
             {'email': 'tonjekit91@gmail.com', 'username': 'tonjekit91', 'password': 'aksjeradar2024', 'lifetime': True},
             {'email': 'helene@luxushair.com', 'username': 'helene_luxus', 'password': 'aksjeradar2024', 'lifetime': False},
-            {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024', 'lifetime': True}
+            {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024', 'lifetime': True},
+            {'email': 'investor@aksjeradar.trade', 'username': 'investor', 'password': 'aksjeradar2024', 'lifetime': True},
+            {'email': 'test@aksjeradar.trade', 'username': 'testuser', 'password': 'aksjeradar2024', 'lifetime': True}
         ]
         for user_data in exempt_users:
             user = User.query.filter_by(email=user_data['email']).first()
