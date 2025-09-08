@@ -32,7 +32,7 @@ def analyze_investments():
         # Check access level for result limiting
         is_premium = False
         if current_user.is_authenticated:
-            if getattr(current_user, 'email', None) in ['testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com']:
+            if getattr(current_user, 'email', None) in ['testuser@aksjeradar.trade', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com']:
                 is_premium = True
             elif hasattr(current_user, 'has_active_subscription') and current_user.has_active_subscription():
                 is_premium = True

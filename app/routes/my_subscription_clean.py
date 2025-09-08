@@ -79,7 +79,7 @@ def my_subscription():
             }
 
         is_exempt_user = current_user.email in {
-            'testuser@aksjeradar.tradeshair.com', 
+            'testuser@aksjeradar.trade', 
             'helene721@gmail.com', 
             'eiriktollan.berntsen@gmail.com',
             'tonjekit91@gmail.com'

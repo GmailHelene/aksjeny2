@@ -76,7 +76,7 @@ def test_critical_fixes():
             total_tests += 1
             print("7️⃣ Testing access control system...")
             from app.utils.access_control import access_required, EXEMPT_EMAILS
-            if 'testuser@aksjeradar.tradeshair.com' in EXEMPT_EMAILS:
+            if 'testuser@aksjeradar.trade' in EXEMPT_EMAILS:
                 print("   ✅ Access control configured correctly")
                 success_count += 1
             else:

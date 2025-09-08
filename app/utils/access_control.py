@@ -11,7 +11,7 @@ import hashlib
 
 # Exempt users who always get full access
 EXEMPT_EMAILS = {
-    'testuser@aksjeradar.tradeshair.com', 
+    'testuser@aksjeradar.trade', 
     'helene721@gmail.com', 
     'eiriktollan.berntsen@gmail.com',
     'tonjekit91@gmail.com'

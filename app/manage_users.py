@@ -6,7 +6,7 @@ def reset_users():
     app = create_app()
     with app.app_context():
         # Slett brukere med e-postene dine
-        emails = ['testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com', 'testuser@aksjeradar.tradeshair.com']
+        emails = ['testuser@aksjeradar.trade', 'helene721@gmail.com', 'testuser@aksjeradar.trade']
         for email in emails:
             user = User.query.filter_by(email=email).first()
             if user:

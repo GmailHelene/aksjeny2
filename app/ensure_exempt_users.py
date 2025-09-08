@@ -9,7 +9,7 @@ from app.extensions import db
 from app.models.user import User
 from datetime import datetime
 
-EXEMPT_EMAILS = {'testuser@aksjeradar.tradeshair.com', 'testuser@aksjeradar.tradeshair.com' , 'helene721@gmail.com'}
+EXEMPT_EMAILS = {'testuser@aksjeradar.trade', 'testuser@aksjeradar.trade' , 'helene721@gmail.com'}
 
 def ensure_exempt_users_have_subscriptions():
     """Ensure exempt users always have active subscriptions"""

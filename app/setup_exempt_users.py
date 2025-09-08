@@ -27,7 +27,7 @@ def setup_exempt_users():
                     'password': 'aksjeradar2024'
                 },
                 {
-                    'email': 'testuser@aksjeradar.tradeshair.com', 
+                    'email': 'testuser@aksjeradar.trade', 
                     'username': 'helene_luxus_admin',
                     'password': 'aksjeradar2024'
                 },

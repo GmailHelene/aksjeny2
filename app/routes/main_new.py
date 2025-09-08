@@ -165,7 +165,7 @@ def get_pytz():
 
 main = Blueprint('main', __name__)
 
-EXEMPT_EMAILS = {'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
+EXEMPT_EMAILS = {'testuser@aksjeradar.trade', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
 
 # Always accessible endpoints (authentication, basic info, etc.)
 EXEMPT_ENDPOINTS = {
@@ -1245,7 +1245,7 @@ def my_subscription():
     try:
         # Check if user is exempt
         is_exempt_user = current_user.email in {
-            'testuser@aksjeradar.tradeshair.com', 
+            'testuser@aksjeradar.trade', 
             'helene721@gmail.com', 
             'eiriktollan.berntsen@gmail.com',
             'tonjekit91@gmail.com'

@@ -200,7 +200,7 @@ def setup_exempt_users(app):
         exempt_users = [
             {'email': 'helene721@gmail.com', 'username': 'helene721', 'password': 'aksjeradar2024'},
             {'email': 'tonjekit91@gmail.com', 'username': 'tonjekit91', 'password': 'aksjeradar2024'},
-            {'email': 'testuser@aksjeradar.tradeshair.com', 'username': 'helene_luxus', 'password': 'aksjeradar2024'},
+            {'email': 'testuser@aksjeradar.trade', 'username': 'helene_luxus', 'password': 'aksjeradar2024'},
             {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024'}
         ]
         

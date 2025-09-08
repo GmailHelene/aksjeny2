@@ -43,7 +43,7 @@ print()
 
 print("🔍 ALTERNATIVE BRUKERE (hvis helene721 ikke fungerer):")
 print("Du kan også prøve disse brukerene som har ubegrenset tilgang:")
-print("- E-post: testuser@aksjeradar.tradeshair.com")
+print("- E-post: testuser@aksjeradar.trade")
 print("- E-post: eiriktollan.berntsen@gmail.com") 
 print("- E-post: tonjekit91@gmail.com")
 print("(Men vi må sjekke passordene for disse i databasen)")

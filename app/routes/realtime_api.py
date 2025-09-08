@@ -156,7 +156,7 @@ def start_real_time_updates():
     """Start real-time background updates (admin only)"""
     try:
         if current_user.is_authenticated and (current_user.is_admin or 
-            current_user.email in ['testuser@aksjeradar.tradeshair.com', 'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com']):
+            current_user.email in ['testuser@aksjeradar.trade', 'testuser@aksjeradar.trade', 'helene721@gmail.com']):
             
             real_time_service.start_background_updates()
             return jsonify({
@@ -181,7 +181,7 @@ def stop_real_time_updates():
     """Stop real-time background updates (admin only)"""
     try:
         if current_user.is_authenticated and (current_user.is_admin or 
-            current_user.email in ['testuser@aksjeradar.tradeshair.com', 'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com']):
+            current_user.email in ['testuser@aksjeradar.trade', 'testuser@aksjeradar.trade', 'helene721@gmail.com']):
             
             real_time_service.stop_background_updates()
             return jsonify({

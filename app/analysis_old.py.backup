@@ -40,7 +40,7 @@ def index():
         market_sentiment = "Nøytral"
 
     # Determine if banner should be shown (same logic as in main.py)
-    EXEMPT_EMAILS = {'testuser@aksjeradar.tradeshair.com', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
+    EXEMPT_EMAILS = {'testuser@aksjeradar.trade', 'helene721@gmail.com', 'eiriktollan.berntsen@gmail.com', 'tonjekit91@gmail.com'}
     show_banner = False
     try:
         if current_user.is_authenticated:
