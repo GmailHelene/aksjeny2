@@ -50,6 +50,7 @@ DEMO_ACCESSIBLE = {
     'stocks.index',
     'stocks.search', 
     'stocks.list_currency',
+    'stocks.details',        # Allow details page for demo users
     'analysis.index',
     'market.overview',
     'market.sectors',
@@ -86,7 +87,6 @@ DEMO_ACCESSIBLE = {
 
 # Premium endpoints (require active subscription)
 PREMIUM_ONLY = {
-    'stocks.details',
     'stocks.list_stocks', 
     'stocks.list_oslo',
     'stocks.global_list',

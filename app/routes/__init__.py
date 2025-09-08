@@ -222,6 +222,19 @@ def register_blueprints(app):
         app.logger.info("✅ Registered realtime_api blueprint")
     except ImportError as e:
         app.logger.warning(f"Could not import realtime_api blueprint: {e}")
+        
+    # Register diagnostic tools blueprint
+    try:
+        from .details_debug import details_debug
+        app.register_blueprint(details_debug, url_prefix='/stocks/details-debug')
+        blueprints_registered.append('details_debug')
+        app.logger.info("✅ Registered details_debug blueprint")
+    except ImportError as e:
+        app.logger.warning(f"Could not import details_debug blueprint: {e}")
+        blueprints_registered.append('realtime_api')
+        app.logger.info("✅ Registered realtime_api blueprint")
+    except ImportError as e:
+        app.logger.warning(f"Could not import realtime_api blueprint: {e}")
 
 def setup_production_database(app):
     """Setup database for production with proper error handling"""

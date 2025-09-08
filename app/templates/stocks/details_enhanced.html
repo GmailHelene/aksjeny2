@@ -234,6 +234,14 @@
                                     <p class="text-muted mt-3">Laster TradingView chart...</p>
                                     <small class="text-muted">Hvis chartet ikke laster, kan det skyldes ad blocker eller nettverksproblemer</small>
                                 </div>
+                                <!-- Fallback message will be displayed here if TradingView fails to load -->
+                                <div id="chart-fallback" style="display: none; text-align: center; padding: 50px 0; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px;">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <h5>Kunne ikke laste inn TradingView-grafen</h5>
+                                        <p>Vi beklager, men det oppstod et problem med å laste inn grafen for {{ ticker }}. Prøv å laste siden på nytt, eller sjekk nettverkstilkoblingen din.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1008,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // IMMEDIATE LOADING: Initialize TradingView main chart
     try {
-        console.log('Initializing TradingView main chart immediately');
+        console.log('Initializing TradingView main chart');
         const mainChartContainer = document.getElementById('tradingview_main_widget');
         if (mainChartContainer) {
             // Format symbol for TradingView
@@ -1025,55 +1033,72 @@ document.addEventListener('DOMContentLoaded', function() {
                 formattedSymbol = `NASDAQ:${symbol}`;
             }
             
-            if (typeof TradingView !== 'undefined') {
-                console.log(`Loading main TradingView chart for ${formattedSymbol}`);
-                new TradingView.widget({
-                    "autosize": true,
-                    "symbol": formattedSymbol,
-                    "interval": "D",
-                    "timezone": "Europe/Oslo",
-                    "theme": "light",
-                    "style": "1",
-                    "locale": "no",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "allow_symbol_change": true,
-                    "container_id": "tradingview_main_widget",
-                    "hide_side_toolbar": false,
-                    "studies": [
-                        "RSI@tv-basicstudies",
-                        "MACD@tv-basicstudies"
-                    ],
-                    "onChartReady": function() {
-                        console.log("Main TradingView chart loaded successfully");
-                        if (loadingIndicator) loadingIndicator.style.display = 'none';
-                    },
-                    "loading_screen": {
-                        "backgroundColor": "#ffffff",
-                        "foregroundColor": "#2962FF"
-                    }
-                });
-                window.tradingViewLoaded = true;
-            } else {
-                console.error('TradingView library not loaded for main chart');
-                // Try to load the script first
-                function loadTradingViewScriptForMain() {
-                    console.log('Loading TradingView script for main chart');
-                    const script = document.createElement('script');
-                    script.src = 'https://s3.tradingview.com/tv.js';
-                    script.async = true;
-                    script.onload = function() {
-                        console.log('TradingView script loaded successfully for main chart');
-                        // Initialize widget once loaded
-                        initializeTradingViewWidget();
-                    };
-                    script.onerror = function() {
-                        console.error('Failed to load TradingView script for main chart');
-                    };
-                    document.head.appendChild(script);
+            // Function to load TradingView widget after ensuring script is loaded
+            function createTradingViewWidget() {
+                console.log(`Creating TradingView widget for ${formattedSymbol}`);
+                
+                if (typeof TradingView === 'undefined') {
+                    console.log('TradingView not defined yet, waiting 500ms...');
+                    setTimeout(createTradingViewWidget, 500);
+                    return;
                 }
-                loadTradingViewScriptForMain();
+                
+                try {
+                    new TradingView.widget({
+                        "autosize": true,
+                        "symbol": formattedSymbol,
+                        "interval": "D",
+                        "timezone": "Europe/Oslo",
+                        "theme": "light",
+                        "style": "1",
+                        "locale": "no",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_main_widget",
+                        "hide_side_toolbar": false,
+                        "studies": [
+                            "RSI@tv-basicstudies",
+                            "MACD@tv-basicstudies"
+                        ],
+                        "onChartReady": function() {
+                            console.log("Main TradingView chart loaded successfully");
+                            const loadingIndicator = document.getElementById('tv-loading-indicator');
+                            if (loadingIndicator) loadingIndicator.style.display = 'none';
+                        },
+                        "loading_screen": {
+                            "backgroundColor": "#ffffff",
+                            "foregroundColor": "#2962FF"
+                        }
+                    });
+                    window.tradingViewLoaded = true;
+                } catch (error) {
+                    console.error('Error creating TradingView widget:', error);
+                    
+                    // Show fallback message if widget creation fails
+                    const fallbackElement = document.getElementById('chart-fallback');
+                    if (fallbackElement) fallbackElement.style.display = 'block';
+                    
+                    const loadingIndicator = document.getElementById('tv-loading-indicator');
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                }
             }
+            
+            // Add a visible loading indicator inside the container
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'tv-loading-indicator';
+            loadingIndicator.innerHTML = `
+                <div style="text-align: center; padding: 50px 0;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Laster inn graf...</span>
+                    </div>
+                    <p class="mt-2">Laster inn TradingView-graf...</p>
+                </div>
+            `;
+            mainChartContainer.appendChild(loadingIndicator);
+            
+            // Wait for the next tick to start the widget creation
+            setTimeout(createTradingViewWidget, 100);
         }
     } catch (error) {
         console.error('Error initializing main chart:', error);
@@ -1095,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (loadingElement) loadingElement.style.display = 'none';
             if (chartCanvas) chartCanvas.style.display = 'none';
             if (fallbackElement) fallbackElement.style.display = 'block';
-        }, 3000); // Reduced to 3 second timeout
+        }, 8000); // Increased to 8 second timeout
         
         fetch(`/stocks/api/demo/chart-data/{{ ticker }}?period=30d`)
             .then(response => {
@@ -2046,9 +2071,6 @@ function createPriceAlert(ticker) {
 <!-- Chart.js -->
 <!-- Scripts for Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- TradingView Widget Script -->
+<!-- TradingView Widget Script - Load only once -->
 <script src="https://s3.tradingview.com/tv.js"></script>
-
-<!-- TradingView Charting Library -->
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 {% endblock %}

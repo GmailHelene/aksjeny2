@@ -781,8 +781,10 @@ def details(symbol):
             current_app.logger.info(f"👤 DEMO USER: Getting demo access for {symbol}")
             data_service = DataService  # Demo users still get real DataService but with usage tracking
             use_real_data = False
-        
+            
+        # IMPROVED ERROR HANDLING: Initialize with default data
         stock_info = None
+        error_occurred = False
         
         try:
             # Get stock info using appropriate service
@@ -1292,10 +1294,16 @@ def details(symbol):
         current_app.logger.error(f"Error loading stock details for {symbol}: {e}")
         current_app.logger.error(f"Full traceback: {traceback.format_exc()}")
         
+        # IMPROVED ERROR HANDLING: Add specific error type for better debugging
+        error_type = type(e).__name__
+        error_message = str(e)
+        current_app.logger.error(f"Error type: {error_type}, Message: {error_message}")
+        
         # Get fallback AI recommendation even on error
         try:
             ai_recommendations = DataService.get_ticker_specific_ai_recommendation(symbol)
-        except:
+        except Exception as ai_error:
+            current_app.logger.error(f"AI recommendation error: {ai_error}")
             ai_recommendations = {'summary': 'Feil ved lasting av data - ingen AI-analyse tilgjengelig', 'recommendation': 'HOLD', 'confidence': 0}
         
         # Create realistic fallback stock_info for error case to prevent "-" displays
@@ -1379,7 +1387,7 @@ def details(symbol):
                              earnings=[],
                              competitors=[],
                              user_context=user_context,  # STEP 13: User authentication context
-                             error=f"Could not load data for {symbol}")
+                             error=f"Det oppstod en feil ved lasting av data for {symbol}. Feiltype: {error_type if 'error_type' in locals() else 'Unknown'}")
 
 @stocks.route('/search')
 @demo_access  
