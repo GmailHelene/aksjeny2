@@ -73,19 +73,44 @@ def fix_user_password(email, password):
             user = User.query.filter_by(email=email).first()
             if not user:
                 print(f"User with email {email} not found, creating new user...")
-                # Use sensible defaults for missing fields
                 username = email.split('@')[0]
+                now = datetime.utcnow()
                 user = User(
                     email=email,
                     username=username,
                     password_hash=generate_password_hash(password),
                     has_subscription=True,
                     subscription_type='lifetime',
-                    subscription_start=datetime.utcnow(),
+                    subscription_start=now,
                     subscription_end=None,
                     is_admin=True,
                     trial_used=True,
-                    created_at=datetime.utcnow()
+                    created_at=now,
+                    trial_start=now,
+                    stripe_customer_id=None,
+                    reports_used_this_month=0,
+                    last_reset_date=now,
+                    reset_token=None,
+                    reset_token_expires=None,
+                    language='no',
+                    notification_settings=None,
+                    email_notifications=True,
+                    price_alerts=True,
+                    market_news=True,
+                    email_notifications_enabled=True,
+                    price_alerts_enabled=True,
+                    market_news_enabled=True,
+                    portfolio_updates_enabled=True,
+                    ai_insights_enabled=True,
+                    weekly_reports_enabled=True,
+                    first_name=None,
+                    last_name=None,
+                    two_factor_enabled=False,
+                    two_factor_secret=None,
+                    email_verified=True,
+                    is_locked=False,
+                    last_login=now,
+                    login_count=1
                 )
                 db.session.add(user)
                 db.session.commit()
@@ -105,6 +130,36 @@ def fix_user_password(email, password):
             user_check = User.query.filter_by(email=email).first()
             if user_check and check_password_hash(user_check.password_hash, password):
                 print(f"✅ Password verification successful!")
+                # Ensure user has at least one portfolio
+                from app.models.portfolio import Portfolio, PortfolioStock
+                portfolios = Portfolio.query.filter_by(user_id=user_check.id).all()
+                if not portfolios:
+                    print(f"No portfolios found for {email}, creating default portfolio...")
+                    portfolio = Portfolio(
+                        name="Test Portfolio",
+                        description="Default portfolio for test user.",
+                        user_id=user_check.id,
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow(),
+                        is_watchlist=False
+                    )
+                    db.session.add(portfolio)
+                    db.session.commit()
+                    print(f"✅ Created default portfolio for {email}")
+                    # Add a default stock to the portfolio
+                    stock = PortfolioStock(
+                        portfolio_id=portfolio.id,
+                        ticker="AAPL",
+                        shares=10,
+                        purchase_price=150.0,
+                        purchase_date=datetime.utcnow(),
+                        notes="Default test stock."
+                    )
+                    db.session.add(stock)
+                    db.session.commit()
+                    print(f"✅ Added default stock to portfolio for {email}")
+                else:
+                    print(f"User {email} already has {len(portfolios)} portfolio(s)")
                 return True
             else:
                 print(f"❌ Password verification failed!")
