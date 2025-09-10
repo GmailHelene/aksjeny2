@@ -1,0 +1,22 @@
+Step 1: Fetch login page
+  GET http://localhost:5002/auth/login -> 200
+  CSRF token extracted
+Step 2: Post login
+  POST http://localhost:5002/auth/login -> 302
+  Redirect to: /index
+  Followed redirect -> 200
+Step 3: GET /profile
+  GET http://localhost:5002/profile -> 500
+  ERROR: /profile returned server error
+  Body snippet:
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="IjFjNWU2ZTY3YzZkZWM5NmM1MzZlMzdiMzRiYzVlNjM0ZjgyYjQ5NjIi.aL8ERQ.w4s8PvoUOowB8aza6CJLmDElOh8">
+    <meta name="cache-bust" content="20250824_v1">
+    <!-- Core styling -->
+    <link href="/static/css/master-styling-fixes.css?v=20250824" rel="stylesheet">
+    
+    <!-- Card header fixes (must load first)

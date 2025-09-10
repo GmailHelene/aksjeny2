@@ -8,6 +8,34 @@
 			"group": "build",
 			"isBackground": true,
 			"problemMatcher": []
+		},
+		{
+			"label": "Run print_user_status.py",
+			"type": "shell",
+			"command": "python print_user_status.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run scripts to produce results",
+			"type": "shell",
+			"command": "python print_user_status.py && python verify_premium_access.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Run verification scripts",
+			"type": "shell",
+			"command": "python print_user_status.py && python verify_premium_access.py",
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "Seed and verify users",
+			"type": "shell",
+			"command": "python test_admin_login.py && python print_user_status.py && python verify_premium_access.py",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

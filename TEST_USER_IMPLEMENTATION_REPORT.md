@@ -11,7 +11,6 @@ We added the test user email to the `EXEMPT_EMAILS` list in `app/utils/access_co
 EXEMPT_EMAILS = {
     'testuser@aksjeradar.trade', 
     'helene721@gmail.com', 
-    'eiriktollan.berntsen@gmail.com',
     'tonjekit91@gmail.com',
     'investor@aksjeradar.trade',    # Test user for investors
     'test@aksjeradar.trade'         # General test user with premium access
@@ -25,7 +24,6 @@ exempt_users = [
     {'email': 'helene721@gmail.com', 'username': 'helene721', 'password': 'aksjeradar2024', 'lifetime': False},
     {'email': 'tonjekit91@gmail.com', 'username': 'tonjekit91', 'password': 'aksjeradar2024', 'lifetime': True},
     {'email': 'testuser@aksjeradar.trade', 'username': 'helene_luxus', 'password': 'aksjeradar2024', 'lifetime': False},
-    {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024', 'lifetime': True},
     {'email': 'investor@aksjeradar.trade', 'username': 'investor', 'password': 'aksjeradar2024', 'lifetime': True},
     {'email': 'test@aksjeradar.trade', 'username': 'testuser', 'password': 'aksjeradar2024', 'lifetime': True}
 ]
@@ -56,6 +54,6 @@ This user has been set up with:
 - Exempt status (will always have premium access)
 
 ## Usage
-This test user can be used by investors and others to test the premium features of Aksjeradar. Since it's an exempt user, it will always have full access to all premium features, just like Helene, Tonje, and Eirik's accounts.
+This test user can be used by investors and others to test the premium features of Aksjeradar. Since it's an exempt user, it will always have full access to all premium features, just like Helene and Tonje's accounts.
 
 The user will be automatically created when the database is initialized through the `setup_exempt_users` function. Alternatively, the `setup_exempt_test_user.py` script can be run to create the user directly.

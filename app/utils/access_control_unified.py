@@ -12,7 +12,6 @@ import logging
 EXEMPT_EMAILS = {
     'testuser@aksjeradar.trade', 
     'helene721@gmail.com', 
-    'eiriktollan.berntsen@gmail.com',
     'tonjekit91@gmail.com',
     'investor@aksjeradar.trade',    # Test user for investors
     'test@aksjeradar.trade'         # General test user with premium access

@@ -274,7 +274,6 @@ def setup_exempt_users(app):
             {'email': 'helene721@gmail.com', 'username': 'helene721', 'password': 'aksjeradar2024', 'lifetime': False},
             {'email': 'tonjekit91@gmail.com', 'username': 'tonjekit91', 'password': 'aksjeradar2024', 'lifetime': True},
             {'email': 'testuser@aksjeradar.trade', 'username': 'helene_luxus', 'password': 'aksjeradar2024', 'lifetime': False},
-            {'email': 'eiriktollan.berntsen@gmail.com', 'username': 'eirik_berntsen', 'password': 'aksjeradar2024', 'lifetime': True},
             {'email': 'investor@aksjeradar.trade', 'username': 'investor', 'password': 'aksjeradar2024', 'lifetime': True},
             {'email': 'test@aksjeradar.trade', 'username': 'testuser', 'password': 'aksjeradar2024', 'lifetime': True}
         ]

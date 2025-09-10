@@ -1,0 +1,5 @@
+User test@aksjeradar.trade: id=8, admin=True, has_subscription=True, type=lifetime
+  Portfolios: 0
+User investor@aksjeradar.trade: id=9, admin=True, has_subscription=True, type=lifetime
+  Portfolios: 0
+User testuser@aksjeradar.trade: NOT FOUND
