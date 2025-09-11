@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_from_directory, session, make_response
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_from_directory, session, make_response, g
 from flask_login import current_user, login_required
 from ..utils.access_control import access_required, demo_access, premium_required
 from ..models.user import User
@@ -6,6 +6,16 @@ from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
 from datetime import datetime, timedelta
 import logging
+try:  # Safe optional imports for services used in API endpoints
+    from ..services.analysis_service import AnalysisService  # type: ignore
+except Exception:  # pragma: no cover
+    AnalysisService = None  # fallback sentinel
+try:
+    from ..integrations.finnhub_api import FinnhubAPI  # type: ignore
+except Exception:  # pragma: no cover
+    FinnhubAPI = None
+
+logger = logging.getLogger(__name__)
 
 # Ensure blueprint is declared (was missing causing BuildError for 'analysis.index')
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
@@ -107,7 +117,7 @@ def recommendations(ticker: str = None):
 @analysis.route('/api/sentiment')
 @access_required
 def api_sentiment():
-    """API endpoint for market sentiment analysis"""
+    """API endpoint for market sentiment analysis (resilient with graceful fallbacks)."""
     try:
         selected_symbol = (request.args.get('symbol') or request.args.get('ticker', '')).strip().upper()
         if not selected_symbol:
@@ -127,25 +137,22 @@ def api_sentiment():
                     'error': 'Markedssentiment midlertidig utilgjengelig.',
                     'fallback': True
                 }), 200)
-            
+
         if not selected_symbol.replace('.', '').replace('-', '').isalnum():
             return make_response(jsonify({
                 'success': False,
                 'error': 'Ugyldig aksjesymbol.'
             }), 400)
 
-        # Try to get sentiment data from various sources
         sentiment_data = None
         errors = []
-        
-        # Try AnalysisService first
+
         if AnalysisService:
             try:
                 sentiment_data = AnalysisService.get_sentiment_analysis(selected_symbol)
             except Exception as e:
                 errors.append(f"AnalysisService error: {e}")
 
-        # Try FinnhubAPI as fallback
         if not sentiment_data and FinnhubAPI:
             try:
                 finnhub_sentiment = FinnhubAPI().get_sentiment(selected_symbol)
@@ -159,7 +166,6 @@ def api_sentiment():
             except Exception as e:
                 errors.append(f"FinnhubAPI error: {e}")
 
-        # Use fallback data if all sources fail
         if not sentiment_data:
             sentiment_data = {
                 'overall_score': 50,
@@ -171,7 +177,6 @@ def api_sentiment():
                 logger.error(f"Sentiment analysis errors for {selected_symbol}: {', '.join(errors)}")
 
         return make_response(jsonify(sentiment_data), 200)
-
     except Exception as e:
         logger.error(f"Error in sentiment API: {e}")
         return make_response(jsonify({
@@ -179,57 +184,35 @@ def api_sentiment():
             'error': 'En feil oppstod under analysen. Vennligst prøv igjen senere.'
         }), 500)
 
-        return jsonify({
-            'success': True,
-            'data': sentiment_data
-        })
-    except Exception as e:
-        current_app.logger.error(f"Error in API sentiment analysis: {e}")
-        # Return fallback data instead of 500 error
-        return jsonify({
-            'success': True,
-            'data': {
-                'overall_score': 50,
-                'sentiment_label': 'Nøytral',
-                'error': 'Sentimentdata midlertidig utilgjengelig.',
-                'fallback': True
-            }
-        })
-
 @analysis.route('/sentiment')
 @access_required
 def sentiment():
-    """Render sentiment analysis page (HTML) for a given symbol.
+    """Render sentiment analysis page (HTML) with resilient fallbacks.
 
-    Provides a lightweight, always-successful fallback so navigation never 500s.
-    Query params: symbol or ticker.
+    Query params: symbol or ticker. Always returns 200 with synthetic data if providers fail.
     """
     try:
         symbol = (request.args.get('symbol') or request.args.get('ticker') or 'EQNR.OL').strip().upper()
-        # Basic sanitization
         if not symbol.replace('.', '').replace('-', '').isalnum() or len(symbol) > 20:
             symbol = 'EQNR.OL'
 
         sentiment_data = None
         errors = []
 
-        # Attempt to reuse API logic (avoid code duplication) by calling internal function logic if available
         try:
-            from ..services.analysis_service import AnalysisService  # optional
+            from ..services.analysis_service import AnalysisService as _AS  # type: ignore
         except Exception:
-            AnalysisService = None  # fallback
+            _AS = None
 
-        # Try primary service
-        if AnalysisService:
+        if _AS:
             try:
-                sentiment_data = AnalysisService.get_sentiment_analysis(symbol)
+                sentiment_data = _AS.get_sentiment_analysis(symbol)
             except Exception as e:
                 errors.append(f"AnalysisService error: {e}")
 
-        # Optional Finnhub fallback
         if not sentiment_data:
             try:
-                from ..integrations.finnhub_api import FinnhubAPI  # may not exist in all deployments
+                from ..integrations.finnhub_api import FinnhubAPI  # optional
                 finnhub_sentiment = FinnhubAPI().get_sentiment(symbol)
                 if finnhub_sentiment:
                     sentiment_data = {
@@ -241,10 +224,9 @@ def sentiment():
             except Exception as e:
                 errors.append(f"FinnhubAPI error: {e}")
 
-        # Final fallback (synthetic stable data) ensures page always renders
         if not sentiment_data:
             base_hash = sum(ord(c) for c in symbol) % 100
-            overall = 45 + (base_hash % 11)  # 45-55 neutral band
+            overall = 45 + (base_hash % 11)
             sentiment_label = 'Bullish' if overall > 60 else 'Bearish' if overall < 40 else 'Nøytral'
             sentiment_data = {
                 'overall_score': overall,
@@ -254,16 +236,29 @@ def sentiment():
                 'fallback': True
             }
 
-    return render_template('analysis/sentiment.html', symbol=symbol, selected_symbol=symbol, sentiment=sentiment_data, errors=errors, correlation_id=getattr(g, 'correlation_id', None))
+        return render_template(
+            'analysis/sentiment.html',
+            symbol=symbol,
+            selected_symbol=symbol,
+            sentiment=sentiment_data,
+            errors=errors,
+            correlation_id=getattr(g, 'correlation_id', None)
+        )
     except Exception as e:
         current_app.logger.error(f"Sentiment page error: {e}")
-        # Graceful degraded page
-    return render_template('analysis/sentiment.html', symbol='EQNR.OL', selected_symbol='EQNR.OL', sentiment={
-            'overall_score': 50,
-            'sentiment_label': 'Nøytral',
-            'fallback': True,
-            'error': 'Midlertidig utilgjengelig'
-    }, errors=['Fallback visning'], correlation_id=getattr(g, 'correlation_id', None))
+        return render_template(
+            'analysis/sentiment.html',
+            symbol='EQNR.OL',
+            selected_symbol='EQNR.OL',
+            sentiment={
+                'overall_score': 50,
+                'sentiment_label': 'Nøytral',
+                'fallback': True,
+                'error': 'Midlertidig utilgjengelig'
+            },
+            errors=['Fallback visning'],
+            correlation_id=getattr(g, 'correlation_id', None)
+        )
 
 @analysis.route('/')
 @access_required
