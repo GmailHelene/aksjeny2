@@ -510,15 +510,15 @@ def view_portfolio(id):
         portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=id).all()
         
         # Calculate portfolio metrics
-    total_value = 0
-    total_cost = 0
-    portfolio_data = []
-    holdings = []  # list of dicts for template
-        
-    # Lazy import DataService to avoid circular imports
-    DataService = get_data_service()
-        
-    for stock in portfolio_stocks:
+        total_value = 0
+        total_cost = 0
+        portfolio_data = []
+        holdings = []  # list of dicts for template
+
+        # Lazy import DataService to avoid circular imports
+        DataService = get_data_service()
+
+        for stock in portfolio_stocks:
             try:
                 # Get current stock data
                 current_data = DataService.get_stock_data(stock.ticker)
@@ -528,7 +528,7 @@ def view_portfolio(id):
                     cost_value = stock.purchase_price * stock.shares
                     gain_loss = current_value - cost_value
                     gain_loss_percent = (gain_loss / cost_value * 100) if cost_value > 0 else 0
-                    
+
                     portfolio_data.append({
                         'stock': stock,
                         'current_price': current_price,
@@ -548,10 +548,9 @@ def view_portfolio(id):
                         'unrealized_gain': gain_loss,
                         'unrealized_gain_percent': gain_loss_percent
                     })
-                    
+
                     total_value += current_value
                     total_cost += cost_value
-                    
             except Exception as e:
                 current_app.logger.error(f"Error getting data for {stock.ticker}: {e}")
                 # Use stored values as fallback
@@ -577,11 +576,11 @@ def view_portfolio(id):
                     'unrealized_gain': 0,
                     'unrealized_gain_percent': 0
                 })
-        
+
         # Calculate total metrics
         total_gain_loss = total_value - total_cost
         total_gain_loss_percent = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0
-        
+
         return render_template('portfolio/view.html',
                                portfolio=portfolio_obj,
                                portfolio_data=portfolio_data,
@@ -852,7 +851,8 @@ def add_to_watchlist(id):
             if request.is_json:
                 return jsonify({'success': True, 'message': f'{ticker} behandlet'})
             
-            return redirect(url_for('watchlist.view_watchlist', id=watchlist_obj.id))
+            # Redirect to internal portfolio watchlist page (original target blueprint not present)
+            return redirect(url_for('portfolio.watchlist'))
 
         # GET request - show add form
         watchlist_obj = None
