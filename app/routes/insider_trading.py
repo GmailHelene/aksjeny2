@@ -83,20 +83,23 @@ def index():
                              alerts_count=0,
                              insider_summary={'total_buys': 0, 'total_sells': 0, 'net_value': '0', 'unique_insiders': 0})
 
-@insider_trading.route('/search')
+@insider_trading.route('/search', methods=['GET', 'POST'])
 @demo_access
 def search():
-    """Simplified insider trading search"""
-    symbol = request.args.get('symbol', '').strip().upper()
-    
-    # Handle POST requests from the search form
+    """Simplified insider trading search with undefined/empty symbol safeguards."""
+    from ..utils.param_utils import normalize_symbol
+    raw_symbol = request.args.get('symbol') or request.form.get('symbol') or ''
+    symbol = normalize_symbol(raw_symbol) or ''
+
+    # Handle POST requests (form submission)
     if request.method == 'POST':
-        form_data = request.form
-        symbol = form_data.get('symbol', '').strip().upper()
+        if not symbol:
+            flash('Vennligst oppgi et aksjesymbol.', 'warning')
+            return redirect(url_for('insider_trading.index'))
         return redirect(url_for('insider_trading.search', symbol=symbol))
     
     if not symbol:
-        flash('Vennligst oppgi et aksjensymbol for å søke.', 'warning')
+        flash('Vennligst oppgi et aksjesymbol for å søke.', 'warning')
         return redirect(url_for('insider_trading.index'))
     
     try:

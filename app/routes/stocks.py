@@ -1276,7 +1276,8 @@ def details(symbol):
             'description': f'{template_stock_info.get("longName", symbol)} er et ledende selskap innen {template_stock_info.get("sector", "teknologi").lower()}.'
         }
         
-        return render_template('stocks/details_enhanced.html',
+    # RENDER CONSOLIDATED TEMPLATE (details.html) INSTEAD OF LEGACY ENHANCED VERSION
+    return render_template('stocks/details.html',
                              symbol=symbol,
                              ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock=enhanced_stock,
@@ -1360,7 +1361,8 @@ def details(symbol):
             'description': f'{symbol} er et selskap som ikke kunne lastes for øyeblikket.'
         }
         
-        return render_template('stocks/details_enhanced.html',
+    # RENDER CONSOLIDATED TEMPLATE (details.html) ALSO FOR ERROR FALLBACK
+    return render_template('stocks/details.html',
                              symbol=symbol,
                              ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock=error_enhanced_stock,
@@ -1673,6 +1675,7 @@ def add_to_favorites():
         }), 200
 
 @stocks.route('/api/favorites/remove', methods=['POST'])
+@csrf.exempt  # Exempt to prevent CSRF errors for JSON/AJAX removal (add token header later for hardening)
 @access_required
 def remove_from_favorites():
     """Remove stock from favorites"""

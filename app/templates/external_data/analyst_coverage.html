@@ -203,7 +203,11 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <p>No analyst coverage data available.</p>
+                        <div class="text-center py-5" aria-live="polite">
+                            <i class="bi bi-inboxes text-muted" style="font-size:2.5rem;"></i>
+                            <p class="mt-3 text-muted mb-0">Ingen anbefalinger tilgjengelig for øyeblikket.</p>
+                            <small class="text-muted">Prøv igjen senere – vi oppdaterer data fortløpende.</small>
+                        </div>
                     {% endif %}
                 </div>
             </div>

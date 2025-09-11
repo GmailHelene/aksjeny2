@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Watchlist Settings - Aksjeradar{% endblock %}
+{% block title %}Varslingsinnstillinger - Aksjeradar{% endblock %}
 
 {% block head %}
 <style>
@@ -56,7 +56,7 @@
     <div class="row">
         <div class="col-12">
             <h1 class="display-5 text-primary mb-4">
-                <i class="fas fa-cog me-3"></i>Watchlist Settings
+                <i class="fas fa-cog me-3"></i>Varslingsinnstillinger
             </h1>
         </div>
     </div>
@@ -66,21 +66,21 @@
             <!-- Notification Settings -->
             <div class="settings-card">
                 <h3 class="mb-4">
-                    <i class="fas fa-bell me-2"></i>Notification Preferences
+                    <i class="fas fa-bell me-2"></i>Varslingspreferanser
                 </h3>
 
-                <form id="settings-form" method="POST">
-                    {{ csrf_token() }}
+                <form id="settings-form" method="POST" autocomplete="off">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <div class="setting-group">
-                        <h5 class="mb-3">Price Alerts</h5>
+                        <h5 class="mb-3">Prisvarsler</h5>
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="price-alerts" name="price_alerts" 
                                        {{ 'checked' if settings.get('price_alerts', True) else '' }}>
                                 <label class="form-check-label" for="price-alerts">
-                                    <strong>Enable Price Alerts</strong><br>
-                                    <small class="text-muted">Get notified when stock prices hit your target levels</small>
+                                    <strong>Aktiver prisvarsler</strong><br>
+                                    <small class="text-muted">Få varsel når aksjekurser treffer målnivåer</small>
                                 </label>
                             </div>
                         </div>
@@ -91,22 +91,22 @@
                                        {{ 'checked' if settings.get('price_change_alerts', True) else '' }}>
                                        {{ 'checked' if user.price_change_alerts_enabled else '' }}>
                                 <label class="form-check-label" for="price-change-alerts">
-                                    <strong>Significant Price Changes</strong><br>
-                                    <small class="text-muted">Alert when stocks move more than 5% in a day</small>
+                                    <strong>Signifikante prisendringer</strong><br>
+                                    <small class="text-muted">Varsel når en aksje beveger seg mer enn 5% på en dag</small>
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <div class="setting-group">
-                        <h5 class="mb-3">News & Analysis</h5>
+                        <h5 class="mb-3">Nyheter & Analyse</h5>
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="news-alerts" name="news_alerts"
                                        {{ 'checked' if settings.get('news_alerts', True) else '' }}>
                                 <label class="form-check-label" for="news-alerts">
-                                    <strong>Breaking News</strong><br>
-                                    <small class="text-muted">Important news about companies in your watchlists</small>
+                                    <strong>Viktige nyheter</strong><br>
+                                    <small class="text-muted">Viktige nyheter om selskapene du følger</small>
                                 </label>
                             </div>
                         </div>
@@ -116,8 +116,8 @@
                                 <input class="form-check-input" type="checkbox" id="earnings-alerts" name="earnings_alerts"
                                        {{ 'checked' if settings.get('earnings_alerts', True) else '' }}>
                                 <label class="form-check-label" for="earnings-alerts">
-                                    <strong>Earnings Reports</strong><br>
-                                    <small class="text-muted">Notify before and after earnings announcements</small>
+                                    <strong>Resultatrapporter</strong><br>
+                                    <small class="text-muted">Varsel før og etter resultatfremleggelse</small>
                                 </label>
                             </div>
                         </div>
@@ -127,22 +127,22 @@
                                 <input class="form-check-input" type="checkbox" id="analyst-alerts" name="analyst_alerts"
                                        {{ 'checked' if settings.get('analyst_alerts', True) else '' }}>
                                 <label class="form-check-label" for="analyst-alerts">
-                                    <strong>Analyst Recommendations</strong><br>
-                                    <small class="text-muted">Updates on analyst ratings and price targets</small>
+                                    <strong>Analytikeranbefalinger</strong><br>
+                                    <small class="text-muted">Oppdateringer om ratinger og kursmål</small>
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <div class="setting-group">
-                        <h5 class="mb-3">Market Updates</h5>
+                        <h5 class="mb-3">Markedsoppdateringer</h5>
                         <div class="notification-item">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="market-open" name="market_open"
                                        {{ 'checked' if user.market_open_alerts else '' }}>
                                 <label class="form-check-label" for="market-open">
-                                    <strong>Market Open Summary</strong><br>
-                                    <small class="text-muted">Daily overview of your watchlist performance</small>
+                                    <strong>Markedsåpning</strong><br>
+                                    <small class="text-muted">Daglig oversikt over din watchlist</small>
                                 </label>
                             </div>
                         </div>
@@ -152,23 +152,23 @@
                                 <input class="form-check-input" type="checkbox" id="weekly-summary" name="weekly_summary"
                                        {{ 'checked' if user.weekly_summary_enabled else '' }}>
                                 <label class="form-check-label" for="weekly-summary">
-                                    <strong>Weekly Summary Report</strong><br>
-                                    <small class="text-muted">Comprehensive weekly performance analysis</small>
+                                    <strong>Ukentlig oppsummering</strong><br>
+                                    <small class="text-muted">Omfattende ukentlig analyse</small>
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <div class="setting-group">
-                        <h5 class="mb-3">Notification Frequency</h5>
+                        <h5 class="mb-3">Varslingsfrekvens</h5>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="frequency-option" data-frequency="instant">
                                     <input type="radio" name="notification_frequency" value="instant" id="instant"
                                            {{ 'checked' if user.notification_frequency == 'instant' else '' }}>
                                     <label for="instant" class="d-block">
-                                        <strong>Instant</strong><br>
-                                        <small class="text-muted">Get notified immediately</small>
+                                        <strong>Umiddelbart</strong><br>
+                                        <small class="text-muted">Send varsel med en gang</small>
                                     </label>
                                 </div>
                             </div>
@@ -177,8 +177,8 @@
                                     <input type="radio" name="notification_frequency" value="hourly" id="hourly"
                                            {{ 'checked' if user.notification_frequency == 'hourly' else '' }}>
                                     <label for="hourly" class="d-block">
-                                        <strong>Hourly Digest</strong><br>
-                                        <small class="text-muted">Bundled every hour</small>
+                                        <strong>Hver time</strong><br>
+                                        <small class="text-muted">Samlet hver time</small>
                                     </label>
                                 </div>
                             </div>
@@ -187,8 +187,8 @@
                                     <input type="radio" name="notification_frequency" value="daily" id="daily"
                                            {{ 'checked' if user.notification_frequency == 'daily' or not user.notification_frequency else '' }}>
                                     <label for="daily" class="d-block">
-                                        <strong>Daily Summary</strong><br>
-                                        <small class="text-muted">Once per day</small>
+                                        <strong>Daglig</strong><br>
+                                        <small class="text-muted">En gang per dag</small>
                                     </label>
                                 </div>
                             </div>
@@ -197,7 +197,7 @@
 
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary btn-lg px-4">
-                            <i class="fas fa-save me-2"></i>Save Settings
+                            <i class="fas fa-save me-2"></i>Lagre innstillinger
                         </button>
                     </div>
                 </form>
@@ -208,29 +208,29 @@
             <!-- Account Info -->
             <div class="settings-card">
                 <h4 class="mb-3">
-                    <i class="fas fa-user me-2"></i>Account Information
+                    <i class="fas fa-user me-2"></i>Konto Informasjon
                 </h4>
                 <div class="mb-3">
                     <label class="form-label text-muted">Email</label>
                     <p class="fw-bold">{{ user.email }}</p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted">Member Since</label>
+                    <label class="form-label text-muted">Medlem siden</label>
                     <p class="fw-bold">{{ user.created_at.strftime('%B %Y') if user.created_at else 'January 2025' }}</p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label text-muted">Subscription</label>
+                    <label class="form-label text-muted">Abonnement</label>
                     <p class="fw-bold">
                         {% if user.subscription_status == 'active' %}
-                            <span class="badge bg-success">Premium Active</span>
+                            <span class="badge bg-success">Premium aktiv</span>
                         {% else %}
-                            <span class="badge bg-secondary">Free Plan</span>
+                            <span class="badge bg-secondary">Gratis plan</span>
                         {% endif %}
                     </p>
                 </div>
                 <div class="d-grid">
                     <a href="{{ url_for('main.profile') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-edit me-2"></i>Edit Profile
+                        <i class="fas fa-edit me-2"></i>Rediger profil
                     </a>
                 </div>
             </div>
@@ -238,24 +238,24 @@
             <!-- Quick Stats -->
             <div class="settings-card">
                 <h4 class="mb-3">
-                    <i class="fas fa-chart-bar me-2"></i>Your Activity
+                    <i class="fas fa-chart-bar me-2"></i>Din Aktivitet
                 </h4>
                 <div class="row text-center">
                     <div class="col-6 mb-3">
                         <h3 class="text-primary">{{ user.watchlists.count() if user.watchlists else '3' }}</h3>
-                        <small class="text-muted">Watchlists</small>
+                        <small class="text-muted">Watchlister</small>
                     </div>
                     <div class="col-6 mb-3">
                         <h3 class="text-success">{{ '47' }}</h3>
-                        <small class="text-muted">Stocks Tracked</small>
+                        <small class="text-muted">Aksjer fulgt</small>
                     </div>
                     <div class="col-6">
                         <h3 class="text-info">{{ '156' }}</h3>
-                        <small class="text-muted">Alerts Set</small>
+                        <small class="text-muted">Varsler satt</small>
                     </div>
                     <div class="col-6">
                         <h3 class="text-warning">{{ '23' }}</h3>
-                        <small class="text-muted">Reports Generated</small>
+                        <small class="text-muted">Rapporter generert</small>
                     </div>
                 </div>
             </div>
@@ -263,15 +263,15 @@
             <!-- Notification Preview -->
             <div class="settings-card">
                 <h4 class="mb-3">
-                    <i class="fas fa-eye me-2"></i>Preview
+                    <i class="fas fa-eye me-2"></i>Forhåndsvisning
                 </h4>
                 <div class="alert alert-info">
-                    <h6 class="alert-heading">Example Notification</h6>
-                    <p class="mb-1"><strong>EQNR.OL</strong> is up 2.45% today</p>
-                    <small class="text-muted">This is how your notifications will look</small>
+                    <h6 class="alert-heading">Eksempelvarsel</h6>
+                    <p class="mb-1"><strong>EQNR.OL</strong> er opp 2.45% i dag</p>
+                    <small class="text-muted">Slik vil varslene dine se ut</small>
                 </div>
-                <button class="btn btn-sm btn-outline-secondary w-100">
-                    <i class="fas fa-paper-plane me-2"></i>Send Test Notification
+                <button class="btn btn-sm btn-outline-secondary w-100" type="button">
+                    <i class="fas fa-paper-plane me-2"></i>Send testvarsel
                 </button>
             </div>
         </div>

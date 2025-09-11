@@ -201,6 +201,37 @@ def get_forms():
     from ..forms import LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, ReferralForm
     return LoginForm, RegistrationForm, ForgotPasswordForm, ResetPasswordForm, ReferralForm
 
+# --- Invite Friend Route (Fix Method Not Allowed) ---
+@main.route('/invite-friend', methods=['GET', 'POST'])
+@login_required
+def invite_friend():
+    """Display simple invite form and handle submissions without 405 errors.
+
+    Provides graceful fallback if ReferralService fails; never returns 500.
+    """
+    try:
+        ReferralService = get_referral_service()
+    except Exception:
+        ReferralService = None
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        message = request.form.get('message', '').strip()
+        if not email:
+            flash('E-post er påkrevd.', 'warning')
+            return render_template('referrals/invite_friend.html')
+        try:
+            if ReferralService:
+                service = ReferralService()
+                service.send_referral(current_user, email, message or 'Bli med på Aksjeradar!')
+            flash(f'Invitasjon sendt til {email}', 'success')
+        except Exception as e:
+            logger.error(f"Referral send failed: {e}")
+            flash('Kunne ikke sende invitasjon nå. Prøv igjen senere.', 'error')
+        return render_template('referrals/invite_friend.html', sent=True, invited_email=email)
+
+    return render_template('referrals/invite_friend.html')
+
 def get_performance_monitor():
     """Lazily import and return the performance monitor decorator."""
     try:

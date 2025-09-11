@@ -7,17 +7,94 @@
   - [ ] Faktisk fjerne / ikke rendre tomme RSI/MACD container-markup (gjenstående)
   - [ ] Verifisere at Nøkkeltall bare vises én gang (trenger template audit)
 - [ ] Price alerts: verifiser DB kolonner live-safe (guard mot manglende browser_enabled), forbedre brukerfeil-melding spesifikk
+- [x] Recommendation fallback: deterministisk anbefalingsroute uten feilmelding for AAPL
+- [x] Favorites removal sikkerhet: midlertidig CSRF exempt + stabil JSON response
+- [x] Param sanitization: sentral util `param_utils.py` for 'undefined'/blank verdier
+- [x] Kontrastfix del 1: global `accessibility_fixes.css` lagt til (hvit tekst på hvit bakgrunn)
 - [ ] Settings toggle: sjekk template form names og oppdatere route/JS så toggle reflekterer tilstand (AJAX eller enkel redirect)
 - [ ] Portfolio add: legg til CSRF token i template og korrekt blueprint url_for referanser + håndtere manglende ticker melding
 - [ ] Portfolio create: undersøk duplikate routes og sikre kun én flash (fjern overlapp eller guard)
-- [x] Portfolio /portfolio 500-feil: fjernet legacy import-time blokk og rettet indent-feil i view_portfolio (side laster nå stabilt)
+- [] Portfolio /portfolio 500-feil: fjernet legacy import-time blokk og rettet indent-feil i view_portfolio (side laster nå stabilt)
 - [ ] Watchlist add oppdatering: sikre frontend reloader eller injiser nytt item; konsolider endpoint som brukes
-- [ ] Advanced analytics knapper: sjekk `advanced-analytics.js` baseURL og knapp IDs, oppdater til korrekte endpoints
-- [ ] Short analysis page: gjenopprett template og inkluder analysis meny partial
+her fungerer heller ikkekn appene jekk varsler, og under aktiove varsler står det bare laster varsler....
 - [ ] Forum create_topic: verifiser CSRF/form felter; forbedre validering og feil logging
-- [ ] Fjern volum=0 kolonne i currency list template
 - [ ] External data & analyst coverage sider: omslutt datakall i try/except med fallback
 - [ ] Translation toggle: implementer språkparam & session lagring; bytt knapp til lenke med `?lang=en`
 - [ ] Canonical & Railway redirect: legg inn canonical tag + request.host sjekk for 301 til hoveddomene
 
+
+https://aksjeradar.trade/analysis/technical?symbol=MSFT
+Går ikke an å søke her skjer ingenting
+
+
 Sentiment analøyse
+https://aksjeradar.trade/analysis/sentiment?symbol=DNB.OL
+500
+Teknisk feil
+Det oppstod en teknisk feil. Vi jobber med å løse problemet.
+
+https://aksjeradar.trade/watchlist/settings
+ engelsk språk må være norsk og crfs token synlig på siden
+
+ https://aksjeradar.trade/watchlist/7
+ når jeg legger til aksje her, så står det at det går i orden,men
+ ingen aksjer blir lagbt til...
+
+ https://aksjeradar.trade/profile
+ SIkkerhetsfeil når jeg prøv er fjerne en favoritt jeg har lagret
+
+Kunne ikke generere anbefaling for AAPL. Viser generell oversikt.
+får jeg her: https://aksjeradar.trade/analysis/recommendations 
+
+https://aksjeradar.trade/insider-trading/search?symbol=undefined&transaction_type=&period=30&min_value=&role=&sort=date_desc&company_name=&insider_name=
+
+Få+r mye undefined her,noe galt,når jeg søker etter en vanlig ticker
+
+❌ Kunne ikke opprette prisvarsel. Teknisk feil - kontakt support hvis problemet vedvarer.
+Får jeg når jeg forsøker å opprette nytt prisvarsek her:
+https://aksjeradar.trade/price-alerts/create
+
+Method Not Allowed
+The method is not allowed for the requested URL.*
+Får dette når jeg forsøker  Inviter en venn direkte: her
+https://aksjeradar.trade/profile
+
+
+https://aksjeradar.trade/external-data/analyst-coverage
+Her må nederste seksjon, komplett analytiker oversikt, flyttes øverst, poig
+når det ikkle finnes noen anbefalinger (f.ekis på sell ) så må det fremkomme, noe ala "Ingen anbefalinger: Sell   for øyelbikket" osv.
+
+"Oppdatert nå" 
+Denne teksten er hvit på denne knappen med hvit baklgrunn,det går jo ikke
+==) Her: https://aksjeradar.trade/features/market-news-sentiment Knappen saom står ved Dagens Toppnyheter
+
+og en del blå knapper har fortsatt sort tekst over og ikke hvit det må også fikses
+
+
+https://aksjeradar.trade/mobile-trading
+Beklager en feil oppsto feilmelding her
+
+https://aksjeradar.trade/analysis/screener
+Hjerteknappen fungerer ikke her (bør fungere og leggge til som favoritt())
+
+https://aksjeradar.trade/analysis/tradingview
+SØkefunksjonen (last chhart knappen) fungerer ikke..
+
+https://aksjeradar.trade/analysis/prediction
+De 2 nederste seksjonene kan gjerne lenkje til samme rute som de 2 øverste gjør her.. 
+
+🔥 Hot Stocks
+Høy insider aktivitet
+24 aksjer
+📊 Signaler
+AI-identifiserte mønstre
+12 signaler
+⚡ Alerts
+Nye varsler i dag
+7 varsler
+💎 Premium
+Eksklusiv innsikt
+
+Kan du fjerne dissse seksjonene herfra
+https://aksjeradar.trade/insider-trading/
+og sjekk at kun ekte data vises her
