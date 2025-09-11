@@ -1,0 +1,23 @@
+- [ ] Normaliser og de-dupliser `/market-intel/sector-analysis` (fjerne ekstra gamle route / sikre én aktiv)
+- [ ] Legg inn robust fallback & error flash for sector analysis template hvis ingen data
+- [x] De-dupliser Warren Buffett routes (simplified route flyttet til `/warren-buffett-simple`, heavy refaktorert og beholdt på `/warren-buffett`)
+- [ ] Reparer stock details side: fjerne repeterte "Nøkkeltall", fjerne eller reaktivere RSI/MACD (skjul når ingen data), sikre TradingView init  
+  - [x] Malformed leftover inline script fjernet tidligere
+  - [x] Skip chart init hvis canvas mangler (hindrer tomme hvite seksjoner)
+  - [ ] Faktisk fjerne / ikke rendre tomme RSI/MACD container-markup (gjenstående)
+  - [ ] Verifisere at Nøkkeltall bare vises én gang (trenger template audit)
+- [ ] Price alerts: verifiser DB kolonner live-safe (guard mot manglende browser_enabled), forbedre brukerfeil-melding spesifikk
+- [ ] Settings toggle: sjekk template form names og oppdatere route/JS så toggle reflekterer tilstand (AJAX eller enkel redirect)
+- [ ] Portfolio add: legg til CSRF token i template og korrekt blueprint url_for referanser + håndtere manglende ticker melding
+- [ ] Portfolio create: undersøk duplikate routes og sikre kun én flash (fjern overlapp eller guard)
+- [x] Portfolio /portfolio 500-feil: fjernet legacy import-time blokk og rettet indent-feil i view_portfolio (side laster nå stabilt)
+- [ ] Watchlist add oppdatering: sikre frontend reloader eller injiser nytt item; konsolider endpoint som brukes
+- [ ] Advanced analytics knapper: sjekk `advanced-analytics.js` baseURL og knapp IDs, oppdater til korrekte endpoints
+- [ ] Short analysis page: gjenopprett template og inkluder analysis meny partial
+- [ ] Forum create_topic: verifiser CSRF/form felter; forbedre validering og feil logging
+- [ ] Fjern volum=0 kolonne i currency list template
+- [ ] External data & analyst coverage sider: omslutt datakall i try/except med fallback
+- [ ] Translation toggle: implementer språkparam & session lagring; bytt knapp til lenke med `?lang=en`
+- [ ] Canonical & Railway redirect: legg inn canonical tag + request.host sjekk for 301 til hoveddomene
+
+Sentiment analøyse

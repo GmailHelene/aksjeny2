@@ -62,6 +62,8 @@ def get_reportlab():
         return None
 
 portfolio = Blueprint('portfolio', __name__, url_prefix='/portfolio')
+# Backwards compatibility alias for tests expecting 'portfolio_bp'
+portfolio_bp = portfolio
 
 @portfolio.route('/overview')
 @portfolio.route('/')  # Add this as an alias
@@ -877,6 +879,75 @@ def add_to_watchlist(id):
             return jsonify({'success': False, 'message': 'Teknisk feil'}), 500
         flash('Teknisk feil oppstod', 'danger')
         return redirect(url_for('portfolio.watchlist'))
+
+@portfolio.route('/add_to_watchlist', methods=['POST'])
+@access_required
+def add_to_watchlist_quick():
+    """Lightweight JSON endpoint to add a symbol to the user's default watchlist.
+    This matches the frontend fetch('/add_to_watchlist') call on stock details pages.
+    Always returns JSON (never redirects) so UI can toast the result.
+    """
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'JSON body required'}), 400
+
+        data = request.get_json() or {}
+        ticker = (data.get('symbol') or data.get('ticker') or '').strip().upper()
+        if not ticker:
+            return jsonify({'success': False, 'message': 'Ticker mangler'}), 400
+
+        # Find existing default/simple watchlist or create one
+        watchlist_obj = None
+        try:
+            watchlist_obj = Watchlist.query.filter_by(user_id=current_user.id).first()
+        except Exception as e:
+            current_app.logger.error(f"Quick add watchlist query error: {e}")
+
+        if not watchlist_obj:
+            try:
+                watchlist_obj = Watchlist(
+                    name='Min Watchlist',
+                    description='Automatisk opprettet watchlist',
+                    user_id=current_user.id
+                )
+                db.session.add(watchlist_obj)
+                db.session.commit()
+            except Exception as e:
+                current_app.logger.error(f"Could not create watchlist: {e}")
+                db.session.rollback()
+                return jsonify({'success': False, 'message': 'Kunne ikke opprette watchlist'}), 500
+
+        # Check if already present
+        try:
+            existing = WatchlistStock.query.filter_by(
+                watchlist_id=watchlist_obj.id,
+                symbol=ticker
+            ).first()
+        except Exception as e:
+            current_app.logger.error(f"Watchlist existing query error: {e}")
+            existing = None
+
+        if existing:
+            return jsonify({'success': True, 'message': f'{ticker} er allerede i favoritter'}), 200
+
+        # Insert new
+        try:
+            stock = WatchlistStock(
+                watchlist_id=watchlist_obj.id,
+                symbol=ticker,
+                name=ticker,
+                added_date=datetime.now()
+            )
+            db.session.add(stock)
+            db.session.commit()
+            return jsonify({'success': True, 'message': f'{ticker} lagt til i favoritter'}), 201
+        except Exception as e:
+            current_app.logger.error(f"Failed adding {ticker} to watchlist: {e}")
+            db.session.rollback()
+            return jsonify({'success': False, 'message': 'Teknisk feil – kunne ikke lagre'}), 500
+    except Exception as e:
+        current_app.logger.error(f"Unhandled quick watchlist add error: {e}")
+        return jsonify({'success': False, 'message': 'Uventet feil'}), 500
 
 @portfolio.route('/tips/add', methods=['GET', 'POST'])
 @access_required

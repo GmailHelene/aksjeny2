@@ -180,7 +180,15 @@
                                 </div>
                             </div>
                             <div id="technical-summary" class="alert alert-info mt-3 mb-0">
-                                <strong>Teknisk sammendrag:</strong> RSI, MACD og Bollinger Bands vises i TradingView widget. <span class="text-muted" id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span>
+                                <strong>Teknisk sammendrag:</strong>
+                                <span id="technical-summary-text">Laster indikatorer...</span>
+                                <span class="text-muted" id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span>
+                                <div id="technical-indicators" class="mt-2 small" style="display:none;">
+                                    <span class="badge bg-light text-dark me-1 indicator-tag" data-indicator="RSI" style="display:none;">RSI</span>
+                                    <span class="badge bg-light text-dark me-1 indicator-tag" data-indicator="MACD" style="display:none;">MACD</span>
+                                    <span class="badge bg-light text-dark me-1 indicator-tag" data-indicator="Bollinger Bands" style="display:none;">Bollinger Bands</span>
+                                    <span id="indicator-fallback" class="text-muted" style="display:none;">Indikatorer utilgjengelige</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -606,21 +614,42 @@ function createTechnicalWidget(symbol, container, loading) {
     }
 }
 
+let technicalSummaryInitialized = false;
 function updateTechnicalSummary() {
-    const summary = document.getElementById('technical-summary');
     const timeSpan = document.getElementById('tech-update-time');
-    
+    const summaryText = document.getElementById('technical-summary-text');
+    const indicatorsWrapper = document.getElementById('technical-indicators');
+    const indicatorTags = document.querySelectorAll('#technical-indicators .indicator-tag');
+    const fallback = document.getElementById('indicator-fallback');
+
     if (timeSpan) {
         timeSpan.textContent = new Date().toLocaleTimeString('no-NO');
     }
-    
-    if (summary) {
-        summary.innerHTML = `
-            <strong>Teknisk sammendrag:</strong> Teknisk analyse vises i TradingView widget ovenfor med RSI, MACD og Bollinger Bands.
-            <br><small class="text-muted">Sist oppdatert: ${new Date().toLocaleTimeString('no-NO')}</small>
-        `;
+
+    // Only run indicator detection once per successful load
+    if (technicalSummaryInitialized) return;
+
+    // Simulated detection: if widget loaded we show all configured studies; otherwise fallback
+    if (technicalWidgetLoaded && window.TradingView) {
+        if (summaryText) summaryText.textContent = 'TradingView-widget lastet';
+        if (indicatorsWrapper) indicatorsWrapper.style.display = 'block';
+        indicatorTags.forEach(tag => { tag.style.display = 'inline-block'; });
+        if (fallback) fallback.style.display = 'none';
+    } else {
+        if (summaryText) summaryText.textContent = 'Forsøker å laste TradingView-widget';
+        if (indicatorsWrapper) indicatorsWrapper.style.display = 'block';
+        if (fallback) fallback.style.display = 'inline';
     }
+    technicalSummaryInitialized = true;
 }
+
+// Safety timeout: if technical widget not loaded after 12s, show fallback
+setTimeout(() => {
+    if (!technicalWidgetLoaded) {
+        technicalSummaryInitialized = false; // allow execution
+        updateTechnicalSummary();
+    }
+}, 12000);
 
 // Utility functions
 function loadTradingViewScript(callback) {
