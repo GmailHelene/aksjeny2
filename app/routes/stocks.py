@@ -1666,15 +1666,15 @@ def add_to_favorites():
             })
             
         # Check if already in favorites
-    if Favorites.is_favorite(current_user.id, symbol):
+        if Favorites.is_favorite(current_user.id, symbol):
             # Idempotent success for already-favorited to simplify frontend logic
             return jsonify({
                 'success': True,
                 'message': f'{symbol} er allerede i favoritter',
                 'favorite': True,
                 'favorited': True,
-        'symbol': symbol,
-        'correlation_id': getattr(g, 'correlation_id', None)
+                'symbol': symbol,
+                'correlation_id': getattr(g, 'correlation_id', None)
             })
         # Add to favorites
         favorite = Favorites.add_favorite(
@@ -1754,15 +1754,15 @@ def remove_from_favorites():
             })
             
         # Check if in favorites
-    if not Favorites.is_favorite(current_user.id, symbol):
+        if not Favorites.is_favorite(current_user.id, symbol):
             # Idempotent remove: success True because desired end-state already satisfied
             return jsonify({
                 'success': True,
                 'message': f'{symbol} er ikke i favoritter',
                 'favorite': False,
                 'favorited': False,
-        'symbol': symbol,
-        'correlation_id': getattr(g, 'correlation_id', None)
+                'symbol': symbol,
+                'correlation_id': getattr(g, 'correlation_id', None)
             })
         # Remove from favorites
         removed = Favorites.remove_favorite(current_user.id, symbol)
