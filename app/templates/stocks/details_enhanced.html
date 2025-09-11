@@ -463,10 +463,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Load technical analysis when technical tab is clicked
+    // Load technical analysis when technical tab is clicked (only if we have a target canvas)
     document.addEventListener('shown.bs.tab', function (e) {
         if (e.target.getAttribute('href') === '#technical') {
-            loadTechnicalAnalysis();
+            if (document.getElementById('rsiChart') || document.getElementById('macdChart')) {
+                loadTechnicalAnalysis();
+            } else {
+                console.log('Technical tab opened but no RSI/MACD canvases present – skipping chart init');
+            }
         }
     });
     

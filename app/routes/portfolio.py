@@ -246,112 +246,11 @@ def delete_portfolio(id):
         flash(error_msg, 'danger')
         return redirect(url_for('portfolio.portfolio_overview'))
 
-# Route already defined above
-        portfolio_data = []
-        
-        # Try to get data service with fallback
-        try:
-            data_service = get_data_service()
-        except Exception as data_service_error:
-            current_app.logger.warning(f"Data service unavailable: {str(data_service_error)}")
-            data_service = None
-            error = 'Datatjenesten er utilgjengelig. Prøv igjen senere.'
-        
-        # Initialize sector distribution and performance data
-        sector_distribution = {}
-        performance_data = []
-
-        # Process each portfolio
-
-        for portfolio_obj in user_portfolios:
-            try:
-                portfolio_value = 0
-                portfolio_gain_loss = 0
-                stock_data = []
-
-                # Process stocks in portfolio
-                for stock in portfolio_obj.stocks:
-                    try:
-                        current_price = stock.purchase_price  # Default fallback
-                        stock_data_service = None
-                        if data_service:
-                            stock_data_service = data_service.get_single_stock_data(stock.ticker)
-                            if stock_data_service:
-                                current_price = float(stock_data_service['last_price'])
-
-                        current_value = current_price * stock.shares
-                        purchase_value = stock.purchase_price * stock.shares
-                        profit_loss = current_value - purchase_value
-
-                        portfolio_value += current_value
-                        portfolio_gain_loss += profit_loss
-                        
-                        # KRITISK FIX: Akkumuler totaler for alle porteføljer
-                        total_value += current_value
-                        total_gain_loss += profit_loss
-
-                        sector = stock_data_service.get('sector', 'Annet') if stock_data_service else 'Annet'
-                        if sector not in sector_distribution:
-                            sector_distribution[sector] = 0
-                        sector_distribution[sector] += current_value
-
-                        performance_data.append({
-                            'ticker': stock.ticker,
-                            'current_value': current_value,
-                            'profit_loss': profit_loss
-                        })
-
-                        stock_data.append({
-                            'ticker': stock.ticker,
-                            'shares': stock.shares,
-                            'value': current_value
-                        })
-
-                    except Exception as stock_error:
-                        current_app.logger.warning(f"Error processing stock {stock.ticker}: {str(stock_error)}")
-
-                portfolio_data.append({
-                    'portfolio': portfolio_obj,
-                    'value': portfolio_value,
-                    'gain_loss': portfolio_gain_loss,
-                    'stocks': stock_data
-                })
-
-            except Exception as portfolio_error:
-                error = f'Feil ved behandling av portefølje {portfolio_obj.name}: {str(portfolio_error)}'
-
-        # Hvis ingen porteføljer funnet, vis tomt og feilmelding
-        if not user_portfolios or not portfolio_data:
-            error = error or 'Ingen porteføljer funnet.'
-            portfolio_data = []
-            total_value = 0
-            total_gain_loss = 0
-            sector_distribution = {}
-            performance_data = []
-
-        if total_value > 0:
-            total_gain_loss_percent = (total_gain_loss / total_value) * 100
-        else:
-            total_gain_loss_percent = 0
-        return render_template('portfolio/overview.html',
-            portfolios=portfolio_data,
-            total_value=total_value,
-            total_gain_loss=total_gain_loss,
-            total_gain_loss_percent=total_gain_loss_percent,
-            sector_distribution=sector_distribution,
-            performance_data=performance_data,
-            error=bool(error),
-            message=error if error else None)
-    except Exception as e:
-        current_app.logger.error(f"Critical error in portfolio overview: {str(e)}")
-        flash('Det oppstod en teknisk feil ved lasting av porteføljer. Vennligst prøv igjen senere.', 'error')
-        return render_template('portfolio/overview.html',
-                             portfolios=[],
-                             total_value=0,
-                             total_gain_loss=0,
-                             total_gain_loss_percent=0,
-                             error=True,
-                             message='Kunne ikke laste porteføljedata.')
+"""Removed a large legacy block that executed at import time and referenced
+undefined symbols (e.g. user_portfolios, total_value). That block caused
+NameError during module import leading to 500 on /portfolio. The logic was
+an older alternative overview implementation and is superseded by
+portfolio_overview() which renders portfolio/index.html with safe fallbacks."""
 
 @portfolio.route('/watchlist')
 @login_required
@@ -611,13 +510,14 @@ def view_portfolio(id):
         portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=id).all()
         
         # Calculate portfolio metrics
-        total_value = 0
-        total_cost = 0
-        portfolio_data = []
+    total_value = 0
+    total_cost = 0
+    portfolio_data = []
     holdings = []  # list of dicts for template
         
-        # Lazy import DataService to avoid circular imports
-        DataService = get_data_service()
+    # Lazy import DataService to avoid circular imports
+    DataService = get_data_service()
+        
     for stock in portfolio_stocks:
             try:
                 # Get current stock data
@@ -666,30 +566,30 @@ def view_portfolio(id):
                 })
                 total_value += cost_value
                 total_cost += cost_value
-                    holdings.append({
-                        'id': stock.id,
-                        'symbol': stock.ticker,
-                        'company_name': stock.ticker,
-                        'quantity': stock.shares,
-                        'average_price': stock.purchase_price,
-                        'current_price': stock.purchase_price,
-                        'market_value': cost_value,
-                        'unrealized_gain': 0,
-                        'unrealized_gain_percent': 0
-                    })
+                holdings.append({
+                    'id': stock.id,
+                    'symbol': stock.ticker,
+                    'company_name': stock.ticker,
+                    'quantity': stock.shares,
+                    'average_price': stock.purchase_price,
+                    'current_price': stock.purchase_price,
+                    'market_value': cost_value,
+                    'unrealized_gain': 0,
+                    'unrealized_gain_percent': 0
+                })
         
         # Calculate total metrics
         total_gain_loss = total_value - total_cost
         total_gain_loss_percent = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0
         
-    return render_template('portfolio/view.html',
-                 portfolio=portfolio_obj,
-                 portfolio_data=portfolio_data,
-                 holdings=holdings,
-                 total_value=total_value,
-                 total_cost=total_cost,
-                 total_gain_loss=total_gain_loss,
-                 total_gain_loss_percent=total_gain_loss_percent)
+        return render_template('portfolio/view.html',
+                               portfolio=portfolio_obj,
+                               portfolio_data=portfolio_data,
+                               holdings=holdings,
+                               total_value=total_value,
+                               total_cost=total_cost,
+                               total_gain_loss=total_gain_loss,
+                               total_gain_loss_percent=total_gain_loss_percent)
                              
     except Exception as e:
         current_app.logger.error(f"Error viewing portfolio {id}: {e}")
