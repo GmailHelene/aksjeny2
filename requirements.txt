@@ -39,3 +39,6 @@ celery==5.4.0
 eventlet==0.33.3
 psutil==5.9.8
 # ta-lib==0.4.28  # Kommentert ut pga. Railway build issues. Installeres kun hvis nødvendig og C-bibliotek er tilgjengelig.
+
+# Development / Testing
+pytest==8.2.2

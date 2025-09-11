@@ -19,7 +19,9 @@ if __name__ == '__main__':
     # Import after environment variables are set
     from app import create_app
 
-    port = int(os.environ.get('PORT', 5002))
+    # Railway typically injects PORT (often 5000). Default to 5000 for production compatibility.
+    # Keep ability to override locally by exporting PORT=5002 if desired.
+    port = int(os.environ.get('PORT', 5000))
     try:
         app = create_app('development')
         app.run(debug=True, host='0.0.0.0', port=port)
