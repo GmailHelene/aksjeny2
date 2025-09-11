@@ -187,6 +187,75 @@ def api_sentiment():
             }
         })
 
+@analysis.route('/sentiment')
+@access_required
+def sentiment():
+    """Render sentiment analysis page (HTML) for a given symbol.
+
+    Provides a lightweight, always-successful fallback so navigation never 500s.
+    Query params: symbol or ticker.
+    """
+    try:
+        symbol = (request.args.get('symbol') or request.args.get('ticker') or 'EQNR.OL').strip().upper()
+        # Basic sanitization
+        if not symbol.replace('.', '').replace('-', '').isalnum() or len(symbol) > 20:
+            symbol = 'EQNR.OL'
+
+        sentiment_data = None
+        errors = []
+
+        # Attempt to reuse API logic (avoid code duplication) by calling internal function logic if available
+        try:
+            from ..services.analysis_service import AnalysisService  # optional
+        except Exception:
+            AnalysisService = None  # fallback
+
+        # Try primary service
+        if AnalysisService:
+            try:
+                sentiment_data = AnalysisService.get_sentiment_analysis(symbol)
+            except Exception as e:
+                errors.append(f"AnalysisService error: {e}")
+
+        # Optional Finnhub fallback
+        if not sentiment_data:
+            try:
+                from ..integrations.finnhub_api import FinnhubAPI  # may not exist in all deployments
+                finnhub_sentiment = FinnhubAPI().get_sentiment(symbol)
+                if finnhub_sentiment:
+                    sentiment_data = {
+                        'overall_score': int((finnhub_sentiment.get('sentiment_score', 0.5) * 100)),
+                        'sentiment_label': finnhub_sentiment.get('sentiment_label', 'Nøytral'),
+                        'source': 'Finnhub',
+                        'last_updated': finnhub_sentiment.get('last_updated')
+                    }
+            except Exception as e:
+                errors.append(f"FinnhubAPI error: {e}")
+
+        # Final fallback (synthetic stable data) ensures page always renders
+        if not sentiment_data:
+            base_hash = sum(ord(c) for c in symbol) % 100
+            overall = 45 + (base_hash % 11)  # 45-55 neutral band
+            sentiment_label = 'Bullish' if overall > 60 else 'Bearish' if overall < 40 else 'Nøytral'
+            sentiment_data = {
+                'overall_score': overall,
+                'sentiment_label': sentiment_label,
+                'rsi_sentiment': 50 + ((base_hash % 10) - 5),
+                'volume_sentiment': 'Nøytral',
+                'fallback': True
+            }
+
+        return render_template('analysis/sentiment.html', symbol=symbol, sentiment=sentiment_data, errors=errors)
+    except Exception as e:
+        current_app.logger.error(f"Sentiment page error: {e}")
+        # Graceful degraded page
+        return render_template('analysis/sentiment.html', symbol='EQNR.OL', sentiment={
+            'overall_score': 50,
+            'sentiment_label': 'Nøytral',
+            'fallback': True,
+            'error': 'Midlertidig utilgjengelig'
+        }, errors=['Fallback visning'])
+
 @analysis.route('/')
 @access_required
 def index():
