@@ -155,7 +155,7 @@
                     <h5 class="mb-0">Sentiment oversikt</h5>
                 </div>
                 <div class="card-body">
-                    {% if sentiment_data %}
+                    {% if sentiment %}
                     <div class="row">
                         <div class="col-md-3 text-center mb-3">
                             <h6 class="text-muted">Overordnet</h6>
@@ -190,6 +190,12 @@
             </div>
         </div>
     </div>
+
+    {% if correlation_id %}
+    <div class="alert alert-secondary small py-2">
+        <strong>Correlation ID:</strong> {{ correlation_id }}
+    </div>
+    {% endif %}
 
     {% if sentiment_data %}
     <!-- Detailed Analysis -->

@@ -9,6 +9,15 @@ import logging
 
 # Ensure blueprint is declared (was missing causing BuildError for 'analysis.index')
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
+
+@analysis.before_request
+def _analysis_set_correlation_id():
+    try:
+        import uuid
+        from flask import g
+        g.correlation_id = uuid.uuid4().hex
+    except Exception:
+        pass
 @analysis.route('/recommendation')
 @analysis.route('/recommendations')
 @analysis.route('/recommendation/<ticker>')
@@ -245,16 +254,16 @@ def sentiment():
                 'fallback': True
             }
 
-        return render_template('analysis/sentiment.html', symbol=symbol, sentiment=sentiment_data, errors=errors)
+    return render_template('analysis/sentiment.html', symbol=symbol, selected_symbol=symbol, sentiment=sentiment_data, errors=errors, correlation_id=getattr(g, 'correlation_id', None))
     except Exception as e:
         current_app.logger.error(f"Sentiment page error: {e}")
         # Graceful degraded page
-        return render_template('analysis/sentiment.html', symbol='EQNR.OL', sentiment={
+    return render_template('analysis/sentiment.html', symbol='EQNR.OL', selected_symbol='EQNR.OL', sentiment={
             'overall_score': 50,
             'sentiment_label': 'Nøytral',
             'fallback': True,
             'error': 'Midlertidig utilgjengelig'
-        }, errors=['Fallback visning'])
+    }, errors=['Fallback visning'], correlation_id=getattr(g, 'correlation_id', None))
 
 @analysis.route('/')
 @access_required

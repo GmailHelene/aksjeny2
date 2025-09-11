@@ -242,50 +242,12 @@ def market_overview():
         return render_template('error.html',
                              error="Markedsoversikt er midlertidig utilgjengelig. Prøv igjen senere.")
 
-@analysis.route('/sentiment')
-@access_required
-def sentiment():
-    """Market sentiment analysis"""
-    try:
-        selected_symbol = request.args.get('symbol', '')
-        
-        sentiment_data = {
-            'overall_score': 72,
-            'sentiment_label': 'Positiv',
-            'news_score': 78,
-            'social_score': 65,
-            'volume_trend': 'Økende',
-            'market_sentiment': 68,
-            'fear_greed_index': 55,
-            'vix': 18.5,
-            'market_trend': 'bullish',
-            'news_sentiment': 0.8,  # Make this a number, not a list
-            'social_sentiment': 0.6,  # Add this as a number
-            'news_sentiment_articles': [  # Move the list to a different key
-                {
-                    'title': 'Positive Market Outlook',
-                    'sentiment': 'positive',
-                    'score': 0.8,
-                    'source': 'MarketWatch',
-                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M')
-                }
-            ]
-        }
-        
-        if selected_symbol:
-            sentiment_data['symbol'] = selected_symbol
-        
-        popular_stocks = ['EQNR.OL', 'DNB.OL', 'MOWI.OL', 'TEL.OL', 'NHY.OL', 'AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']
-        
-        return render_template('analysis/sentiment.html',
-                             sentiment_data=sentiment_data,
-                             popular_stocks=popular_stocks,
-                             selected_symbol=selected_symbol)
-                             
-    except Exception as e:
-        logger.error(f"Error in sentiment analysis: {e}")
-        return render_template('error.html',
-                             error="Sentiment analyse er midlertidig utilgjengelig.")
+# Duplicate sentiment route removed in favor of unified implementation in analysis.py
+# (left commented intentionally for historical context / potential reference)
+# @analysis.route('/sentiment')
+# @access_required
+# def sentiment():
+#     pass
 
 @analysis.route('/recommendations')
 @analysis.route('/recommendations/')
