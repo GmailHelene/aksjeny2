@@ -82,18 +82,18 @@
         {% if watchlists %}
             {% for watchlist in watchlists %}
             <div class="col-lg-6 mb-4">
-                <div class="card h-100">
+                <div class="card h-100" data-watchlist-id="{{ watchlist.id }}">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="card-title mb-0">📋 {{ watchlist.name }}</h5>
-                            <small class="text-muted">{{ watchlist.items()|length }} aksjer</small>
+                            <small class="text-muted">{{ watchlist.stock_count if watchlist.stock_count is defined else (watchlist.items|length if watchlist.items is defined else 0) }} aksjer</small>
                         </div>
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-three-dots"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('watchlist_fixes.view_watchlist_fixed', id=watchlist.id) }}">Vis detaljer</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}">Vis detaljer</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="editWatchlist({{ watchlist.id }})">Rediger</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" onclick="deleteWatchlist({{ watchlist.id }})">Slett</a></li>
@@ -134,9 +134,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
+            <div class="card-footer">
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('watchlist_fixes.view_watchlist_fixed', id=watchlist.id) }}" class="btn btn-primary btn-sm">
+                <a href="{{ url_for('watchlist_advanced.view_watchlist', id=watchlist.id) }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-eye"></i> Vis detaljer
                             </a>
                             <button class="btn btn-outline-info btn-sm" onclick="getWatchlistAlerts({{ watchlist.id }})">
@@ -356,96 +356,57 @@ function initializeChart() {
 }
 
 async function loadActiveAlerts() {
-    console.log('loadActiveAlerts called'); // Debug log
     try {
         const alertsContainer = document.getElementById('active-alerts');
-        
-        if (!alertsContainer) {
-            console.error('alerts container not found');
-            return;
-        }
-        
-        console.log('Setting timeout to replace loading message');
-        // Set a 3-second timeout to prevent infinite loading
+        if (!alertsContainer) return;
+
+        // Safety timeout to avoid infinite loader
         const loadingTimeout = setTimeout(() => {
-            console.log('Timeout triggered, replacing content');
-            if (alertsContainer) {
+            alertsContainer.innerHTML = `
+                <div class="text-center text-success">
+                    <i class="bi bi-check-circle fs-4"></i>
+                    <p class="mt-2 mb-1"><strong>Varselsystem aktivt</strong></p>
+                    <small class="text-muted">Ingen kritiske varsler akkurat nå - dette er bra!</small>
+                    <div class="mt-2"><small class="badge bg-success">System OK</small></div>
+                </div>
+            `;
+        }, 1500);
+
+        // Try real alerts (only works when innlogget)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+        const response = await fetch('/watchlist/api/alerts', {
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            signal: controller.signal
+        }).catch(() => null);
+        clearTimeout(timeoutId);
+
+        if (response && response.ok) {
+            const data = await response.json().catch(() => ({ alerts: [] }));
+            clearTimeout(loadingTimeout);
+
+            if (data.alerts && data.alerts.length) {
+                alertsContainer.innerHTML = data.alerts.map(alert => `
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <div class="flex-grow-1">
+                            <strong>${alert.symbol || alert.ticker || ''}</strong> - ${alert.message || 'Varsel'}
+                            ${alert.action ? `<div class="small text-muted">Handling: ${alert.action}</div>` : ''}
+                            ${alert.time ? `<div class="small text-muted">${alert.time}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
                 alertsContainer.innerHTML = `
                     <div class="text-center text-success">
                         <i class="bi bi-check-circle fs-4"></i>
-                        <p class="mt-2 mb-1"><strong>Varselsystem aktivt</strong></p>
-                        <small class="text-muted">Ingen kritiske varsler akkurat nå - dette er bra!</small>
-                        <div class="mt-2">
-                            <small class="badge bg-success">System OK</small>
-                        </div>
+                        <p class="mt-2 mb-1"><strong>Ingen aktive varsler</strong></p>
+                        <small class="text-muted">Alt ser bra ut med dine investeringer!</small>
                     </div>
                 `;
-                console.log('Content replaced successfully');
-            } else {
-                console.error('alerts container no longer available');
             }
-        }, 1000); // Quick 1-second timeout instead of infinite loading
-        
-        // Try to fetch real alerts, but don't let it hang
-        try {
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout')), 2500)
-            );
-            
-            // Try primary endpoint first
-            let fetchPromise = fetch('/watchlist/api/alerts', {
-                headers: {
-                    'X-CSRFToken': getCSRFToken()
-                }
-            });
-            
-            let response;
-            try {
-                response = await Promise.race([fetchPromise, timeoutPromise]);
-            } catch (primaryError) {
-                console.log('Primary endpoint failed, trying fallback...');
-                // Try fallback endpoint
-                fetchPromise = fetch('/watchlist-fixed/api/alerts', {
-                    headers: {
-                        'X-CSRFToken': getCSRFToken()
-                    }
-                });
-                response = await Promise.race([fetchPromise, timeoutPromise]);
-            }
-            
-            if (response.ok) {
-                const data = await response.json();
-                clearTimeout(loadingTimeout);
-                
-                if (data.alerts && data.alerts.length > 0) {
-                    // Show real alerts
-                    alertsContainer.innerHTML = data.alerts.map(alert => `
-                        <div class="alert alert-warning d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <div class="flex-grow-1">
-                                <strong>${alert.ticker}</strong> - ${alert.message}
-                                <br><small class="text-muted">${alert.time}</small>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    // Show no alerts message
-                    alertsContainer.innerHTML = `
-                        <div class="text-center text-success">
-                            <i class="bi bi-check-circle fs-4"></i>
-                            <p class="mt-2 mb-1"><strong>Ingen aktive varsler</strong></p>
-                            <small class="text-muted">Alt ser bra ut med dine investeringer!</small>
-                        </div>
-                    `;
-                }
-            }
-        } catch (fetchError) {
-            console.log('Fetch failed or timed out, using fallback content');
-            // Timeout already handles this case
         }
-        
     } catch (error) {
-        console.error('Error loading alerts:', error);
         const alertsContainer = document.getElementById('active-alerts');
         if (alertsContainer) {
             alertsContainer.innerHTML = `
@@ -456,36 +417,6 @@ async function loadActiveAlerts() {
                 </div>
             `;
         }
-    }
-}
-                            <small class="text-muted"><strong>Handling:</strong> ${alert.action}</small>
-                        </div>
-                        <div class="text-end">
-                            <small class="text-muted">${alert.time}</small>
-                            <div class="mt-1">
-                                <button class="btn btn-sm btn-outline-primary me-1" onclick="viewStock('${alert.symbol}')">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="dismissAlert(this)">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            alertsContainer.innerHTML = alertsHtml;
-        }
-        
-    } catch (error) {
-        console.error('Feil ved lasting av varsler:', error);
-        document.getElementById('active-alerts').innerHTML = `
-            <div class="text-center text-danger">
-                <i class="bi bi-exclamation-triangle"></i>
-                <p class="mt-2">Kunne ikke laste varsler</p>
-            </div>
-        `;
     }
 }
 
@@ -546,7 +477,7 @@ async function loadAIInsights() {
         
         const insightsHtml = insights.map(insight => `
             <div class="insight-card">
-                <div class="d-flex justify-content-between align-items-start mb-2">`
+                <div class="d-flex justify-content-between align-items-start mb-2">
                     <h6 class="mb-0">${insight.title}</h6>
                     <span class="badge bg-primary">${insight.confidence}% sikkerhet</span>
                 </div>

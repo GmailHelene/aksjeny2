@@ -7,6 +7,7 @@ from ..extensions import db
 from ..utils.access_control_unified import unified_access_required
 import logging
 from datetime import datetime
+from ..utils.access_control_unified import get_access_level
 
 profile = Blueprint('profile', __name__)
 logger = logging.getLogger(__name__)
@@ -34,7 +35,9 @@ def profile_page():
                     }
                     for f in favorites
                 ]
-                logger.info(f"Found {len(user_favorites)} favorites for user {current_user.id}")
+                logger.info(
+                    f"PROFILE FAVORITES: user_id={current_user.id} count={len(user_favorites)} symbols={[uf['symbol'] for uf in user_favorites[:10]]}"
+                )
             except Exception as e:
                 logger.error(f"Error fetching favorites via ORM: {e}")
                 user_favorites = []
@@ -55,6 +58,16 @@ def profile_page():
             'type': getattr(current_user, 'subscription_type', 'free'),
             'end_date': getattr(current_user, 'subscription_end', None)
         }
+
+        # Additional diagnostic logging for subscription/access
+        try:
+            has_sub_attr = hasattr(current_user, 'has_subscription') and getattr(current_user, 'has_subscription')
+            access_level = get_access_level()
+            logger.info(
+                f"PROFILE SUBSCRIPTION: user_id={getattr(current_user,'id',None)} status={subscription_status} type={subscription['type']} has_subscription_attr={has_sub_attr} access_level={access_level}"
+            )
+        except Exception as sub_log_err:
+            logger.warning(f"Could not log subscription diagnostics: {sub_log_err}")
         
         # Referral context (safe defaults)
         try:
@@ -100,9 +113,10 @@ def profile_page():
         logger.error(f"Error in profile page for user {getattr(current_user, 'id', 'Unknown')}: {e}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         flash('Det oppstod en teknisk feil under lasting av profilen', 'error')
-        return render_template('errors/500.html', 
-                             error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."), 500
-        return redirect(url_for('main.index'))
+        return render_template(
+            'errors/500.html',
+            error_message="Det oppstod en teknisk feil under lasting av profilen. Vennligst prøv igjen senere."
+        ), 500
 
 @profile.route('/profile/update', methods=['POST'])
 @login_required

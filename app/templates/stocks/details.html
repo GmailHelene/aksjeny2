@@ -3,7 +3,7 @@
 {% block title %}{{ stock.symbol }} - {{ stock.name }} | Aksjeradar{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-3 stock-details-container">
     <div class="row">
         <!-- Main Content -->
         <div class="col-lg-8">
@@ -31,7 +31,7 @@
             </div>
 
             <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs mb-4" id="stockTabs" role="tablist">
+            <ul class="nav nav-tabs mb-3 compact-tabs" id="stockTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
                         <i class="fas fa-home me-1"></i>Oversikt
@@ -134,7 +134,7 @@
 
                 <!-- Chart Tab -->
                 <div class="tab-pane fade" id="chart" role="tabpanel">
-                    <div class="card">
+                    <div class="card compact-card">
                         <div class="card-header">
                             <h5 class="mb-0">Kursgraf - {{ stock.symbol }}</h5>
                         </div>
@@ -155,12 +155,11 @@
                 
                 <!-- Technical Analysis Tab -->
                 <div class="tab-pane fade" id="technical" role="tabpanel">
-                    <div class="card">
+                    <div class="card compact-card">
                         <div class="card-header">
                             <h5 class="mb-0">Teknisk Analyse - {{ stock.symbol }}</h5>
                         </div>
                         <div class="card-body">
-                            {% if stock.rsi or stock.macd or stock.bb %}
                             <div class="tradingview-widget-container" style="min-height: 400px;">
                                 <div id="tradingview_technical_widget" style="height: 400px;"></div>
                                 <div id="technical-loading" class="text-center py-4" style="display: none;">
@@ -169,14 +168,20 @@
                                     </div>
                                     <div class="mt-2">Laster teknisk analyse...</div>
                                 </div>
+                                <div id="technical-fallback" class="text-center py-4" style="display:none;">
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-exclamation-triangle me-1"></i> Kunne ikke laste TradingView teknisk analyse akkurat nå.
+                                        <div class="mt-2">
+                                            <button class="btn btn-sm btn-primary" onclick="initTechnicalAnalysis()">
+                                                <i class="fas fa-redo me-1"></i>Prøv igjen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div id="technical-summary" class="alert alert-info mt-3 mb-0">
-                                <strong>Teknisk sammendrag:</strong> Detaljert teknisk analyse vises i grafen ovenfor med RSI, MACD og Bollinger Bands.
-                                <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span></small>
+                                <strong>Teknisk sammendrag:</strong> RSI, MACD og Bollinger Bands vises i TradingView widget. <span class="text-muted" id="tech-update-time">{{ stock.last_updated or 'Ikke tilgjengelig' }}</span>
                             </div>
-                            {% else %}
-                            <div class="text-center text-muted py-4">Ingen tekniske indikatorer tilgjengelig.</div>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -256,7 +261,7 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Quick Actions -->
-            <div class="card mb-4">
+            <div class="card mb-4 compact-card">
                 <div class="card-header">
                     <h5 class="mb-0">Handlinger</h5>
                 </div>
@@ -282,7 +287,7 @@
             </div>
 
             <!-- Similar Stocks -->
-            <div class="card mb-4">
+            <div class="card mb-4 compact-card">
                 <div class="card-header">
                     <h5 class="mb-0">Relaterte Aksjer</h5>
                 </div>
@@ -316,7 +321,7 @@
             </div>
 
             <!-- Latest News -->
-            <div class="card">
+            <div class="card compact-card">
                 <div class="card-header">
                     <h5 class="mb-0">Siste Nyheter</h5>
                 </div>
@@ -348,6 +353,7 @@
 // Global variables
 let tradingViewLoaded = false;
 let currentSymbol = '{{ stock.symbol }}';
+let technicalWidgetLoaded = false; // Prevent duplicate technical widget init
 
 // Show/hide key metrics based on active tab
 
@@ -518,6 +524,11 @@ function initTechnicalAnalysis() {
     const loading = document.getElementById('technical-loading');
     
     if (!container) return;
+    if (technicalWidgetLoaded) {
+        // Already initialized; just hide loading if still visible
+        if (loading) loading.style.display = 'none';
+        return;
+    }
     
     // Show loading
     if (loading) loading.style.display = 'block';
@@ -540,7 +551,7 @@ function initTechnicalAnalysis() {
 
 function createTechnicalWidget(symbol, container, loading) {
     try {
-        new TradingView.widget({
+    new TradingView.widget({
             "autosize": true,
             "symbol": symbol,
             "interval": "1D",
@@ -556,17 +567,25 @@ function createTechnicalWidget(symbol, container, loading) {
             "allow_symbol_change": false,
             "details": false,
             "calendar": false,
-            "studies": ["RSI", "MACD", "BB"],
+            /* Correct study identifiers with vendor namespace */
+            "studies": [
+                "RSI@tv-basicstudies",
+                "MACD@tv-basicstudies",
+                "BollingerBands@tv-basicstudies"
+            ],
             "container_id": "tradingview_technical_widget",
             "onChartReady": function() {
                 console.log('✅ TradingView technical analysis loaded successfully');
                 if (loading) loading.style.display = 'none';
+                technicalWidgetLoaded = true;
                 updateTechnicalSummary();
             }
         });
     } catch (error) {
         console.error('❌ Error creating TradingView technical widget:', error);
         showTechnicalError(container, loading);
+        const fb = document.getElementById('technical-fallback');
+        if (fb) fb.style.display = 'block';
     }
 }
 
@@ -670,8 +689,8 @@ function addToWatchlist(symbol) {
         body: JSON.stringify({ symbol: symbol })
     })
     .then(response => response.json())
-    .then data => {
-        if (data.success) {
+    .then(data => {
+        if (data && data.success) {
             showToast('✅ Lagt til i favoritter', 'success');
         } else {
             showToast('❌ Kunne ikke legge til i favoritter', 'error');
@@ -693,7 +712,7 @@ function addToPortfolio(symbol) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
+        if (data && data.success) {
             showToast('✅ Lagt til i portefølje', 'success');
         } else {
             showToast('❌ Kunne ikke legge til i portefølje', 'error');
@@ -769,6 +788,30 @@ function showToast(message, type) {
 </script>
 
 <style>
+/* Compact layout adjustments */
+.stock-details-container { max-width: 1400px; }
+.compact-tabs .nav-link { padding: 0.55rem 0.85rem; font-size: 0.95rem; }
+#stockTabs { margin-bottom: 0.85rem !important; }
+.compact-card .card-header { padding: 0.55rem 0.85rem; }
+.compact-card .card-header h5 { margin: 0; font-size: 1rem; }
+.compact-card .card-body { padding: 0.85rem 0.95rem; }
+#overview .card-body { padding: 0.9rem 1rem; }
+#overview .card + .card { margin-top: 0.85rem; }
+#key-metrics-card { margin-top: 1.25rem !important; }
+#technical-summary { margin-top: 0.65rem !important; }
+.metric { padding: 0.7rem 0.5rem; }
+.metric .h6 { margin: 0; }
+.tradingview-widget-container { margin-bottom: 0; }
+#chart .card-body, #technical .card-body, #fundamentals .card-body { padding-top: 0.7rem; padding-bottom: 0.7rem; }
+.tab-content > .tab-pane { padding-top: 0.25rem; }
+@media (max-width: 768px) {
+    .compact-tabs .nav-link { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+    .compact-card .card-header { padding: 0.5rem 0.65rem; }
+    .compact-card .card-body { padding: 0.65rem 0.7rem; }
+    .metric { padding: 0.55rem 0.4rem; }
+    #overview .card-body { padding: 0.7rem 0.65rem; }
+}
+
 .nav-tabs .nav-link {
     border: none;
     border-bottom: 2px solid transparent;

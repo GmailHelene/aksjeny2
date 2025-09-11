@@ -178,16 +178,14 @@ function addToWatchlist(event) {
     submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Legger til...';
     submitBtn.disabled = true;
     
-    // Simulate API call (replace with real API endpoint)
-    fetch('/portfolio/watchlist/{{ watchlist.id }}/add', {
+    // Use advanced watchlist API endpoint
+    fetch('/watchlist/api/watchlist/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
         },
-        body: JSON.stringify({
-            symbol: symbol
-        })
+        body: JSON.stringify({ symbol })
     })
     .then(response => response.json())
     .then(data => {
@@ -219,13 +217,14 @@ function removeFromWatchlist(symbol) {
         return;
     }
     
-    // Simulate API call (replace with real API endpoint)
-    fetch(`/watchlist/remove/${symbol}`, {
+    // Use advanced watchlist remove API
+    fetch('/watchlist/api/watchlist/remove', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
-        }
+        },
+        body: JSON.stringify({ symbol })
     })
     .then(response => response.json())
     .then(data => {

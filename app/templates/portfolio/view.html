@@ -178,7 +178,7 @@
 <script>
 function deletePortfolio(portfolioId) {
     if (confirm('Er du sikker på at du vil slette hele porteføljen? Dette kan ikke angres!')) {
-        fetch(`/portfolio/delete/${portfolioId}`, {
+    fetch(`/portfolio/delete/${portfolioId}`, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
@@ -189,7 +189,7 @@ function deletePortfolio(portfolioId) {
         .then(data => {
             if (data.success) {
                 alert('Porteføljen ble slettet!');
-                window.location.href = '/portfolio/overview';
+                window.location.href = '/portfolio';
             } else {
                 alert('Feil ved sletting: ' + (data.error || 'Ukjent feil'));
             }
@@ -203,7 +203,7 @@ function submitHolding() {
     const form = document.getElementById('addHoldingForm');
     const formData = new FormData(form);
     
-    fetch(`/portfolio/portfolio/{{ portfolio.id }}/add`, {
+    fetch(`/portfolio/{{ portfolio.id }}/add`, {
         method: 'POST',
         body: formData
     })

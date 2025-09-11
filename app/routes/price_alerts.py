@@ -8,6 +8,7 @@ from ..services.price_monitor_service import price_monitor
 from ..services.data_service import DataService
 from ..utils.access_control import access_required
 import logging
+import traceback  # Added for detailed error logging
 
 logger = logging.getLogger(__name__)
 
