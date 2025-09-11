@@ -1646,7 +1646,14 @@ def add_to_favorites():
             
         if not current_user.is_authenticated:
             # Demo users - show success message but don't actually save
-            return jsonify({'success': True, 'message': f'{symbol} lagt til i favoritter (demo-modus)'})
+            return jsonify({
+                'success': True,
+                'message': f'{symbol} lagt til i favoritter (demo-modus)',
+                'favorite': True,
+                'favorited': True,
+                'symbol': symbol,
+                'demo': True
+            })
             
         # Check if already in favorites
         if Favorites.is_favorite(current_user.id, symbol):
@@ -1655,6 +1662,7 @@ def add_to_favorites():
                 'success': True,
                 'message': f'{symbol} er allerede i favoritter',
                 'favorite': True,
+                'favorited': True,
                 'symbol': symbol
             })
         # Add to favorites
@@ -1698,6 +1706,7 @@ def add_to_favorites():
             'success': True, 
             'message': f'{symbol} lagt til i favoritter',
             'favorite': True,
+            'favorited': True,
             'symbol': symbol
         })
         
@@ -1723,15 +1732,23 @@ def remove_from_favorites():
             
         if not current_user.is_authenticated:
             # Demo users - show success message but don't actually save
-            return jsonify({'success': True, 'message': f'{symbol} fjernet fra favoritter (demo-modus)'})
+            return jsonify({
+                'success': True,
+                'message': f'{symbol} fjernet fra favoritter (demo-modus)',
+                'favorite': False,
+                'favorited': False,
+                'symbol': symbol,
+                'demo': True
+            })
             
         # Check if in favorites
         if not Favorites.is_favorite(current_user.id, symbol):
-            # Idempotent remove: return success False favorite flag False but success True for consistency? Keep semantic: success True indicates state is as requested
+            # Idempotent remove: success True because desired end-state already satisfied
             return jsonify({
                 'success': True,
                 'message': f'{symbol} er ikke i favoritter',
                 'favorite': False,
+                'favorited': False,
                 'symbol': symbol
             })
         # Remove from favorites
@@ -1754,6 +1771,7 @@ def remove_from_favorites():
                 'success': True, 
                 'message': f'{symbol} fjernet fra favoritter',
                 'favorite': False,
+                'favorited': False,
                 'symbol': symbol
             })
         else:
@@ -1794,7 +1812,7 @@ def toggle_favorite(symbol):
         if not current_user.is_authenticated:
             # Demo users - show success message but don't actually save
             logger.info(f"Demo user toggle favorite for {symbol}")
-            return jsonify({'success': True, 'favorited': True, 'message': f'{symbol} lagt til i favoritter (demo-modus)'})
+            return jsonify({'success': True, 'favorited': True, 'favorite': True, 'symbol': symbol, 'message': f'{symbol} lagt til i favoritter (demo-modus)', 'demo': True})
             
         # Check current status
         is_favorited = Favorites.is_favorite(current_user.id, symbol)
@@ -1826,6 +1844,8 @@ def toggle_favorite(symbol):
                     response = {
                         'success': True,
                         'favorited': False,
+                        'favorite': False,
+                        'symbol': symbol,
                         'message': f'{symbol} fjernet fra favoritter'
                     }
                 else:
@@ -1880,6 +1900,8 @@ def toggle_favorite(symbol):
                 response = {
                     'success': True,
                     'favorited': True,
+                    'favorite': True,
+                    'symbol': symbol,
                     'message': f'{symbol} lagt til i favoritter'
                 }
         except Exception as e:
