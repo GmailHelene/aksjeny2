@@ -1,4 +1,21 @@
-- [ ] Normaliser og de-dupliser `/market-intel/sector-analysis` (fjerne ekstra gamle route / sikre én aktiv)
+- 
+- [x] Deploy-feil første tiltak: Hardene /stocks/compare (tickers sanitization + log trimming)
+- [x] Fikse syntaks/indent-feil i details-rute etter patch
+- [ ] Price Alerts: Mini integrasjonstest (simulate POST create → redirect → dashboard viser alert)
+- [ ] Mobile Trading feil: Les `mobile_trading/dashboard.html` + tilhørende JS, legg til defensive fallbacks
+- [ ] Insider trading index: Fjerne Hot Stocks / Signaler / Alerts / Premium placeholder-seksjoner og vise kun ekte data + tomtilstand
+- [ ] Screener hjerteknapp: Sikre suksessrespons (endre favorites add-endpoint til garantert JSON + bedre feilrespons), evt. tilby toggle-endpoint bruk
+- [ ] TradingView /analysis/tradingview: Eksplicit symbol-validering server-side + param rensing + fallback redirect ved ugyldig symbol
+- [ ] Global knapp-kontrast del 2: Audit av resterende blå knapper med sort tekst → mappe til eksisterende accessibility utility
+- [ ] Watchlist “legger til aksje men vises ikke”: Kartlegg frontend JS (hvilket endpoint?), normalisere responsformat og trigge DOM-refresh
+- [ ] Fjerne duplikate/legacy recommendation templates etter visuell verifikasjon
+- [ ] Insider prediction-siden: Lenke de to nederste seksjonene til samme rute som de to øverste (fra /analysis/prediction)
+- [ ] Erstatte midlertidig CSRF exempt på favorites remove med token-header strategi
+- [ ] Legge til rate limiting / input length guard på compare (nå delvis gjort) og ev. screener symbol poster
+- [ ] Ekstra logging/observability: Kort korrelasjons-ID / request-id i kritiske ruter
+---
+
+[ ] Normaliser og de-dupliser `/market-intel/sector-analysis` (fjerne ekstra gamle route / sikre én aktiv)
 - [ ] Legg inn robust fallback & error flash for sector analysis template hvis ingen data
 - [x] De-dupliser Warren Buffett routes (simplified route flyttet til `/warren-buffett-simple`, heavy refaktorert og beholdt på `/warren-buffett`)
 - [ ] Reparer stock details side: fjerne repeterte "Nøkkeltall", fjerne eller reaktivere RSI/MACD (skjul når ingen data), sikre TradingView init  
