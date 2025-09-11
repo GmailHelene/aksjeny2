@@ -1,10 +1,21 @@
 }
 
+// Sanitize symbol client-side as additional protection (server already sanitizes)
+function sanitizeSymbol(raw){
+    if(!raw) return 'AAPL';
+    let cleaned = raw.toUpperCase().trim();
+    cleaned = cleaned.replace(/[^A-Z0-9.\-=/]/g,'');
+    if(cleaned.endsWith('.OSL') && !cleaned.endsWith('.OL')) cleaned = cleaned.replace('.OSL','.OL');
+    if(cleaned.length === 0 || cleaned.length > 20) cleaned = 'AAPL';
+    return cleaned;
+}
+
 function createTechnicalWidget(symbol, container, loading) {
     try {
+    const safeSymbol = sanitizeSymbol(symbol);
     new TradingView.widget({
             "autosize": true,
-            "symbol": symbol,
+            "symbol": safeSymbol,
             "interval": "1D",
             "timezone": "Europe/Oslo",
             "theme": "light",
@@ -26,7 +37,7 @@ function createTechnicalWidget(symbol, container, loading) {
             ],
             "container_id": "tradingview_technical_widget",
             "onChartReady": function() {
-                console.log('✅ TradingView technical analysis loaded successfully');
+                console.log('✅ TradingView technical analysis loaded successfully for', safeSymbol);
                 if (loading) loading.style.display = 'none';
                 technicalWidgetLoaded = true;
                 updateTechnicalSummary();

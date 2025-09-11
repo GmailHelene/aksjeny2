@@ -151,7 +151,7 @@ def create():
                 logger.warning(f"Could not check subscription limits: {e}")
                 # Continue anyway for better user experience
             
-            # Enhanced alert creation with simplified, working approach
+            # Enhanced alert creation with simplified, working approach + granular error reporting
             try:
                 from ..models.price_alert import PriceAlert
                 from ..extensions import db
@@ -173,6 +173,12 @@ def create():
                     'company_name': company_name or f"Stock {symbol}",
                     'notes': notes,
                 }
+                # Normalize browser_enabled safely (checkbox may be 'on')
+                browser_enabled_raw = request.form.get('browser_enabled')
+                browser_enabled_flag = False
+                if browser_enabled_raw in ['on', 'true', '1', 'True']:
+                    browser_enabled_flag = True
+
                 optional_defaults = {
                     'current_price': None,
                     'is_active': True,
@@ -182,7 +188,7 @@ def create():
                     'last_checked': datetime.utcnow(),
                     'email_sent': False,
                     'email_enabled': True,
-                    'browser_enabled': bool(request.form.get('browser_enabled', False)),
+                    'browser_enabled': browser_enabled_flag,
                     'notify_email': True,
                     'notify_push': False,
                     'auto_disable': False,
@@ -215,9 +221,16 @@ def create():
                         minimal_fields['is_active'] = True
                     if 'created_at' in table_cols:
                         minimal_fields['created_at'] = datetime.utcnow()
-                    new_alert = PriceAlert(**minimal_fields)
-                    db.session.add(new_alert)
-                    db.session.commit()
+                    try:
+                        new_alert = PriceAlert(**minimal_fields)
+                        db.session.add(new_alert)
+                        db.session.commit()
+                        flash('⚠️ Delvis prisvarsel lagret (noen felt ble ignorert pga database mismatch).', 'warning')
+                    except Exception as second_err:
+                        logger.error(f"Secondary commit failed: {second_err}")
+                        db.session.rollback()
+                        flash('❌ Kunne ikke opprette prisvarsel (databasefeil).', 'error')
+                        return render_template('price_alerts/create.html')
 
                 logger.info(f"Price alert created successfully for user {current_user.id}: {symbol} at {target_price}")
                 flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
@@ -226,7 +239,13 @@ def create():
             except Exception as e:
                 logger.error(f"Error creating price alert: {e}")
                 db.session.rollback()
-                flash('❌ Kunne ikke opprette prisvarsel. Teknisk feil - kontakt support hvis problemet vedvarer.', 'error')
+                tech_msg = str(e)
+                if 'browser_enabled' in tech_msg:
+                    flash('❌ Kolonnen browser_enabled mangler i databasen – kjør migrasjon eller oppdater tabellen.', 'error')
+                elif 'UNIQUE' in tech_msg or 'unique constraint' in tech_msg.lower():
+                    flash('❌ Du har allerede et aktivt prisvarsel for dette symbolet.', 'error')
+                else:
+                    flash('❌ Kunne ikke opprette prisvarsel. Teknisk feil - kontakt support hvis problemet vedvarer.', 'error')
                 return render_template('price_alerts/create.html')
                 
         except Exception as e:

@@ -1650,7 +1650,13 @@ def add_to_favorites():
             
         # Check if already in favorites
         if Favorites.is_favorite(current_user.id, symbol):
-            return jsonify({'success': False, 'message': f'{symbol} er allerede i favoritter'})
+            # Idempotent success for already-favorited to simplify frontend logic
+            return jsonify({
+                'success': True,
+                'message': f'{symbol} er allerede i favoritter',
+                'favorite': True,
+                'symbol': symbol
+            })
         # Add to favorites
         favorite = Favorites.add_favorite(
             user_id=current_user.id,
@@ -1691,7 +1697,8 @@ def add_to_favorites():
         return jsonify({
             'success': True, 
             'message': f'{symbol} lagt til i favoritter',
-            'favorite': True
+            'favorite': True,
+            'symbol': symbol
         })
         
     except Exception as e:
@@ -1720,7 +1727,13 @@ def remove_from_favorites():
             
         # Check if in favorites
         if not Favorites.is_favorite(current_user.id, symbol):
-            return jsonify({'success': False, 'message': f'{symbol} er ikke i favoritter'})
+            # Idempotent remove: return success False favorite flag False but success True for consistency? Keep semantic: success True indicates state is as requested
+            return jsonify({
+                'success': True,
+                'message': f'{symbol} er ikke i favoritter',
+                'favorite': False,
+                'symbol': symbol
+            })
         # Remove from favorites
         removed = Favorites.remove_favorite(current_user.id, symbol)
         if removed:
@@ -1740,7 +1753,8 @@ def remove_from_favorites():
             return jsonify({
                 'success': True, 
                 'message': f'{symbol} fjernet fra favoritter',
-                'favorite': False
+                'favorite': False,
+                'symbol': symbol
             })
         else:
             return jsonify({

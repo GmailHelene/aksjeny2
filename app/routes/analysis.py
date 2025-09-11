@@ -6,6 +6,9 @@ from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
 from datetime import datetime, timedelta
 import logging
+
+# Ensure blueprint is declared (was missing causing BuildError for 'analysis.index')
+analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 @analysis.route('/recommendation')
 @analysis.route('/recommendations')
 @analysis.route('/recommendation/<ticker>')
@@ -2518,7 +2521,23 @@ def global_overview():
 @demo_access
 def tradingview():
     """TradingView Charts Analysis - Enhanced with demo support"""
-    symbol = request.args.get('symbol', 'AAPL')
+    raw_symbol = request.args.get('symbol', 'AAPL') or 'AAPL'
+
+    # Server-side symbol sanitization & validation
+    try:
+        cleaned = raw_symbol.upper().strip()
+        # Allow letters, numbers, dot, dash, slash, equals (for forex like EURUSD=X), and crypto dash
+        allowed_chars = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-=/")
+        cleaned = ''.join(ch for ch in cleaned if ch in allowed_chars)
+        # Basic length guard
+        if len(cleaned) == 0 or len(cleaned) > 20:
+            cleaned = 'AAPL'
+        # Normalize some common variants
+        if cleaned.endswith('.OSL') and not cleaned.endswith('.OL'):
+            cleaned = cleaned.replace('.OSL', '.OL')
+        symbol = cleaned
+    except Exception:
+        symbol = 'AAPL'
     
     # Get stock info for the symbol if available
     stock_info = {}
@@ -2532,14 +2551,16 @@ def tradingview():
         return render_template('analysis/tradingview.html', 
                              title='TradingView Charts',
                              symbol=symbol,
-                             stock_info=stock_info)
+                             stock_info=stock_info,
+                             sanitized=True)
     except Exception as e:
         logger.error(f"Error loading TradingView page: {e}")
         return render_template('analysis/tradingview.html', 
                              title='TradingView Charts',
                              symbol=symbol,
                              stock_info={},
-                             error=True)
+                             error=True,
+                             sanitized=True)
 
 @analysis.route('/backtest')
 @access_required
