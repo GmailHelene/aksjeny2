@@ -623,76 +623,30 @@
         document.querySelector('.chart-container').appendChild(diagnosticDiv);
         {% endif %}
         
-        // Handle favorite buttons
+        // Initialize favorite buttons (optional one-time check)
         document.querySelectorAll('.btn-star-favorite').forEach(function(btn) {
-            const ticker = btn.getAttribute('onclick')?.match(/toggleFavorite\('([^']+)'/)?.[1];
+            const ticker = btn.dataset.ticker || btn.getAttribute('data-symbol');
             if (!ticker) return;
             fetch(`/stocks/api/favorites/check/${ticker}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.favorited) {
-                        btn.innerHTML = '<i class="bi bi-star-fill"></i>';
-                        btn.classList.add('btn-warning');
-                        btn.classList.remove('text-white');
-                    } else {
-                        btn.innerHTML = '<i class="bi bi-star"></i>';
-                        btn.classList.remove('btn-warning');
-                        btn.classList.add('text-white');
-                    }
-                });
+              .then(r=>r.json())
+              .then(data => {
+                  const favored = !!data.favorited;
+                  btn.innerHTML = favored ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                  btn.classList.toggle('btn-warning', favored);
+                  btn.classList.toggle('text-white', !favored);
+                  btn.addEventListener('click', () => {
+                      window.toggleFavorite(ticker, { button: btn, onSuccess: (res)=>{
+                          const f = !!res.favorited;
+                          btn.innerHTML = f ? '<i class="bi bi-star-fill"></i>' : '<i class="bi bi-star"></i>';
+                          btn.classList.toggle('btn-warning', f);
+                          btn.classList.toggle('text-white', !f);
+                          showToast(f ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`, f ? 'success':'danger');
+                      }});
+                  }, { once: false });
+              })
+              .catch(()=>{});
         });
     });
-    
-    // Unified favorite button logic
-    window.toggleFavorite = async function(ticker, btn) {
-        try {
-            // Check if already favorited
-            const checkRes = await fetch(`/stocks/api/favorites/check/${ticker}`);
-            const checkData = await checkRes.json();
-            if (checkData.favorited) {
-                // Remove from favorites
-                const removeRes = await fetch('/stocks/api/favorites/remove', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                const removeData = await removeRes.json();
-                if (removeData.success) {
-                    btn.innerHTML = '<i class="bi bi-star"></i>';
-                    btn.classList.remove('btn-warning');
-                    btn.classList.add('text-white');
-                    showToast(`${ticker} fjernet fra favoritter`, 'danger');
-                } else {
-                    showToast(removeData.error || 'Kunne ikke fjerne favoritt', 'danger');
-                }
-            } else {
-                // Add to favorites
-                const addRes = await fetch('/stocks/api/favorites/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                const addData = await addRes.json();
-                if (addData.success) {
-                    btn.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    btn.classList.add('btn-warning');
-                    btn.classList.remove('text-white');
-                    showToast(`${ticker} lagt til i favoritter`, 'success');
-                } else {
-                    showToast(addData.error || 'Kunne ikke legge til favoritt', 'danger');
-                }
-            }
-        } catch (error) {
-            console.error('Favorite error:', error);
-            showToast('Teknisk feil ved favoritt', 'error');
-        }
-    };
 
     function showToast(message, type) {
         const toast = document.createElement('div');

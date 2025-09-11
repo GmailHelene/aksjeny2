@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 def create_test_users():
     app = create_app()
     with app.app_context():
-        # Slett eksisterende testbrukere først
-        User.query.filter(User.email.in_(['trial@example.com', 'expired@example.com'])).delete()
+    # Rydd opp gamle test-brukere (trial / expired) hvis de finnes
+    User.query.filter(User.email.in_(['trial@example.com', 'expired@example.com'])).delete()
         
         # Opprett eller oppdater admin bruker
         admin = User.query.filter_by(email='helene721@gmail.com').first()
@@ -28,25 +28,37 @@ def create_test_users():
             admin.is_admin = True
             admin.set_password('admin123')
         
-        # Opprett trial bruker
-        trial_user = User(
-            username='trial_user',
-            email='trial@example.com',
-            trial_used=True,
-            trial_start=datetime.utcnow()
-        )
-        trial_user.set_password('trial123')
-        db.session.add(trial_user)
+        # Opprett / oppdater trial bruker
+        trial_user = User.query.filter_by(email='trial@example.com').first()
+        if not trial_user:
+            trial_user = User(
+                username='trial_user',
+                email='trial@example.com',
+                trial_used=True,
+                trial_start=datetime.utcnow()
+            )
+            trial_user.set_password('trial123')
+            db.session.add(trial_user)
+        else:
+            trial_user.trial_used = True
+            trial_user.trial_start = datetime.utcnow()
+            trial_user.set_password('trial123')
         
-        # Opprett expired bruker
-        expired_user = User(
-            username='expired_user',
-            email='expired@example.com',
-            trial_used=True,
-            trial_start=datetime.utcnow() - timedelta(days=11)
-        )
-        expired_user.set_password('expired123')
-        db.session.add(expired_user)
+        # Opprett / oppdater expired (utløpt) bruker
+        expired_user = User.query.filter_by(email='expired@example.com').first()
+        if not expired_user:
+            expired_user = User(
+                username='expired_user',
+                email='expired@example.com',
+                trial_used=True,
+                trial_start=datetime.utcnow() - timedelta(days=11)
+            )
+            expired_user.set_password('expired123')
+            db.session.add(expired_user)
+        else:
+            expired_user.trial_used = True
+            expired_user.trial_start = datetime.utcnow() - timedelta(days=11)
+            expired_user.set_password('expired123')
         
         db.session.commit()
         print("Test users created successfully!")

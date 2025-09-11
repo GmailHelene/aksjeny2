@@ -7,10 +7,11 @@ import traceback
 import logging
 import statistics
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, Response
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, Response, g
 from flask_login import current_user, login_required
 from ..extensions import csrf
 from ..services.data_service import DataService, YFINANCE_AVAILABLE, FALLBACK_GLOBAL_DATA, FALLBACK_OSLO_DATA
+from ..services.security_service import csrf_protect
 from ..services.usage_tracker import usage_tracker 
 from ..utils.access_control import access_required, demo_access, subscription_required
 from ..models.favorites import Favorites
@@ -21,6 +22,15 @@ logger = logging.getLogger(__name__)
 
 # Create the stocks blueprint
 stocks = Blueprint('stocks', __name__, url_prefix='/stocks')
+
+# Correlation ID generation for all requests in this blueprint
+@stocks.before_request
+def _stocks_set_correlation_id():
+    try:
+        import uuid
+        g.correlation_id = uuid.uuid4().hex
+    except Exception:
+        g.correlation_id = None
 
 @stocks.route('/test-oslo')
 def test_oslo():
@@ -1631,8 +1641,8 @@ def api_stocks_search():
         }), 500
 
 @stocks.route('/api/favorites/add', methods=['POST'])
-@csrf.exempt
 @access_required
+@csrf_protect
 def add_to_favorites():
     """Add stock to favorites"""
     try:
@@ -1656,14 +1666,15 @@ def add_to_favorites():
             })
             
         # Check if already in favorites
-        if Favorites.is_favorite(current_user.id, symbol):
+    if Favorites.is_favorite(current_user.id, symbol):
             # Idempotent success for already-favorited to simplify frontend logic
             return jsonify({
                 'success': True,
                 'message': f'{symbol} er allerede i favoritter',
                 'favorite': True,
                 'favorited': True,
-                'symbol': symbol
+        'symbol': symbol,
+        'correlation_id': getattr(g, 'correlation_id', None)
             })
         # Add to favorites
         favorite = Favorites.add_favorite(
@@ -1707,7 +1718,8 @@ def add_to_favorites():
             'message': f'{symbol} lagt til i favoritter',
             'favorite': True,
             'favorited': True,
-            'symbol': symbol
+            'symbol': symbol,
+            'correlation_id': getattr(g, 'correlation_id', None)
         })
         
     except Exception as e:
@@ -1720,8 +1732,8 @@ def add_to_favorites():
         }), 200
 
 @stocks.route('/api/favorites/remove', methods=['POST'])
-@csrf.exempt  # Exempt to prevent CSRF errors for JSON/AJAX removal (add token header later for hardening)
 @access_required
+@csrf_protect
 def remove_from_favorites():
     """Remove stock from favorites"""
     try:
@@ -1742,14 +1754,15 @@ def remove_from_favorites():
             })
             
         # Check if in favorites
-        if not Favorites.is_favorite(current_user.id, symbol):
+    if not Favorites.is_favorite(current_user.id, symbol):
             # Idempotent remove: success True because desired end-state already satisfied
             return jsonify({
                 'success': True,
                 'message': f'{symbol} er ikke i favoritter',
                 'favorite': False,
                 'favorited': False,
-                'symbol': symbol
+        'symbol': symbol,
+        'correlation_id': getattr(g, 'correlation_id', None)
             })
         # Remove from favorites
         removed = Favorites.remove_favorite(current_user.id, symbol)
@@ -1772,7 +1785,8 @@ def remove_from_favorites():
                 'message': f'{symbol} fjernet fra favoritter',
                 'favorite': False,
                 'favorited': False,
-                'symbol': symbol
+                'symbol': symbol,
+                'correlation_id': getattr(g, 'correlation_id', None)
             })
         else:
             return jsonify({
@@ -1804,6 +1818,7 @@ def check_favorite(symbol):
 
 @stocks.route('/api/favorites/toggle/<symbol>', methods=['POST'])
 @demo_access
+@csrf_protect
 def toggle_favorite(symbol):
     """Toggle stock in/out of favorites"""
     try:
@@ -1846,7 +1861,8 @@ def toggle_favorite(symbol):
                         'favorited': False,
                         'favorite': False,
                         'symbol': symbol,
-                        'message': f'{symbol} fjernet fra favoritter'
+                        'message': f'{symbol} fjernet fra favoritter',
+                        'correlation_id': getattr(g, 'correlation_id', None)
                     }
                 else:
                     logger.error(f"Failed to remove {symbol} from favorites")
@@ -1902,7 +1918,8 @@ def toggle_favorite(symbol):
                     'favorited': True,
                     'favorite': True,
                     'symbol': symbol,
-                    'message': f'{symbol} lagt til i favoritter'
+                    'message': f'{symbol} lagt til i favoritter',
+                    'correlation_id': getattr(g, 'correlation_id', None)
                 }
         except Exception as e:
             db.session.rollback()

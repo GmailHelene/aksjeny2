@@ -1033,6 +1033,37 @@
     <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
     <script src="{{ url_for('static', filename='js/portfolio-actions-enhanced.js') }}"></script>
     <script src="{{ url_for('static', filename='js/watchlist-fix.js') }}"></script>
+
+    <script>
+    // Unified favorites toggle helper to reduce multiple network calls
+    window.toggleFavorite = async function(symbol, options = {}) {
+        const btn = options.button || null;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const url = `/stocks/api/favorites/toggle/${encodeURIComponent(symbol)}`;
+        try {
+            if (btn) { btn.disabled = true; btn.dataset.originalText = btn.innerHTML; btn.innerHTML = '...'; }
+            const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' }});
+            const data = await res.json();
+            if (data && data.success) {
+                if (options.onSuccess) options.onSuccess(data);
+                // Simple visual toggle if button provided
+                if (btn) {
+                    btn.classList.toggle('favorited', !!data.favorited);
+                    btn.innerHTML = data.favorited ? (options.favoritedText || '★') : (options.unfavoritedText || '☆');
+                }
+            } else {
+                if (options.onError) options.onError(data);
+                if (window.showToast) showToast(data.message || 'Favoritt-feil', 'danger');
+            }
+            return data;
+        } catch (e) {
+            console.error('toggleFavorite error', e);
+            if (options.onError) options.onError(e);
+        } finally {
+            if (btn) { btn.disabled = false; if (btn.dataset.originalText) delete btn.dataset.originalText; }
+        }
+    }
+    </script>
     
     {% block extra_js %}{% endblock %}
     
