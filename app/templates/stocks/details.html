@@ -354,6 +354,31 @@
 let tradingViewLoaded = false;
 let currentSymbol = '{{ stock.symbol }}';
 let technicalWidgetLoaded = false; // Prevent duplicate technical widget init
+let attemptedAlternateSymbol = false; // For fallback prefix attempts
+
+function mapToTradingViewSymbol(raw) {
+    if (!raw) return raw;
+    let base = raw;
+    // Oslo Børs tickers typically end with .OL in many feeds; TradingView uses OSL: prefix
+    if (raw.endsWith('.OL')) {
+        base = raw.replace('.OL', '');
+        return 'OSL:' + base; // primary mapping
+    }
+    // Stockholm
+    if (raw.endsWith('.ST')) {
+        base = raw.replace('.ST', '');
+        return 'OMXSTO:' + base;
+    }
+    // Simple US uppercase (heuristic) default to NASDAQ, could extend with backend exchange field later
+    if (/^[A-Z]{1,5}$/.test(raw)) {
+        return 'NASDAQ:' + raw;
+    }
+    // Crypto
+    if (raw.includes('-USD')) {
+        return 'BINANCE:' + raw.replace('-USD', 'USDT');
+    }
+    return raw; // fallback to raw (may already be vendor formatted)
+}
 
 // Show/hide key metrics based on active tab
 
@@ -430,26 +455,23 @@ function initChart() {
         </div>
     `;
     
-    // Convert symbol for TradingView with better mapping
-    let tvSymbol = currentSymbol;
-    if (currentSymbol.endsWith('.OL')) {
-        tvSymbol = 'OSE:' + currentSymbol.replace('.OL', '');
-    } else if (currentSymbol.endsWith('.ST')) {
-        tvSymbol = 'OMXSTO:' + currentSymbol.replace('.ST', '');
-    } else if (currentSymbol.match(/^[A-Z]{1,5}$/)) {
-        tvSymbol = 'NASDAQ:' + currentSymbol;
-    } else if (currentSymbol.includes('-USD')) {
-        // Crypto handling
-        tvSymbol = 'BINANCE:' + currentSymbol.replace('-USD', 'USDT');
-    }
-    
-    console.log(`📈 Using TradingView symbol: ${tvSymbol}`);
+    // Map symbol
+    let tvSymbol = mapToTradingViewSymbol(currentSymbol);
+    console.log(`📈 Using TradingView symbol (primary): ${tvSymbol}`);
     
     // Extended timeout and better fallback
     const loadTimeout = setTimeout(() => {
-        console.warn('⚠️ TradingView loading timeout, showing fallback');
+        console.warn('⚠️ TradingView loading timeout (15s)');
+        if (!attemptedAlternateSymbol && currentSymbol.endsWith('.OL')) {
+            attemptedAlternateSymbol = true;
+            // Try alternate legacy prefix if first attempt failed
+            const alt = 'OSE:' + currentSymbol.replace('.OL', '');
+            console.warn(`� Retrying chart with alternate prefix: ${alt}`);
+            createChart(alt, container, loading);
+            return;
+        }
         showChartFallback(container, loading);
-    }, 15000); // Increased to 15 seconds
+    }, 15000);
     
     if (!window.TradingView) {
         loadTradingViewScript(() => {
@@ -533,13 +555,8 @@ function initTechnicalAnalysis() {
     // Show loading
     if (loading) loading.style.display = 'block';
     
-    // Convert symbol for TradingView
-    let tvSymbol = currentSymbol;
-    if (currentSymbol.endsWith('.OL')) {
-        tvSymbol = 'OSE:' + currentSymbol.replace('.OL', '');
-    } else if (currentSymbol.match(/^[A-Z]{1,5}$/)) {
-        tvSymbol = 'NASDAQ:' + currentSymbol;
-    }
+    // Convert symbol for TradingView (shared mapping)
+    let tvSymbol = mapToTradingViewSymbol(currentSymbol);
     
     // Load TradingView script if needed
     if (!window.TradingView) {

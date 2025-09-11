@@ -111,10 +111,18 @@ def technical():
                              show_analysis=bool(request.args.get('symbol')),
                              error="Teknisk analyse er midlertidig utilgjengelig")
 
-@analysis.route('/warren-buffett', methods=['GET', 'POST'])
+@analysis.route('/warren-buffett-simple', methods=['GET', 'POST'])
 @access_required
-def warren_buffett():
-    """Warren Buffett analysis with real market data"""
+def warren_buffett_simple():
+    """Simplified Warren Buffett analysis (kept for reference / lightweight demo).
+
+    NOTE: The enhanced unified implementation now lives in `routes/analysis.py`.
+    This simplified version is exposed at /analysis/warren-buffett-simple to avoid
+    duplicate route conflicts on /analysis/warren-buffett. Consider removing after
+    verification period if no longer needed.
+    TODO: After confirming /analysis/warren-buffett stable in production for 14 days,
+    remove this route and associated simplified logic to reduce maintenance overhead.
+    """
     ticker = request.args.get('ticker') or request.form.get('ticker')
 
     if ticker and request.method in ['GET', 'POST']:
@@ -154,14 +162,14 @@ def warren_buffett():
             'AMZN': {'name': 'Amazon.com Inc.', 'last_price': 155.90, 'change_percent': 0.7}
         }
 
-        return render_template('analysis/warren_buffett.html',
+    return render_template('analysis/warren_buffett.html',
                               oslo_stocks=oslo_stocks,
                               global_stocks=global_stocks,
                               analysis=None)
     except Exception as e:
         logger.error(f"Error loading Buffett selection page: {e}")
         flash('Kunne ikke laste aksjeoversikt. Prøv igjen senere.', 'error')
-        return render_template('analysis/warren_buffett.html',
+    return render_template('analysis/warren_buffett.html',
                               oslo_stocks={},
                               global_stocks={},
                               analysis=None)

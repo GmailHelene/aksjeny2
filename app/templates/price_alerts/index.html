@@ -114,6 +114,24 @@
         margin-bottom: 20px;
         color: #dee2e6;
     }
+    .alert-delete-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px !important;
+        font-size: 0.75rem;
+        line-height: 1.2;
+        border-radius: 20px;
+        background: #dc3545;
+        border: none;
+        color: #fff;
+        transition: background .2s ease, transform .15s ease;
+    }
+    .alert-delete-btn i { font-size: 0.7rem; }
+    .alert-delete-btn:hover { background:#bb2d3b; }
+    .alert-delete-btn:active { transform: scale(.95); }
+    .alert-delete-btn:focus { outline: 2px solid rgba(220,53,69,.4); outline-offset: 2px; }
+    .stale-status-warning { color:#dc3545; font-weight:500; }
 </style>
 {% endblock %}
 
@@ -215,8 +233,8 @@
                                         <form method="POST" action="{{ url_for('price_alerts.delete', alert_id=alert.id) }}" 
                                               onsubmit="return confirm('Er du sikker på at du vil slette dette varselet?')" 
                                               class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="submit" class="alert-delete-btn" aria-label="Slett varsel" title="Slett varsel">
+                                                <i class="fas fa-trash"></i> Slett
                                             </button>
                                         </form>
                                     </div>
@@ -250,11 +268,38 @@
 </div>
 
 <script>
-// Auto-refresh alerts every 5 minutes
-setInterval(function() {
-    if (document.visibilityState === 'visible') {
-        window.location.reload();
-    }
-}, 300000);
+// Auto-refresh alerts every 1 minute (60 000 ms) with focus awareness
+const ALERT_REFRESH_INTERVAL = 60000;
+let lastRefresh = Date.now();
+
+function refreshAlertsIfNeeded() {
+    if (document.visibilityState !== 'visible') return;
+    // Avoid refresh if user is interacting with a form/input
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+    window.location.reload();
+}
+
+setInterval(refreshAlertsIfNeeded, ALERT_REFRESH_INTERVAL);
+
+// Highlight stale service status if last_check older than 10 minutes
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const statusEl = document.querySelector('.service-status small.text-muted');
+        if (!statusEl) return;
+        const text = statusEl.textContent;
+        const match = text.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+        if (match) {
+            const dt = new Date(match[1].replace(' ', 'T') + 'Z');
+            if (!isNaN(dt.getTime())) {
+                const ageMin = (Date.now() - dt.getTime()) / 60000;
+                if (ageMin > 10) {
+                    statusEl.classList.add('stale-status-warning');
+                    statusEl.insertAdjacentHTML('beforeend', ' • <span>(Stale >10m)</span>');
+                }
+            }
+        }
+    } catch (e) { console.warn('Status stale check failed', e); }
+});
 </script>
 {% endblock %}

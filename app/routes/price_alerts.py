@@ -156,45 +156,73 @@ def create():
                 from ..models.price_alert import PriceAlert
                 from ..extensions import db
                 from datetime import datetime
-                
+
                 # Ensure clean database state
                 db.session.rollback()
-                
-                # Create alert with all required fields
-                new_alert = PriceAlert(
-                    user_id=current_user.id,
-                    ticker=symbol,  # Required field
-                    symbol=symbol,
-                    target_price=target_price,
-                    alert_type=alert_type,
-                    current_price=None,  # Will be updated by monitor
-                    is_active=True,
-                    is_triggered=False,  # Required field
-                    created_at=datetime.utcnow(),
-                    triggered_at=None,
-                    last_checked=datetime.utcnow(),
-                    email_sent=False,
-                    email_enabled=True,
-                    browser_enabled=bool(request.form.get('browser_enabled', False)),
-                    notify_email=True,  # Required field
-                    notify_push=False,  # Required field
-                    auto_disable=False,  # Required field
-                    threshold_price=target_price,  # Required field
-                    threshold_percent=None,
-                    last_price=None,
-                    updated_at=datetime.utcnow(),  # Required field
-                    company_name=company_name or f"Stock {symbol}",
-                    exchange='Oslo Børs',  # Default exchange
-                    notes=notes
-                )
-                
+
+                # Dynamic column detection to survive partial migrations
+                table_cols = {c.name for c in PriceAlert.__table__.columns}
+                logger.debug(f"PriceAlert table columns detected: {table_cols}")
+
+                base_values = {
+                    'user_id': current_user.id,
+                    'ticker': symbol,
+                    'symbol': symbol,
+                    'target_price': target_price,
+                    'alert_type': alert_type,
+                    'company_name': company_name or f"Stock {symbol}",
+                    'notes': notes,
+                }
+                optional_defaults = {
+                    'current_price': None,
+                    'is_active': True,
+                    'is_triggered': False,
+                    'created_at': datetime.utcnow(),
+                    'triggered_at': None,
+                    'last_checked': datetime.utcnow(),
+                    'email_sent': False,
+                    'email_enabled': True,
+                    'browser_enabled': bool(request.form.get('browser_enabled', False)),
+                    'notify_email': True,
+                    'notify_push': False,
+                    'auto_disable': False,
+                    'threshold_price': target_price,
+                    'threshold_percent': None,
+                    'last_price': None,
+                    'updated_at': datetime.utcnow(),
+                    'exchange': 'Oslo Børs'
+                }
+
+                # Filter only columns that actually exist to avoid OperationalError
+                filtered_data = {}
+                for k, v in {**base_values, **optional_defaults}.items():
+                    if k in table_cols:
+                        filtered_data[k] = v
+                missing = set(optional_defaults.keys()) - set(filtered_data.keys())
+                if missing:
+                    logger.warning(f"PriceAlert create: skipping non-existent columns (likely unmigrated): {missing}")
+
+                new_alert = PriceAlert(**filtered_data)
                 db.session.add(new_alert)
-                db.session.commit()
-                
+                try:
+                    db.session.commit()
+                except Exception as commit_err:
+                    logger.error(f"Primary commit failed, retrying simplified insert: {commit_err}")
+                    db.session.rollback()
+                    # Retry with minimal mandatory fields only
+                    minimal_fields = {k: v for k, v in base_values.items() if k in table_cols}
+                    if 'is_active' in table_cols:
+                        minimal_fields['is_active'] = True
+                    if 'created_at' in table_cols:
+                        minimal_fields['created_at'] = datetime.utcnow()
+                    new_alert = PriceAlert(**minimal_fields)
+                    db.session.add(new_alert)
+                    db.session.commit()
+
                 logger.info(f"Price alert created successfully for user {current_user.id}: {symbol} at {target_price}")
                 flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
                 return redirect(url_for('price_alerts.index'))
-                
+
             except Exception as e:
                 logger.error(f"Error creating price alert: {e}")
                 db.session.rollback()

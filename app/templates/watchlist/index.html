@@ -372,14 +372,30 @@ async function loadActiveAlerts() {
             `;
         }, 1500);
 
-        // Try real alerts (only works when innlogget)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-        const response = await fetch('/watchlist/api/alerts', {
-            headers: { 'X-CSRFToken': getCSRFToken() },
-            signal: controller.signal
-        }).catch(() => null);
-        clearTimeout(timeoutId);
+        // Helper fetch with timeout
+        async function fetchWithTimeout(url, opts = {}, timeoutMs = 2500) {
+            const controller = new AbortController();
+            const to = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { ...opts, signal: controller.signal });
+                clearTimeout(to);
+                return res;
+            } catch (e) {
+                clearTimeout(to);
+                return null;
+            }
+        }
+
+        // Try primary authenticated endpoint first
+        let response = await fetchWithTimeout('/watchlist/api/alerts', {
+            headers: { 'X-CSRFToken': getCSRFToken() }
+        });
+
+        // Fallback to stable demo / simplified endpoint if primary fails
+        if (!response || !response.ok) {
+            console.debug('Primary alerts endpoint failed, falling back to /watchlist-fixed/api/alerts');
+            response = await fetchWithTimeout('/watchlist-fixed/api/alerts');
+        }
 
         if (response && response.ok) {
             const data = await response.json().catch(() => ({ alerts: [] }));
@@ -405,6 +421,15 @@ async function loadActiveAlerts() {
                     </div>
                 `;
             }
+        } else {
+            // Final graceful fallback
+            alertsContainer.innerHTML = `
+                <div class="text-center text-info">
+                    <i class="bi bi-info-circle fs-4"></i>
+                    <p class="mt-2 mb-1"><strong>Varsler utilgjengelig</strong></p>
+                    <small class="text-muted">Prøv å laste siden på nytt</small>
+                </div>
+            `;
         }
     } catch (error) {
         const alertsContainer = document.getElementById('active-alerts');
@@ -468,48 +493,19 @@ async function loadAIInsights() {
                 confidence: 72
             },
             {
-                type: 'risk_warning',
-                title: 'Risikovarsel',
-                message: 'Økt volatilitet forventet i markedet neste uke grunnet makroøkonomiske data.',
-                confidence: 91
-            }
-        ];
-        
-        const insightsHtml = insights.map(insight => `
-            <div class="insight-card">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="mb-0">${insight.title}</h6>
-                    <span class="badge bg-primary">${insight.confidence}% sikkerhet</span>
-                </div>
-                <p class="mb-0">${insight.message}</p>
-            </div>
-        `).join('');
-        
-        document.getElementById('ai-insights').innerHTML = insightsHtml;
-        
-    } catch (error) {
-        console.error('Feil ved lasting av AI-innsikt:', error);
-    }
-}
-
-async function getWatchlistAlerts(watchlistId) {
-    try {
-        showLoading(`Henter varsler for watchlist ${watchlistId}...`);
-        
-        const response = await fetch(`/watchlist/api/alerts/${watchlistId}`, {
-            headers: {
-                'X-CSRFToken': getCSRFToken()
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert(`Fant ${data.count} aktive varsler for denne watchlist.`);
-            // Oppdater varsler-seksjonen
-            loadActiveAlerts();
-        } else {
-            throw new Error(data.error || 'Feil ved henting av varsler');
+                    function showLoading(message) {
+                        let loadingOverlay = document.getElementById('loading-overlay');
+                        if (!loadingOverlay) {
+                            loadingOverlay = document.createElement('div');
+                            loadingOverlay.id = 'loading-overlay';
+                            loadingOverlay.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.9);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;`;
+                            document.body.appendChild(loadingOverlay);
+                        }
+                        loadingOverlay.innerHTML = `<div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"><span class="visually-hidden">Laster...</span></div><p class="mt-3 text-muted">${message}</p>`;
+                        loadingOverlay.style.display = 'flex';
+                    }
+                    function hideLoading(){const o=document.getElementById('loading-overlay');if(o){o.style.display='none';}}
+                    function getCSRFToken(){return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'';}
         }
         
     } catch (error) {

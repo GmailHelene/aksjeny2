@@ -614,10 +614,11 @@ def view_portfolio(id):
         total_value = 0
         total_cost = 0
         portfolio_data = []
+    holdings = []  # list of dicts for template
         
         # Lazy import DataService to avoid circular imports
         DataService = get_data_service()
-        for stock in portfolio_stocks:
+    for stock in portfolio_stocks:
             try:
                 # Get current stock data
                 current_data = DataService.get_stock_data(stock.ticker)
@@ -635,6 +636,17 @@ def view_portfolio(id):
                         'cost_value': cost_value,
                         'gain_loss': gain_loss,
                         'gain_loss_percent': gain_loss_percent
+                    })
+                    holdings.append({
+                        'id': stock.id,
+                        'symbol': stock.ticker,
+                        'company_name': current_data.get('name', stock.ticker),
+                        'quantity': stock.shares,
+                        'average_price': stock.purchase_price,
+                        'current_price': current_price,
+                        'market_value': current_value,
+                        'unrealized_gain': gain_loss,
+                        'unrealized_gain_percent': gain_loss_percent
                     })
                     
                     total_value += current_value
@@ -654,18 +666,30 @@ def view_portfolio(id):
                 })
                 total_value += cost_value
                 total_cost += cost_value
+                    holdings.append({
+                        'id': stock.id,
+                        'symbol': stock.ticker,
+                        'company_name': stock.ticker,
+                        'quantity': stock.shares,
+                        'average_price': stock.purchase_price,
+                        'current_price': stock.purchase_price,
+                        'market_value': cost_value,
+                        'unrealized_gain': 0,
+                        'unrealized_gain_percent': 0
+                    })
         
         # Calculate total metrics
         total_gain_loss = total_value - total_cost
         total_gain_loss_percent = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0
         
-        return render_template('portfolio/view.html',
-                             portfolio=portfolio_obj,
-                             portfolio_data=portfolio_data,
-                             total_value=total_value,
-                             total_cost=total_cost,
-                             total_gain_loss=total_gain_loss,
-                             total_gain_loss_percent=total_gain_loss_percent)
+    return render_template('portfolio/view.html',
+                 portfolio=portfolio_obj,
+                 portfolio_data=portfolio_data,
+                 holdings=holdings,
+                 total_value=total_value,
+                 total_cost=total_cost,
+                 total_gain_loss=total_gain_loss,
+                 total_gain_loss_percent=total_gain_loss_percent)
                              
     except Exception as e:
         current_app.logger.error(f"Error viewing portfolio {id}: {e}")
