@@ -67,6 +67,35 @@ def calculate_rsi(prices, periods=14):
         prices_series = prices
         
         # Calculate price changes (deltas)
+
+        # --- HARDENING: Sanitize incoming symbols to avoid deployment/runtime issues caused by
+        # extremely long or malformed ticker strings (observed massive log spam with very long values)
+        sanitized = []
+        import re
+        pattern = re.compile(r'^[A-Za-z0-9\.\-]{1,15}$')  # Allow typical ticker chars, max length 15
+        for s in symbols:
+            if not s:
+                continue
+            s_clean = s.strip()[:50]  # hard cap to avoid memory/log bloat before validation
+            if pattern.match(s_clean):
+                sanitized.append(s_clean.upper())
+            else:
+                # Attempt to salvage by stripping invalid chars then re-validating
+                candidate = re.sub(r'[^A-Za-z0-9\.\-]', '', s_clean)[:15]
+                if candidate and pattern.match(candidate):
+                    sanitized.append(candidate.upper())
+                else:
+                    current_app.logger.warning(f"Ignoring invalid/oversized compare symbol input (truncated view): '{s_clean[:30]}'")
+        if not sanitized:
+            # Fallback to safe defaults if everything invalid
+            sanitized = ['EQNR.OL', 'DNB.OL']
+        if len(sanitized) > 4:
+            sanitized = sanitized[:4]
+        symbols = sanitized
+
+        # Use truncated list for logging to prevent gigantic log lines
+        log_preview = [sym if len(sym) <= 15 else sym[:12] + '…' for sym in symbols]
+        logger.info(f"Stock comparison requested (sanitized) for symbols: {log_preview}")
         deltas = prices_series.diff()
         
         # Separate gains and losses
@@ -1276,8 +1305,8 @@ def details(symbol):
             'description': f'{template_stock_info.get("longName", symbol)} er et ledende selskap innen {template_stock_info.get("sector", "teknologi").lower()}.'
         }
         
-    # RENDER CONSOLIDATED TEMPLATE (details.html) INSTEAD OF LEGACY ENHANCED VERSION
-    return render_template('stocks/details.html',
+        # RENDER CONSOLIDATED TEMPLATE (details.html) INSTEAD OF LEGACY ENHANCED VERSION
+        return render_template('stocks/details.html',
                              symbol=symbol,
                              ticker=symbol,  # CRITICAL: Pass ticker variable for template compatibility
                              stock=enhanced_stock,
