@@ -110,12 +110,103 @@ def search():
         return redirect(url_for('insider_trading.index'))
     
     try:
+        # Extract additional optional filters
+        transaction_type = request.args.get('transaction_type', '').strip().lower()  # 'buy'/'sell'
+        period = request.args.get('period', '30').strip()  # days back
+        min_value = request.args.get('min_value', '').strip()
+        role = request.args.get('role', '').strip().lower()
+        insider_name = request.args.get('insider_name', '').strip().lower()
+        sort_param = request.args.get('sort', 'date_desc').strip().lower()
+
+        # Sanitize numeric inputs
+        try:
+            days_back = int(period)
+            if days_back <= 0 or days_back > 365:
+                days_back = 30
+        except ValueError:
+            days_back = 30
+        try:
+            min_value_num = int(min_value) if min_value else 0
+        except ValueError:
+            min_value_num = 0
+
         # Get insider trading data for the specified symbol
         insider_data = DataService.get_insider_trading_data(symbol)
         
         if not insider_data:
             flash(f'Ingen innsidehandel data funnet for {symbol}', 'warning')
             return redirect(url_for('insider_trading.index'))
+        original_count = len(insider_data)
+
+        # Apply time period filter (assuming trade has 'date' key)
+        if days_back:
+            cutoff = datetime.utcnow() - timedelta(days=days_back)
+            filtered = []
+            for trade in insider_data:
+                dt = trade.get('date') or trade.get('transaction_date')
+                dt_obj = None
+                if isinstance(dt, datetime):
+                    dt_obj = dt
+                elif isinstance(dt, str):
+                    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%Y-%m-%dT%H:%M:%S'):
+                        try:
+                            dt_obj = datetime.strptime(dt[:19], fmt)
+                            break
+                        except Exception:
+                            continue
+                if not dt_obj or dt_obj >= cutoff:
+                    filtered.append(trade)
+            insider_data = filtered
+
+        # Filter by transaction type
+        if transaction_type in {'buy','purchase','kjøp'}:
+            insider_data = [t for t in insider_data if t.get('transaction_type','').lower() in {'buy','purchase'}]
+        elif transaction_type in {'sell','sale','salg'}:
+            insider_data = [t for t in insider_data if t.get('transaction_type','').lower() in {'sell','sale'}]
+
+        # Filter by minimum value
+        if min_value_num > 0:
+            insider_data = [t for t in insider_data if (t.get('value') or t.get('total_value') or 0) >= min_value_num]
+
+        # Filter by insider role/position
+        if role:
+            insider_data = [t for t in insider_data if role in (t.get('position') or t.get('role') or '').lower()]
+
+        # Filter by insider name
+        if insider_name:
+            insider_data = [t for t in insider_data if insider_name in (t.get('insider') or t.get('insider_name') or '').lower()]
+
+        # Sorting
+        if sort_param == 'value_desc':
+            insider_data.sort(key=lambda t: t.get('value') or t.get('total_value') or 0, reverse=True)
+        elif sort_param == 'value_asc':
+            insider_data.sort(key=lambda t: t.get('value') or t.get('total_value') or 0)
+        elif sort_param == 'date_asc':
+            def _date_key(t):
+                dt = t.get('date') or t.get('transaction_date')
+                if isinstance(dt, datetime):
+                    return dt
+                if isinstance(dt, str):
+                    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%Y-%m-%dT%H:%M:%S'):
+                        try:
+                            return datetime.strptime(dt[:19], fmt)
+                        except Exception:
+                            continue
+                return datetime.utcnow()
+            insider_data.sort(key=_date_key)
+        else:  # default date_desc
+            def _date_key_desc(t):
+                dt = t.get('date') or t.get('transaction_date')
+                if isinstance(dt, datetime):
+                    return dt
+                if isinstance(dt, str):
+                    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%Y-%m-%dT%H:%M:%S'):
+                        try:
+                            return datetime.strptime(dt[:19], fmt)
+                        except Exception:
+                            continue
+                return datetime.utcnow()
+            insider_data.sort(key=_date_key_desc, reverse=True)
             
         # Calculate summary data
         buy_trades = [t for t in insider_data if t.get('transaction_type') == 'Purchase']
@@ -175,7 +266,17 @@ def search():
                              hot_stocks_count=24,
                              signal_count=12,
                              alerts_count=7,
-                             search_params={})
+                             search_params={
+                                 'symbol': symbol,
+                                 'transaction_type': transaction_type,
+                                 'period': days_back,
+                                 'min_value': min_value_num,
+                                 'role': role,
+                                 'insider_name': insider_name,
+                                 'sort': sort_param,
+                                 'original_count': original_count,
+                                 'filtered_count': len(insider_data)
+                             })
                              
                              
     except Exception as e:

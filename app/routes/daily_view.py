@@ -78,8 +78,21 @@ def index():
 
 @daily_view.route('/analysis/<date>')
 def daily_analysis(date):
-    """Deep dive analysis for a specific day"""
-    # Simulated deep analysis
+    """Deep dive analysis for a specific day
+
+    Accepts date in ISO format YYYY-MM-DD. Falls back to today if invalid and logs warning.
+    Prevents 500 errors caused by malformed date segments.
+    """
+    try:
+        # Validate date format
+        parsed_date = datetime.strptime(date, '%Y-%m-%d')
+    except Exception:
+        from flask import current_app
+        current_app.logger.warning(f"Invalid date '{date}' supplied to /daily-view/analysis – defaulting to today")
+        parsed_date = datetime.today()
+        date = parsed_date.strftime('%Y-%m-%d')
+
+    # Simulated deep analysis (could be enhanced to vary by date)
     analysis = {
         'market_summary': 'Oslo Børs hadde en blandet dag med olje- og bankaksjer som drivkrefter...',
         'sector_performance': [

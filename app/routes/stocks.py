@@ -20,6 +20,34 @@ from ..utils.exchange_utils import get_exchange_url
 
 logger = logging.getLogger(__name__)
 
+# Simple in-memory cache for technical analysis results
+# Structure: { cache_key: { 'data': {...}, 'ts': epoch_seconds } }
+_TECH_CACHE = {}
+TECH_CACHE_TTL_SECONDS = 60  # default TTL (seconds) – adjust as needed
+
+# Helper to build fallback stock_info dict from fallback datasets
+def _build_fallback_stock_info(symbol: str, fallback_data: dict, currency: str) -> dict:
+    return {
+        'ticker': symbol,
+        'name': fallback_data['name'],
+        'longName': fallback_data['name'],
+        'shortName': fallback_data['name'][:20],
+        'regularMarketPrice': fallback_data['last_price'],
+        'last_price': fallback_data['last_price'],
+        'regularMarketChange': fallback_data['change'],
+        'change': fallback_data['change'],
+        'regularMarketChangePercent': fallback_data['change_percent'],
+        'change_percent': fallback_data['change_percent'],
+        'volume': fallback_data.get('volume', 1000000),
+        'regularMarketVolume': fallback_data.get('volume', 1000000),
+        'marketCap': fallback_data.get('market_cap', None),
+        'sector': fallback_data['sector'],
+        'currency': currency,
+        'signal': fallback_data.get('signal', 'HOLD'),
+        'rsi': fallback_data.get('rsi', 50.0),
+        'data_source': 'FALLBACK DATA - Service temporarily unavailable',
+    }
+
 # Create the stocks blueprint
 stocks = Blueprint('stocks', __name__, url_prefix='/stocks')
 
@@ -859,49 +887,11 @@ def details(symbol):
                 if symbol in FALLBACK_GLOBAL_DATA:
                     fallback_data = FALLBACK_GLOBAL_DATA[symbol]
                     current_app.logger.info(f"Using FALLBACK_GLOBAL_DATA for {symbol} - Price: ${fallback_data['last_price']}")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'USD',
-                        'signal': fallback_data.get('signal', 'HOLD'),
-                        'rsi': fallback_data.get('rsi', 50.0),
-                        'data_source': 'FALLBACK DATA - Service temporarily unavailable',
-                    }
+                    stock_info = _build_fallback_stock_info(symbol, fallback_data, 'USD')
                 elif symbol in FALLBACK_OSLO_DATA:
                     fallback_data = FALLBACK_OSLO_DATA[symbol]
                     current_app.logger.info(f"Using FALLBACK_OSLO_DATA for {symbol} - Price: {fallback_data['last_price']} NOK")
-                    stock_info = {
-                        'ticker': symbol,
-                        'name': fallback_data['name'],
-                        'longName': fallback_data['name'],
-                        'shortName': fallback_data['name'][:20],
-                        'regularMarketPrice': fallback_data['last_price'],
-                        'last_price': fallback_data['last_price'],
-                        'regularMarketChange': fallback_data['change'],
-                        'change': fallback_data['change'],
-                        'regularMarketChangePercent': fallback_data['change_percent'],
-                        'change_percent': fallback_data['change_percent'],
-                        'volume': fallback_data.get('volume', 1000000),
-                        'regularMarketVolume': fallback_data.get('volume', 1000000),
-                        'marketCap': fallback_data.get('market_cap', None),
-                        'sector': fallback_data['sector'],
-                        'currency': 'NOK',
-                        'signal': fallback_data.get('signal', 'HOLD'),
-                        'rsi': fallback_data.get('rsi', 50.0),
-                        'data_source': 'FALLBACK DATA - Service temporarily unavailable',
-                    }
+                    stock_info = _build_fallback_stock_info(symbol, fallback_data, 'NOK')
             except Exception as e:
                 current_app.logger.error(f"Error accessing fallback data for {symbol}: {e}")
                 stock_info = None
@@ -1043,10 +1033,29 @@ def details(symbol):
         # Get current price from the stock info (whether real or synthetic)
         current_price = stock_info.get('regularMarketPrice', stock_info.get('last_price', stock_info.get('price', 100.0)))
         
-        # STEP 16 FIX: Calculate real technical indicators using historical data
+        # STEP 16 FIX (+ caching layer): Calculate real technical indicators using historical data
         technical_data = {}
+
+        # ---- CACHING START ----
+        cache_key = f"tech::{symbol.upper()}::1d"
+        now_ts = time.time()
+        cache_entry = _TECH_CACHE.get(cache_key)
+        if cache_entry:
+            age = now_ts - cache_entry['ts']
+            if age < TECH_CACHE_TTL_SECONDS:
+                technical_data = cache_entry['data'].copy()
+                technical_data['cache_hit'] = True
+                current_app.logger.debug(f"[TECH CACHE] HIT {symbol} age={age:.1f}s TTL={TECH_CACHE_TTL_SECONDS}s")
+            else:
+                current_app.logger.debug(f"[TECH CACHE] STALE {symbol} age={age:.1f}s – recomputing")
+        else:
+            current_app.logger.debug(f"[TECH CACHE] MISS {symbol} – computing")
+        # ---- CACHING END ----
         
         try:
+            # If we already populated from cache, skip real recomputation
+            if technical_data.get('cache_hit'):
+                raise Exception('CACHE_HIT_SKIP')
             # Get historical data for technical calculations
             historical_data = DataService.get_historical_data(symbol, period='3mo', interval='1d')
             
@@ -1148,7 +1157,8 @@ def details(symbol):
                     'signal': signal,
                     'signal_strength': signal_strength,
                     'signal_reason': signal_reason,
-                    'data_source': 'REAL CALCULATIONS'
+                    'data_source': 'REAL CALCULATIONS',
+                    'cache_hit': False
                 }
                 
                 current_app.logger.info(f"✅ STEP 16 SUCCESS: Real technical analysis complete for {symbol}")
@@ -1157,8 +1167,16 @@ def details(symbol):
                 current_app.logger.warning(f"⚠️ Insufficient historical data for {symbol}, using fallback calculations")
                 raise Exception("Insufficient historical data")
                 
+            # Store successful real calculation in cache (exclude transient keys)
+            _TECH_CACHE[cache_key] = {
+                'data': {k: v for k, v in technical_data.items() if k != 'cache_hit'},
+                'ts': now_ts
+            }
         except Exception as e:
-            current_app.logger.warning(f"⚠️ Technical analysis failed for {symbol}: {e}, using fallback synthetic data")
+            if str(e) == 'CACHE_HIT_SKIP':
+                current_app.logger.debug(f"[TECH CACHE] Bypass recompute for {symbol}")
+            else:
+                current_app.logger.warning(f"⚠️ Technical analysis failed for {symbol}: {e}, using fallback synthetic data")
             
             # Fallback to improved synthetic data with consistent seeding
             base_hash = hash(symbol) % 1000
@@ -1189,24 +1207,26 @@ def details(symbol):
                 signal = 'HOLD'
                 signal_strength = 'Medium'
             
-            technical_data = {
-                'rsi': round(rsi, 1),
-                'macd': round(macd, 3),
-                'macd_signal': round(macd_signal, 3),
-                'macd_histogram': round(macd - macd_signal, 3),
-                'bollinger_upper': round(bollinger_upper, 2),
-                'bollinger_middle': round(bollinger_middle, 2),
-                'bollinger_lower': round(bollinger_lower, 2),
-                'sma_20': round(sma_20, 2),
-                'sma_50': round(sma_50, 2),
-                'ema_12': round(ema_12, 2),
-                'stochastic_k': round(stochastic_k, 1),
-                'stochastic_d': round(stochastic_d, 1),
-                'signal': signal,
-                'signal_strength': signal_strength,
-                'signal_reason': f'Fallback: RSI ({rsi:.1f}) og MACD ({macd:.2f})',
-                'data_source': 'FALLBACK SYNTHETIC'
-            }
+            if not technical_data:  # only build fallback if cache not used
+                technical_data = {
+                    'rsi': round(rsi, 1),
+                    'macd': round(macd, 3),
+                    'macd_signal': round(macd_signal, 3),
+                    'macd_histogram': round(macd - macd_signal, 3),
+                    'bollinger_upper': round(bollinger_upper, 2),
+                    'bollinger_middle': round(bollinger_middle, 2),
+                    'bollinger_lower': round(bollinger_lower, 2),
+                    'sma_20': round(sma_20, 2),
+                    'sma_50': round(sma_50, 2),
+                    'ema_12': round(ema_12, 2),
+                    'stochastic_k': round(stochastic_k, 1),
+                    'stochastic_d': round(stochastic_d, 1),
+                    'signal': signal,
+                    'signal_strength': signal_strength,
+                    'signal_reason': f'Fallback: RSI ({rsi:.1f}) og MACD ({macd:.2f})',
+                    'data_source': 'FALLBACK SYNTHETIC',
+                    'cache_hit': False
+                }
         
         # Create stock info for template
         currency = 'NOK' if symbol.endswith('.OL') else 'USD'
