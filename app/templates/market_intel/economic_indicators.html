@@ -127,10 +127,10 @@ h1, h2, h3, h4, h5, h6 {
                 <h1 class="h2 mb-0">
                     <i class="bi bi-graph-up-arrow me-3"></i>Økonomiindikatorer
                 </h1>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-primary active">Live</button>
-                    <button type="button" class="btn btn-outline-primary">Daglig</button>
-                    <button type="button" class="btn btn-outline-primary">Ukentlig</button>
+                <div class="btn-group" role="group" id="timeframe-buttons" aria-label="Tidsoppløsning">
+                    <button type="button" class="btn btn-outline-primary active" data-timeframe="live" aria-pressed="true">Live</button>
+                    <button type="button" class="btn btn-outline-primary" data-timeframe="daily" aria-pressed="false">Daglig</button>
+                    <button type="button" class="btn btn-outline-primary" data-timeframe="weekly" aria-pressed="false">Ukentlig</button>
                 </div>
             </div>
         </div>
@@ -448,4 +448,55 @@ h1, h2, h3, h4, h5, h6 {
         </div>
     </div>
 </div>
+
+<script>
+// Economic indicators timeframe switching (progressive enhancement)
+(function(){
+    const btnGroup = document.getElementById('timeframe-buttons');
+    if(!btnGroup) return; // graceful degradation
+    const buttons = btnGroup.querySelectorAll('button[data-timeframe]');
+    const dashboard = document.querySelector('.economic-dashboard');
+    const indicatorsRoot = document.getElementById('stock-details-root');
+
+    // Simple in-memory mock datasets (could be replaced by fetch calls to /market-intel/api/... endpoints later)
+    const datasets = {
+        live: {
+            inflation: '2.8%', rate: '4.5%', unemployment: '3.2%', oil: '85.2'
+        },
+        daily: {
+            inflation: '2.81%', rate: '4.50%', unemployment: '3.19%', oil: '84.9'
+        },
+        weekly: {
+            inflation: '2.85%', rate: '4.50%', unemployment: '3.25%', oil: '83.7'
+        }
+    };
+
+    function updateDashboard(frame){
+        try {
+            const data = datasets[frame];
+            if(!data) return;
+            const dashValues = dashboard ? dashboard.querySelectorAll('.dashboard-value') : [];
+            // Order: inflation, rate, unemployment, oil
+            if(dashValues[0]) dashValues[0].textContent = data.inflation;
+            if(dashValues[1]) dashValues[1].textContent = data.rate;
+            if(dashValues[2]) dashValues[2].textContent = data.unemployment;
+            if(dashValues[3]) dashValues[3].textContent = data.oil;
+            dashboard.setAttribute('data-timeframe-active', frame);
+        } catch(e){
+            console.warn('Economic indicators update failed:', e);
+        }
+    }
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const frame = btn.getAttribute('data-timeframe');
+            // Toggle active state
+            buttons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed','true');
+            updateDashboard(frame);
+        });
+    });
+})();
+</script>
 {% endblock %}
