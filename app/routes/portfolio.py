@@ -2076,6 +2076,25 @@ def audit_history():
     action = request.args.get('action', type=str)
     if action:
         q = q.filter_by(action=action)
+    # Date range filtering
+    from datetime import datetime
+    start_date = request.args.get('start_date', type=str)
+    end_date = request.args.get('end_date', type=str)
+    if start_date:
+        try:
+            dt_start = datetime.strptime(start_date, "%Y-%m-%d")
+            q = q.filter(PortfolioAuditLog.created_at >= dt_start)
+        except Exception:
+            pass
+    if end_date:
+        try:
+            dt_end = datetime.strptime(end_date, "%Y-%m-%d")
+            # To include the full end date, add one day and filter less than next day
+            from datetime import timedelta
+            dt_end_next = dt_end + timedelta(days=1)
+            q = q.filter(PortfolioAuditLog.created_at < dt_end_next)
+        except Exception:
+            pass
     # Pagination
     page = request.args.get('page', 1, type=int)
     per_page = 50
