@@ -88,6 +88,9 @@ class Portfolio(db.Model):
 
 class PortfolioStock(db.Model):
     __tablename__ = 'portfolio_stocks'
+    __table_args__ = (
+        db.Index('ix_portfolio_stocks_portfolio_deleted', 'portfolio_id', 'deleted_at'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolios.id'))
@@ -96,6 +99,7 @@ class PortfolioStock(db.Model):
     purchase_price = db.Column(db.Float)
     purchase_date = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.String(256))
+    deleted_at = db.Column(db.DateTime, nullable=True, index=True)
     
     # Relationship - using backref for consistency  
     # NOTE: portfolio relationship is defined in Portfolio model via backref

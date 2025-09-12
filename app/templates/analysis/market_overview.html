@@ -31,7 +31,15 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3">Markedsoversikt</h1>
+                <h1 class="h3 mb-0">Markedsoversikt</h1>
+                <div class="d-flex gap-2 align-items-center">
+                    {% if errors %}
+                        <span class="badge bg-warning text-dark" title="Det oppstod problemer ved lasting av alle datasett">Delvis data</span>
+                    {% endif %}
+                    <button id="refreshMarketOverview" class="btn btn-sm btn-outline-primary" type="button">
+                        <i class="bi bi-arrow-clockwise"></i> Oppdater
+                    </button>
+                </div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Hjem</a></li>
@@ -42,6 +50,15 @@
             </div>
         </div>
     </div>
+
+    {% if errors %}
+    <div class="alert alert-warning py-2">
+        <strong>Noen datasett manglet:</strong>
+        <ul class="mb-0 small">
+            {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
     {% if error %}
     <div class="alert alert-danger">
@@ -462,5 +479,13 @@ function showToast(message, type) {
     // Remove after hidden
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
+</script>
+<script>
+// Refresh button triggers a hard reload without cached values
+document.getElementById('refreshMarketOverview')?.addEventListener('click', () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('ts', Date.now()); // cache buster
+    window.location.replace(url.toString());
+});
 </script>
 {% endblock %}

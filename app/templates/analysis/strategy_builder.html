@@ -123,45 +123,32 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped" id="strategiesTable">
                             <thead>
                                 <tr>
                                     <th>Navn</th>
                                     <th>Opprettet</th>
-                                    <th>Siste Test</th>
-                                    <th>Avkastning</th>
+                                    <th>ID</th>
                                     <th>Handlinger</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>RSI Oversold/Overbought</td>
-                                    <td>2024-01-15</td>
-                                    <td>2024-01-20</td>
-                                    <td><span class="text-success">+12.3%</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i> Rediger
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-success">
-                                            <i class="bi bi-play"></i> Test
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Moving Average Crossover</td>
-                                    <td>2024-01-10</td>
-                                    <td>2024-01-18</td>
-                                    <td><span class="text-danger">-3.1%</span></td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i> Rediger
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-success">
-                                            <i class="bi bi-play"></i> Test
-                                        </button>
-                                    </td>
-                                </tr>
+                            <tbody id="strategiesBody">
+                                {% if strategies and strategies|length > 0 %}
+                                    {% for s in strategies %}
+                                    <tr data-id="{{ s.id }}">
+                                        <td>{{ s.name }}</td>
+                                        <td>{{ s.created_at.strftime('%Y-%m-%d %H:%M') if s.created_at else '' }}</td>
+                                        <td>{{ s.id }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" disabled title="Ikke implementert ennå">
+                                                <i class="bi bi-pencil"></i> Rediger
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr class="text-muted"><td colspan="4">Ingen strategier lagret ennå.</td></tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -172,17 +159,60 @@
 </div>
 
 <script>
-document.getElementById('strategyForm').addEventListener('submit', function(e) {
+async function reloadStrategies() {
+    try {
+        const resp = await fetch('/analysis/api/strategies');
+        const data = await resp.json();
+        if (!data.success) return;
+        const body = document.getElementById('strategiesBody');
+        body.innerHTML = '';
+        if (data.strategies.length === 0) {
+            body.innerHTML = '<tr class="text-muted"><td colspan="4">Ingen strategier lagret ennå.</td></tr>';
+            return;
+        }
+        for (const s of data.strategies) {
+            const tr = document.createElement('tr');
+            tr.dataset.id = s.id;
+            tr.innerHTML = `<td>${s.name}</td><td>${(new Date(s.created_at)).toLocaleString()}</td><td>${s.id}</td><td><button class="btn btn-sm btn-outline-primary" disabled title="Ikke implementert ennå"><i class="bi bi-pencil"></i> Rediger</button></td>`;
+            body.appendChild(tr);
+        }
+    } catch(e) { console.warn('Kunne ikke laste strategier', e); }
+}
+
+document.getElementById('strategyForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    const strategyName = document.getElementById('strategyName').value;
+    const strategyName = document.getElementById('strategyName').value.trim();
     if (!strategyName) {
         alert('Vennligst skriv inn et navn for strategien.');
         return;
     }
-    
-    alert('Strategien "' + strategyName + '" er lagret!');
+    const payload = {
+        name: strategyName,
+        buy: { indicator: document.getElementById('buyIndicator1').value, condition: document.getElementById('buyCondition1').value, value: document.getElementById('buyValue1').value },
+        sell: { indicator: document.getElementById('sellIndicator1').value, condition: document.getElementById('sellCondition1').value, value: document.getElementById('sellValue1').value },
+        risk: { stop_loss: document.getElementById('stopLoss').value, take_profit: document.getElementById('takeProfit').value }
+    };
+    try {
+        const btn = this.querySelector('button[type="submit"]');
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lagre...';
+        const resp = await fetch('/analysis/api/strategies', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        const data = await resp.json();
+        if (data.success) {
+            alert('Strategi lagret! ID: ' + data.id);
+            this.reset();
+            reloadStrategies();
+        } else {
+            alert('Kunne ikke lagre: ' + (data.error || 'Ukjent feil'));
+        }
+        btn.disabled = false; btn.innerHTML = original;
+    } catch(err) {
+        alert('Feil ved lagring.');
+    }
 });
+
+// Initial load (if server passed no strategies we still fetch to confirm)
+reloadStrategies();
 
 document.getElementById('testStrategy').addEventListener('click', function() {
     const strategyName = document.getElementById('strategyName').value;

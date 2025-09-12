@@ -107,16 +107,19 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-info">
+                                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-info" title="Detaljer">
                                                             <i class="bi bi-info-circle"></i>
-                                                        </a>                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-graph-up"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmRemove('{{ stock.ticker }}', '{{ stock.id }}')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                                        </a>
+                                                        <a href="{{ url_for('stocks.details', symbol=stock.ticker) }}" class="btn btn-sm btn-primary" title="Analyse">
+                                                            <i class="bi bi-graph-up"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-sm btn-danger" title="Fjern" data-bs-toggle="modal" data-bs-target="#deleteStockModal" data-ticker="{{ stock.ticker }}" data-stock-id="{{ stock.id }}">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
                                                     </div>
-                                                    <form id="remove-form-{{ stock.id }}" action="{{ url_for('portfolio.remove_stock', id=portfolio.id, stock_id=stock.id) }}" method="post" style="display: none;"></form>
+                                                    <form id="remove-form-{{ stock.id }}" action="{{ url_for('portfolio.remove_stock', id=portfolio.id, stock_id=stock.id) }}" method="post" style="display:none;">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                    </form>
                                                 </td>
                                             </tr>
                                             {% endfor %}
@@ -177,10 +180,21 @@
 {% endif %}
 
 <script>
-    function confirmRemove(ticker, stockId) {
-        if (confirm('Are you sure you want to remove ' + ticker + ' from your portfolio?')) {
-            document.getElementById('remove-form-' + stockId).submit();
-        }
+    // Bootstrap modal handling for deletion
+    const deleteModalEl = document.getElementById('deleteStockModal');
+    if (deleteModalEl) {
+        deleteModalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const ticker = button.getAttribute('data-ticker');
+            const stockId = button.getAttribute('data-stock-id');
+            const confirmBtn = deleteModalEl.querySelector('#confirmDeleteStockBtn');
+            const tickerSpan = deleteModalEl.querySelector('#deleteStockTicker');
+            if (tickerSpan) tickerSpan.textContent = ticker;
+            confirmBtn.onclick = function() {
+                const form = document.getElementById('remove-form-' + stockId);
+                if (form) form.submit();
+            };
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -234,4 +248,24 @@
         }
     });
 </script>
+
+<!-- Delete Stock Confirmation Modal -->
+<div class="modal fade" id="deleteStockModal" tabindex="-1" aria-labelledby="deleteStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteStockModalLabel"><i class="bi bi-trash me-2"></i>Fjern aksje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Lukk"></button>
+            </div>
+            <div class="modal-body">
+                Er du sikker på at du vil fjerne <strong id="deleteStockTicker"></strong> fra porteføljen?
+                Denne handlingen kan ikke angres.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteStockBtn">Fjern</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

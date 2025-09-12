@@ -78,6 +78,5 @@
 /* Remove legacy !important rules */
 .card-header h5.mb-0,
 .card-header h6.mb-0 {
-    color: inherit !important;
     background: transparent !important;
 }

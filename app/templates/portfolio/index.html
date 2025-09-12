@@ -42,63 +42,63 @@
               <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
             {% endfor %}
           </select>
-        </div>
-      </div>
-    {% endif %}
+    // Modal-based portfolio deletion with typed confirmation
+    let deletePortfolioId = null;
+    function deletePortfolio(portfolioId) {
+      deletePortfolioId = portfolioId;
+      const modalEl = document.getElementById('confirmDeletePortfolioModal');
+      if (!modalEl) return;
+      const portfolioName = document.querySelector('h2.mb-1')?.innerText || 'porteføljen';
+      modalEl.querySelector('#deletePortfolioName').innerText = portfolioName;
+      modalEl.querySelector('#confirmPortfolioName').value = '';
+      modalEl.querySelector('#confirmDeleteBtn').disabled = true;
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+    }
 
-    {# Dashboard widgets (hidden until preferences loaded) #}
-    <div id="dashboard-widgets" class="row mb-4">
-      <div class="col-md-4" id="widget-total-value" style="display:none">
-        <div class="card text-center border-primary">
-          <div class="card-body">
-            <h5 class="card-title text-primary"><i class="bi bi-wallet2 me-2"></i>Total porteføljeverdi</h5>
-            <p class="display-6 fw-bold">{{ (total_value|default(0))|round(2) }} kr</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4" id="widget-profit-loss" style="display:none">
-        <div class="card text-center {% if total_profit_loss > 0 %}border-success{% elif total_profit_loss < 0 %}border-danger{% else %}border-secondary{% endif %}">
-          <div class="card-body">
-            <h5 class="card-title {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
-              <i class="bi bi-graph-{% if total_profit_loss > 0 %}up{% elif total_profit_loss < 0 %}down{% else %}up{% endif %} me-2"></i>Samlet gevinst/tap
-            </h5>
-            <p class="display-6 fw-bold {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">{{ (total_profit_loss|default(0))|round(2) }} kr</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4" id="widget-alerts" style="display:none">
-        <div class="card text-center border-info">
-          <div class="card-body">
-            <h5 class="card-title text-info"><i class="bi bi-bell me-2"></i>Aktive varsler</h5>
-            <p class="display-6 fw-bold">{{ active_alerts|default(0) }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    function onPortfolioNameInput(ev) {
+      const input = ev.target.value.trim();
+      const expected = document.getElementById('deletePortfolioName').innerText.trim();
+      document.getElementById('confirmDeleteBtn').disabled = (input !== expected);
+    }
 
-    {% if stocks %}
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h2 class="mb-1">{{ portfolio.name }}</h2>
-            <p class="mb-0">Total verdi: <strong>{{ (total_value|default(0))|round(2) }} NOK</strong></p>
-          </div>
-          <div class="text-end">
-            {% if total_profit_loss > 0 %}
-              <span class="badge bg-success fs-6">
-                <i class="bi bi-arrow-up"></i> +{{ total_profit_loss|round(2) }} NOK
-              </span>
-            {% elif total_profit_loss < 0 %}
-              <span class="badge bg-danger fs-6">
-                <i class="bi bi-arrow-down"></i> {{ total_profit_loss|round(2) }} NOK
-              </span>
-            {% else %}
-              <span class="badge bg-secondary fs-6">
-                <i class="bi bi-dash"></i> 0.00 NOK
-              </span>
-            {% endif %}
-          </div>
+    function submitPortfolioDeletion() {
+      if (!deletePortfolioId) return;
+      const portfolioCard = document.querySelector(`[data-portfolio-id="${deletePortfolioId}"]`);
+      if (portfolioCard) {
+        portfolioCard.style.opacity = '0.5';
+        portfolioCard.style.pointerEvents = 'none';
+      }
+      fetch(`/portfolio/delete/${deletePortfolioId}`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          showToast(data.message || 'Portefølje slettet', 'success');
+          setTimeout(() => window.location.href = '/portfolio/overview', 600);
+        } else {
+          if (portfolioCard) {
+            portfolioCard.style.opacity = '1';
+            portfolioCard.style.pointerEvents = 'auto';
+          }
+          showToast(data.error || 'Kunne ikke slette portefølje', 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Delete portfolio error', err);
+        if (portfolioCard) {
+          portfolioCard.style.opacity = '1';
+          portfolioCard.style.pointerEvents = 'auto';
+        }
+        showToast('Teknisk feil ved sletting av portefølje', 'error');
+      });
+    }
         </div>
       </div>
       <div class="card-body">
@@ -347,4 +347,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 </script>
+
+<!-- Delete Portfolio Confirmation Modal -->
+<div class="modal fade" id="confirmDeletePortfolioModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Bekreft sletting</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>For å bekrefte sletting, skriv navnet på porteføljen nedenfor:</p>
+        <p class="fw-bold text-danger" id="deletePortfolioName">(navn)</p>
+        <input type="text" id="confirmPortfolioName" oninput="onPortfolioNameInput(event)" class="form-control" placeholder="Skriv porteføljenavnet" autocomplete="off" />
+        <div class="form-text">Denne handlingen kan ikke angres.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+        <button id="confirmDeleteBtn" type="button" class="btn btn-danger" onclick="submitPortfolioDeletion()" disabled>Slett</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

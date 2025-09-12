@@ -35,25 +35,28 @@ This stub exists only to guard accidental imports; it issues a redirect.
 """
 @analysis.route('/recommendations')
 @analysis.route('/recommendations/<ticker>')
-def recommendations(ticker: str = None):  # pragma: no cover - legacy shim
-    """Legacy shim kept for backward compatibility; primary logic moved to analysis_clean.recommendations.
+def recommendations(ticker: str = None):  # pragma: no cover - now thin delegate
+    """Delegate to canonical implementation in analysis_clean without redirect loop.
 
-    NOTE: This endpoint name is 'analysis.recommendations'. Older templates still call 'analysis.recommendation'.
-    A separate alias route below preserves that older endpoint name with a 301 redirect, minimizing risk on a live system
-    while we gradually migrate templates. Once all templates are updated, the alias can be safely removed.
+    The previous implementation returned a 301 redirect to itself causing a loop.
+    We import lazily to avoid circular imports and call the real view function directly.
     """
-    return redirect(url_for('analysis.recommendations'), code=301)
+    try:
+        from .analysis_clean import recommendations as clean_recommendations  # type: ignore
+        return clean_recommendations(ticker)  # pass through symbol (ticker)
+    except Exception as e:  # fallback: show error template
+        try:
+            logger.error(f"Failed delegating recommendations: {e}")
+        except Exception:
+            pass
+        return render_template('error.html', error='Anbefalinger er midlertidig utilgjengelig.')
 
 # Explicit alias preserving historic endpoint name used across many templates.
 @analysis.route('/recommendation', endpoint='recommendation')
 @analysis.route('/recommendation/<ticker>', endpoint='recommendation_with_ticker')  # distinct endpoint to avoid collision
-def recommendation_alias(ticker: str = None):  # pragma: no cover - alias redirect
-    target = url_for('analysis.recommendations', ticker=ticker) if ticker else url_for('analysis.recommendations')
-    try:
-        logger.info("legacy_recommendation_alias_hit", extra={'ticker': ticker})
-    except Exception:
-        pass
-    return redirect(target, code=301)
+def recommendation_alias(ticker: str = None):  # pragma: no cover - legacy alias forwards internally
+    # Directly delegate instead of redirect to prevent loops
+    return recommendations(ticker)
 
 @analysis.route('/api/sentiment')
 @access_required
@@ -290,12 +293,19 @@ def index():
 
 @analysis.route('/technical', methods=['GET', 'POST'])
 @analysis.route('/technical/', methods=['GET', 'POST'])
+@analysis.route('/technical/<path:path_symbol>', methods=['GET'])
 @access_required  
-def technical():
+def technical(path_symbol=None):
     """Advanced Technical analysis with comprehensive indicators and patterns"""
     try:
         # Collect raw symbol or ticker from query/form
-        raw_symbol = (request.args.get('symbol') or request.args.get('ticker') or 
+        # Support path-based symbol (/analysis/technical/AAPL) -> unify as query parameter
+        if path_symbol and not request.args.get('symbol'):
+            from flask import redirect, url_for
+            clean_sym = path_symbol.strip()
+            return redirect(url_for('analysis.technical', symbol=clean_sym))
+
+        raw_symbol = (request.args.get('symbol') or request.args.get('ticker') or
                       request.form.get('symbol') or request.form.get('ticker'))
 
         if not raw_symbol or not raw_symbol.strip():
@@ -930,6 +940,7 @@ def market_overview():
         global_data = {}
         crypto_data = {}
         currency_data = {}
+        errors = []
         
         # Try to get data with timeout protection (cross-platform)
         try:
@@ -955,76 +966,59 @@ def market_overview():
             data_thread.join(timeout=5.0)
             
             if data_thread.is_alive():
-                logger.warning("⚠️ DataService timeout after 5 seconds, using fallback")
-                raise TimeoutError("DataService timeout")
+                logger.warning("⚠️ DataService timeout after 5 seconds - returning partial/empty real data (no synthetic fallback)")
+                errors.append("Tidsavbrudd mot dataservice – viser det som er tilgjengelig.")
             
             oslo_data = data_results['oslo']
             global_data = data_results['global']
             crypto_data = data_results['crypto']
             currency_data = data_results['currency']
                 
-        except (TimeoutError, Exception) as data_error:
-            logger.warning(f"⚠️ DataService failed/timeout ({data_error}), using optimized fallback")
-            
-            # Fast fallback data - pre-computed for performance
-            oslo_data = {
-                'EQNR.OL': {'name': 'Equinor ASA', 'last_price': 270.50, 'change_percent': 1.2, 'volume': 1250000, 'change': 3.20},
-                'DNB.OL': {'name': 'DNB Bank ASA', 'last_price': 185.20, 'change_percent': -0.8, 'volume': 890000, 'change': -1.48},
-                'TEL.OL': {'name': 'Telenor ASA', 'last_price': 125.30, 'change_percent': 0.5, 'volume': 720000, 'change': 0.63},
-                'NHY.OL': {'name': 'Norsk Hydro ASA', 'last_price': 45.20, 'change_percent': 2.1, 'volume': 2100000, 'change': 0.93},
-                'MOWI.OL': {'name': 'Mowi ASA', 'last_price': 182.50, 'change_percent': -1.3, 'volume': 450000, 'change': -2.40}
-            }
-            global_data = {
-                'AAPL': {'name': 'Apple Inc.', 'last_price': 185.00, 'change_percent': 0.9, 'volume': 58000000, 'change': 1.65},
-                'MSFT': {'name': 'Microsoft Corporation', 'last_price': 420.50, 'change_percent': 1.5, 'volume': 24000000, 'change': 6.22},
-                'GOOGL': {'name': 'Alphabet Inc.', 'last_price': 140.20, 'change_percent': -0.3, 'volume': 28000000, 'change': -0.42},
-                'TSLA': {'name': 'Tesla Inc.', 'last_price': 210.30, 'change_percent': 3.2, 'volume': 85000000, 'change': 6.51},
-                'NVDA': {'name': 'NVIDIA Corporation', 'last_price': 875.20, 'change_percent': 2.8, 'volume': 45000000, 'change': 23.80}
-            }
-            crypto_data = {
-                'BTC-USD': {'name': 'Bitcoin', 'last_price': 43500.0, 'change_percent': 2.35, 'change': 1000.0},
-                'ETH-USD': {'name': 'Ethereum', 'last_price': 2650.0, 'change_percent': 1.85, 'change': 48.0}
-            }
-            currency_data = {
-                'USD-NOK': {'rate': 10.25, 'change_percent': 0.5, 'change': 0.051}
-            }
+        except Exception as data_error:
+            logger.warning(f"⚠️ DataService feil ({data_error}) – ingen fallback brukes, viser tomme seksjoner")
+            errors.append("Kunne ikke laste markedsdata nå – prøv å oppdatere siden om litt.")
         
-        logger.info(f"✅ Market data loaded - Oslo: {len(oslo_data)}, Global: {len(global_data)}, Crypto: {len(crypto_data)}")
+        logger.info(f"✅ Market data attempt - Oslo: {len(oslo_data)}, Global: {len(global_data)}, Crypto: {len(crypto_data)}, FX: {len(currency_data)}")
         
-        # Additional safeguard: Ensure global_data is never empty for authenticated users
-        if not global_data or len(global_data) == 0:
-            logger.warning("⚠️ Global data empty, providing guaranteed fallback for authenticated users")
-            global_data = {
-                'AAPL': {'name': 'Apple Inc.', 'last_price': 185.00, 'change_percent': 0.9, 'volume': 58000000, 'change': 1.65},
-                'MSFT': {'name': 'Microsoft Corporation', 'last_price': 420.50, 'change_percent': 1.5, 'volume': 24000000, 'change': 6.22},
-                'GOOGL': {'name': 'Alphabet Inc.', 'last_price': 140.20, 'change_percent': -0.3, 'volume': 28000000, 'change': -0.42},
-                'TSLA': {'name': 'Tesla Inc.', 'last_price': 210.30, 'change_percent': 3.2, 'volume': 85000000, 'change': 6.51},
-                'NVDA': {'name': 'NVIDIA Corporation', 'last_price': 875.20, 'change_percent': 2.8, 'volume': 45000000, 'change': 23.80}
-            }
-        
-        # Fast calculation of market summaries
-        oslo_avg = sum(data.get('last_price', 0) for data in oslo_data.values()) / max(len(oslo_data), 1)
-        global_avg = sum(data.get('last_price', 0) for data in global_data.values()) / max(len(global_data), 1)
+        # Remove any synthetic/guaranteed fallback data (user requirement: NEVER show fallback)
+        def _filter_real(dataset):
+            return {k: v for k, v in dataset.items() if v.get('source') != 'GUARANTEED DATA'}
+
+        filtered_oslo = _filter_real(oslo_data)
+        filtered_global = _filter_real(global_data)
+
+        # If filtering removed everything keep original empty to trigger empty-state UI
+        if oslo_data and not filtered_oslo:
+            errors.append("Ingen verifisert Oslo Børs data kunne lastes akkurat nå.")
+        if global_data and not filtered_global:
+            errors.append("Ingen verifisert global aksjedata tilgjengelig.")
+
+        oslo_data = filtered_oslo
+        global_data = filtered_global
+
+        # Fast calculation of market summaries based only on real data
+        oslo_avg = (sum(d.get('last_price', 0) for d in oslo_data.values()) / len(oslo_data)) if oslo_data else None
+        global_avg = (sum(d.get('last_price', 0) for d in global_data.values()) / len(global_data)) if global_data else None
         
         market_summaries = {
             'oslo': {
-                'index_value': round(oslo_avg, 2),
-                'change': round(sum(data.get('change', 0) for data in oslo_data.values()), 2),
-                'change_percent': round(sum(data.get('change_percent', 0) for data in oslo_data.values()) / max(len(oslo_data), 1), 2)
+                'index_value': round(oslo_avg, 2) if oslo_avg is not None else None,
+                'change': round(sum(d.get('change', 0) for d in oslo_data.values()), 2) if oslo_data else None,
+                'change_percent': round(sum(d.get('change_percent', 0) for d in oslo_data.values()) / len(oslo_data), 2) if oslo_data else None
             },
             'global_market': {
-                'index_value': round(global_avg, 2),
-                'change': round(sum(data.get('change', 0) for data in global_data.values()), 2), 
-                'change_percent': round(sum(data.get('change_percent', 0) for data in global_data.values()) / max(len(global_data), 1), 2)
+                'index_value': round(global_avg, 2) if global_avg is not None else None,
+                'change': round(sum(d.get('change', 0) for d in global_data.values()), 2) if global_data else None, 
+                'change_percent': round(sum(d.get('change_percent', 0) for d in global_data.values()) / len(global_data), 2) if global_data else None
             },
             'crypto': {
-                'index_value': crypto_data.get('BTC-USD', {}).get('last_price', 43500.0),
-                'change': crypto_data.get('BTC-USD', {}).get('change', 1000.0),
-                'change_percent': crypto_data.get('BTC-USD', {}).get('change_percent', 2.35)
+                'index_value': crypto_data.get('BTC-USD', {}).get('last_price') if crypto_data.get('BTC-USD') else None,
+                'change': crypto_data.get('BTC-USD', {}).get('change') if crypto_data.get('BTC-USD') else None,
+                'change_percent': crypto_data.get('BTC-USD', {}).get('change_percent') if crypto_data.get('BTC-USD') else None
             },
             'currency': {
-                'usd_nok': currency_data.get('USD-NOK', {}).get('rate', 10.25),
-                'usd_nok_change': currency_data.get('USD-NOK', {}).get('change_percent', 0.5)
+                'usd_nok': currency_data.get('USD-NOK', {}).get('rate') if currency_data.get('USD-NOK') else None,
+                'usd_nok_change': currency_data.get('USD-NOK', {}).get('change_percent') if currency_data.get('USD-NOK') else None
             }
         }
         
@@ -1043,7 +1037,8 @@ def market_overview():
                              currency=currency_data,
                              currency_data=currency_data,
                              market_summaries=market_summaries,
-                             market_summary=market_summary)
+                             market_summary=market_summary,
+                             errors=errors if errors else None)
                              
     except Exception as e:
         logger.error(f"Critical error in market overview: {e}", exc_info=True)
@@ -2652,6 +2647,58 @@ def backtest():
 @analysis.route('/strategy-builder')
 @access_required
 def strategy_builder():
-    """Strategy builder functionality"""
-    return render_template('analysis/strategy_builder.html', title='Strategibygger')
+    """Strategy builder functionality with persisted user strategies."""
+    user_strategies = []
+    try:
+        from ..models.strategy import Strategy  # type: ignore
+        if current_user.is_authenticated:
+            user_strategies = (Strategy.query
+                               .filter_by(user_id=current_user.id)
+                               .order_by(Strategy.created_at.desc())
+                               .limit(50).all())
+    except Exception as e:
+        try:
+            logger.warning(f"Could not load strategies: {e}")
+        except Exception:
+            pass
+    return render_template('analysis/strategy_builder.html',
+                           title='Strategibygger',
+                           strategies=user_strategies)
+
+@analysis.route('/api/strategies', methods=['GET', 'POST'])
+@access_required
+def api_strategies():
+    """Create or list user strategies (minimal implementation).
+
+    POST JSON: { name: str, buy: {...}, sell: {...}, risk: {...} }
+    """
+    try:
+        from ..extensions import db
+        from ..models.strategy import Strategy  # type: ignore
+        if request.method == 'POST':
+            data = request.get_json(silent=True) or {}
+            name = (data.get('name') or '').strip()
+            if not name:
+                return jsonify({'success': False, 'error': 'Strateginavn mangler'}), 400
+            strat = Strategy(
+                user_id=current_user.id,
+                name=name[:120],
+                buy_rules=data.get('buy') or {},
+                sell_rules=data.get('sell') or {},
+                risk_rules=data.get('risk') or {},
+            )
+            db.session.add(strat)
+            db.session.commit()
+            return jsonify({'success': True, 'id': strat.id})
+        # GET
+        strategies = []
+        if current_user.is_authenticated:
+            strategies = Strategy.query.filter_by(user_id=current_user.id).order_by(Strategy.created_at.desc()).all()
+        return jsonify({'success': True, 'strategies': [s.to_dict_basic() for s in strategies]})
+    except Exception as e:
+        try:
+            logger.error(f"Strategy API error: {e}")
+        except Exception:
+            pass
+        return jsonify({'success': False, 'error': 'Strategi API feil'}), 500
 

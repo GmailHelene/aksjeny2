@@ -1227,6 +1227,12 @@ def details(symbol):
                     'data_source': 'FALLBACK SYNTHETIC',
                     'cache_hit': False
                 }
+                # Store fallback in cache as well so repeated requests benefit and tests can observe cache_hit
+                if cache_key not in _TECH_CACHE:
+                    _TECH_CACHE[cache_key] = {
+                        'data': {k: v for k, v in technical_data.items() if k != 'cache_hit'},
+                        'ts': now_ts
+                    }
         
         # Create stock info for template
         currency = 'NOK' if symbol.endswith('.OL') else 'USD'

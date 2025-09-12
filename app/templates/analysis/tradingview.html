@@ -401,7 +401,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('loadChart').addEventListener('click', function() {
         const symbol = document.getElementById('symbolSearch').value.trim().toUpperCase();
         if (symbol) {
-            loadSymbol(symbol);
+            // Update URL to ensure server-side stock_info refresh & deep link
+            const url = new URL(window.location.href);
+            url.searchParams.set('symbol', symbol);
+            window.location.replace(url.toString());
         }
     });
     
@@ -410,7 +413,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             const symbol = this.value.trim().toUpperCase();
             if (symbol) {
-                loadSymbol(symbol);
+                const url = new URL(window.location.href);
+                url.searchParams.set('symbol', symbol);
+                window.location.replace(url.toString());
             }
         }
     });

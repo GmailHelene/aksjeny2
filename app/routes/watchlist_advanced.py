@@ -566,57 +566,38 @@ class WatchlistAnalyzer:
         return recommendations
 
 @watchlist_bp.route('/')
-@demo_access
-def index():
-    """Hovedside for watchlist med forbedret error handling"""
-    if not current_user.is_authenticated:
-        # Demo mode - show demo watchlists
-        demo_watchlists = [
-            {
-                'id': 1,
-                'name': 'Mine favoritter',
-                'description': 'Demo watchlist',
-                'stock_count': 5,
-                'created_at': datetime.now(),
-                'stocks': [
-                    {'symbol': 'EQNR.OL', 'name': 'Equinor', 'price': 280.5, 'change': 2.1},
-                    {'symbol': 'DNB.OL', 'name': 'DNB Bank', 'price': 195.8, 'change': -1.2},
-                    {'symbol': 'AAPL', 'name': 'Apple', 'price': 175.3, 'change': 3.5},
-                    {'symbol': 'TSLA', 'name': 'Tesla', 'price': 245.7, 'change': -5.2},
-                    {'symbol': 'MSFT', 'name': 'Microsoft', 'price': 378.9, 'change': 1.8}
-                ]
-            }
-        ]
-        return render_template('watchlist/index.html', watchlists=demo_watchlists, demo_mode=True)
-    
+@login_required
+def watchlist_index():
+    """Watchlist index with ETag caching based on user id and item count+latest update."""
+    from ..models.watchlist import Watchlist, WatchlistItem
     try:
-        # Get user's watchlists with enhanced error handling
-        watchlists = Watchlist.query.filter_by(user_id=current_user.id).all()
-        
-        # Add stock count to each watchlist
-        for watchlist in watchlists:
-            try:
-                watchlist.stock_count = len(watchlist.items)
-            except Exception as e:
-                current_app.logger.warning(f"Error counting stocks in watchlist {watchlist.id}: {e}")
-                watchlist.stock_count = 0
-        
-        current_app.logger.info(f"Loaded {len(watchlists)} watchlists for user {current_user.id}")
-        
-        # Instead of trying to load market data here (which causes loading issues),
-        # just pass the basic watchlist info and let the template handle data loading
-        return render_template('watchlist/index.html', 
-                             watchlists=watchlists, 
-                             demo_mode=False,
-                             loading_complete=True)
-    
+        watchlist = Watchlist.query.filter_by(user_id=current_user.id).order_by(Watchlist.id).first()
+        item_count = 0
+        last_updated = '0'
+        if watchlist:
+            items = WatchlistItem.query.filter_by(watchlist_id=watchlist.id).all()
+            item_count = len(items)
+            if items:
+                # assume each has updated_at or created_at
+                timestamps = []
+                for it in items:
+                    ts = getattr(it, 'updated_at', None) or getattr(it, 'created_at', None)
+                    if ts:
+                        timestamps.append(ts.isoformat())
+                if timestamps:
+                    last_updated = max(timestamps)
+        import hashlib
+        etag_base = f"watchlist:{current_user.id}:{item_count}:{last_updated}"
+        etag = hashlib.sha1(etag_base.encode()).hexdigest()
+        if request.headers.get('If-None-Match') == etag:
+            return '', 304
+        resp = render_template('watchlist/index.html', watchlists=[watchlist] if watchlist else [], demo_mode=False)
+        response = current_app.make_response(resp)
+        response.headers['ETag'] = etag
+        return response
     except Exception as e:
-        current_app.logger.error(f"Error loading watchlists for user {current_user.id}: {e}")
-        flash('Feil ved lasting av watchlists', 'error')
-        return render_template('watchlist/index.html', 
-                             watchlists=[], 
-                             demo_mode=False,
-                             loading_complete=True)
+        current_app.logger.error(f"Watchlist index error: {e}")
+        return render_template('watchlist/index.html', watchlists=[], demo_mode=False)
 
 @watchlist_bp.route('/create', methods=['GET', 'POST'])
 @login_required

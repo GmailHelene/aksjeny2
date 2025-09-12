@@ -105,7 +105,12 @@
                     <h6><i class="bi bi-bullseye"></i> Dagens Høydepunkter</h6>
                 </div>
                 <div class="card-body">
-                    {% set best_sector = analysis.sector_performance | selectattr('performance', 'contains', '+') | list | first %}
+                    {% set best_sector = None %}
+                    {% for s in analysis.sector_performance %}
+                        {% if best_sector is none and '+' in s.performance %}
+                            {% set best_sector = s %}
+                        {% endif %}
+                    {% endfor %}
                     {% if best_sector %}
                     <div class="alert alert-success">
                         <strong>Beste sektor:</strong> {{ best_sector.sector }} ({{ best_sector.performance }})
@@ -113,7 +118,12 @@
                     </div>
                     {% endif %}
                     
-                    {% set worst_sector = analysis.sector_performance | rejectattr('performance', 'contains', '+') | list | first %}
+                    {% set worst_sector = None %}
+                    {% for s in analysis.sector_performance %}
+                        {% if worst_sector is none and '+' not in s.performance %}
+                            {% set worst_sector = s %}
+                        {% endif %}
+                    {% endfor %}
                     {% if worst_sector %}
                     <div class="alert alert-warning">
                         <strong>Svakeste sektor:</strong> {{ worst_sector.sector }} ({{ worst_sector.performance }})
@@ -132,7 +142,10 @@
                 <div class="card-body">
                     <div class="alert alert-info">
                         <strong>Markedsstemning:</strong> 
-                        {% set positive_sectors = analysis.sector_performance | selectattr('performance', 'contains', '+') | list | length %}
+                        {% set positive_sectors = 0 %}
+                        {% for s in analysis.sector_performance %}
+                            {% if '+' in s.performance %}{% set positive_sectors = positive_sectors + 1 %}{% endif %}
+                        {% endfor %}
                         {% set total_sectors = analysis.sector_performance | length %}
                         {% if positive_sectors > total_sectors / 2 %}
                             Generelt positiv med {{ positive_sectors }}/{{ total_sectors }} sektorer i oppgang.

@@ -96,7 +96,8 @@ def portfolio_overview():
         
         # Get stocks in the primary portfolio
         try:
-            portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=primary_portfolio.id).all()
+            # Exclude soft-deleted stocks
+            portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=primary_portfolio.id, deleted_at=None).all()
             current_app.logger.info(f"Found {len(portfolio_stocks)} stocks in portfolio {primary_portfolio.id}")
         except Exception as db_error:
             current_app.logger.error(f"Database error retrieving portfolio stocks: {db_error}")
@@ -190,7 +191,23 @@ def portfolio_overview():
         }
         
         current_app.logger.info(f"Successfully loaded portfolio overview for user {current_user.id}")
-        return render_template('portfolio/index.html', **context)
+        # Caching headers (weak ETag based on portfolio id + updated_at + stock count)
+        try:
+            import hashlib
+            last_update = primary_portfolio.updated_at.isoformat() if primary_portfolio.updated_at else ''
+            active_stock_count = len([s for s in portfolio_stocks])
+            etag_base = f"overview:{primary_portfolio.id}:{last_update}:{active_stock_count}"
+            etag = hashlib.sha1(etag_base.encode()).hexdigest()
+            if request.headers.get('If-None-Match') == etag:
+                return Response(status=304)
+            response = Response(render_template('portfolio/index.html', **context))
+            response.headers['ETag'] = etag
+            if primary_portfolio.updated_at:
+                response.headers['Last-Modified'] = primary_portfolio.updated_at.strftime('%a, %d %b %Y %H:%M:%S GMT')
+            return response
+        except Exception as cache_err:
+            current_app.logger.debug(f"ETag generation failed: {cache_err}")
+            return render_template('portfolio/index.html', **context)
         
     except Exception as e:
         current_app.logger.error(f"Critical error in portfolio overview: {str(e)}")
@@ -305,7 +322,7 @@ def get_user_data_for_portfolio():
             # KRITISK FIX: Sikre at alle verdier er numeriske
             current_price = float(stock_data.get('regularMarketPrice', 0)) if stock_data.get('regularMarketPrice') is not None else 0.0
             change = float(stock_data.get('regularMarketChange', 0)) if stock_data.get('regularMarketChange') is not None else 0.0
-            change_percent = float(stock_data.get('regularMarketChangePercent', 0)) if stock_data.get('regularMarketChangePercent') is not None else 0.0
+            change_percent = float(stock_data.get('regularMarketChangePercent', 0)) if stock_data.get('regularMarketChangePercent') is not None else 0.0;
             
             watchlist_data.append({
                 'item': item,
@@ -508,8 +525,8 @@ def view_portfolio(id):
             flash('Portefølje ikke funnet', 'error')
             return redirect(url_for('portfolio.portfolio_overview'))
         
-        # Get portfolio stocks
-        portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=id).all()
+        # Get active (non soft-deleted) portfolio stocks
+        portfolio_stocks = PortfolioStock.query.filter_by(portfolio_id=id, deleted_at=None).all()
         
         # Calculate portfolio metrics
         total_value = 0
@@ -583,14 +600,33 @@ def view_portfolio(id):
         total_gain_loss = total_value - total_cost
         total_gain_loss_percent = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0
 
-        return render_template('portfolio/view.html',
-                               portfolio=portfolio_obj,
-                               portfolio_data=portfolio_data,
-                               holdings=holdings,
-                               total_value=total_value,
-                               total_cost=total_cost,
-                               total_gain_loss=total_gain_loss,
-                               total_gain_loss_percent=total_gain_loss_percent)
+        # Prepare template context
+        template_context = dict(
+            portfolio=portfolio_obj,
+            portfolio_data=portfolio_data,
+            holdings=holdings,
+            total_value=total_value,
+            total_cost=total_cost,
+            total_gain_loss=total_gain_loss,
+            total_gain_loss_percent=total_gain_loss_percent
+        )
+        # ETag/Last-Modified caching logic
+        try:
+            import hashlib
+            last_update = portfolio_obj.updated_at.isoformat() if portfolio_obj.updated_at else ''
+            active_stock_count = len(portfolio_stocks)
+            etag_base = f"view:{portfolio_obj.id}:{last_update}:{active_stock_count}:{total_value:.2f}:{total_cost:.2f}"
+            etag = hashlib.sha1(etag_base.encode()).hexdigest()
+            if request.headers.get('If-None-Match') == etag:
+                return Response(status=304)
+            response = Response(render_template('portfolio/view.html', **template_context))
+            response.headers['ETag'] = etag
+            if portfolio_obj.updated_at:
+                response.headers['Last-Modified'] = portfolio_obj.updated_at.strftime('%a, %d %b %Y %H:%M:%S GMT')
+            return response
+        except Exception as cache_err:
+            current_app.logger.debug(f"ETag generation failed view_portfolio: {cache_err}")
+            return render_template('portfolio/view.html', **template_context)
                              
     except Exception as e:
         current_app.logger.error(f"Error viewing portfolio {id}: {e}")
@@ -664,6 +700,32 @@ def add_stock_to_portfolio(id):
                     logger.info(f"Added new stock {ticker} to portfolio {id}")
             
                 db.session.commit()
+                # Audit log after successful add/update
+                try:
+                    from ..models.portfolio_audit import PortfolioAuditLog
+                    action = 'update_stock' if existing_stock else 'add_stock'
+                    after_state = {
+                        'shares': float(existing_stock.shares if existing_stock else stock.shares),
+                        'purchase_price': float(existing_stock.purchase_price if existing_stock else stock.purchase_price)
+                    }
+                    audit = PortfolioAuditLog(
+                        user_id=current_user.id,
+                        portfolio_id=id,
+                        stock_id=(existing_stock.id if existing_stock else stock.id),
+                        ticker=ticker,
+                        action=action,
+                        before_state=None if not existing_stock else {
+                            'shares': float(total_quantity - quantity),
+                            'purchase_price': float((total_value - (quantity * price)) / (total_quantity - quantity) if (total_quantity - quantity) > 0 else price)
+                        },
+                        after_state=after_state,
+                        ip_address=request.remote_addr,
+                        user_agent=request.headers.get('User-Agent', '')[:256]
+                    )
+                    db.session.add(audit)
+                    db.session.commit()
+                except Exception as audit_err:
+                    current_app.logger.warning(f"Failed to persist audit log for add/update stock {ticker}: {audit_err}")
                 flash(f'✅ {ticker} lagt til i porteføljen!', 'success')
                 return redirect(url_for('portfolio.view_portfolio', id=id))
                 
@@ -702,11 +764,17 @@ def add_stock_to_portfolio(id):
 @portfolio.route('/portfolio/<int:id>/remove/<int:stock_id>', methods=['POST'])
 @unified_access_required
 def remove_stock_from_portfolio(id, stock_id):
-    """Remove a stock from a specific portfolio"""
+    """Soft-delete a stock from a specific portfolio by setting deleted_at."""
     try:
+        # Explicit CSRF presence guard (Flask-WTF should also validate if used)
+        if 'csrf_token' not in request.form:
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': False, 'error': 'CSRF token mangler'}), 403
+            flash('CSRF token mangler.', 'danger')
+            return redirect(url_for('portfolio.portfolio_overview'))
         portfolio = Portfolio.query.get_or_404(id)
 
-        # Sjekk eierskap
+        # Ownership check
         if portfolio.user_id != current_user.id:
             error_msg = 'Du har ikke tilgang til denne porteføljen'
             if request.headers.get('Accept') == 'application/json':
@@ -723,17 +791,53 @@ def remove_stock_from_portfolio(id, stock_id):
             flash(error_msg, 'danger')
             return redirect(url_for('portfolio.view_portfolio', id=id))
 
-        db.session.delete(stock)
-        db.session.commit()
+        # If already soft-deleted, treat as idempotent success
+        if stock.deleted_at is not None:
+            success_msg = 'Aksje allerede fjernet.'
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': True, 'message': success_msg})
+            flash(success_msg, 'info')
+            return redirect(url_for('portfolio.view_portfolio', id=id))
+
+        from datetime import datetime as _dt
+        stock.deleted_at = _dt.utcnow()
+        before_state = {
+            'shares': float(stock.shares),
+            'purchase_price': float(stock.purchase_price or 0)
+        }
+        try:
+            db.session.commit()
+            # Persist audit
+            try:
+                from ..models.portfolio_audit import PortfolioAuditLog
+                audit = PortfolioAuditLog(
+                    user_id=current_user.id,
+                    portfolio_id=id,
+                    stock_id=stock.id,
+                    ticker=stock.ticker,
+                    action='delete_stock',
+                    before_state=before_state,
+                    after_state={'deleted_at': stock.deleted_at.isoformat()},
+                    ip_address=request.remote_addr,
+                    user_agent=request.headers.get('User-Agent', '')[:256]
+                )
+                db.session.add(audit)
+                db.session.commit()
+            except Exception as audit_err:
+                current_app.logger.warning(f"Failed to persist audit log for delete_stock {stock_id}: {audit_err}")
+        except Exception as commit_err:
+            current_app.logger.error(f"Commit error during soft-delete stock {stock_id}: {commit_err}")
+            db.session.rollback()
+            raise
 
         success_msg = 'Aksje fjernet fra porteføljen'
         if request.headers.get('Accept') == 'application/json':
             return jsonify({'success': True, 'message': success_msg})
         flash(success_msg, 'success')
         return redirect(url_for('portfolio.view_portfolio', id=id))
-        
+
     except Exception as e:
-        current_app.logger.error(f"Error removing stock {stock_id} from portfolio {id}: {e}")
+        current_app.logger.error(f"Error soft-deleting stock {stock_id} from portfolio {id}: {e}")
         db.session.rollback()
         error_msg = 'Kunne ikke fjerne aksjen. Prøv igjen senere.'
         if request.headers.get('Accept') == 'application/json':
@@ -1040,8 +1144,18 @@ def add_stock():
             quantity = float(request.form.get('quantity', 0))
             purchase_price = float(request.form.get('purchase_price', 0))
         
+        MAX_SHARES = 10_000_000  # arbitrary upper safety cap
+        MAX_PRICE = 1_000_000    # cap per share
         if not ticker or quantity <= 0 or purchase_price <= 0:
             error_msg = 'Alle felt må fylles ut korrekt.'
+            if request.is_json:
+                return jsonify({'success': False, 'error': error_msg}), 400
+            flash(error_msg, 'danger')
+            return redirect(url_for('portfolio.add_stock'))
+
+        # Additional validation for unrealistic values
+        if quantity > MAX_SHARES or purchase_price > MAX_PRICE:
+            error_msg = 'Urealistisk verdi for antall eller pris.'
             if request.is_json:
                 return jsonify({'success': False, 'error': error_msg}), 400
             flash(error_msg, 'danger')
@@ -1074,6 +1188,7 @@ def add_stock():
                 db.session.add(portfolio_stock)
             
             db.session.commit()
+            current_app.logger.info(f"AUDIT: add_stock user={current_user.id} ticker={ticker} quantity={quantity} price={purchase_price}")
             success_msg = f'{ticker} lagt til i porteføljen.'
             
             if request.is_json:
@@ -1110,45 +1225,123 @@ def edit_stock(ticker):
     ).first_or_404()
     
     if request.method == 'POST':
-        quantity = float(request.form.get('quantity', 0))
-        purchase_price = float(request.form.get('purchase_price', 0))
-        
+        # Aksepter både 'quantity' (nytt felt) og fallback 'shares' for bakoverkompatibilitet
+        raw_quantity = request.form.get('quantity') or request.form.get('shares') or '0'
+        raw_price = request.form.get('purchase_price') or '0'
+        purchase_date_str = request.form.get('purchase_date')
+
+        try:
+            quantity = float(raw_quantity)
+            purchase_price = float(raw_price)
+        except ValueError:
+            flash('Ugyldige numeriske verdier.', 'danger')
+            return redirect(url_for('portfolio.edit_stock', ticker=ticker))
+
+        MAX_SHARES = 10_000_000
+        MAX_PRICE = 1_000_000
         if quantity <= 0 or purchase_price <= 0:
             flash('Alle felt må fylles ut korrekt.', 'danger')
             return redirect(url_for('portfolio.edit_stock', ticker=ticker))
-        
-        # Oppdater aksjen
+        if quantity > MAX_SHARES or purchase_price > MAX_PRICE:
+            flash('Urealistisk verdi for antall eller pris.', 'danger')
+            return redirect(url_for('portfolio.edit_stock', ticker=ticker))
+
+        before_state = {'shares': float(portfolio_stock.shares), 'purchase_price': float(portfolio_stock.purchase_price or 0)}
         portfolio_stock.shares = quantity
         portfolio_stock.purchase_price = purchase_price
+
+        # Oppdater kjøpsdato hvis sendt inn (tillat blank for å la eksisterende stå)
+        if purchase_date_str:
+            try:
+                from datetime import datetime
+                portfolio_stock.purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                # Ignorer feil format, men informer bruker
+                flash('Kjøpsdato hadde feil format (YYYY-MM-DD).', 'warning')
+
         db.session.commit()
-        
+        # Persist audit log entry
+        try:
+            from ..models.portfolio_audit import PortfolioAuditLog
+            audit = PortfolioAuditLog(
+                user_id=current_user.id,
+                portfolio_id=portfolio_stock.portfolio_id,
+                stock_id=portfolio_stock.id,
+                ticker=ticker,
+                action='edit_stock',
+                before_state=before_state,
+                after_state={'shares': quantity, 'purchase_price': purchase_price},
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')[:256]
+            )
+            db.session.add(audit)
+            db.session.commit()
+        except Exception as audit_err:
+            current_app.logger.warning(f"Failed to persist audit log for edit_stock {ticker}: {audit_err}")
         flash(f'{ticker} oppdatert i porteføljen.', 'success')
         return redirect(url_for('portfolio.portfolio_overview'))
     
     return render_template('portfolio/edit_stock.html', stock=portfolio_stock)
 
-@portfolio.route('/remove/<ticker>')
+@portfolio.route('/remove/<ticker>', methods=['POST'])
 @access_required
 def remove_stock(ticker):
-    """Remove a stock from the user's portfolio"""
-    # Hent brukerens portefølje
-    user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
-    if not user_portfolio:
-        flash('Du har ingen portefølje ennå.', 'warning')
+    """Remove a stock from the user's portfolio (POST only, CSRF protected)."""
+    try:
+        # Basic CSRF presence check (Flask-WTF normally validates; here we ensure field exists)
+        if 'csrf_token' not in request.form:
+            # Return 403 to be explicit for tests/clients
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': False, 'error': 'CSRF token mangler'}), 403
+            flash('CSRF token mangler.', 'danger')
+            return redirect(url_for('portfolio.portfolio_overview'))
+
+        user_portfolio = Portfolio.query.filter_by(user_id=current_user.id).first()
+        if not user_portfolio:
+            flash('Du har ingen portefølje ennå.', 'warning')
+            return redirect(url_for('portfolio.portfolio_overview'))
+
+        portfolio_stock = PortfolioStock.query.filter_by(
+            portfolio_id=user_portfolio.id,
+            ticker=ticker,
+            deleted_at=None
+        ).first_or_404()
+
+        # Capture before state
+        before_state = {
+            'shares': float(portfolio_stock.shares),
+            'purchase_price': float(portfolio_stock.purchase_price or 0)
+        }
+        # Soft delete instead of hard delete
+        from datetime import datetime as _dt
+        portfolio_stock.deleted_at = _dt.utcnow()
+        db.session.commit()
+        # Persist audit log
+        try:
+            from ..models.portfolio_audit import PortfolioAuditLog
+            audit = PortfolioAuditLog(
+                user_id=current_user.id,
+                portfolio_id=user_portfolio.id,
+                stock_id=portfolio_stock.id,
+                ticker=ticker,
+                action='delete_stock',
+                before_state=before_state,
+                after_state={'deleted_at': portfolio_stock.deleted_at.isoformat()},
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')[:256]
+            )
+            db.session.add(audit)
+            db.session.commit()
+        except Exception as audit_err:
+            current_app.logger.warning(f"Failed to persist audit log for delete_stock {ticker}: {audit_err}")
+
+        flash(f'{ticker} fjernet (soft-delete) fra porteføljen.', 'success')
         return redirect(url_for('portfolio.portfolio_overview'))
-    
-    # Finn aksjen
-    portfolio_stock = PortfolioStock.query.filter_by(
-        portfolio_id=user_portfolio.id,
-        ticker=ticker
-    ).first_or_404()
-    
-    # Slett aksjen
-    db.session.delete(portfolio_stock)
-    db.session.commit()
-    
-    flash(f'{ticker} fjernet fra porteføljen.', 'success')
-    return redirect(url_for('portfolio.portfolio_overview'))
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Feil ved sletting av aksje {ticker}: {e}")
+        flash('Kunne ikke fjerne aksjen. Prøv igjen senere.', 'danger')
+        return redirect(url_for('portfolio.portfolio_overview'))
 
 @portfolio.route('/transactions')
 @access_required
@@ -1862,3 +2055,49 @@ def optimize_portfolio():
             'success': False,
             'error': 'Feil ved optimalisering av portefølje'
         })
+
+@portfolio.route('/audit-history')
+@login_required
+def audit_history():
+    """Display portfolio audit log with simple filtering & pagination.
+    Restricted to viewing own entries unless user is admin (is_admin attr)."""
+    from ..models.portfolio_audit import PortfolioAuditLog
+    q = PortfolioAuditLog.query
+    # Non-admins only see their own
+    if not getattr(current_user, 'is_admin', False):
+        q = q.filter_by(user_id=current_user.id)
+    # Filters
+    portfolio_id = request.args.get('portfolio_id', type=int)
+    if portfolio_id:
+        q = q.filter_by(portfolio_id=portfolio_id)
+    ticker = request.args.get('ticker', type=str)
+    if ticker:
+        q = q.filter(PortfolioAuditLog.ticker.ilike(f"%{ticker}%"))
+    action = request.args.get('action', type=str)
+    if action:
+        q = q.filter_by(action=action)
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+    total = q.count()
+    total_pages = max(1, (total + per_page - 1)//per_page)
+    rows = q.order_by(PortfolioAuditLog.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
+    return render_template('portfolio_audit_history.html', rows=rows, page=page, total_pages=total_pages)
+
+@portfolio.route('/admin/prune-soft-deleted')
+@login_required
+def prune_soft_deleted():
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({'error':'forbidden'}), 403
+    days = request.args.get('days', 90, type=int)
+    dry_run = request.args.get('dry_run', 'true').lower() in ('true','1','yes')
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    q = PortfolioStock.query.filter(PortfolioStock.deleted_at != None, PortfolioStock.deleted_at < cutoff)
+    count = q.count()
+    deleted_ids = []
+    if not dry_run:
+        for s in q.all():
+            deleted_ids.append(s.id)
+            db.session.delete(s)
+        db.session.commit()
+    return jsonify({'pruned': 0 if dry_run else len(deleted_ids), 'candidates': count, 'dry_run': dry_run, 'cutoff': cutoff.isoformat()})

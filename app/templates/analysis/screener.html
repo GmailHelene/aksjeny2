@@ -7,233 +7,155 @@
 
 <div class="container py-4">
     <div class="row">
-        <!-- Screener Loading Spinner -->
-        <div id="screener-loading" class="text-center py-3" style="display:none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Laster...</span>
-            </div>
-            <div class="mt-2 text-primary">Laster screening...</div>
-        </div>
-        <div class="col-md-12">
+        <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 class="h2 mb-1">
-                        <i class="bi bi-funnel text-primary"></i> Avansert Aksje Screener
-                    </h1>
-                    <p class="text-muted">Finn aksjer basert på detaljerte kriterier med Finviz-teknologi</p>
+                    <h1 class="h2 mb-1"><i class="bi bi-funnel text-primary"></i> Avansert Aksje Screener</h1>
+                    <p class="text-muted mb-0">Finn aksjer basert på fundamentale og tekniske kriterier</p>
                 </div>
-                <div>
-                    <span class="badge bg-success fs-6">🚀 Powered by Finviz</span>
+                <div class="text-end">
                     {% if current_user.is_authenticated %}
-                    <span class="badge bg-warning text-dark fs-6">PRO</span>
+                        <span class="badge bg-warning text-dark fs-6">PRO</span>
                     {% else %}
-                    <span class="badge bg-info fs-6">DEMO</span>
+                        <span class="badge bg-info fs-6">DEMO</span>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Filter Panel -->
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Screening Kriterier</h5>
+    <div class="row g-4">
+        <!-- Filters -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-primary text-white py-2">
+                    <strong><i class="bi bi-sliders me-2"></i>Screening Kriterier</strong>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('analysis.screener') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
-                        
-                        <!-- Preset Screens -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">🎯 Ferdigdefinerte screener</label>
-                            <select name="preset" class="form-select" onchange="selectPreset(this.value)">
+                        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">🎯 Ferdigdefinerte screener</label>
+                            <select name="preset" class="form-select" onchange="this.form.submit()">
                                 <option value="">-- Velg preset --</option>
                                 {% for preset_name, filters in preset_screens.items() %}
-                                <option value="{{ preset_name }}">
-                                    {% if preset_name == 'value_stocks' %}
-                                        🎯 Verdiaksjer
-                                    {% elif preset_name == 'growth_stocks' %}
-                                        📈 Vekstaksjer
-                                    {% elif preset_name == 'dividend_stocks' %}
-                                        💰 Utbytteaksjer
-                                    {% else %}
-                                        {{ preset_name|title }}
-                                    {% endif %}
-                                </option>
+                                    <option value="{{ preset_name }}" {% if preset_name == request.form.get('preset') %}selected{% endif %}>
+                                        {% if preset_name == 'value_stocks' %}🎯 Verdiaksjer
+                                        {% elif preset_name == 'growth_stocks' %}📈 Vekstaksjer
+                                        {% elif preset_name == 'dividend_stocks' %}💰 Utbytteaksjer
+                                        {% else %}{{ preset_name|title }}{% endif %}
+                                    </option>
                                 {% endfor %}
                             </select>
-                            <small class="text-muted">Velg en ferdig screening eller bygg din egen under</small>
+                            <small class="text-muted">Velg et preset eller bygg din egen screening under.</small>
                         </div>
 
                         <hr>
-
-                        <!-- Custom Filters -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">🔧 Tilpassede filtere</label>
-                            
+                            <label class="form-label fw-semibold">🔧 Tilpassede filtere</label>
                             {% for category, filters in available_filters.items() %}
-                            <div class="mb-3">
-                                <h6 class="text-primary">{{ category }}</h6>
-                                <div class="row">
-                                    {% for filter_key in filters %}
-                                    <div class="col-12 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   name="filters" value="{{ filter_key }}" 
-                                                   id="filter_{{ filter_key }}"
-                                                   {% if filter_key in selected_filters %}checked{% endif %}>
-                                            <label class="form-check-label small" for="filter_{{ filter_key }}">
-                                                {{ filter_display_names[filter_key] }}
-                                            </label>
-                                        </div>
+                                <div class="mb-2">
+                                    <h6 class="text-primary mb-1">{{ category }}</h6>
+                                    <div class="row">
+                                        {% for filter_key in filters %}
+                                            <div class="col-12 mb-1">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="filters" id="filter_{{ filter_key }}" value="{{ filter_key }}" {% if filter_key in selected_filters %}checked{% endif %}>
+                                                    <label class="form-check-label small" for="filter_{{ filter_key }}">{{ filter_display_names[filter_key] }}</label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
                                 </div>
-                            </div>
                             {% endfor %}
                         </div>
-                        
+
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-search"></i> Søk aksjer
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
-                                <i class="bi bi-x-circle"></i> Nullstill
-                            </button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Søk aksjer</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()"><i class="bi bi-x-circle"></i> Nullstill</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Info Panel -->
-            <div class="card border-0 shadow-sm mt-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Om Screener</h6>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white py-2">
+                    <strong><i class="bi bi-info-circle me-2"></i>Om Screener</strong>
                 </div>
-                <div class="card-body">
-                    <small class="text-muted">
-                        Vår screener bruker Finviz-teknologi for å analysere tusenvis av aksjer basert på:
-                    </small>
-                    <ul class="mt-2 small">
-                        <li>Fundamental data (P/E, P/B, ROE, etc.)</li>
-                        <li>Teknisk analyse (RSI, momentum, etc.)</li>
-                        <li>Markedsdata (volum, market cap, etc.)</li>
-                        <li>Performance metrics</li>
+                <div class="card-body small">
+                    <p class="mb-2 text-muted">Screeneren kombinerer mock-demodata og forhåndsdefinerte preseter. Ekte datakilder kan aktiveres for PRO-brukere.</p>
+                    <ul class="ps-3 mb-0">
+                        <li>Fundamental data (P/E, P/B, ROE)</li>
+                        <li>Tekniske indikatorer (RSI, momentum)</li>
+                        <li>Volum og Market Cap</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Results Panel -->
-        <div class="col-md-8">
-            {% if show_results %}
-            <div class="card border-0 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-check text-success"></i> 
-                        Screening Resultater ({{ results|length }} aksjer)
-                    </h5>
-                    {% if results %}
-                    <div>
-                        <button class="btn btn-outline-primary btn-sm" onclick="exportResults()">
-                            <i class="bi bi-download"></i> Eksporter CSV
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="saveAsWatchlist()">
-                            <i class="bi bi-heart"></i> Lagre som Watchlist
-                        </button>
+        <!-- Results -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+                    <strong>Resultater</strong>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="exportResults()" {% if not results %}disabled{% endif %}><i class="bi bi-download"></i> Export</button>
+                        <button class="btn btn-outline-secondary" onclick="saveAsWatchlist()" {% if not results %}disabled{% endif %}><i class="bi bi-eye"></i> Watchlist</button>
                     </div>
-                    {% endif %}
                 </div>
                 <div class="card-body p-0">
                     {% if results %}
-                    <div class="table-responsive">
-                        <table id="screenerTable" class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Ticker</th>
-                                    <th>Selskap</th>
-                                    <th>Sektor</th>
-                                    <th>Pris</th>
-                                    <th>Endring</th>
-                                    <th>P/E</th>
-                                    <th>P/B</th>
-                                    <th>RSI</th>
-                                    <th>Anbefaling</th>
-                                    <th>Handling</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stock in results %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ stock.get('ticker', 'Ukjent') }}</strong>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <div class="fw-bold" title="{{ stock.get('company', 'Ukjent selskap') }}">
-                                                {{ stock.get('company', 'Ukjent selskap')[:30] }}{% if (stock.get('company', '')|length) > 30 %}...{% endif %}
-                                            </div>
-                                            <small class="text-muted" title="{{ stock.get('industry', 'Ukjent bransje') }}">
-                                                {{ stock.get('industry', 'Ukjent bransje')[:25] }}{% if (stock.get('industry', '')|length) > 25 %}...{% endif %}
-                                            </small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">{{ stock.get('sector', 'Ukjent sektor') }}</span>
-                                    </td>
-                                    <td>
-                                        {% set price_val = stock.get('price', 0)|float %}
-                                        {% set ticker = stock.get('ticker', '') %}
-                                        <strong>
-                                        async function addToWatchlist(ticker, event) {
-                                            if (event) { event.preventDefault(); event.stopPropagation(); }
-                                            if (!ticker || typeof ticker !== 'string') { showToast('Ugyldig ticker-symbol', 'error'); return; }
-                                            const btn = event?.target?.closest('button') || document.querySelector(`button[data-ticker="${ticker}"]`);
-                                            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
-                                            toggleFavorite(ticker, {
-                                                button: btn,
-                                                favoritedText: '<i class="bi bi-heart-fill"></i>',
-                                                unfavoritedText: '<i class="bi bi-heart"></i>',
-                                                onSuccess: (data) => {
-                                                    const msg = data.message || (data.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`);
-                                                    showToast(msg, data.favorited ? 'success' : 'info');
-                                                    // Sync all same-ticker buttons
-                                                    document.querySelectorAll(`button[data-ticker="${ticker}"]`).forEach(otherBtn => {
-                                                        if (otherBtn !== btn) {
-                                                            otherBtn.innerHTML = data.favorited ? '<i class="bi bi-heart-fill"></i>' : '<i class="bi bi-heart"></i>';
-                                                            otherBtn.classList.toggle('btn-success', data.favorited);
-                                                            otherBtn.classList.toggle('btn-outline-success', !data.favorited);
-                                                            otherBtn.setAttribute('data-favorited', data.favorited ? 'true' : 'false');
-                                                        }
-                                                    });
-                                                },
-                                                onError: () => showToast('Favoritt-handling feilet', 'error')
-                                            });
-                                        }
-                                    <h5>Detaljert Analyse</h5>
-                                    <p class="small">Fundamental og teknisk analyse kombinert</p>
-                                </div>
-                            </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase">
+                                        <th>Ticker</th>
+                                        <th>Selskap</th>
+                                        <th>Sektor</th>
+                                        <th class="text-end">Pris</th>
+                                        <th class="text-end">Endring</th>
+                                        <th class="text-end">P/E</th>
+                                        <th class="text-end">P/B</th>
+                                        <th class="text-end">RSI</th>
+                                        <th>Anb.</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stock in results %}
+                                        <tr>
+                                            <td><strong>{{ stock.get('ticker','?') }}</strong></td>
+                                            <td>
+                                                <div class="fw-semibold" title="{{ stock.get('company','') }}">{{ stock.get('company','') }}</div>
+                                                <div class="text-muted small" title="{{ stock.get('industry','') }}">{{ stock.get('industry','') }}</div>
+                                            </td>
+                                            <td><span class="badge bg-light text-dark">{{ stock.get('sector','-') }}</span></td>
+                                            <td class="text-end">{{ stock.get('price',0)|float|round(2) }}</td>
+                                            <td class="text-end">
+                                                {% set chg = stock.get('change_percent',0)|float %}
+                                                <span class="{% if chg>0 %}text-success{% elif chg<0 %}text-danger{% else %}text-muted{% endif %}">{{ chg|round(2) }}%</span>
+                                            </td>
+                                            <td class="text-end">{{ stock.get('pe_ratio','-') }}</td>
+                                            <td class="text-end">{{ stock.get('pb_ratio','-') }}</td>
+                                            <td class="text-end">{{ stock.get('rsi','-') }}</td>
+                                            <td><span class="badge bg-secondary">{{ stock.get('recommendation','-') }}</span></td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-sm btn-outline-success" data-ticker="{{ stock.get('ticker','') }}" onclick="addToWatchlist('{{ stock.get('ticker','') }}', event)"><i class="bi bi-heart"></i></button>
+                                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('stocks.details', symbol=stock.get('ticker','')) }}" title="Detaljer"><i class="bi bi-box-arrow-up-right"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card border-warning h-100">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-star text-warning fs-1"></i>
-                                    <h5>Smart Anbefalinger</h5>
-                                    <p class="small">AI-drevne kjøp/selg anbefalinger</p>
-                                </div>
-                            </div>
+                    {% else %}
+                        <div class="p-4">
+                            <div class="alert alert-info mb-0">Ingen resultater ennå. Velg et preset eller marker filtere og klikk <strong>Søk aksjer</strong>.</div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <p class="text-muted">Velg et ferdigdefinert preset eller bygg dine egne filtere til venstre for å komme i gang</p>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -321,75 +243,6 @@ function getFilterDisplayName(filterKey) {
     return filterDisplayNames[filterKey] || filterKey;
 }
 
-function selectPreset(preset) {
-    if (!preset) return;
-    
-    try {
-        // Clear all checkboxes first
-        document.querySelectorAll('input[name="filters"]').forEach(cb => cb.checked = false);
-        
-        // Get preset screens data from the server  
-        const presetScreens = {{ preset_screens|tojson|safe }};
-        
-        if (!presetScreens) {
-            console.error('Preset screens data not available');
-            showToast('Kunne ikke laste preset-data', 'error');
-            return;
-        }
-        
-        // Select the correct filters for this preset
-        if (presetScreens[preset]) {
-            const filters = presetScreens[preset];
-            let appliedFilters = 0;
-            
-            filters.forEach(filterKey => {
-                const checkbox = document.querySelector(`input[name="filters"][value="${filterKey}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    appliedFilters++;
-                } else {
-                    console.warn(`Filter not found: ${filterKey}`);
-                }
-            });
-            
-            if (appliedFilters === 0) {
-                showToast('Ingen filtere funnet for dette presetet', 'warning');
-                return;
-            }
-        } else {
-            showToast('Ugyldig preset valgt', 'error');
-            return;
-        }
-        
-        // Show loading indicator
-        const btn = document.querySelector('button[type="submit"]');
-        if (!btn) {
-            console.error('Submit button not found');
-            return;
-        }
-        
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Laster preset...';
-        btn.disabled = true;
-        
-        // Auto-submit form after brief delay
-        setTimeout(() => {
-            const form = document.querySelector('form');
-            if (form) {
-                form.submit();
-            } else {
-                console.error('Form not found');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showToast('Teknisk feil ved lasting av preset', 'error');
-            }
-        }, 500);
-    } catch (error) {
-        console.error('Error in selectPreset:', error);
-        showToast('Teknisk feil ved valg av preset', 'error');
-    }
-}
-
 function exportResults() {
     // Create CSV content
     const table = document.querySelector('table tbody');
@@ -467,19 +320,6 @@ function saveAsWatchlist() {
         console.error('Error creating watchlist:', error);
         showToast('Teknisk feil ved opprettelse av watchlist', 'error');
     });
-}
-
-function selectPreset(presetName) {
-    // Clear all checkboxes first
-    document.querySelectorAll('input[name="filters"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    
-    // If preset is selected, auto-submit the form
-    if (presetName) {
-        // Trigger form submission
-        document.querySelector('form').submit();
-    }
 }
 
 function clearFilters() {

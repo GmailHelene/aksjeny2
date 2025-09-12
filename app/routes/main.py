@@ -220,6 +220,19 @@ def invite_friend():
         if not email:
             flash('E-post er påkrevd.', 'warning')
             return render_template('referrals/invite_friend.html')
+        # Basic email format check (lightweight)
+        import re, time
+        if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+            flash('Ugyldig e-postformat.', 'danger')
+            return render_template('referrals/invite_friend.html')
+        # Simple session-based rate limiting (max 5 invites per 10 min)
+        invites_meta = session.get('referral_invites_meta', {'count': 0, 'ts': time.time()})
+        window_seconds = 600
+        if time.time() - invites_meta.get('ts', 0) > window_seconds:
+            invites_meta = {'count': 0, 'ts': time.time()}
+        if invites_meta['count'] >= 5:
+            flash('For mange invitasjoner på kort tid. Prøv igjen senere.', 'warning')
+            return render_template('referrals/invite_friend.html')
         try:
             if ReferralService:
                 service = ReferralService()
@@ -228,6 +241,8 @@ def invite_friend():
         except Exception as e:
             logger.error(f"Referral send failed: {e}")
             flash('Kunne ikke sende invitasjon nå. Prøv igjen senere.', 'error')
+        invites_meta['count'] += 1
+        session['referral_invites_meta'] = invites_meta
         return render_template('referrals/invite_friend.html', sent=True, invited_email=email)
 
     return render_template('referrals/invite_friend.html')

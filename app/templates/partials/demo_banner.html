@@ -1,8 +1,15 @@
+{% if not (current_user.is_authenticated and hasattr(current_user, 'has_premium_access') and current_user.has_premium_access()) %}
 <div class="demo-banner" style="background:#0d1b2a;color:#fff;padding:12px 16px;margin:12px 0;border-radius:6px;">
-  <strong>Begrenset modus:</strong> Du ser en forenklet visning. <a href="/demo" style="color:#4dabf7;text-decoration:underline;">Full demo</a>
+  <strong>Begrenset modus:</strong> Du ser en forenklet visning.
   {% if current_user.is_authenticated %}
-    – Oppgrader for full tilgang.
+    {% if hasattr(current_user, 'has_premium_access') and not current_user.has_premium_access() %}
+      – <a href="/pricing" style="color:#4dabf7;text-decoration:underline;">Oppgrader til full tilgang</a>.
+    {% else %}
+      <!-- Authenticated but premium detection missing; show neutral link -->
+      – <a href="/pricing" style="color:#4dabf7;">Se planene</a>.
+    {% endif %}
   {% else %}
     – <a href="/auth/login" style="color:#4dabf7;">Logg inn</a> eller <a href="/pricing" style="color:#4dabf7;">prøv premium</a>.
   {% endif %}
 </div>
+{% endif %}

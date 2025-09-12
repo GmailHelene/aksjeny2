@@ -18,14 +18,14 @@
         <div class="card-body">
           {% if stock %}
           <form method="POST">
-            {{ csrf_token() }}
-            
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- Felt: antall aksjer (bruk 'quantity' for konsistent backend-navn) -->
             <div class="mb-3">
-              <label for="shares" class="form-label">Antall aksjer</label>
+              <label for="quantity" class="form-label">Antall aksjer</label>
               <input type="number" 
                      class="form-control" 
-                     id="shares" 
-                     name="shares" 
+                     id="quantity" 
+                     name="quantity" 
                      value="{{ stock.shares }}"
                      step="0.001" 
                      min="0" 

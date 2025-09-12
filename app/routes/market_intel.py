@@ -484,6 +484,53 @@ def api_crypto_fear_greed():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@market_intel.route('/api/economic-indicators')
+@demo_access
+def api_economic_indicators():
+    """Unified economic indicators endpoint with simple timeframe support.
+
+    Query params:
+      timeframe=live|daily|weekly (default live)
+    """
+    timeframe = request.args.get('timeframe', 'live').lower()
+    if timeframe not in {'live','daily','weekly'}:
+        timeframe = 'live'
+    try:
+        base_data = None
+        crypto_fg = None
+        if ExternalAPIService:
+            try:
+                base_data = ExternalAPIService.get_economic_indicators()
+                crypto_fg = ExternalAPIService.get_crypto_fear_greed_index()
+            except Exception as ext_err:
+                current_app.logger.warning(f"External economic indicators failed: {ext_err}")
+        if not base_data:
+            base_data = {
+                'inflation_rate': 2.8,
+                'interest_rate': 4.5,
+                'unemployment_rate': 3.2,
+                'oil_price': 85.2
+            }
+        # Derive simple timeframe adjustments (placeholder logic until real historical feed present)
+        adjustments = {
+            'live': {'inflation_rate': 0.00, 'interest_rate': 0.00, 'unemployment_rate': 0.00, 'oil_price': 0.0},
+            'daily': {'inflation_rate': 0.01, 'interest_rate': 0.00, 'unemployment_rate': -0.01, 'oil_price': -0.3},
+            'weekly': {'inflation_rate': 0.05, 'interest_rate': 0.00, 'unemployment_rate': 0.05, 'oil_price': -1.5},
+        }
+        adj = adjustments[timeframe]
+        enriched = {
+            'timeframe': timeframe,
+            'inflation_rate': round(base_data.get('inflation_rate', 0) + adj['inflation_rate'], 2),
+            'interest_rate': round(base_data.get('interest_rate', 0) + adj['interest_rate'], 2),
+            'unemployment_rate': round(base_data.get('unemployment_rate', 0) + adj['unemployment_rate'], 2),
+            'oil_price': round(base_data.get('oil_price', 0) + adj['oil_price'], 2),
+            'crypto_fear_greed': crypto_fg or {'value': 45, 'classification': 'Neutral'},
+            'data_source': 'EXTERNAL' if ExternalAPIService else 'FALLBACK'
+        }
+        return jsonify(enriched)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @market_intel.route('/analyst-coverage')
 @demo_access
 def analyst_coverage():

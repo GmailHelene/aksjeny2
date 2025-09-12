@@ -52,8 +52,7 @@
 
 /* For light-themed cards, use dark text */
 .card-header.bg-light,
-.card-header.bg-warning,
-.card-header.bg-info {
+.card-header.bg-warning {
     color: #212529 !important;
 }
 

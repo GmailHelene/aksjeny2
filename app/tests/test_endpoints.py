@@ -616,7 +616,8 @@ def test_send_referral(client):
 
 
 def test_stock_details(client):
-    response = client.get(build_url(client, 'main.stock_details', ticker='AAPL'))
+    # Use legacy redirect endpoint which forwards to stocks.details
+    response = client.get(build_url(client, 'main.stock_details_legacy_redirect', ticker='AAPL'), follow_redirects=True)
     assert response.status_code == 200
 
 

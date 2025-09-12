@@ -2,7 +2,7 @@
 {% block title %}Aksjedetaljer {{ ticker or symbol }}{% endblock %}
 {% block content %}
 
-<div class="stock-details-container container-fluid mt-3" id="stock-details-root">
+<div class="stock-details-container container-fluid mt-3" id="stock-details-root" {% if technical_data and technical_data.get('cache_hit') %}data-tech-cache-hit="true"{% else %}data-tech-cache-hit="false"{% endif %}>
 <script>
 // Sanitize symbol client-side as additional protection (server already sanitizes)
 function sanitizeSymbol(raw){

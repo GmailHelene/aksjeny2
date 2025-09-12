@@ -518,6 +518,37 @@ def register_blueprints(app):
                 app.logger.error(f"Full traceback: {traceback.format_exc()}")
     
     app.logger.info(f"OK Registered {len(blueprints_registered)} blueprints: {', '.join(blueprints_registered)}")
+
+    # Lightweight language toggle endpoint (session-based)
+    from flask import session
+    @app.route('/toggle-language', methods=['POST'])
+    def toggle_language():
+        try:
+            current = session.get('language', 'no')
+            new_lang = 'en' if current == 'no' else 'no'
+            session['language'] = new_lang
+            # Persist to user profile if logged in
+            try:
+                from flask_login import current_user
+                if getattr(current_user, 'is_authenticated', False):
+                    # Avoid raising if column missing in legacy DB
+                    if hasattr(current_user, 'preferred_language'):
+                        current_user.preferred_language = new_lang
+                    elif hasattr(current_user, 'language'):
+                        current_user.language = new_lang
+                    db.session.commit()
+            except Exception as persist_err:
+                app.logger.warning(f"Could not persist language selection: {persist_err}")
+            app.logger.info(f"Language toggled from {current} to {new_lang}")
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': True, 'language': new_lang})
+            ref = request.referrer or url_for('main.index')
+            return redirect(ref)
+        except Exception as e:
+            app.logger.warning(f"Failed to toggle language: {e}")
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({'success': False, 'error': 'Kunne ikke endre språk'}), 500
+            return redirect(request.referrer or url_for('main.index'))
     
     # Register the realtime_api blueprint
     try:

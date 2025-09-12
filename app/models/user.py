@@ -113,6 +113,7 @@ class User(UserMixin, db.Model):
     
     # Internationalization and settings
     language = db.Column(db.String(10), default='no')  # Language preference (no, en, etc.)
+    preferred_language = db.Column(db.String(10), default='no', nullable=True, index=True)  # Persistent UI language
     notification_settings = db.Column(db.Text, nullable=True)  # JSON string for notification preferences
     
     # User notification preferences
@@ -469,6 +470,14 @@ class User(UserMixin, db.Model):
             db.session.commit()
             return True
         return False
+
+    # Fallback accessor for legacy DB without preferred_language column
+    @property
+    def preferred_language_safe(self):
+        try:
+            return getattr(self, 'preferred_language', None) or getattr(self, 'language', 'no')
+        except Exception:
+            return 'no'
 
 # NOTE: Portfolio and Watchlist relationships are defined in the models themselves
 # No need to import them here as SQLAlchemy will resolve relationships automatically

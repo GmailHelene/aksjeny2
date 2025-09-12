@@ -285,10 +285,28 @@ def get_language_toggle_html():
     Returns HTML for language toggle button
     """
     return '''
-    <button id="language-toggle" class="btn btn-outline-secondary btn-sm ms-2" 
-            onclick="toggleLanguage()" title="Switch language / Bytt språk">
-        English
-    </button>
+    <form id="language-toggle-form" method="post" action="/toggle-language" class="d-inline">
+        <button type="button" id="language-toggle" class="btn btn-outline-secondary btn-sm ms-2" title="Switch language / Bytt språk">
+            EN
+        </button>
+    </form>
+    <script>
+    (function(){
+        const btn = document.getElementById('language-toggle');
+        if(!btn) return;
+        function updateLabel(lang){
+            btn.textContent = (lang === 'en') ? 'NO' : 'EN';
+        }
+        btn.addEventListener('click', function(){
+            fetch('/toggle-language', {method:'POST', headers:{'X-CSRFToken': (document.querySelector('meta[name="csrf-token"]')||{}).content || '' , 'Accept':'application/json'}})
+              .then(r=>r.json())
+              .then(data=>{ if(data.success){ updateLabel(data.language); localStorage.setItem('aksjeradar_language', data.language); if(window.translateToEnglish && data.language==='en'){translateToEnglish();} else if(data.language==='no'){ location.reload(); } }})
+              .catch(err=>console.warn('Toggle language failed', err));
+        });
+        const saved = localStorage.getItem('aksjeradar_language');
+        if(saved){ updateLabel(saved); }
+    })();
+    </script>
     '''
 
 # Instructions for implementation:
