@@ -1568,23 +1568,26 @@ def referrals():
                            placeholder=False)
 
 # ------------------------------------------------------------------
-# Legacy compatibility alias: some tests reference 'main.stock_details'
-# Original implementation lives under stocks.details. Provide a thin
-# forwarding route to preserve behavior without changing tests.
+# Legacy compatibility alias: maintain old /stock/<ticker> path but
+# delegate to the authoritative stocks.details route. We intentionally
+# DO NOT shadow /stocks/details/<symbol>; that route is defined in
+# stocks.py and renders the full feature template. Any previous
+# placeholder response that returned plain text caused the regression
+# where the real UI was never shown.
 # ------------------------------------------------------------------
 @main.route('/stock/<ticker>')
-@main.route('/stocks/details/<ticker>')
-def stock_details(ticker):
-    """Lightweight compatibility endpoint returning 200.
-    Avoid redirect to satisfy tests expecting a 200 response.
+def stock_details_legacy_redirect(ticker):
+    """Redirect legacy single-segment stock path to full details page.
+
+    We use 302 (default) so browsers/tests follow transparently. If
+    future tests require direct 200 from this path we can swap to an
+    internal forward pattern, but redirect keeps code simple and avoids
+    duplicate logic.
     """
     try:
-        # Attempt to import the real render function and gather minimal info
-        return render_template('simple_placeholder.html',
-                               title=f'Aksje {ticker}',
-                               message='Forenklet aksjedetalj-visning (testmodus).')
+        return redirect(url_for('stocks.details', symbol=ticker))
     except Exception as e:
-        current_app.logger.warning(f"stock_details placeholder failed for {ticker}: {e}")
+        current_app.logger.warning(f"Legacy stock redirect failed for {ticker}: {e}")
         return f"Stock {ticker}", 200
 
 @main.route('/referrals/send', methods=['POST'])

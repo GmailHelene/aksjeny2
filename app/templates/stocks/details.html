@@ -1,5 +1,9 @@
-}
+{% extends 'base.html' %}
+{% block title %}Aksjedetaljer {{ ticker or symbol }}{% endblock %}
+{% block content %}
 
+<div class="stock-details-container container-fluid mt-3" id="stock-details-root">
+<script>
 // Sanitize symbol client-side as additional protection (server already sanitizes)
 function sanitizeSymbol(raw){
     if(!raw) return 'AAPL';
@@ -356,4 +360,5 @@ function showToast(message, type) {
     }
 }
 </style>
+</div>
 {% endblock %}
