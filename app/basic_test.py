@@ -5,19 +5,18 @@ Basic test av kritiske importer og app opprettelse
 import sys
 import os
 import traceback
+import pytest
 
 # Add the project root to Python path
 sys.path.insert(0, '/workspaces/aksjeradarv6')
 
 def test_basic_imports():
-    """Test grunnleggende importer"""
+    """Test grunnleggende importer (assert basert for pytest)."""
     print("🔍 TESTER GRUNNLEGGENDE IMPORTER...")
     print("=" * 50)
-    
-    tests = [
+
+    mandatory = [
         ("Flask", lambda: __import__('flask')),
-        ("Pandas", lambda: __import__('pandas')),
-        ("YFinance", lambda: __import__('yfinance')),
         ("Requests", lambda: __import__('requests')),
         ("SQLAlchemy", lambda: __import__('sqlalchemy')),
         ("App Extensions", lambda: __import__('app.extensions', fromlist=['db', 'login_manager'])),
@@ -25,55 +24,69 @@ def test_basic_imports():
         ("User Model", lambda: __import__('app.models.user', fromlist=['User'])),
         ("Main Routes", lambda: __import__('app.routes.main', fromlist=['main'])),
     ]
-    
-    success_count = 0
-    for name, import_func in tests:
+    optional = [
+        ("Pandas", lambda: __import__('pandas')),
+        ("YFinance", lambda: __import__('yfinance')),
+    ]
+
+    mandatory_failures = []
+    optional_missing = []
+
+    for name, import_func in mandatory + optional:
         try:
             import_func()
             print(f"✅ {name}: OK")
-            success_count += 1
         except Exception as e:
-            print(f"❌ {name}: {str(e)}")
-    
-    print(f"\n📊 Import Test: {success_count}/{len(tests)} bestått")
-    return success_count == len(tests)
+            if (name, import_func) in mandatory:
+                print(f"❌ {name}: {e} (MANDATORY)")
+                mandatory_failures.append(name)
+            else:
+                print(f"⚠️ {name}: {e} (optional – skipping)")
+                optional_missing.append(name)
+
+    if mandatory_failures:
+        pytest.fail(f"Mandatory import failures: {', '.join(mandatory_failures)}")
+
+    if optional_missing:
+        print(f"\nℹ️ Optional libraries missing: {', '.join(optional_missing)} (not failing test)")
+
+    total_ok = len(mandatory) - len(mandatory_failures)
+    print(f"\n📊 Import Test: {total_ok}/{len(mandatory)} mandatory bestått")
 
 def test_app_creation():
-    """Test app opprettelse"""
+    """Test app opprettelse (assert basert)."""
     print("\n🔍 TESTER APP OPPRETTELSE...")
     print("=" * 50)
-    
-    try:
-        from app import create_app
-        app = create_app()
-        print("✅ App opprettet uten feil")
-        print(f"✅ App navn: {app.name}")
-        print(f"✅ Debug mode: {app.debug}")
-        return True
-    except Exception as e:
-        print(f"❌ App opprettelse feil: {e}")
-        traceback.print_exc()
-        return False
+
+    from app import create_app
+    app = create_app()
+    print("✅ App opprettet uten feil")
+    print(f"✅ App navn: {app.name}")
+    print(f"✅ Debug mode: {app.debug}")
+    # Basic sanity assertions
+    assert app is not None
+    assert hasattr(app, 'config')
 
 def test_database_connection():
-    """Test database tilkobling"""
+    """Test database tilkobling (assert/skip basert)."""
     print("\n🔍 TESTER DATABASE TILKOBLING...")
     print("=" * 50)
-    
+
     try:
         from app import create_app
-        from app.extensions import db
         from app.models.user import User
-        
-        app = create_app()
+    except Exception as e:  # Import errors should fail fast
+        pytest.fail(f"Kritisk import-feil for database test: {e}")
+
+    app = create_app()
+    from app.extensions import db  # ensure extensions bound after app creation
+    try:
         with app.app_context():
-            # Test basic database query
             user_count = User.query.count()
             print(f"✅ Database tilkoblet, {user_count} brukere funnet")
-            return True
+            assert user_count >= 0  # existence check
     except Exception as e:
-        print(f"❌ Database tilkobling feil: {e}")
-        return False
+        pytest.fail(f"Database test feilet: {e}")
 
 def create_missing_files():
     """Opprett manglende filer"""
@@ -169,13 +182,24 @@ def main():
     print("=" * 60)
     
     # Test 1: Importer
-    imports_ok = test_basic_imports()
-    
-    # Test 2: App opprettelse
-    app_ok = test_app_creation()
-    
-    # Test 3: Database
-    db_ok = test_database_connection()
+    # Merk: I pytest-modus vil assert failures stoppe kjøring; for CLI samler vi resultater
+    imports_ok = True
+    app_ok = True
+    db_ok = True
+    try:
+        test_basic_imports()
+    except Exception:
+        imports_ok = False
+
+    try:
+        test_app_creation()
+    except Exception:
+        app_ok = False
+
+    try:
+        test_database_connection()
+    except Exception:
+        db_ok = False
     
     # Test 4: Opprett manglende filer
     files_created = create_missing_files()

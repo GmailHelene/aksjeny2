@@ -43,7 +43,7 @@ ALWAYS_ACCESSIBLE = {
     'main.offline',
     'main.offline_html',
     'diagnostic.auth_status',  # Diagnostic route
-    'test.test_access_control'  # Test route
+    'test.access_control_check'  # Diagnostic access control snapshot route
 }
 
 # Demo accessible endpoints (available for authenticated users)

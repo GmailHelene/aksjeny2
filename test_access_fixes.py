@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 # Base URL for the local Flask server
 BASE_URL = "http://localhost:5000"
 
-def test_endpoint(endpoint, expected_status=200, headers=None):
+# NOTE: Renamed to helper_test_endpoint so pytest doesn't treat this
+# diagnostic utility as a real parametrized test requiring fixtures.
+def helper_test_endpoint(endpoint, expected_status=200, headers=None):
     """Test an endpoint and return the result"""
     url = f"{BASE_URL}{endpoint}"
     logger.info(f"Testing endpoint: {url}")
@@ -35,7 +37,7 @@ def run_diagnostic_tests():
     logger.info("Running diagnostic tests...")
     
     # Test auth status endpoint
-    success, response = test_endpoint("/diagnostic/auth-status")
+    success, response = helper_test_endpoint("/diagnostic/auth-status")
     if success:
         try:
             # Try to parse as JSON
@@ -47,7 +49,7 @@ def run_diagnostic_tests():
             logger.info(f"Auth status response (text): {response.text[:500]}...")
     
     # Test access control endpoint
-    success, response = test_endpoint("/test/access-control")
+    success, response = helper_test_endpoint("/test/access-control")
     if success:
         try:
             # Try to parse as JSON
@@ -70,12 +72,12 @@ def test_with_simulated_auth():
     }
     
     # Test portfolio endpoint with auth headers
-    success, response = test_endpoint("/portfolio/", headers=auth_headers)
+    success, response = helper_test_endpoint("/portfolio/", headers=auth_headers)
     if success:
         logger.info(f"Portfolio response with auth (text): {response.text[:500]}...")
     
     # Test profile endpoint with auth headers
-    success, response = test_endpoint("/profile/", headers=auth_headers)
+    success, response = helper_test_endpoint("/profile/", headers=auth_headers)
     if success:
         logger.info(f"Profile response with auth (text): {response.text[:500]}...")
 
@@ -92,7 +94,7 @@ def test_main_routes():
     ]
     
     for route in routes:
-        success, response = test_endpoint(route)
+        success, response = helper_test_endpoint(route)
         if success:
             logger.info(f"{route} accessible")
 

@@ -387,25 +387,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 600);
     
     // Watchlist and portfolio buttons
-    document.querySelector('.add-to-watchlist').addEventListener('click', async function() {
-        try {
-            const response = await fetch('/stocks/api/favorites/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify({ symbol: ticker })
-            });
-            
-            if (response.ok) {
-                this.innerHTML = '<i class="bi bi-star-fill"></i> I favoritter';
-                this.disabled = true;
-                showToast('Lagt til i favoritter!', 'success');
-            }
-        } catch (error) {
-            showToast('Kunne ikke legge til i favoritter', 'error');
-        }
+    document.querySelector('.add-to-watchlist').addEventListener('click', function() {
+        if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+        const btn = this;
+        toggleFavorite(ticker, {
+            button: btn,
+            favoritedText: '<i class="bi bi-star-fill"></i> I favoritter',
+            unfavoritedText: '<i class="bi bi-star"></i> Legg til favoritt',
+            onSuccess: (d) => showToast(d.message || (d.favorited ? 'Lagt til i favoritter!' : 'Fjernet fra favoritter'), d.favorited ? 'success' : 'info'),
+            onError: () => showToast('Favoritt-feil', 'danger')
+        });
     });
     
     document.querySelector('.add-to-portfolio').addEventListener('click', async function() {

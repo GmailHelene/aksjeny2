@@ -9,7 +9,9 @@ import time
 
 BASE_URL = "http://localhost:5002"
 
-def test_endpoint(url, expected_status=200, test_name=""):
+# NOTE: Renamed to helper_test_endpoint to prevent pytest from collecting
+# this CLI utility function as a test (it returns bool, uses prints).
+def helper_test_endpoint(url, expected_status=200, test_name=""):
     """Test if an endpoint is accessible"""
     try:
         response = requests.get(url, timeout=10)
@@ -29,11 +31,11 @@ def main():
     
     # Core functionality tests
     print("\n1. Core Application Health")
-    test_endpoint(f"{BASE_URL}/health/ready", test_name="Health Check")
-    test_endpoint(f"{BASE_URL}/", test_name="Homepage")
+    helper_test_endpoint(f"{BASE_URL}/health/ready", test_name="Health Check")
+    helper_test_endpoint(f"{BASE_URL}/", test_name="Homepage")
     
     print("\n2. Stock Comparison (Chart.js Fix)")
-    if test_endpoint(f"{BASE_URL}/stocks/compare", test_name="Stock Comparison Page"):
+    if helper_test_endpoint(f"{BASE_URL}/stocks/compare", test_name="Stock Comparison Page"):
         # Test chart functionality
         try:
             response = requests.get(f"{BASE_URL}/stocks/compare", timeout=10)
@@ -51,19 +53,19 @@ def main():
             print(f"   ❌ Chart.js test failed: {e}")
     
     print("\n3. Watchlist Functionality")
-    test_endpoint(f"{BASE_URL}/watchlist/", test_name="Watchlist Main Page")
-    test_endpoint(f"{BASE_URL}/watchlist/api/alerts", test_name="Watchlist Alerts API")
+    helper_test_endpoint(f"{BASE_URL}/watchlist/", test_name="Watchlist Main Page")
+    helper_test_endpoint(f"{BASE_URL}/watchlist/api/alerts", test_name="Watchlist Alerts API")
     
     print("\n4. Portfolio Functionality") 
-    test_endpoint(f"{BASE_URL}/portfolio/", test_name="Portfolio Main Page")
+    helper_test_endpoint(f"{BASE_URL}/portfolio/", test_name="Portfolio Main Page")
     
     print("\n5. Profile and Authentication")
-    test_endpoint(f"{BASE_URL}/profile", test_name="Profile Page")
-    test_endpoint(f"{BASE_URL}/login", test_name="Login Page")
+    helper_test_endpoint(f"{BASE_URL}/profile", test_name="Profile Page")
+    helper_test_endpoint(f"{BASE_URL}/login", test_name="Login Page")
     
     print("\n6. Additional Pages")
-    test_endpoint(f"{BASE_URL}/demo", test_name="Demo Page")
-    test_endpoint(f"{BASE_URL}/health/routes", test_name="Routes Health Check")
+    helper_test_endpoint(f"{BASE_URL}/demo", test_name="Demo Page")
+    helper_test_endpoint(f"{BASE_URL}/health/routes", test_name="Routes Health Check")
     
     print("\n" + "=" * 60)
     print("🎉 FINAL TEST RESULTS SUMMARY:")

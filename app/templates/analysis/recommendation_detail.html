@@ -253,45 +253,26 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const ticker = this.dataset.ticker;
             
-            fetch('/stocks/api/favorites/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                },
-                body: JSON.stringify({
-                    symbol: ticker,
-                    name: ticker
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    this.innerHTML = '<i class="bi bi-star-fill"></i> I watchlist';
-                    this.classList.remove('btn-outline-primary');
-                    this.classList.add('btn-warning');
-                    
-                    // Show success message
+            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+            const btnEl = this;
+            toggleFavorite(ticker, {
+                button: btnEl,
+                favoritedText: '<i class="bi bi-star-fill"></i> I watchlist',
+                unfavoritedText: '<i class="bi bi-star"></i> Legg til watchlist',
+                onSuccess: (data) => {
                     const alert = document.createElement('div');
-                    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+                    alert.className = 'alert alert-' + (data.favorited ? 'success' : 'info') + ' alert-dismissible fade show position-fixed';
                     alert.style.top = '20px';
                     alert.style.right = '20px';
                     alert.style.zIndex = '9999';
                     alert.innerHTML = `
-                        <i class="bi bi-check-circle me-2"></i>${ticker} lagt til i watchlist!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <i class=\"bi bi-check-circle me-2\"></i>${ticker} ${data.favorited ? 'lagt til i favoritter!' : 'fjernet fra favoritter'}
+                        <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>
                     `;
                     document.body.appendChild(alert);
-                    
-                    setTimeout(() => {
-                        if (alert.parentNode) {
-                            alert.parentNode.removeChild(alert);
-                        }
-                    }, 3000);
-                }
-            })
-            .catch(error => {
-                console.error('Error adding to watchlist:', error);
+                    setTimeout(() => { alert.remove(); }, 3000);
+                },
+                onError: () => console.error('Favoritt toggle feilet')
             });
         });
     });

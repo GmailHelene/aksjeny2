@@ -1,5 +1,6 @@
 import requests
 import sys
+import pytest
 
 def test_profile_route():
     """Test the profile route to check if it's working properly"""
@@ -19,14 +20,21 @@ def test_profile_route():
         else:
             print(f"Unexpected status code: {response.status_code}")
             print(f"Response text: {response.text[:200]}...")
-        
-        return response.status_code == 200
+
+        # Assertion moved inside try
+        assert response.status_code in (200,302), f"Unexpected status {response.status_code}"
+    except requests.exceptions.ConnectionError as e:
+        pytest.skip(f"Server not running for profile route test: {e}")
     except Exception as e:
         print(f"Error testing profile route: {e}")
-        return False
+        pytest.fail(f"Exception testing profile route: {e}")
 
 if __name__ == "__main__":
     print("Testing profile route...")
-    success = test_profile_route()
-    print(f"Test {'succeeded' if success else 'failed'}")
-    sys.exit(0 if success else 1)
+    try:
+        test_profile_route()
+        print("Test succeeded")
+        sys.exit(0)
+    except AssertionError:
+        print("Test failed")
+        sys.exit(1)

@@ -3,11 +3,10 @@ import sys
 import importlib.util
 
 # Railway production startup script
-os.environ.setdefault('EMAIL_USERNAME', 'support@luxushair.com')
-os.environ.setdefault('EMAIL_PASSWORD', 'suetozoydejwntii')
+os.environ.setdefault('APP_ENV', 'production')
+os.environ.setdefault('DATABASE_URL', 'sqlite:///app.db')
 os.environ.setdefault('EMAIL_PORT', '587')
-os.environ.setdefault('EMAIL_SERVER', 'imap.gmail.com')
-os.environ.setdefault('DATABASE_URL', 'postgresql://postgres:PsOJBeRqPAAcXyOXYCJvidJqMOpSzhqN@crossover.proxy.rlwy.net:17830/railway')
+os.environ.setdefault('MAIL_SERVER', 'smtp.gmail.com')
 
 print("Starting Flask app for Railway deployment...")
 
@@ -19,7 +18,7 @@ app_init = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(app_init)
 
 # Create the Flask app using the imported function
-app = app_init.create_app('production')
+app = app_init.create_app(os.getenv('APP_ENV', 'production'))
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5002))

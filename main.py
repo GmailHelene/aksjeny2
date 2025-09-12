@@ -5,25 +5,25 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == '__main__':
-    os.environ.setdefault('EMAIL_USERNAME', 'support@luxushair.com')
-    os.environ.setdefault('EMAIL_PASSWORD', 'suetozoydejwntii')
+    # Provide sensible local fallbacks; real production should set via environment / .env
+    os.environ.setdefault('EMAIL_USERNAME', 'support@example.com')
+    os.environ.setdefault('EMAIL_PASSWORD', 'change-me')
     os.environ.setdefault('EMAIL_PORT', '587')
-    os.environ.setdefault('EMAIL_SERVER', 'imap.gmail.com')
-    os.environ.setdefault('DATABASE_URL', 'postgresql://postgres:PsOJBeRqPAAcXyOXYCJvidJqMOpSzhqN@crossover.proxy.rlwy.net:17830/railway')
+    os.environ.setdefault('EMAIL_SERVER', 'smtp.gmail.com')
 
-    print("Starting Flask app...")
-    print("Access forgot password at: http://localhost:5002/forgot-password")
-    print("Access reset password with token from email")
-    print("\nServer starting...")
+    # If a DATABASE_URL isn't set locally, use sqlite instead of hard-coded prod credentials
+    os.environ.setdefault('DATABASE_URL', 'sqlite:///app.db')
 
-    # Import after environment variables are set
+    # Decide environment: APP_ENV overrides FLASK_ENV. Default to development for local runs
+    app_env = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV') or 'development'
+
+    print(f"Starting Flask app with APP_ENV={app_env}...")
     from app import create_app
 
-    # Railway typically injects PORT (often 5000). Default to 5000 for production compatibility.
-    # Keep ability to override locally by exporting PORT=5002 if desired.
     port = int(os.environ.get('PORT', 5000))
     try:
-        app = create_app('development')
-        app.run(debug=True, host='0.0.0.0', port=port)
+        app = create_app(app_env)
+        debug_enabled = app.config.get('DEBUG', False)
+        app.run(debug=debug_enabled, host='0.0.0.0', port=port)
     except Exception as e:
         print(f"ERROR during Flask app startup: {e}", flush=True)

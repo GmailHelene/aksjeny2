@@ -187,110 +187,31 @@
                                         {% set price_val = stock.get('price', 0)|float %}
                                         {% set ticker = stock.get('ticker', '') %}
                                         <strong>
-                                        {% if '.OL' in ticker %}
-                                            {{ "{:.2f}".format(price_val) }} NOK
-                                        {% else %}
-                                            ${{ "{:.2f}".format(price_val) }}
-                                        {% endif %}
-                                        </strong>
-                                    </td>
-                                    <td>
-                                        {% set change_val = stock.get('change_percent', 0)|float %}
-                                        <span class="{% if change_val > 0 %}text-success{% elif change_val < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                            {% if change_val > 0 %}+{% endif %}{{ "{:.2f}".format(change_val) }}%
-                                            <i class="bi bi-{% if change_val > 0 %}arrow-up{% elif change_val < 0 %}arrow-down{% else %}dash{% endif %}"></i>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% set pe_val = stock.get('pe_ratio', 0) %}
-                                        {% if pe_val and pe_val != 0 %}
-                                            {{ "{:.2f}".format(pe_val|float) }}
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% set pb_val = stock.get('pb_ratio', 0) %}
-                                        {% if pb_val and pb_val != 0 %}
-                                            {{ "{:.2f}".format(pb_val|float) }}
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% set rsi_val = stock.get('rsi', 50) %}
-                                        {% if rsi_val and rsi_val != 0 %}
-                                            {% set rsi_float = rsi_val|float %}
-                                            <span class="{% if rsi_float < 30 %}text-success fw-bold{% elif rsi_float > 70 %}text-danger fw-bold{% else %}text-muted{% endif %}" 
-                                                  title="{% if rsi_float < 30 %}Oversolgt{% elif rsi_float > 70 %}Overkjøpt{% else %}Nøytral{% endif %}">
-                                                {{ "{:.1f}".format(rsi_float) }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% set rec_val = stock.get('recommendation', 'HOLD') %}
-                                        <span class="badge 
-                                            {% if rec_val == 'STRONG BUY' %}bg-success
-                                            {% elif rec_val == 'BUY' %}bg-primary
-                                            {% elif rec_val == 'HOLD' %}bg-warning text-dark
-                                            {% elif rec_val == 'SELL' %}bg-danger
-                                            {% else %}bg-secondary{% endif %}">
-                                            {{ rec_val }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('stocks.details', symbol=stock.get('ticker', 'N/A')) }}" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <button class="btn btn-outline-success btn-sm" 
-                                                    onclick="addToWatchlist('{{ stock.get('ticker', 'N/A') }}', event)"
-                                                    title="Legg til i favoritter">
-                                                <i class="bi bi-heart"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
-                        <h5 class="text-muted mt-3">Ingen aksjer fant som oppfyller kriteriene</h5>
-                        <p class="text-muted">Prøv å justere filterne eller velg en annen preset</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% else %}
-            <!-- Welcome Panel -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-5">
-                    <i class="bi bi-funnel text-primary" style="font-size: 4rem;"></i>
-                    <h3 class="mt-3">Velkommen til Avansert Screener</h3>
-                    <p class="lead text-muted">
-                        Finn de beste aksjene basert på dine kriterier ved hjelp av Finviz-teknologi
-                    </p>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-4">
-                            <div class="card border-primary h-100">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-lightning-charge text-primary fs-1"></i>
-                                    <h5>Rask Screening</h5>
-                                    <p class="small">Analyser tusenvis av aksjer på sekunder</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card border-success h-100">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-graph-up text-success fs-1"></i>
+                                        async function addToWatchlist(ticker, event) {
+                                            if (event) { event.preventDefault(); event.stopPropagation(); }
+                                            if (!ticker || typeof ticker !== 'string') { showToast('Ugyldig ticker-symbol', 'error'); return; }
+                                            const btn = event?.target?.closest('button') || document.querySelector(`button[data-ticker="${ticker}"]`);
+                                            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+                                            toggleFavorite(ticker, {
+                                                button: btn,
+                                                favoritedText: '<i class="bi bi-heart-fill"></i>',
+                                                unfavoritedText: '<i class="bi bi-heart"></i>',
+                                                onSuccess: (data) => {
+                                                    const msg = data.message || (data.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`);
+                                                    showToast(msg, data.favorited ? 'success' : 'info');
+                                                    // Sync all same-ticker buttons
+                                                    document.querySelectorAll(`button[data-ticker="${ticker}"]`).forEach(otherBtn => {
+                                                        if (otherBtn !== btn) {
+                                                            otherBtn.innerHTML = data.favorited ? '<i class="bi bi-heart-fill"></i>' : '<i class="bi bi-heart"></i>';
+                                                            otherBtn.classList.toggle('btn-success', data.favorited);
+                                                            otherBtn.classList.toggle('btn-outline-success', !data.favorited);
+                                                            otherBtn.setAttribute('data-favorited', data.favorited ? 'true' : 'false');
+                                                        }
+                                                    });
+                                                },
+                                                onError: () => showToast('Favoritt-handling feilet', 'error')
+                                            });
+                                        }
                                     <h5>Detaljert Analyse</h5>
                                     <p class="small">Fundamental og teknisk analyse kombinert</p>
                                 </div>

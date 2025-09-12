@@ -576,65 +576,73 @@ from app import create_app
 
 @pytest.fixture
 def client():
-    app = create_app()
+    app = create_app('testing')
     app.config['TESTING'] = True
+    ctx = app.app_context()
+    ctx.push()
     with app.test_client() as client:
         yield client
+    ctx.pop()
+
+def build_url(client, endpoint, **values):
+    """Safely build a URL for an endpoint inside a request context."""
+    with client.application.test_request_context():
+        return url_for(endpoint, **values)
 
 
 def test_homepage(client):
-    response = client.get(url_for('main.index'))
+    response = client.get(build_url(client, 'main.index'))
     assert response.status_code == 200
 
 
 def test_language_switch(client):
-    response = client.get(url_for('main.set_app_language', language='no'))
+    response = client.get(build_url(client, 'main.set_app_language', language='no'))
     assert response.status_code == 302  # Check for redirect
 
 
 def test_invalid_language(client):
-    response = client.get(url_for('main.set_app_language', language='invalid'))
+    response = client.get(build_url(client, 'main.set_app_language', language='invalid'))
     assert b'Invalid language selected' in response.data
 
 
 def test_referrals(client):
-    response = client.get(url_for('main.referrals'))
+    response = client.get(build_url(client, 'main.referrals'))
     assert response.status_code == 200
 
 
 def test_send_referral(client):
-    response = client.post(url_for('main.send_referral'), data={})  # Add necessary data
+    response = client.post(build_url(client, 'main.send_referral'), data={})  # Add necessary data
     assert response.status_code == 302  # Check for redirect
 
 
 def test_stock_details(client):
-    response = client.get(url_for('main.stock_details', ticker='AAPL'))
+    response = client.get(build_url(client, 'main.stock_details', ticker='AAPL'))
     assert response.status_code == 200
 
 
 def test_market_overview(client):
-    response = client.get(url_for('main.market_overview'))
+    response = client.get(build_url(client, 'main.market_overview'))
     assert response.status_code == 200
 
 
 def test_demo_ping(client):
-    response = client.get(url_for('main.demo_ping'))
+    response = client.get(build_url(client, 'main.demo_ping'))
     assert response.status_code == 200
     assert response.json['status'] == 'ok'
 
 
 def test_demo_echo(client):
-    response = client.post(url_for('main.demo_echo'), data={'message': 'Hello'})
+    response = client.post(build_url(client, 'main.demo_echo'), data={'message': 'Hello'})
     assert response.status_code == 200
 
 
 def test_auth(client):
-    response = client.get(url_for('main.auth'))
+    response = client.get(build_url(client, 'main.auth'))
     assert response.status_code == 200
 
 
 def test_profile(client):
-    response = client.get(url_for('main.profile'))
+    response = client.get(build_url(client, 'main.profile'))
     assert response.status_code == 200
 
 

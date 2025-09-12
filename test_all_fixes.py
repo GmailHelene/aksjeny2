@@ -9,7 +9,9 @@ import time
 
 BASE_URL = "http://localhost:5002"
 
-def test_endpoint(url, expected_status=200, test_name=""):
+# NOTE: Renamed to helper_test_endpoint to avoid pytest collecting this
+# diagnostic function (returns bool and uses prints).
+def helper_test_endpoint(url, expected_status=200, test_name=""):
     """Test if an endpoint is accessible"""
     try:
         response = requests.get(url, timeout=10)
@@ -28,7 +30,7 @@ def main():
     
     # Test basic server health
     print("1. Testing basic server health...")
-    if not test_endpoint(f"{BASE_URL}/health/ready", test_name="Health Check"):
+    if not helper_test_endpoint(f"{BASE_URL}/health/ready", test_name="Health Check"):
         print("❌ Server not ready, exiting...")
         return
     
@@ -36,24 +38,24 @@ def main():
     print("\n2. Testing specific URLs mentioned in the issue...")
     
     # Stock comparison page
-    test_endpoint(f"{BASE_URL}/stocks/compare", test_name="Stock Comparison Page")
+    helper_test_endpoint(f"{BASE_URL}/stocks/compare", test_name="Stock Comparison Page")
     
     # Watchlist pages  
-    test_endpoint(f"{BASE_URL}/watchlist/", test_name="Watchlist Main Page")
+    helper_test_endpoint(f"{BASE_URL}/watchlist/", test_name="Watchlist Main Page")
     
     # Portfolio pages
-    test_endpoint(f"{BASE_URL}/portfolio/", test_name="Portfolio Main Page")
+    helper_test_endpoint(f"{BASE_URL}/portfolio/", test_name="Portfolio Main Page")
     
     # Profile page (may redirect to login, so expect 302)
-    test_endpoint(f"{BASE_URL}/profile", expected_status=302, test_name="Profile Page")
+    helper_test_endpoint(f"{BASE_URL}/profile", expected_status=302, test_name="Profile Page")
     
     print("\n3. Testing API endpoints...")
     
     # Test watchlist API endpoints
-    test_endpoint(f"{BASE_URL}/watchlist/api/alerts", test_name="Watchlist Alerts API")
+    helper_test_endpoint(f"{BASE_URL}/watchlist/api/alerts", test_name="Watchlist Alerts API")
     
     # Test portfolio API endpoints
-    test_endpoint(f"{BASE_URL}/portfolio/api/portfolios", test_name="Portfolio API")
+    helper_test_endpoint(f"{BASE_URL}/portfolio/api/portfolios", test_name="Portfolio API")
     
     print("\n4. Testing Chart.js functionality...")
     

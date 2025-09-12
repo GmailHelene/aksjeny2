@@ -61,7 +61,9 @@ CRITICAL_ENDPOINTS = [
     }
 ]
 
-def test_endpoint(endpoint_info):
+# NOTE: Renamed to helper_test_endpoint to avoid pytest collecting this
+# diagnostics helper as a real test function.
+def helper_test_endpoint(endpoint_info):
     """Test a single endpoint and return results"""
     name = endpoint_info['name']
     url = endpoint_info['url']
@@ -142,7 +144,7 @@ def main():
     results = {}
     
     for endpoint_info in CRITICAL_ENDPOINTS:
-        result = test_endpoint(endpoint_info)
+        result = helper_test_endpoint(endpoint_info)
         results[endpoint_info['name']] = result
         time.sleep(1)  # Brief pause between tests
     

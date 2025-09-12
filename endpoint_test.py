@@ -12,8 +12,9 @@ signal.signal(signal.SIGINT, signal_handler)
 # Base URL
 BASE_URL = "http://localhost:5000"
 
-# Test endpoints
-def test_endpoint(endpoint, desc=None):
+# NOTE: Renamed test_endpoint -> helper_endpoint to avoid pytest collecting
+# this diagnostic script's function as a real test (it lacks fixtures).
+def helper_endpoint(endpoint, desc=None):
     url = f"{BASE_URL}{endpoint}"
     print(f"\nTesting {desc or endpoint}...")
     
@@ -48,11 +49,11 @@ def main():
     print(f"Testing server at {BASE_URL}")
 
     # Test main endpoints
-    test_endpoint("/", "Main page")
-    test_endpoint("/diagnostic/auth-status", "Diagnostic auth status")
-    test_endpoint("/test/access-control", "Test access control")
-    test_endpoint("/profile/", "Profile page")
-    test_endpoint("/portfolio/", "Portfolio page")
+    helper_endpoint("/", "Main page")
+    helper_endpoint("/diagnostic/auth-status", "Diagnostic auth status")
+    helper_endpoint("/test/access-control", "Test access control")
+    helper_endpoint("/profile/", "Profile page")
+    helper_endpoint("/portfolio/", "Portfolio page")
 
     print("\nTesting complete.")
 

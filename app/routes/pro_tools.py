@@ -3,6 +3,16 @@ from flask_login import login_required, current_user
 from ..utils.access_control import access_required, pro_required, demo_access
 from datetime import datetime, timedelta
 import logging
+from types import SimpleNamespace
+import math
+
+# Numerical libs (already project-wide dependencies)
+try:
+    import numpy as np  # type: ignore
+    import pandas as pd  # type: ignore
+except Exception:  # pragma: no cover - if unavailable we degrade gracefully
+    np = None  # type: ignore
+    pd = None  # type: ignore
 
 # Import services safely
 try:
@@ -74,80 +84,24 @@ def advanced_screener():
 def price_alerts():
     """Pris-varsler og alarmer"""
     try:
+        from ..services.alert_service import list_user_alerts, create_alert as svc_create
         if request.method == 'POST':
-            # Get form data
-            ticker = request.form.get('ticker')
-            alert_type = request.form.get('alert_type')
+            ticker = (request.form.get('ticker') or '').strip().upper()
+            alert_type = request.form.get('alert_type') or 'above'
             target_value = request.form.get('target_value')
             email_alert = request.form.get('email_alert') == 'on'
             browser_alert = request.form.get('browser_alert') == 'on'
-            
-            # Validate required fields
-            if not all([ticker, alert_type, target_value]):
+            if not (ticker and target_value):
                 flash('Alle felt må fylles ut.', 'error')
                 return redirect(url_for('pro_tools.price_alerts'))
-            
-            # Create alert using API endpoint functionality
-            alert_data = {
-                'symbol': ticker,
-                'condition': alert_type,
-                'price': float(target_value),
-                'email_enabled': email_alert,
-                'browser_enabled': browser_alert
-            }
-            
-            # Save alert to database using PriceAlert model
             try:
-                from ..models.price_alert import PriceAlert
-                from ..services.price_monitor_service import price_monitor
-                
-                # Create new alert
-                new_alert = PriceAlert(
-                    user_id=current_user.id,
-                    ticker=ticker.upper(),  # Store in ticker field
-                    symbol=ticker.upper(),  # Also store in symbol field for compatibility
-                    target_price=float(target_value),
-                    alert_type=alert_type,  # 'above' or 'below'
-                    is_active=True,
-                    email_enabled=email_alert,
-                    browser_enabled=browser_alert
-                )
-                
-                # Save to database
-                from ..extensions import db
-                db.session.add(new_alert)
-                db.session.commit()
-                
-                # Register with monitoring service
-                try:
-                    price_monitor.add_alert(new_alert.to_dict())
-                except Exception as monitor_error:
-                    logger.warning(f"Could not register alert with monitor: {monitor_error}")
-                
+                svc_create(current_user.id, ticker, alert_type, float(target_value), email_alert, browser_alert)
                 flash(f'Prisvarsel opprettet for {ticker} ({alert_type} {target_value})', 'success')
-                logger.info(f"Created price alert for user {current_user.id}: {ticker} {alert_type} {target_value}")
-                
             except Exception as e:
-                logger.error(f"Error creating price alert: {e}")
-                flash(f'Kunne ikke opprette varsel: {str(e)}', 'error')
-            
+                logger.error(f"Create alert via service failed: {e}")
+                flash(f'Kunne ikke opprette varsel: {e}', 'error')
             return redirect(url_for('pro_tools.price_alerts'))
-            
-        # GET request - show alerts page
-        # Fetch user's active alerts from database
-        user_alerts = []
-        try:
-            from ..models.price_alert import PriceAlert
-            alerts_query = PriceAlert.query.filter_by(user_id=current_user.id).order_by(
-                PriceAlert.is_active.desc(),
-                PriceAlert.created_at.desc()
-            ).all()
-            user_alerts = [alert.to_dict() for alert in alerts_query]
-            logger.info(f"Retrieved {len(user_alerts)} alerts for user {current_user.id}")
-        except Exception as e:
-            logger.error(f"Error fetching user alerts: {e}")
-            user_alerts = []
-        
+        user_alerts = list_user_alerts(current_user.id)
         return render_template('pro/alerts.html', alerts=user_alerts)
     except Exception as e:
         logger.error(f"Error in price alerts: {e}")
@@ -159,44 +113,237 @@ def price_alerts():
 @pro_tools.route('/portfolio-analyzer')
 @access_required
 def portfolio_analyzer():
-    """Avansert porteføljeanalyse"""
+    """Avansert porteføljeanalyse med reelle porteføljer og sikre fallbacks."""
     try:
-        # Hent brukerens porteføljer
-        portfolios = []  # TODO: Implementer database henting
-        
-        analysis_results = None
-        if request.args.get('portfolio_id'):
-            # Kjør analyse på valgt portefølje
-            analysis_results = {
-                'risk_metrics': {
-                    'beta': 1.2,
-                    'volatility': 0.18,
-                    'sharpe_ratio': 1.4,
-                    'max_drawdown': 0.12
-                },
-                'diversification': {
-                    'sector_concentration': 0.35,
-                    'geographic_exposure': {
-                        'Norway': 0.6,
-                        'USA': 0.3,
-                        'Europe': 0.1
-                    }
-                },
-                'performance': {
-                    'total_return': 0.15,
-                    'annual_return': 0.12,
-                    'benchmark_comparison': 0.03
-                }
-            }
-        
-        return render_template('pro/portfolio_analyzer.html', 
-                             portfolios=portfolios,
-                             analysis=analysis_results)
+        from ..models.portfolio import Portfolio
+        # Hent porteføljer (utelat watchlister)
+        try:
+            portfolios = Portfolio.query.filter_by(user_id=current_user.id, is_watchlist=False).order_by(Portfolio.created_at.asc()).all()
+        except Exception as q_err:
+            logger.error(f"Feil ved henting av porteføljer: {q_err}")
+            portfolios = []
+
+        analysis = None
+        portfolio_id = request.args.get('portfolio_id')
+        selected_portfolio = None
+        if portfolio_id:
+            try:
+                selected_portfolio = Portfolio.query.filter_by(id=portfolio_id, user_id=current_user.id).first()
+            except Exception as sel_err:
+                logger.error(f"Feil ved henting av valgt portefølje: {sel_err}")
+                selected_portfolio = None
+
+        if selected_portfolio:
+            # 1. Grunnleggende verdier og allokasjon
+            try:
+                total_value = selected_portfolio.calculate_total_value()
+            except Exception:
+                total_value = 0.0
+            try:
+                allocation_raw = selected_portfolio.get_stock_allocation()
+            except Exception:
+                allocation_raw = []
+
+            holdings = []
+            # Pre-calc weights as fraction (not percentage)
+            for alloc in allocation_raw:
+                ticker = alloc['ticker']
+                value = alloc.get('value', 0.0)
+                weight_pct = alloc.get('percentage', 0.0)
+                weight_fraction = (weight_pct / 100.0) if weight_pct else 0.0
+                try:
+                    stock_obj = selected_portfolio.stocks.filter_by(ticker=ticker).first()
+                    ret_pct = stock_obj.calculate_return() if stock_obj else 0.0
+                except Exception:
+                    ret_pct = 0.0
+                holdings.append({
+                    'ticker': ticker,
+                    'name': ticker,
+                    'weight': weight_pct,      # keep original percentage for UI
+                    'weight_fraction': weight_fraction,
+                    'value': value,
+                    'return': ret_pct,
+                    'spread': None,            # real spread not implemented yet
+                    'risk_contribution': 0.0   # placeholder until computed
+                })
+
+            # Default metrics
+            total_return_pct = selected_portfolio.return_percentage or 0.0
+            volatility = 0.0
+            sharpe_ratio = 0.0
+            beta = 0.0
+            var_95 = 0.0
+            correlation = 0.0
+            benchmark_symbol = '^GSPC'  # S&P 500 som benchmark
+            risk_free_rate = 0.02
+
+            # 2. Hent historiske priser hvis mulig
+            historical_closes = {}
+            min_length_required = 30  # minimum dager for meningsfull beregning
+            end_date = datetime.utcnow().date()
+            start_date = end_date - timedelta(days=180)
+
+            def fetch_history(ticker: str):
+                """Returnerer DataFrame med 'Date' index og 'Close' kolonne."""
+                # Forsøk DataService først hvis API eksisterer med samme signatur (period/interval)
+                df = None
+                if DataService and hasattr(DataService, 'get_historical_data'):
+                    try:
+                        # DataService variant bruker (symbol, period, interval)
+                        df = DataService.get_historical_data(ticker, period='6mo', interval='1d')  # type: ignore
+                    except Exception:
+                        df = None
+                if (df is None or getattr(df, 'empty', True)) and 'YahooFinanceService' in globals():
+                    try:  # type: ignore
+                        from ..services.yahoo_finance_service import YahooFinanceService
+                        df2 = YahooFinanceService.get_historical_data(ticker, start_date.isoformat(), end_date.isoformat())
+                        if df2 is not None and not df2.empty:
+                            df = df2
+                    except Exception:
+                        pass
+                return df
+
+            if pd is not None and np is not None and holdings:
+                price_frames = []
+                tickers_for_calc = []
+                for h in holdings:
+                    t = h['ticker']
+                    df = fetch_history(t)
+                    if df is not None and not df.empty:
+                        # Normalize columns (yfinance returns 'Close')
+                        if 'Close' in df.columns:
+                            series = df['Close'].copy()
+                        elif 'close' in df.columns:
+                            series = df['close'].copy()
+                        else:
+                            continue
+                        series.name = t
+                        price_frames.append(series)
+                        tickers_for_calc.append(t)
+                if len(price_frames) >= 1:
+                    try:
+                        prices_df = pd.concat(price_frames, axis=1).dropna(how='all')
+                        # Daglige log- eller prosent avkastninger
+                        returns_df = prices_df.pct_change().dropna(how='any')
+                        if len(returns_df) >= min_length_required:
+                            # Map weights to fraction
+                            weight_map = {h['ticker']: h['weight_fraction'] for h in holdings if h['weight_fraction'] > 0}
+                            # Re-normalize weights to sum 1 for included tickers
+                            total_w = sum(weight_map.values())
+                            if total_w > 0:
+                                for k in list(weight_map.keys()):
+                                    weight_map[k] = weight_map[k] / total_w
+                            # Align returns to weight map
+                            available = [t for t in returns_df.columns if t in weight_map]
+                            if available:
+                                weights_vec = np.array([weight_map[t] for t in available], dtype=float)
+                                sub_returns = returns_df[available].to_numpy(dtype=float)
+                                portfolio_returns = np.dot(sub_returns, weights_vec)
+                                # Annualiseringsfaktor
+                                trading_days = 252
+                                mean_daily = float(np.mean(portfolio_returns))
+                                std_daily = float(np.std(portfolio_returns))
+                                volatility = std_daily * math.sqrt(trading_days)
+                                if volatility > 0:
+                                    sharpe_ratio = ((mean_daily * trading_days) - risk_free_rate) / volatility
+                                # Historisk VaR (95%) – positiv verdi som representerer forventet tapsgrense
+                                try:
+                                    var_raw = np.percentile(portfolio_returns, 5)
+                                    var_95 = -float(var_raw)
+                                except Exception:
+                                    var_95 = 0.0
+                                # Beta & korrelasjon mot benchmark
+                                try:
+                                    bench_df = fetch_history(benchmark_symbol)
+                                    if bench_df is not None and not bench_df.empty:
+                                        bench_prices = bench_df['Close'] if 'Close' in bench_df.columns else None
+                                        if bench_prices is not None:
+                                            bench_returns = bench_prices.pct_change().dropna()
+                                            # Align index
+                                            pr_series = pd.Series(portfolio_returns, index=returns_df.index)
+                                            merged = pd.concat([pr_series, bench_returns], axis=1, join='inner')
+                                            merged.columns = ['portfolio', 'benchmark']
+                                            if len(merged) >= min_length_required:
+                                                cov = np.cov(merged['portfolio'], merged['benchmark'])[0][1]
+                                                var_b = np.var(merged['benchmark'])
+                                                if var_b > 0:
+                                                    beta = float(cov / var_b)
+                                                correlation = float(merged.corr().iloc[0,1])
+                                except Exception:
+                                    beta = beta or 0.0
+                                # Risk contributions (approx = weight * asset_std / portfolio_std)
+                                try:
+                                    asset_stds = returns_df[available].std().to_dict()
+                                    if std_daily > 0:
+                                        for h in holdings:
+                                            t = h['ticker']
+                                            if t in asset_stds and t in weight_map:
+                                                contrib = (weight_map[t] * asset_stds[t]) / std_daily
+                                                h['risk_contribution'] = round(float(contrib * 100), 2)  # prosent av total risiko
+                                except Exception:
+                                    pass
+                    except Exception as calc_err:
+                        logger.warning(f"Kunne ikke beregne avanserte risikometrics: {calc_err}")
+
+            # 3. Sektorfordeling
+            sector_totals = {}
+            if DataService:
+                for h in holdings:
+                    try:
+                        info = DataService.get_stock_info(h['ticker'])
+                        sector = info.get('sector', 'Ukjent') if info else 'Ukjent'
+                    except Exception:
+                        sector = 'Ukjent'
+                    sector_totals.setdefault(sector, 0.0)
+                    sector_totals[sector] += h.get('value', 0.0)
+                    h['sector'] = sector
+            # Konverter sektorfordeling til labels/data
+            sector_labels = []
+            sector_data = []
+            if total_value > 0 and sector_totals:
+                for sec, val in sector_totals.items():
+                    sector_labels.append(sec)
+                    sector_data.append(round((val / total_value) * 100.0, 2))
+
+            # 4. Over-/undervekt
+            allocation_labels = [h['ticker'] for h in holdings]
+            allocation_data = [round(h['weight'], 2) for h in holdings]
+            overweight_stock = 'N/A'
+            overweight_percentage = 0.0
+            if allocation_data:
+                mx_idx = int(np.argmax(allocation_data)) if np and allocation_data else 0
+                overweight_stock = allocation_labels[mx_idx]
+                overweight_percentage = allocation_data[mx_idx]
+            underweight_sector = 'N/A'
+            if sector_data:
+                # Finn laveste sektorvekt > 0
+                min_idx = int(np.argmin(sector_data)) if np else 0
+                underweight_sector = sector_labels[min_idx]
+
+            analysis = SimpleNamespace(
+                total_value=total_value,
+                currency=getattr(selected_portfolio, 'currency', 'NOK'),
+                total_return=total_return_pct,
+                sharpe_ratio=round(sharpe_ratio, 3) if sharpe_ratio else 0.0,
+                volatility=round(volatility, 3) if volatility else 0.0,
+                var_95=round(var_95, 4) if var_95 else 0.0,
+                beta=round(beta, 3) if beta else 0.0,
+                correlation=round(correlation, 3) if correlation else 0.0,
+                holdings=holdings,
+                overweight_stock=overweight_stock,
+                overweight_percentage=overweight_percentage,
+                underweight_sector=underweight_sector,
+                allocation_labels=allocation_labels,
+                allocation_data=allocation_data,
+                sector_labels=sector_labels,
+                sector_data=sector_data
+            )
+
+        return render_template('pro/portfolio_analyzer.html', portfolios=portfolios, analysis=analysis)
     except Exception as e:
         logger.error(f"Error in portfolio analyzer: {e}")
         flash('Feil ved porteføljeanalyse.', 'error')
-        return render_template('pro/portfolio_analyzer.html', 
-                             portfolios=[], analysis=None)
+        return render_template('pro/portfolio_analyzer.html', portfolios=[], analysis=None)
 
 @pro_tools.route('/export')
 @demo_access
@@ -230,116 +377,93 @@ def api_screener():
 @pro_tools.route('/api/alerts', methods=['GET'])
 @access_required
 def api_get_alerts():
-    """API endpoint for getting user alerts"""
+    """Hent brukerens prisvarsler fra databasen."""
     try:
-        # TODO: Implement database retrieval
-        mock_alerts = [
-            {
-                'id': 1,
-                'symbol': 'AAPL',
-                'condition': 'above',
-                'price': 150.0,
-                'current_price': 145.50,
-                'created': '2024-01-15',
-                'active': True
-            },
-            {
-                'id': 2,
-                'symbol': 'TSLA',
-                'condition': 'below',
-                'price': 200.0,
-                'current_price': 220.30,
-                'created': '2024-01-10',
-                'active': True
-            }
-        ]
-        return jsonify({
-            'success': True,
-            'alerts': mock_alerts
-        })
+        from ..services.alert_service import list_user_alerts
+        alerts = list_user_alerts(current_user.id)
+        return jsonify({'success': True, 'alerts': alerts, 'count': len(alerts)})
     except Exception as e:
         logger.error(f"API get alerts error: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Teknisk feil: {str(e)}'
-        }), 500
+        return jsonify({'success': False, 'error': 'Kunne ikke hente varsler'}), 500
 
 @pro_tools.route('/api/create-alert', methods=['POST'])
 @access_required
 def create_alert():
-    """Opprett nytt pris-varsel"""
+    """Opprett nytt pris-varsel (DB)."""
     try:
-        data = request.get_json()
-        
-        # Validate required fields
-        if not data:
-            return jsonify({
-                'success': False,
-                'error': 'Ingen data mottatt'
-            }), 400
-            
-        required_fields = ['symbol', 'condition', 'price']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'success': False,
-                    'error': f'Mangler påkrevd felt: {field}'
-                }), 400
-        
-        # TODO: Implementer database lagring
-        alert_id = f"alert_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
-        return jsonify({
-            'success': True,
-            'alert_id': alert_id,
-            'message': f'Varsel opprettet for {data["symbol"]}'
-        })
+        data = request.get_json() or {}
+        required = ['symbol', 'condition', 'price']
+        missing = [f for f in required if f not in data]
+        if missing:
+            return jsonify({'success': False, 'error': 'Mangler felt: ' + ', '.join(missing)}), 400
+        from ..services.alert_service import create_alert as svc_create
+        alert = svc_create(
+            current_user.id,
+            data['symbol'],
+            data['condition'],
+            float(data['price']),
+            bool(data.get('email_enabled', True)),
+            bool(data.get('browser_enabled', False)),
+            data.get('notes')
+        )
+        return jsonify({'success': True, 'alert': alert, 'message': f"Varsel opprettet for {alert.get('symbol')}"})
+    except ValueError as ve:
+        return jsonify({'success': False, 'error': str(ve)}), 400
     except Exception as e:
         logger.error(f"Create alert error: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Teknisk feil: {str(e)}'
-        }), 500
+        from ..extensions import db
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({'success': False, 'error': 'Teknisk feil ved opprettelse'}), 500
 
 @pro_tools.route('/delete-alert/<alert_id>', methods=['POST'])
 @access_required
 def delete_alert(alert_id):
-    """Delete an alert"""
+    """Slett prisvarsel (HTML)."""
     try:
         if not alert_id:
             flash('Ugyldig varsel ID', 'error')
             return redirect(url_for('pro_tools.price_alerts'))
-            
-        # TODO: Implement database deletion
-        flash(f'Varsel slettet', 'success')
-        return redirect(url_for('pro_tools.price_alerts'))
+        from ..models.price_alert import PriceAlert
+        from ..extensions import db
+        alert = PriceAlert.query.filter_by(id=alert_id, user_id=current_user.id).first()
+        if not alert:
+            flash('Varsel ikke funnet', 'error')
+            return redirect(url_for('pro_tools.price_alerts'))
+        db.session.delete(alert)
+        db.session.commit()
+        flash('Varsel slettet', 'success')
     except Exception as e:
         logger.error(f"Delete alert error: {e}")
-        flash(f'Kunne ikke slette varsel: {str(e)}', 'error')
-        return redirect(url_for('pro_tools.price_alerts'))
+        from ..extensions import db
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        flash('Kunne ikke slette varsel', 'error')
+    return redirect(url_for('pro_tools.price_alerts'))
 
 @pro_tools.route('/api/delete-alert/<alert_id>', methods=['DELETE'])
 @access_required
 def api_delete_alert(alert_id):
-    """Delete an alert (API endpoint)"""
+    """Slett prisvarsel (API)."""
     try:
         if not alert_id:
-            return jsonify({
-                'success': False,
-                'error': 'Ugyldig varsel ID'
-            }), 400
-            
-        # TODO: Implement database deletion
-        return jsonify({
-            'success': True,
-            'message': f'Varsel {alert_id} slettet'
-        })
+            return jsonify({'success': False, 'error': 'Ugyldig varsel ID'}), 400
+        from ..services.alert_service import delete_alert as svc_delete
+        if svc_delete(current_user.id, int(alert_id)):
+            return jsonify({'success': True, 'message': f'Varsel {alert_id} slettet'})
+        return jsonify({'success': False, 'error': 'Varsel ikke funnet'}), 404
     except Exception as e:
         logger.error(f"Delete alert error: {e}")
-        return jsonify({
-            'success': False,
-            'error': f'Teknisk feil: {str(e)}'
-        }), 500
+        from ..extensions import db
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return jsonify({'success': False, 'error': 'Teknisk feil ved sletting'}), 500
 
 @pro_tools.route('/export-portfolio', methods=['POST'])
 @access_required
@@ -442,6 +566,24 @@ def api_documentation():
                 'endpoint': '/api/market/overview',
                 'description': 'Hent markedsoversikt',
                 'auth_required': False
+            },
+            {
+                'method': 'GET',
+                'endpoint': '/pro-tools/api/alerts',
+                'description': 'List prisvarsler for innlogget bruker',
+                'auth_required': True
+            },
+            {
+                'method': 'POST',
+                'endpoint': '/pro-tools/api/create-alert',
+                'description': 'Opprett nytt prisvarsel',
+                'auth_required': True
+            },
+            {
+                'method': 'DELETE',
+                'endpoint': '/pro-tools/api/delete-alert/{alert_id}',
+                'description': 'Slett et prisvarsel',
+                'auth_required': True
             }
         ]
         

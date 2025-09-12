@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app, send_from_directory, session
 from flask_login import current_user, login_required
 from ..utils.access_control import access_required, demo_access
+from ..utils.demo_mode import in_demo_mode
 from ..models.user import User
 from ..models.portfolio import Portfolio, PortfolioStock
 from ..extensions import cache
@@ -35,6 +36,12 @@ logger = logging.getLogger(__name__)
 
 analysis = Blueprint('analysis', __name__, url_prefix='/analysis')
 
+# NOTE: The lightweight '/analysis/sentiment' placeholder route has been
+# removed to eliminate duplication and ensure the robust implementation
+# in analysis.py is always used (with full fallback data + template keys).
+# If this file is still imported, the absence of this route prevents
+# accidental override and potential template errors.
+
 @analysis.route('/')
 @access_required
 def index():
@@ -67,24 +74,78 @@ def index():
 def technical():
     """Advanced Technical analysis with comprehensive indicators and patterns"""
     try:
-        symbol = request.args.get('symbol') or request.form.get('symbol')
+        symbol_raw = request.args.get('symbol') or request.form.get('symbol')
+        if symbol_raw:
+            try:
+                from ..utils.symbol_utils import sanitize_symbol
+                symbol, valid = sanitize_symbol(symbol_raw)
+            except Exception:
+                symbol = symbol_raw.strip().upper()
+                valid = True if symbol else False
+        else:
+            symbol = None
+            valid = False
         
-        if symbol and symbol.strip():
-            # Mock technical data for symbol
-            symbol = symbol.strip().upper()
-            technical_data = {
-                'symbol': symbol,
-                'current_price': 150.0,
-                'indicators': {
-                    'rsi': 65.5,
-                    'macd': 2.3,
-                    'volume': 1200000
-                }
-            }
-            return render_template('analysis/technical.html',
-                                 symbol=symbol,
-                                 technical_data=technical_data,
-                                 show_analysis=True)
+        if symbol:
+            technical_data = None
+            try:
+                import numpy as np
+                import pandas as pd
+            except Exception:
+                np = None
+                pd = None
+            df = None
+            if DataService and hasattr(DataService, 'get_historical_data') and pd is not None:
+                try:
+                    df = DataService.get_historical_data(symbol, period='6mo', interval='1d')
+                except Exception:
+                    df = None
+            if df is not None and not getattr(df, 'empty', True):
+                try:
+                    closes = df['Close'] if 'Close' in df.columns else df.iloc[:,0]
+                    # RSI
+                    delta = closes.diff()
+                    up = delta.clip(lower=0)
+                    down = -delta.clip(upper=0)
+                    roll = 14
+                    avg_gain = up.rolling(roll).mean()
+                    avg_loss = down.rolling(roll).mean()
+                    rs = avg_gain / (avg_loss + 1e-9)
+                    rsi = 100 - (100 / (1 + rs))
+                    rsi_val = float(rsi.iloc[-1]) if len(rsi) > roll else None
+                    # MACD
+                    ema12 = closes.ewm(span=12, adjust=False).mean()
+                    ema26 = closes.ewm(span=26, adjust=False).mean()
+                    macd = ema12 - ema26
+                    signal = macd.ewm(span=9, adjust=False).mean()
+                    macd_val = float(macd.iloc[-1]) if len(macd) > 26 else None
+                    macd_signal = float(signal.iloc[-1]) if len(signal) > 9 else None
+                    # Volume
+                    volume_val = float(df['Volume'].iloc[-1]) if 'Volume' in df.columns else None
+                    technical_data = {
+                        'symbol': symbol,
+                        'current_price': float(closes.iloc[-1]),
+                        'indicators': {
+                            'rsi': round(rsi_val,2) if rsi_val else None,
+                            'macd': round(macd_val,2) if macd_val else None,
+                            'macd_signal': round(macd_signal,2) if macd_signal else None,
+                            'volume': volume_val
+                        }
+                    }
+                except Exception as calc_err:
+                    logger.error(f"Technical calc error for {symbol}: {calc_err}")
+                    technical_data = None
+            if technical_data:
+                return render_template('analysis/technical.html',
+                                     symbol=symbol,
+                                     technical_data=technical_data,
+                                     show_analysis=True)
+            else:
+                return render_template('analysis/technical.html',
+                                     symbol=symbol,
+                                     technical_data=None,
+                                     show_analysis=True,
+                                     error=("Ugyldig symbol." if not valid else "Ingen tekniske data tilgjengelig for valgt ticker."))
         else:
             # Show technical analysis overview with popular stocks
             popular_stocks = []
@@ -145,7 +206,7 @@ def warren_buffett_simple():
             logger.error(f"Error in Warren Buffett analysis for {ticker}: {e}")
             flash('Feil ved analyse. Prøv igjen senere.', 'error')
 
-    # Show selection page
+    # Show selection page (selection lists / no ticker submitted)
     try:
         oslo_stocks = {
             'EQNR.OL': {'name': 'Equinor ASA', 'last_price': 270.50, 'change_percent': 1.2},
@@ -161,18 +222,17 @@ def warren_buffett_simple():
             'TSLA': {'name': 'Tesla Inc.', 'last_price': 220.80, 'change_percent': 3.2},
             'AMZN': {'name': 'Amazon.com Inc.', 'last_price': 155.90, 'change_percent': 0.7}
         }
-
-    return render_template('analysis/warren_buffett.html',
-                              oslo_stocks=oslo_stocks,
-                              global_stocks=global_stocks,
-                              analysis=None)
+        return render_template('analysis/warren_buffett.html',
+                               oslo_stocks=oslo_stocks,
+                               global_stocks=global_stocks,
+                               analysis=None)
     except Exception as e:
         logger.error(f"Error loading Buffett selection page: {e}")
         flash('Kunne ikke laste aksjeoversikt. Prøv igjen senere.', 'error')
-    return render_template('analysis/warren_buffett.html',
-                              oslo_stocks={},
-                              global_stocks={},
-                              analysis=None)
+        return render_template('analysis/warren_buffett.html',
+                               oslo_stocks={},
+                               global_stocks={},
+                               analysis=None)
 
 @analysis.route('/market-overview')
 @analysis.route('/market_overview')
@@ -254,17 +314,82 @@ def market_overview():
 @analysis.route('/recommendations/<symbol>')
 @access_required
 def recommendations(symbol=None):
-    """AI-powered stock recommendations and ratings"""
+    """Stock recommendations.
+
+    Policy: No fabricated AI/analyst data for authenticated premium users.
+    Demo/free users still see illustrative demo content (clearly marked).
+    """
     try:
-        # If specific symbol requested, get detailed recommendation
+        demo = in_demo_mode()
+        premium_real = current_user.is_authenticated and not demo
+
+        # Detail view
         if symbol:
             symbol = symbol.strip().upper()
-            
-            # Mock detailed recommendation data for specific symbol
+            if premium_real:
+                real_info = None
+                if DataService and hasattr(DataService, 'get_stock_info'):
+                    try:
+                        real_info = DataService.get_stock_info(symbol)
+                    except Exception as ds_err:
+                        logger.warning(f"DataService error for {symbol}: {ds_err}")
+                if real_info:
+                    price = real_info.get('regularMarketPrice') or real_info.get('currentPrice')
+                    detail = {
+                        'symbol': symbol,
+                        'name': real_info.get('longName') or real_info.get('shortName') or symbol,
+                        'current_price': price,
+                        'rating': None,
+                        'confidence': None,
+                        'risk_level': None,
+                        'timeframe': None,
+                        'reasons': [],
+                        'risks': [],
+                        'sector': real_info.get('sector'),
+                        'analyst_count': None,
+                        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                        'price_targets': None,
+                        'analyst_ratings': None,
+                        'key_metrics': {
+                            'pe_ratio': real_info.get('trailingPE'),
+                            'pb_ratio': real_info.get('priceToBook'),
+                            'dividend_yield': real_info.get('dividendYield'),
+                            'roe': None
+                        },
+                        'real_data': True,
+                        'demo': False,
+                        'notice': 'Ekte pris/fundamental info lastet. Avanserte anbefalinger ikke aktivert ennå.'
+                    }
+                else:
+                    detail = {
+                        'symbol': symbol,
+                        'name': symbol,
+                        'current_price': None,
+                        'rating': None,
+                        'confidence': None,
+                        'risk_level': None,
+                        'timeframe': None,
+                        'reasons': [],
+                        'risks': [],
+                        'sector': None,
+                        'analyst_count': None,
+                        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                        'price_targets': None,
+                        'analyst_ratings': None,
+                        'key_metrics': {},
+                        'real_data': False,
+                        'demo': False,
+                        'notice': 'Ingen anbefalingsdata tilgjengelig for symbolet nå.'
+                    }
+                return render_template('analysis/recommendation_detail.html',
+                                       recommendation=detail,
+                                       symbol=symbol,
+                                       page_title=f"Anbefaling for {symbol}")
+            # Demo detail (free/unauthenticated)
             hash_seed = abs(hash(symbol)) % 1000
-            detailed_recommendation = {
+            demo_detail = {
                 'symbol': symbol,
-                'name': f"{symbol.replace('.OL', ' ASA').replace('-USD', '')} Company",
+                'name': f"{symbol.replace('.OL', ' ASA').replace('-USD', '')} (Demo)",
                 'current_price': 100 + (hash_seed % 200),
                 'target_price': (100 + (hash_seed % 200)) * 1.15,
                 'upside': 15.0 + (hash_seed % 20),
@@ -272,136 +397,59 @@ def recommendations(symbol=None):
                 'confidence': 70 + (hash_seed % 25),
                 'risk_level': ['Low', 'Medium', 'High'][hash_seed % 3],
                 'timeframe': '12 months',
-                'reasons': [
-                    'Strong fundamentals and earnings growth',
-                    'Market leadership position in sector',
-                    'Favorable industry trends and tailwinds',
-                    'Solid financial metrics and balance sheet',
-                    'Positive analyst sentiment and upgrades'
-                ],
-                'risks': [
-                    'Market volatility and economic uncertainty',
-                    'Competitive pressure in sector',
-                    'Regulatory changes potential impact',
-                    'Currency fluctuation risks'
-                ],
-                'sector': ['Technology', 'Banking', 'Energy', 'Healthcare', 'Consumer'][hash_seed % 5],
-                'analyst_count': 5 + (hash_seed % 15),
+                'reasons': ['(Demo) Illustrativ grunn'],
+                'risks': ['(Demo) Illustrativ risiko'],
+                'sector': 'Demo',
+                'analyst_count': 0,
                 'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                'price_targets': {
-                    'high': (100 + (hash_seed % 200)) * 1.25,
-                    'average': (100 + (hash_seed % 200)) * 1.15,
-                    'low': (100 + (hash_seed % 200)) * 1.05
-                },
-                'analyst_ratings': {
-                    'strong_buy': hash_seed % 5,
-                    'buy': hash_seed % 8,
-                    'hold': hash_seed % 6,
-                    'sell': hash_seed % 3,
-                    'strong_sell': hash_seed % 2
-                },
-                'key_metrics': {
-                    'pe_ratio': 15.0 + (hash_seed % 20),
-                    'pb_ratio': 1.5 + (hash_seed % 3),
-                    'dividend_yield': 2.0 + (hash_seed % 5),
-                    'roe': 10.0 + (hash_seed % 20)
-                }
+                'price_targets': None,
+                'analyst_ratings': None,
+                'key_metrics': {},
+                'demo': True,
+                'real_data': False,
+                'notice': 'Demo-data. Logg inn / oppgrader for ekte markedsinfo.'
             }
-            
             return render_template('analysis/recommendation_detail.html',
-                                 recommendation=detailed_recommendation,
-                                 symbol=symbol,
-                                 page_title=f"Anbefaling for {symbol}")
-        
-        # Generate comprehensive mock recommendations data for overview
-        recommendations_data = {
-            'featured_picks': [
-                {
-                    'symbol': 'DNB.OL',
-                    'name': 'DNB Bank ASA',
-                    'current_price': 185.20,
-                    'target_price': 210.00,
-                    'upside': 13.4,
-                    'rating': 'STRONG_BUY',
-                    'confidence': 92,
-                    'risk_level': 'Medium',
-                    'timeframe': '12 months',
-                    'reasons': [
-                        'Strong Q4 earnings beat expectations',
-                        'Increasing interest rates benefit margin',
-                        'Low credit loss provisions',
-                        'Strong capital position'
-                    ],
-                    'sector': 'Banking',
-                    'analyst_count': 15,
-                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
-                },
-                {
-                    'symbol': 'EQNR.OL',
-                    'name': 'Equinor ASA',
-                    'current_price': 270.50,
-                    'target_price': 295.00,
-                    'upside': 9.1,
-                    'rating': 'BUY',
-                    'confidence': 88,
-                    'risk_level': 'Medium',
-                    'timeframe': '12 months',
-                    'reasons': [
-                        'High oil prices support revenue',
-                        'Strong cash flow generation',
-                        'Renewable energy investments',
-                        'Attractive dividend yield'
-                    ],
-                    'sector': 'Energy',
-                    'analyst_count': 18,
-                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
-                },
-                {
-                    'symbol': 'AAPL',
-                    'name': 'Apple Inc.',
-                    'current_price': 185.00,
-                    'target_price': 210.00,
-                    'upside': 13.5,
-                    'rating': 'BUY',
-                    'confidence': 85,
-                    'risk_level': 'Low',
-                    'timeframe': '12 months',
-                    'reasons': [
-                        'Strong iPhone 15 sales',
-                        'Services revenue growth',
-                        'AI integration potential',
-                        'Strong balance sheet'
-                    ],
-                    'sector': 'Technology',
-                    'analyst_count': 25,
-                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
-                }
-            ],
-            'top_performers': [
-                {'symbol': 'NVDA', 'name': 'NVIDIA Corp', 'return_1m': 12.5, 'return_3m': 28.3, 'rating': 'STRONG_BUY'},
-                {'symbol': 'AAPL', 'name': 'Apple Inc', 'return_1m': 8.2, 'return_3m': 15.7, 'rating': 'BUY'},
-                {'symbol': 'DNB.OL', 'name': 'DNB Bank', 'return_1m': 6.8, 'return_3m': 12.4, 'rating': 'STRONG_BUY'}
-            ],
-            'sector_recommendations': {
-                'Technology': {'rating': 'OVERWEIGHT', 'outlook': 'Positive', 'drivers': ['AI adoption', 'Cloud growth']},
-                'Banking': {'rating': 'OVERWEIGHT', 'outlook': 'Positive', 'drivers': ['Rising rates', 'Strong economy']},
-                'Energy': {'rating': 'NEUTRAL', 'outlook': 'Mixed', 'drivers': ['Oil volatility', 'Energy transition']}
-            },
-            'market_outlook': {
-                'overall_sentiment': 'Cautiously Optimistic',
-                'key_themes': ['Interest rate stability', 'Corporate earnings', 'Geopolitical risks'],
-                'risk_factors': ['Inflation concerns', 'Supply chain issues', 'Policy uncertainty']
+                                   recommendation=demo_detail,
+                                   symbol=symbol,
+                                   page_title=f"Anbefaling (Demo) {symbol}")
+
+        # Overview list
+        if premium_real:
+            empty_real = {
+                'featured_picks': [],
+                'top_performers': [],
+                'sector_recommendations': {},
+                'market_outlook': None,
+                'demo': False,
+                'real_data': True,
+                'notice': 'Ingen genererte anbefalinger tilgjengelig ennå. Funksjon under aktivering.'
             }
+            return render_template('analysis/recommendations.html',
+                                   recommendations=empty_real,
+                                   page_title="AI Anbefalinger")
+
+        # Demo overview
+        demo_overview = {
+            'featured_picks': [
+                {'symbol': 'DNB.OL','name': 'DNB Bank ASA','current_price': 185.20,'target_price': 210.00,'upside': 13.4,'rating': 'STRONG_BUY','confidence': 92,'risk_level': 'Medium','timeframe': '12 months','reasons': ['(Demo) Eksempel'], 'sector': 'Banking','analyst_count': 0,'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')},
+                {'symbol': 'EQNR.OL','name': 'Equinor ASA','current_price': 270.50,'target_price': 295.00,'upside': 9.1,'rating': 'BUY','confidence': 88,'risk_level': 'Medium','timeframe': '12 months','reasons': ['(Demo) Eksempel'],'sector': 'Energy','analyst_count': 0,'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')},
+                {'symbol': 'AAPL','name': 'Apple Inc.','current_price': 185.00,'target_price': 210.00,'upside': 13.5,'rating': 'BUY','confidence': 85,'risk_level': 'Low','timeframe': '12 months','reasons': ['(Demo) Eksempel'],'sector': 'Technology','analyst_count': 0,'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')}
+            ],
+            'top_performers': [],
+            'sector_recommendations': {},
+            'market_outlook': None,
+            'demo': True,
+            'real_data': False,
+            'notice': 'Demo-visning. Ingen ekte anbefalingstall.'
         }
-        
         return render_template('analysis/recommendations.html',
-                             recommendations=recommendations_data,
-                             page_title="AI Anbefalinger")
-                             
+                               recommendations=demo_overview,
+                               page_title="AI Anbefalinger (Demo)")
     except Exception as e:
         logger.error(f"Error in recommendations: {e}")
         return render_template('error.html',
-                             error="Anbefalinger er midlertidig utilgjengelig.")
+                               error="Anbefalinger er midlertidig utilgjengelig.")
 
 @analysis.route('/screener', methods=['GET', 'POST'])
 @access_required
@@ -566,55 +614,19 @@ def ai(ticker=None):
             cached_data = cache.get(cache_key)
             if cached_data:
                 return cached_data
-            
-            # Mock AI analysis data
-            ai_analysis = {
-                'ticker': ticker.upper(),
-                'sentiment': 'bullish',
-                'summary': f'Basert på vår KI-analyse viser {ticker} sterke signaler for potensielt oppgang. Tekniske indikatorer er overveiende positive, mens fundamentale faktorer støtter oppunder verdivurderingen.',
-                'prediction': {
-                    'direction': 'Bullish',
-                    'confidence': 0.78,
-                    'target_price': 165.50,
-                    'timeframe': '3 months'
-                },
-                'factors': [
-                    {'factor': 'Technical indicators', 'weight': 0.35, 'signal': 'Buy'},
-                    {'factor': 'Market sentiment', 'weight': 0.25, 'signal': 'Hold'},
-                    {'factor': 'Financial metrics', 'weight': 0.40, 'signal': 'Buy'}
-                ],
-                'technical_factors': [
-                    'RSI indikerer kjøpsmulighet (32.4)',
-                    'MACD viser bullish crossover',
-                    'Volum er over gjennomsnitt (+23%)',
-                    'Støtte ved 142.50, motstand ved 168.00',
-                    'Moving averages (50/200) i gylden kors formasjon'
-                ],
-                'fundamental_factors': [
-                    'P/E ratio på 18.4 er rimelig for sektoren',
-                    'Inntektsvekst på 12% siste kvartal',
-                    'Solid balanse med lav gjeld/egenkapital',
-                    'Økning i markedsandel innen hovedsegment',
-                    'Ledelsen har guidet oppover for Q4'
-                ],
-                'economic_indicators': [
-                    'Sektoren presterer bedre enn markedet',
-                    'Makroøkonomiske forhold støtter vekst',
-                    'Valutakurser favoriserer eksportinntekter'
-                ],
-                'risk_assessment': {
-                    'level': 'Medium',
-                    'factors': ['Market volatility', 'Sector rotation risk']
-                }
-            }
-            
+            # Demo-advarsel for innloggede brukere
+            demo_warning = None
+            if current_user.is_authenticated:
+                demo_warning = "Dette er kun en demo. Ingen reelle AI-data tilgjengelig for innloggede brukere."
+            ai_analysis = None
             result = render_template('analysis/ai.html', 
                                    analysis=ai_analysis,
-                                   ticker=ticker)
+                                   ticker=ticker,
+                                   demo_warning=demo_warning)
             cache.set(cache_key, result, timeout=1800)
             return result
         else:
-            return render_template('analysis/ai_form.html')
+            return render_template('analysis/ai_form.html', demo_warning="Dette er kun en demo. Ingen reelle AI-data tilgjengelig.")
     except Exception as e:
         logger.error(f'AI analysis error: {str(e)}')
         flash(f'Feil ved lasting av AI-analyse: {str(e)}', 'error')
@@ -631,35 +643,18 @@ def short_analysis(ticker=None):
             cached_data = cache.get(cache_key)
             if cached_data:
                 return cached_data
-            
-            # Mock short analysis data
-            short_data = {
-                'ticker': ticker.upper(),
-                'short_interest': {
-                    'percentage': 12.5,
-                    'shares_short': 2500000,
-                    'days_to_cover': 3.2,
-                    'trend': 'Increasing'
-                },
-                'analysis': {
-                    'recommendation': 'Avoid shorting',
-                    'risk_level': 'High',
-                    'reasoning': 'Strong fundamentals and positive momentum'
-                },
-                'key_metrics': [
-                    {'metric': 'Borrow rate', 'value': '2.5%'},
-                    {'metric': 'Float shorted', 'value': '12.5%'},
-                    {'metric': 'Short squeeze risk', 'value': 'Medium'}
-                ]
-            }
-            
+            demo_warning = None
+            if current_user.is_authenticated:
+                demo_warning = "Dette er kun en demo. Ingen reelle short-data tilgjengelig for innloggede brukere."
+            short_data = None
             result = render_template('analysis/short_analysis.html', 
                                    short_data=short_data,
-                                   ticker=ticker)
+                                   ticker=ticker,
+                                   demo_warning=demo_warning)
             cache.set(cache_key, result, timeout=1800)
             return result
         else:
-            return render_template('analysis/short_analysis_select.html')
+            return render_template('analysis/short_analysis_select.html', demo_warning="Dette er kun en demo. Ingen reelle short-data tilgjengelig.")
     except Exception as e:
         flash(f'Feil ved lasting av short-analyse: {str(e)}', 'error')
         return render_template('analysis/short_analysis_select.html')
@@ -675,46 +670,18 @@ def ai_predictions(ticker=None):
             cached_data = cache.get(cache_key)
             if cached_data:
                 return cached_data
-            
-            # Mock AI predictions data
-            predictions = {
-                'ticker': ticker.upper(),
-                'predictions': [
-                    {
-                        'timeframe': '1 week',
-                        'predicted_price': 152.30,
-                        'confidence': 85,
-                        'direction': 'Up'
-                    },
-                    {
-                        'timeframe': '1 month',
-                        'predicted_price': 158.75,
-                        'confidence': 72,
-                        'direction': 'Up'
-                    },
-                    {
-                        'timeframe': '3 months',
-                        'predicted_price': 165.50,
-                        'confidence': 68,
-                        'direction': 'Up'
-                    }
-                ],
-                'model_accuracy': 74.2,
-                'factors': [
-                    'Historical price patterns',
-                    'Market sentiment analysis', 
-                    'Technical indicators',
-                    'News sentiment'
-                ]
-            }
-            
+            demo_warning = None
+            if current_user.is_authenticated:
+                demo_warning = "Dette er kun en demo. Ingen reelle AI-prediksjoner tilgjengelig for innloggede brukere."
+            predictions = None
             result = render_template('analysis/ai_predictions.html', 
                                    predictions=predictions,
-                                   ticker=ticker)
+                                   ticker=ticker,
+                                   demo_warning=demo_warning)
             cache.set(cache_key, result, timeout=1800)
             return result
         else:
-            return render_template('analysis/ai_predictions_select.html')
+            return render_template('analysis/ai_predictions_select.html', demo_warning="Dette er kun en demo. Ingen reelle AI-prediksjoner tilgjengelig.")
     except Exception as e:
         flash(f'Feil ved lasting av AI-prediksjoner: {str(e)}', 'error')
         return render_template('analysis/ai_predictions_select.html')
@@ -733,83 +700,54 @@ def fundamental(ticker=None):
         if ticker and ticker.strip():
             ticker = ticker.strip().upper()
             logger.info(f"Fundamental analysis requested for: {ticker}")
-            
-            # Enhanced mock fundamental analysis data
-            fundamental_data = {
-                'ticker': ticker,
-                'company_name': f"{ticker} Corporation",
-                'sector': 'Technology' if ticker in ['AAPL', 'MSFT', 'GOOGL', 'TSLA'] else 'Energy' if ticker.endswith('.OL') else 'Financial',
-                'market_cap': 2.5e12 if ticker == 'AAPL' else 1.2e9,
-                'revenue_growth': 12.4,
-                'eps_growth': 15.2,
-                'financial_metrics': {
-                    'pe_ratio': 24.5,
-                    'peg_ratio': 1.2,
-                    'price_to_book': 3.8,
-                    'debt_to_equity': 0.65,
-                    'roe': 18.5,
-                    'roa': 12.3,
-                    'current_ratio': 1.8,
-                    'quick_ratio': 1.4,
-                    'profit_margin': 21.2,
-                    'operating_margin': 28.5
-                },
-                'valuation': {
-                    'fair_value': 165.0,
-                    'current_price': 152.0,
-                    'upside_potential': 8.5,
-                    'target_price': 170.0,
-                    'rating': 'BUY',
-                    'analyst_rating': 'Strong Buy',
-                    'price_target_confidence': 'High'
-                },
-                'growth_metrics': {
-                    'revenue_growth_5y': 12.4,
-                    'earnings_growth_5y': 15.2,
-                    'dividend_yield': 2.4,
-                    'dividend_growth_5y': 8.1,
-                    'eps_growth_ttm': 18.7,
-                    'revenue_growth_ttm': 11.3
-                },
-                'financial_health': {
-                    'debt_to_assets': 0.28,
-                    'interest_coverage': 12.5,
-                    'altman_z_score': 3.2,
-                    'piotroski_score': 7,
-                    'financial_strength': 'Strong'
-                },
-                'key_ratios': {
-                    'price_to_sales': 5.8,
-                    'price_to_cash_flow': 18.2,
-                    'enterprise_value_to_ebitda': 15.6,
-                    'book_value_per_share': 4.2
-                },
-                'analysis_summary': {
-                    'strengths': [
-                        'Strong revenue growth',
-                        'Healthy profit margins',
-                        'Low debt levels',
-                        'Consistent dividend payments'
-                    ],
-                    'weaknesses': [
-                        'High valuation multiples',
-                        'Increased competition',
-                        'Market saturation risk'
-                    ],
-                    'recommendation': 'BUY',
-                    'confidence_level': 'High',
-                    'time_horizon': '12 months'
-                }
-            }
-            
-            logger.info(f"Rendering fundamental analysis for {ticker}")
-            result = render_template('analysis/fundamental.html', 
-                                   symbol=ticker,
-                                   ticker=ticker,
-                                   analysis_data=fundamental_data,
-                                   data=fundamental_data,
-                                   demo_mode=True)
-            return result
+            fundamental_data = None
+            if DataService and hasattr(DataService, 'get_stock_info'):
+                try:
+                    info = DataService.get_stock_info(ticker)
+                    if info:
+                        # Map available fields to expected keys
+                        fundamental_data = {
+                            'ticker': ticker,
+                            'company_name': info.get('name', f"{ticker} Corporation"),
+                            'sector': info.get('sector', 'Ukjent'),
+                            'market_cap': info.get('market_cap'),
+                            'current_price': info.get('last_price'),
+                            'financial_metrics': {
+                                'pe_ratio': info.get('pe_ratio'),
+                                'pb_ratio': info.get('pb_ratio'),
+                                'dividend_yield': info.get('dividend_yield'),
+                                'roe': info.get('roe'),
+                                'debt_to_equity': info.get('debt_to_equity'),
+                            },
+                            'analysis_summary': {
+                                'strengths': info.get('strengths', []),
+                                'weaknesses': info.get('weaknesses', []),
+                                'recommendation': info.get('recommendation', 'Ingen'),
+                                'confidence_level': info.get('confidence', 'Ukjent'),
+                                'time_horizon': info.get('horizon', '12 months')
+                            }
+                        }
+                except Exception as svc_err:
+                    logger.error(f"DataService fundamental error for {ticker}: {svc_err}")
+                    fundamental_data = None
+            if fundamental_data:
+                logger.info(f"Rendering real fundamental analysis for {ticker}")
+                result = render_template('analysis/fundamental.html', 
+                                       symbol=ticker,
+                                       ticker=ticker,
+                                       analysis_data=fundamental_data,
+                                       data=fundamental_data,
+                                       demo_mode=False)
+                return result
+            else:
+                logger.info(f"No real data for {ticker}, showing info message.")
+                return render_template('analysis/fundamental.html', 
+                                       symbol=ticker,
+                                       ticker=ticker,
+                                       analysis_data=None,
+                                       data=None,
+                                       demo_mode=False,
+                                       error="Ingen fundamentaldata tilgjengelig for valgt ticker.")
         else:
             logger.info("Fundamental analysis - no ticker provided")
             return render_template('analysis/fundamental_select.html')

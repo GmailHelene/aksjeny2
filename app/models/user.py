@@ -29,6 +29,14 @@ class DeviceTrialTracker(db.Model):
         return False
 
 class User(UserMixin, db.Model):
+    def __init__(self, *args, password=None, **kwargs):
+        # Allow passing password kw (used in some legacy tests) without breaking SQLAlchemy default init
+        super().__init__(*args, **kwargs)
+        if password is not None:
+            try:
+                self.set_password(password)
+            except Exception:
+                pass
     def has_active_subscription(self) -> bool:
         """Return True if the user has an active subscription.
         Safe for use in templates that call current_user.has_active_subscription().

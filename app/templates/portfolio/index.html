@@ -4,104 +4,79 @@
 
 {% block content %}
 <div class="container mt-4">
-  <!-- Error Message Display -->
+  {# Flash / error message #}
   {% if error_message %}
-  <div class="alert alert-warning alert-dismissible fade show" role="alert">
-    <i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>{{ error_message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
   {% endif %}
-  
-  <!-- Empty State Check -->
-  {% if not portfolios or portfolios|length == 0 %}
-  <div class="text-center py-5">
-    <div class="mb-4">
-      <i class="bi bi-briefcase display-1 text-muted"></i>
-    </div>
-    <h3 class="text-muted">Ingen porteføljer ennå</h3>
-    <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
-    <a href="{{ url_for('portfolio.create') }}" class="btn btn-primary btn-lg">
-      <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
-    </a>
-  </div>
-  {% else %}
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Mine porteføljer</h1>
-    <a href="{{ url_for('portfolio.create') }}" class="btn btn-success">
-      <i class="bi bi-plus-circle me-2"></i>Opprett ny portefølje
-    </a>
-  </div>
-  
-  {% if not portfolios or portfolios|length == 0 %}
-  <!-- Empty State -->
-  <div class="text-center py-5">
-    <div class="mb-4">
-      <i class="bi bi-briefcase display-1 text-muted"></i>
-    </div>
-    <h3 class="text-muted">Ingen porteføljer ennå</h3>
-    <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
-    <a href="{{ url_for('portfolio.create') }}" class="btn btn-primary btn-lg">
-      <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
-    </a>
-  </div>
-  {% else %}
-    <!-- Portfolio Selector (if multiple portfolios) -->
-  {% if portfolios and portfolios|length > 1 %}
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
-      <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
-        {% for p in portfolios %}
-        <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>
-          {{ p.name }}
-        </option>
-        {% endfor %}
-      </select>
-    </div>
-  </div>
-  {% endif %}
-  
-  <!-- Dashboard Widgets -->
-  <div id="dashboard-widgets" class="row mb-4">
-    <!-- Total Value Widget -->
-    <div class="col-md-4" id="widget-total-value" style="display:none">
-      <div class="card text-center border-primary">
-        <div class="card-body">
-          <h5 class="card-title text-primary">
-            <i class="bi bi-wallet2 me-2"></i>Total porteføljeverdi
-          </h5>
-          <p class="display-6 fw-bold">{{ (total_value|default(0))|round(2) }} kr</p>
-        </div>
-      </div>
-    </div>
-    <!-- Profit/Loss Widget -->
-    <div class="col-md-4" id="widget-profit-loss" style="display:none">
-      <div class="card text-center {% if total_profit_loss > 0 %}border-success{% elif total_profit_loss < 0 %}border-danger{% else %}border-secondary{% endif %}">
-        <div class="card-body">
-          <h5 class="card-title {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
-            <i class="bi bi-graph-{% if total_profit_loss > 0 %}up{% elif total_profit_loss < 0 %}down{% else %}up{% endif %} me-2"></i>Samlet gevinst/tap
-          </h5>
-          <p class="display-6 fw-bold {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">
-            {{ (total_profit_loss|default(0))|round(2) }} kr
-          </p>
-        </div>
-      </div>
-    </div>
-    <!-- Alerts Widget -->
-    <div class="col-md-4" id="widget-alerts" style="display:none">
-      <div class="card text-center border-info">
-        <div class="card-body">
-          <h5 class="card-title text-info">
-            <i class="bi bi-bell me-2"></i>Aktive varsler
-          </h5>
-          <p class="display-6 fw-bold">{{ active_alerts|default(0) }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  {% if stocks %}
+  {# Primary empty state #}
+  {% if not portfolios or portfolios|length == 0 %}
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-briefcase display-1 text-muted"></i>
+      </div>
+      <h3 class="text-muted">Ingen porteføljer ennå</h3>
+      <p class="text-muted">Kom i gang ved å opprette din første portefølje!</p>
+      <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
+      </a>
+    </div>
+  {% else %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h2 mb-0">Mine porteføljer</h1>
+      <a href="{{ url_for('portfolio.create_portfolio') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle me-2"></i>Opprett ny portefølje
+      </a>
+    </div>
+
+    {# Portfolio selector if multiple #}
+    {% if portfolios|length > 1 %}
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <label for="portfolioSelect" class="form-label">Velg portefølje:</label>
+          <select class="form-select" id="portfolioSelect" onchange="switchPortfolio(this.value)">
+            {% for p in portfolios %}
+              <option value="{{ p.id }}" {% if portfolio and p.id == portfolio.id %}selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endif %}
+
+    {# Dashboard widgets (hidden until preferences loaded) #}
+    <div id="dashboard-widgets" class="row mb-4">
+      <div class="col-md-4" id="widget-total-value" style="display:none">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary"><i class="bi bi-wallet2 me-2"></i>Total porteføljeverdi</h5>
+            <p class="display-6 fw-bold">{{ (total_value|default(0))|round(2) }} kr</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" id="widget-profit-loss" style="display:none">
+        <div class="card text-center {% if total_profit_loss > 0 %}border-success{% elif total_profit_loss < 0 %}border-danger{% else %}border-secondary{% endif %}">
+          <div class="card-body">
+            <h5 class="card-title {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% else %}text-secondary{% endif %}">
+              <i class="bi bi-graph-{% if total_profit_loss > 0 %}up{% elif total_profit_loss < 0 %}down{% else %}up{% endif %} me-2"></i>Samlet gevinst/tap
+            </h5>
+            <p class="display-6 fw-bold {% if total_profit_loss > 0 %}text-success{% elif total_profit_loss < 0 %}text-danger{% endif %}">{{ (total_profit_loss|default(0))|round(2) }} kr</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4" id="widget-alerts" style="display:none">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <h5 class="card-title text-info"><i class="bi bi-bell me-2"></i>Aktive varsler</h5>
+            <p class="display-6 fw-bold">{{ active_alerts|default(0) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if stocks %}
     <div class="card mb-4 shadow-sm">
       <div class="card-header bg-primary text-white">
         <div class="d-flex justify-content-between align-items-center">
@@ -218,24 +193,15 @@
       </div>
     </div>
     
-  {% elif portfolios %}
-    <!-- User has portfolios but they are empty -->
-    <div class="alert alert-warning">
-      <h4><i class="bi bi-exclamation-triangle me-2"></i>Porteføljen er tom</h4>
-      <p>Du har opprettet porteføljer, men de inneholder ingen aksjer ennå.</p>
-      <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolios[0].id) }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-2"></i>Legg til din første aksje
-      </a>
-    </div>
-  {% else %}
-    <!-- No portfolios exist -->
-    <div class="alert alert-info">
-      <h4><i class="bi bi-info-circle me-2"></i>Velkommen til porteføljer</h4>
-      <p>Du har ingen porteføljer ennå. Opprett din første portefølje for å begynne å spore dine investeringer!</p>
-      <a href="{{ url_for('portfolio.create') }}" class="btn btn-primary btn-lg">
-        <i class="bi bi-plus-circle me-2"></i>Opprett din første portefølje
-      </a>
-    </div>
+    {% elif portfolios %}
+      <div class="alert alert-warning">
+        <h4><i class="bi bi-exclamation-triangle me-2"></i>Porteføljen er tom</h4>
+        <p>Du har opprettet porteføljer, men de inneholder ingen aksjer ennå.</p>
+        <a href="{{ url_for('portfolio.add_stock_to_portfolio', id=portfolios[0].id) }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-2"></i>Legg til din første aksje
+        </a>
+      </div>
+    {% endif %}
   {% endif %}
 </div>
 {% endblock %}
@@ -381,5 +347,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 </script>
-{% endif %}
 {% endblock %}

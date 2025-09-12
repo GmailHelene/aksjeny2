@@ -108,6 +108,8 @@ class TestingConfig(Config):
     IS_REAL_PRODUCTION = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False  # Disable CSRF for testing
+    # Provide a SERVER_NAME so url_for can be used outside a request context in tests
+    SERVER_NAME = 'localhost.test'
 
 class ProductionConfig(Config):
     DEBUG = False

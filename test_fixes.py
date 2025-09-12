@@ -14,6 +14,7 @@ Date: August 29, 2025
 import requests
 import sys
 from datetime import datetime
+import pytest
 
 def test_stock_details_page():
     """Test stock details page loading"""
@@ -46,14 +47,16 @@ def test_stock_details_page():
             else:
                 print("❌ Stock details page test FAILED")
             
-            return all_passed
+            assert all_passed, "Stock details page missing required elements"
         else:
             print(f"❌ Stock details page returned status {response.status_code}")
-            return False
+            assert False, f"Unexpected status {response.status_code}"
             
+    except requests.exceptions.ConnectionError as e:
+        pytest.skip(f"Skipping stock details page test (server not reachable): {e}")
     except Exception as e:
         print(f"❌ Error testing stock details page: {e}")
-        return False
+        pytest.fail(f"Exception during stock details test: {e}")
 
 def test_price_alerts_page():
     """Test price alerts creation page"""
@@ -66,7 +69,7 @@ def test_price_alerts_page():
         if response.status_code in [200, 302]:  # 302 might be redirect to login
             if response.status_code == 302:
                 print("  ℹ️  Page redirects to login (expected for unauthenticated users)")
-                return True
+                return  # Redirect acceptable; treat as pass
             
             content = response.text
             
@@ -90,14 +93,16 @@ def test_price_alerts_page():
             else:
                 print("❌ Price alerts page test FAILED")
             
-            return all_passed
+            assert all_passed, "Price alerts page missing required elements"
         else:
             print(f"❌ Price alerts page returned status {response.status_code}")
-            return False
+            assert False, f"Unexpected status {response.status_code}"
             
+    except requests.exceptions.ConnectionError as e:
+        pytest.skip(f"Skipping price alerts page test (server not reachable): {e}")
     except Exception as e:
         print(f"❌ Error testing price alerts page: {e}")
-        return False
+        pytest.fail(f"Exception during price alerts test: {e}")
 
 def test_server_health():
     """Test if Flask server is responding"""
@@ -107,13 +112,13 @@ def test_server_health():
         response = requests.get('http://localhost:5002/', timeout=5)
         if response.status_code in [200, 302, 404]:  # Any valid response
             print("✅ Flask server is responding")
-            return True
+            return  # treat as pass
         else:
             print(f"❌ Server returned status code: {response.status_code}")
-            return False
+            assert False, f"Unexpected status {response.status_code}"
     except requests.exceptions.RequestException as e:
         print("❌ Cannot connect to Flask server (is it running?)")
-        return False
+        pytest.skip(f"Skipping server health test (server not running): {e}")
 
 def main():
     """Run all tests"""
@@ -158,7 +163,7 @@ def main():
         print("\n⚠️ Some tests failed.")
         print("Check server status and retry.")
     
-    return passed == total
+    assert passed == total, f"{total - passed} quick fix tests failed"
 
 if __name__ == "__main__":
     success = main()

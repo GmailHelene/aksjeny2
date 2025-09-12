@@ -538,6 +538,9 @@
     </script>
 </head>
 <body>
+{% if in_demo_mode() and request.path != '/demo' %}
+    {% include 'partials/demo_banner.html' %}
+{% endif %}
     <!-- Complex Navigation Bar - 6 dropdowns, 60+ items -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -602,7 +605,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('analysis.tradingview') }}"><i class="fas fa-chart-line"></i> TradingView</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><h6 class="dropdown-header">Anbefalinger & Prediksjoner</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analysis.recommendations') }}"><i class="fas fa-star"></i> Anbefalinger</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.prediction') }}"><i class="fas fa-crystal-ball"></i> Prediksjoner</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('analysis.short_analysis') }}"><i class="fas fa-chart-bar"></i> Short analyse</a></li>
                         </ul>

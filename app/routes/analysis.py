@@ -28,91 +28,32 @@ def _analysis_set_correlation_id():
         g.correlation_id = uuid.uuid4().hex
     except Exception:
         pass
-@analysis.route('/recommendation')
+"""Legacy recommendations routes removed.
+
+The canonical implementation now lives in analysis_clean.recommendations.
+This stub exists only to guard accidental imports; it issues a redirect.
+"""
 @analysis.route('/recommendations')
-@analysis.route('/recommendation/<ticker>')
 @analysis.route('/recommendations/<ticker>')
-@demo_access
-def recommendations(ticker: str = None):
-    """Deterministic lightweight recommendations with graceful fallback.
+def recommendations(ticker: str = None):  # pragma: no cover - legacy shim
+    """Legacy shim kept for backward compatibility; primary logic moved to analysis_clean.recommendations.
 
-    Replaces legacy heavy implementation. Ensures AAPL (and others) always
-    yields a synthetic recommendation instead of flashing an error.
+    NOTE: This endpoint name is 'analysis.recommendations'. Older templates still call 'analysis.recommendation'.
+    A separate alias route below preserves that older endpoint name with a 301 redirect, minimizing risk on a live system
+    while we gradually migrate templates. Once all templates are updated, the alias can be safely removed.
     """
-    import random
-    from datetime import datetime
+    return redirect(url_for('analysis.recommendations'), code=301)
+
+# Explicit alias preserving historic endpoint name used across many templates.
+@analysis.route('/recommendation', endpoint='recommendation')
+@analysis.route('/recommendation/<ticker>', endpoint='recommendation_with_ticker')  # distinct endpoint to avoid collision
+def recommendation_alias(ticker: str = None):  # pragma: no cover - alias redirect
+    target = url_for('analysis.recommendations', ticker=ticker) if ticker else url_for('analysis.recommendations')
     try:
-        if ticker:
-            ticker = ticker.upper().strip()
-        else:
-            ticker = request.args.get('ticker', '').upper().strip() or None
-
-        # Deterministic featured picks
-        featured_symbols = ['AAPL','MSFT','EQNR.OL','DNB.OL','NVDA','TSLA']
-
-        def stable_pick(sym: str):
-            h = sum(ord(c) for c in sym)
-            random.seed(h)
-            price = round(80 + (h % 400) + random.random()*4, 2)
-            upside_pct = 5 + (h % 25)
-            target = round(price * (1 + upside_pct/100), 2)
-            ratings = ['BUY','HOLD','STRONG_BUY','SELL']
-            rating = ratings[h % len(ratings)]
-            confidence = 62 + (h % 33)
-            return {
-                'symbol': sym,
-                'name': f'{sym} Corp',
-                'current_price': price,
-                'target_price': target,
-                'upside': round(upside_pct,1),
-                'rating': rating,
-                'confidence': confidence
-            }
-
-        featured_picks = [stable_pick(s) for s in featured_symbols]
-
-        sectors = {
-            'Teknologi': {'rating':'OVERWEIGHT','outlook':'Sterk vekst drevet av AI-adopsjon','drivers':['AI','Marginer','Vekst']},
-            'Finans': {'rating':'NEUTRAL','outlook':'Stabil inntjening, moderat renteeksponering','drivers':['Renter','Marginpress']},
-            'Energi': {'rating':'OVERWEIGHT','outlook':'Robust kontantstrøm og utbytteattraktivitet','drivers':['Oljepris','Kontantstrøm','Utbytte']},
-            'Industri': {'rating':'UNDERWEIGHT','outlook':'Marginpress fra kostnadsinflasjon','drivers':['Kostnader','Etterspørsel']}
-        }
-        market_outlook = {
-            'overall_sentiment': 'Positiv',
-            'volatility_level': 'Moderat',
-            'macro_trends': ['Stabil inflasjon','AI-investeringer','Energiomallokering']
-        }
-
-        detailed = None
-        if ticker:
-            base = stable_pick(ticker)
-            detailed = {
-                **base,
-                'symbol': ticker,
-                'timeframe': '6-12 mnd',
-                'reasons': [
-                    'Sterk balanse og sunn kontantstrøm',
-                    'Positivt momentum relativt til indeks',
-                    'Stabil marginutvikling'
-                ],
-                'risk_level': 'Moderat',
-                'sector': 'Teknologi' if not ticker.endswith('.OL') else 'Energi'
-            }
-
-        payload = {
-            'featured_picks': featured_picks,
-            'sector_recommendations': sectors,
-            'market_outlook': market_outlook
-        }
-        return render_template('analysis/recommendations.html',
-                               recommendations=payload,
-                               detailed_recommendation=detailed)
-    except Exception as e:
-        logger.error(f"Recommendations error: {e}")
-        flash('Kunne ikke laste anbefalinger nå.', 'error')
-        return render_template('analysis/recommendations.html',
-                               recommendations={'featured_picks': [], 'sector_recommendations': {}, 'market_outlook': {}},
-                               detailed_recommendation=None)
+        logger.info("legacy_recommendation_alias_hit", extra={'ticker': ticker})
+    except Exception:
+        pass
+    return redirect(target, code=301)
 
 @analysis.route('/api/sentiment')
 @access_required
@@ -192,6 +133,14 @@ def sentiment():
     Query params: symbol or ticker. Always returns 200 with synthetic data if providers fail.
     """
     try:
+        # Guarantee correlation_id existence (tests rely on a 32-char hex). If before_request failed, set it now.
+        try:
+            import uuid
+            cid = getattr(g, 'correlation_id', None)
+            if not cid or not isinstance(cid, str) or len(cid) != 32:
+                g.correlation_id = uuid.uuid4().hex
+        except Exception:
+            pass
         symbol = (request.args.get('symbol') or request.args.get('ticker') or 'EQNR.OL').strip().upper()
         if not symbol.replace('.', '').replace('-', '').isalnum() or len(symbol) > 20:
             symbol = 'EQNR.OL'
@@ -225,22 +174,69 @@ def sentiment():
                 errors.append(f"FinnhubAPI error: {e}")
 
         if not sentiment_data:
+            # Deterministic pseudo-random fallback baseline
             base_hash = sum(ord(c) for c in symbol) % 100
             overall = 45 + (base_hash % 11)
             sentiment_label = 'Bullish' if overall > 60 else 'Bearish' if overall < 40 else 'Nøytral'
+            # Provide every key referenced in the large sentiment.html template to avoid AttributeError / undefined lookups
             sentiment_data = {
-                'overall_score': overall,
-                'sentiment_label': sentiment_label,
+                'overall_score': overall,              # top summary
+                'sentiment_label': sentiment_label,     # label
+                'news_score': 0,                        # template uses sentiment_data.news_score
+                'social_score': 0,                      # early section (get('social_score'))
+                'social_sentiment': 0,                  # later section uses attribute style
+                'social_mentions': 0,
+                'news_count': 0,
+                'volume_trend': 'Nøytral',
                 'rsi_sentiment': 50 + ((base_hash % 10) - 5),
-                'volume_sentiment': 'Nøytral',
+                'volatility': None,
+                'trend': 'stable',
+                'confidence': 0.0,
+                'last_updated': None,
+                'market_sentiment': 0,
+                'fear_greed_index': 'N/A',
+                'vix': 'N/A',
+                'market_trend': 'neutral',
+                'history': {
+                    'dates': [],
+                    'scores': []
+                },
+                'recent_news': [],
+                'key_themes': [],
+                'summary': None,
+                'indicators': [],
+                'recommendation': None,
                 'fallback': True
             }
 
+        # Ensure existing sentiment_data (from service or API) also has required keys to prevent template attribute errors
+        required_keys = [
+            'overall_score','sentiment_label','news_score','social_score','social_sentiment','social_mentions',
+            'news_count','volume_trend','volatility','trend','confidence','last_updated','market_sentiment',
+            'fear_greed_index','vix','market_trend','history','recent_news','key_themes','summary','indicators',
+            'recommendation'
+        ]
+        for k in required_keys:
+            if k not in sentiment_data:
+                # Sensible neutral defaults
+                sentiment_data[k] = 0 if 'score' in k or k in ('overall_score','confidence','market_sentiment') else [] if k in ('history','recent_news','key_themes','indicators') else None
+        # Normalize history structure if present but not dict with dates/scores
+        if isinstance(sentiment_data.get('history'), list):
+            sentiment_data['history'] = {'dates': [], 'scores': []}
+
+        # Final normalization: avoid None for numeric comparisons in template
+        numeric_like = ['overall_score','news_score','social_score','social_sentiment','confidence','market_sentiment']
+        for nk in numeric_like:
+            if sentiment_data.get(nk) is None:
+                sentiment_data[nk] = 0
+
+        # Provide both 'sentiment' and legacy 'sentiment_data' for template compatibility
         return render_template(
             'analysis/sentiment.html',
             symbol=symbol,
             selected_symbol=symbol,
             sentiment=sentiment_data,
+            sentiment_data=sentiment_data,  # legacy name used heavily in template
             errors=errors,
             correlation_id=getattr(g, 'correlation_id', None)
         )
@@ -251,6 +247,12 @@ def sentiment():
             symbol='EQNR.OL',
             selected_symbol='EQNR.OL',
             sentiment={
+                'overall_score': 50,
+                'sentiment_label': 'Nøytral',
+                'fallback': True,
+                'error': 'Midlertidig utilgjengelig'
+            },
+            sentiment_data={
                 'overall_score': 50,
                 'sentiment_label': 'Nøytral',
                 'fallback': True,
@@ -292,20 +294,28 @@ def index():
 def technical():
     """Advanced Technical analysis with comprehensive indicators and patterns"""
     try:
-        # Check for both 'symbol' and 'ticker' parameters 
-        symbol = (request.args.get('symbol') or request.args.get('ticker') or 
-                 request.form.get('symbol') or request.form.get('ticker'))
-        
-        # If no symbol provided, show empty state for user to search
-        if not symbol or not symbol.strip():
+        # Collect raw symbol or ticker from query/form
+        raw_symbol = (request.args.get('symbol') or request.args.get('ticker') or 
+                      request.form.get('symbol') or request.form.get('ticker'))
+
+        if not raw_symbol or not raw_symbol.strip():
             return render_template('analysis/technical.html',
-                                 symbol='',
-                                 show_search_prompt=True,
-                                 show_analysis=False,
-                                 error_message=None)
-        if symbol and symbol.strip():
-            # Get real technical analysis for symbol
-            symbol = symbol.strip().upper()
+                                   symbol='',
+                                   show_search_prompt=True,
+                                   show_analysis=False,
+                                   error_message=None)
+
+        # Sanitize & validate symbol
+        from ..utils.symbol_utils import sanitize_symbol
+        symbol, valid = sanitize_symbol(raw_symbol)
+        if not valid:
+            return render_template('analysis/technical.html',
+                                   symbol=symbol,
+                                   technical_data=None,
+                                   show_analysis=False,
+                                   error_message='Ugyldig symbol. Bruk kun A-Z, 0-9, punktum eller bindestrek (maks 15 tegn).')
+
+        if symbol:
             
             try:
                 # Import real technical analysis and data services
@@ -477,18 +487,18 @@ def technical():
                 except Exception as e:
                     logger.error(f"Synthetic technical analysis failed for {symbol}: {e}")
                     return render_template('analysis/technical.html',
-                                         symbol=symbol,
-                                         technical_data=None,
-                                         show_analysis=False,
-                                         error_message=f"Teknisk analyse for {symbol} er ikke tilgjengelig.")
+                                           symbol=symbol,
+                                           technical_data=None,
+                                           show_analysis=False,
+                                           error_message=f"Teknisk analyse for {symbol} er ikke tilgjengelig.")
                 
             except Exception as e:
                 logger.error(f"Error in technical analysis for {symbol}: {e}")
                 return render_template('analysis/technical.html',
-                                     symbol=symbol,
-                                     technical_data=None,
-                                     show_analysis=False,
-                                     error_message=f"Feil ved henting av teknisk analyse for {symbol}. Prøv igjen senere.")
+                                       symbol=symbol,
+                                       technical_data=None,
+                                       show_analysis=False,
+                                       error_message=f"Feil ved henting av teknisk analyse for {symbol}. Prøv igjen senere.")
         else:
             # Show technical analysis overview with popular stocks using real data
             popular_stocks = []
@@ -2086,12 +2096,10 @@ def screener_view():
     """Screener view page"""
     return render_template('analysis/screener_view.html', title='Aksje Screener')
 
-@analysis.route('/recommendation')
-@analysis.route('/recommendations')
-@analysis.route('/recommendation/<ticker>')
-@analysis.route('/recommendations/<ticker>')
-@demo_access
-def recommendation(ticker=None):
+## Legacy comprehensive recommendation view removed (consolidated).
+# (Previously heavy demo implementation retained in git history.)
+# Removed decorators prevent duplicate route registration.
+def _legacy_recommendation_full(ticker=None):  # pragma: no cover
     """Investment recommendations page with comprehensive analysis"""
     from datetime import datetime, timedelta
     from ..services.data_service import DataService

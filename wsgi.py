@@ -8,15 +8,17 @@ import sys
 # Add the current directory to Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Set production environment
-os.environ.setdefault('FLASK_ENV', 'production')
+# Select environment: APP_ENV preferred, fallback to FLASK_ENV then production
+if not os.environ.get('APP_ENV') and not os.environ.get('FLASK_ENV'):
+    os.environ.setdefault('APP_ENV', 'production')
 
 try:
     # Import after environment variables are set
     from app import create_app
     
-    # Create the Flask app
-    app = create_app('production')
+    # Determine env name
+    env_name = os.environ.get('APP_ENV') or os.environ.get('FLASK_ENV') or 'production'
+    app = create_app(env_name)
     
     # Ensure app is ready
     with app.app_context():
@@ -28,7 +30,7 @@ try:
         except Exception as e:
             print(f"⚠️ Database initialization warning: {e}")
     
-    print("✅ WSGI app initialized successfully")
+    print(f"✅ WSGI app initialized successfully (env={env_name})")
 
 except Exception as e:
     print(f"❌ WSGI app initialization failed: {e}")

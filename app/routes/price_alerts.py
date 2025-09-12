@@ -4,8 +4,9 @@ Price Alerts Blueprint for managing user stock price alerts
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
 from ..models.price_alert import PriceAlert, AlertNotificationSettings
-from ..services.price_monitor_service import price_monitor
+from ..services.price_monitor_service import price_monitor  # still used for status & settings
 from ..services.data_service import DataService
+from ..services.alert_service import list_user_alerts, create_alert as svc_create_alert, delete_alert as svc_delete_alert
 from ..utils.access_control import access_required
 import logging
 import traceback  # Added for detailed error logging
@@ -22,23 +23,11 @@ def index():
         # Get user's alerts with enhanced error handling
         user_alerts = []
         try:
-            logger.info(f"Fetching alerts for user {current_user.id}")
-            user_alerts = price_monitor.get_user_alerts(current_user.id)
-            logger.info(f"Successfully retrieved {len(user_alerts)} alerts")
+            logger.info(f"(alert_service) Fetching alerts for user {current_user.id}")
+            user_alerts = list_user_alerts(current_user.id)
         except Exception as e:
-            logger.error(f"Could not get user alerts: {e}")
-            # Try direct database query as fallback
-            try:
-                from ..models.price_alert import PriceAlert
-                alerts_query = PriceAlert.query.filter_by(user_id=current_user.id).order_by(
-                    PriceAlert.is_active.desc(),
-                    PriceAlert.created_at.desc()
-                ).all()
-                user_alerts = [alert.to_dict() for alert in alerts_query]
-                logger.info(f"Fallback query retrieved {len(user_alerts)} alerts")
-            except Exception as fallback_error:
-                logger.error(f"Fallback query also failed: {fallback_error}")
-                user_alerts = []
+            logger.error(f"alert_service list_user_alerts failed: {e}")
+            user_alerts = []
         
         # Get alert settings with fallback
         settings = None
@@ -105,7 +94,7 @@ def create():
             # Get form data with validation
             symbol = request.form.get('symbol', '').upper().strip()
             target_price_str = request.form.get('target_price', '').strip()
-            alert_type = request.form.get('alert_type', 'above')
+            alert_type = request.form.get('alert_type', 'above') or 'above'
             company_name = request.form.get('company_name', '').strip()
             notes = request.form.get('notes', '').strip()
             
@@ -153,87 +142,24 @@ def create():
             
             # Enhanced alert creation with simplified, working approach + granular error reporting
             try:
-                from ..models.price_alert import PriceAlert
-                from ..extensions import db
-                from datetime import datetime
-
-                # Ensure clean database state
-                db.session.rollback()
-
-                # Dynamic column detection to survive partial migrations
-                table_cols = {c.name for c in PriceAlert.__table__.columns}
-                logger.debug(f"PriceAlert table columns detected: {table_cols}")
-
-                base_values = {
-                    'user_id': current_user.id,
-                    'ticker': symbol,
-                    'symbol': symbol,
-                    'target_price': target_price,
-                    'alert_type': alert_type,
-                    'company_name': company_name or f"Stock {symbol}",
-                    'notes': notes,
-                }
-                # Normalize browser_enabled safely (checkbox may be 'on')
+                # Use centralized alert_service
                 browser_enabled_raw = request.form.get('browser_enabled')
-                browser_enabled_flag = False
-                if browser_enabled_raw in ['on', 'true', '1', 'True']:
-                    browser_enabled_flag = True
-
-                optional_defaults = {
-                    'current_price': None,
-                    'is_active': True,
-                    'is_triggered': False,
-                    'created_at': datetime.utcnow(),
-                    'triggered_at': None,
-                    'last_checked': datetime.utcnow(),
-                    'email_sent': False,
-                    'email_enabled': True,
-                    'browser_enabled': browser_enabled_flag,
-                    'notify_email': True,
-                    'notify_push': False,
-                    'auto_disable': False,
-                    'threshold_price': target_price,
-                    'threshold_percent': None,
-                    'last_price': None,
-                    'updated_at': datetime.utcnow(),
-                    'exchange': 'Oslo Børs'
-                }
-
-                # Filter only columns that actually exist to avoid OperationalError
-                filtered_data = {}
-                for k, v in {**base_values, **optional_defaults}.items():
-                    if k in table_cols:
-                        filtered_data[k] = v
-                missing = set(optional_defaults.keys()) - set(filtered_data.keys())
-                if missing:
-                    logger.warning(f"PriceAlert create: skipping non-existent columns (likely unmigrated): {missing}")
-
-                new_alert = PriceAlert(**filtered_data)
-                db.session.add(new_alert)
+                browser_enabled_flag = browser_enabled_raw in ['on', 'true', '1', 'True']
                 try:
-                    db.session.commit()
-                except Exception as commit_err:
-                    logger.error(f"Primary commit failed, retrying simplified insert: {commit_err}")
-                    db.session.rollback()
-                    # Retry with minimal mandatory fields only
-                    minimal_fields = {k: v for k, v in base_values.items() if k in table_cols}
-                    if 'is_active' in table_cols:
-                        minimal_fields['is_active'] = True
-                    if 'created_at' in table_cols:
-                        minimal_fields['created_at'] = datetime.utcnow()
-                    try:
-                        new_alert = PriceAlert(**minimal_fields)
-                        db.session.add(new_alert)
-                        db.session.commit()
-                        flash('⚠️ Delvis prisvarsel lagret (noen felt ble ignorert pga database mismatch).', 'warning')
-                    except Exception as second_err:
-                        logger.error(f"Secondary commit failed: {second_err}")
-                        db.session.rollback()
-                        flash('❌ Kunne ikke opprette prisvarsel (databasefeil).', 'error')
-                        return render_template('price_alerts/create.html')
-
-                logger.info(f"Price alert created successfully for user {current_user.id}: {symbol} at {target_price}")
-                flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
+                    svc_create_alert(
+                        current_user.id,
+                        symbol,
+                        alert_type,
+                        target_price,
+                        email_enabled=True,
+                        browser_enabled=browser_enabled_flag,
+                        notes=notes or company_name
+                    )
+                    flash(f'✅ Prisvarsel opprettet for {symbol} ved {target_price} NOK!', 'success')
+                except Exception as svc_err:
+                    logger.error(f"alert_service create failed: {svc_err}")
+                    flash('❌ Kunne ikke opprette prisvarsel (tjenestefeil).', 'error')
+                    return render_template('price_alerts/create.html')
                 return redirect(url_for('price_alerts.index'))
 
             except Exception as e:
@@ -262,8 +188,7 @@ def create():
 def delete(alert_id):
     """Delete a price alert"""
     try:
-        success = price_monitor.delete_alert(alert_id, current_user.id)
-        if success:
+        if svc_delete_alert(current_user.id, alert_id):
             flash('Prisvarsel slettet.', 'success')
         else:
             flash('Kunne ikke slette prisvarsel.', 'error')
@@ -313,7 +238,7 @@ def settings():
 def api_get_alerts():
     """API endpoint to get user alerts"""
     try:
-        alerts = price_monitor.get_user_alerts(current_user.id)
+        alerts = list_user_alerts(current_user.id)
         return jsonify({
             'success': True,
             'alerts': alerts,
@@ -333,20 +258,16 @@ def api_create_alert():
     try:
         data = request.get_json()
         
-        alert = price_monitor.create_alert(
-            user_id=current_user.id,
-            symbol=data['symbol'],
-            target_price=float(data['target_price']),
-            alert_type=data['alert_type'],
-            company_name=data.get('company_name'),
+        alert_dict = svc_create_alert(
+            current_user.id,
+            data['symbol'],
+            data['alert_type'],
+            float(data['target_price']),
+            email_enabled=True,
+            browser_enabled=bool(data.get('browser_enabled', False)),
             notes=data.get('notes')
         )
-        
-        return jsonify({
-            'success': True,
-            'alert': alert.to_dict(),
-            'message': f'Alert created for {alert.symbol}'
-        })
+        return jsonify({'success': True, 'alert': alert_dict, 'message': f"Alert created for {alert_dict.get('symbol')}"})
         
     except ValueError as e:
         return jsonify({
@@ -365,18 +286,9 @@ def api_create_alert():
 def api_delete_alert(alert_id):
     """API endpoint to delete alert"""
     try:
-        success = price_monitor.delete_alert(alert_id, current_user.id)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': 'Alert deleted'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Alert not found'
-            }), 404
+        if svc_delete_alert(current_user.id, alert_id):
+            return jsonify({'success': True, 'message': 'Alert deleted'})
+        return jsonify({'success': False, 'error': 'Alert not found'}), 404
             
     except Exception as e:
         logger.error(f"Error in API delete alert: {e}")

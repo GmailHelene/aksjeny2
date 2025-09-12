@@ -391,45 +391,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const symbol = this.dataset.ticker;
             try {
                 // Sjekk om aksjen er favoritt
-                const checkRes = await fetch(`/stocks/api/favorites/check/${symbol}`);
-                const checkData = await checkRes.json();
-                if (checkData.favorited) {
-                    // Fjern fra favoritter
-                    const response = await fetch('/stocks/api/favorites/remove', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+                    toggleFavorite(symbol, {
+                        button: this,
+                        favoritedText: '<i class="bi bi-star-fill"></i>',
+                        unfavoritedText: '<i class="bi bi-star"></i>',
+                        onSuccess: (data) => {
+                            showToast(data.message || (data.favorited ? `${symbol} lagt til i favoritter` : `${symbol} fjernet fra favoritter`), data.favorited ? 'success' : 'info');
                         },
-                        body: JSON.stringify({ symbol: symbol })
+                        onError: () => showToast('Favoritt-handling feilet', 'danger')
                     });
-                    if (response.ok) {
-                        this.innerHTML = '<i class="bi bi-star"></i>';
-                        this.classList.remove('btn-warning');
-                        this.classList.add('btn-outline-warning');
-                        showToast('Fjernet fra favoritter', 'info');
-                    } else {
-                        throw new Error('Failed to remove from favorites');
-                    }
-                } else {
-                    // Legg til i favoritter
-                    const response = await fetch('/stocks/api/favorites/add', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                        },
-                        body: JSON.stringify({ symbol: symbol })
-                    });
-                    if (response.ok) {
-                        this.innerHTML = '<i class="bi bi-star-fill"></i>';
-                        this.classList.remove('btn-outline-warning');
-                        this.classList.add('btn-warning');
-                        showToast('Lagt til i favoritter!', 'success');
-                    } else {
-                        throw new Error('Failed to add to favorites');
-                    }
-                }
             } catch (error) {
                 console.error('Error:', error);
                 showToast('Kunne ikke oppdatere favoritt', 'error');

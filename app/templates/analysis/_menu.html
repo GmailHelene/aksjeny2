@@ -33,7 +33,7 @@
                 <a href="/analysis/prediction" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.prediction' else 'btn-outline-primary' }}">
                     <i class="bi bi-crystal-ball me-1"></i>AI Prediksjoner
                 </a>
-                <a href="/analysis/recommendation{% if ticker %}/{{ ticker }}{% endif %}" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.recommendation' else 'btn-outline-primary' }}">
+                <a href="/analysis/recommendations{% if ticker %}/{{ ticker }}{% endif %}" class="btn btn-sm {{ 'btn-primary' if request.endpoint in ['analysis.recommendations','analysis.recommendation'] else 'btn-outline-primary' }}">
                     <i class="bi bi-star me-1"></i>Anbefalinger
                 </a>
                 <a href="/analysis/screener" class="btn btn-sm {{ 'btn-primary' if request.endpoint == 'analysis.screener' else 'btn-outline-primary' }}">

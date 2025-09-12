@@ -86,9 +86,16 @@ def index():
 @insider_trading.route('/search', methods=['GET', 'POST'])
 @demo_access
 def search():
-    """Simplified insider trading search with undefined/empty symbol safeguards."""
+    """Simplified insider trading search with robust undefined/empty symbol safeguards.
+
+    Treats 'undefined', 'null', placeholder dashes and pure whitespace as empty.
+    """
     from ..utils.param_utils import normalize_symbol
-    raw_symbol = request.args.get('symbol') or request.form.get('symbol') or ''
+    raw_symbol = (request.args.get('symbol') or request.form.get('symbol') or '').strip()
+    # Normalize and sanitize special unwanted tokens
+    lowered = raw_symbol.lower()
+    if lowered in {'undefined', 'null', 'none', '-', '--'}:
+        raw_symbol = ''
     symbol = normalize_symbol(raw_symbol) or ''
 
     # Handle POST requests (form submission)

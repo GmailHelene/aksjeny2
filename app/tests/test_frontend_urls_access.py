@@ -1,6 +1,8 @@
 import pytest
 import requests
 
+pytestmark = pytest.mark.e2e
+
 BASE_URL = "http://localhost:5002"
 USERS = {
     "demo": {"email": "demo@aksjeradar.test", "password": "demo123"},

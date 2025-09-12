@@ -310,57 +310,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Toggle favorite function
-    window.toggleFavorite = async function(ticker, btn) {
-        try {
-            // Check if already favorited
-            const checkRes = await fetch(`/stocks/api/favorites/check/${ticker}`);
-            const checkData = await checkRes.json();
-            
-            if (checkData.favorited) {
-                // Remove from favorites
-                const removeRes = await fetch('/stocks/api/favorites/remove', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                const removeData = await removeRes.json();
-                if (removeData.success) {
-                    btn.innerHTML = '<i class="bi bi-star"></i>';
-                    btn.classList.remove('btn-warning');
-                    btn.classList.add('btn-outline-warning');
-                    showToast(`${ticker} fjernet fra favoritter`, 'danger');
-                } else {
-                    showToast(removeData.error || 'Kunne ikke fjerne favoritt', 'danger');
-                }
-            } else {
-                // Add to favorites
-                const addRes = await fetch('/stocks/api/favorites/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({ symbol: ticker })
-                });
-                const addData = await addRes.json();
-                if (addData.success) {
-                    btn.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    btn.classList.add('btn-warning');
-                    btn.classList.remove('btn-outline-warning');
-                    showToast(`${ticker} lagt til i favoritter`, 'success');
-                } else {
-                    showToast(addData.error || 'Kunne ikke legge til favoritt', 'danger');
-                }
-            }
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
-            showToast('Nettverksfeil ved favoritthandling', 'danger');
-        }
-    };
+    // Use global toggleFavorite helper (defined in base.html)
+    window.toggleRecommendationFavorite = function(ticker, btn) {
+        if (!window.toggleFavorite) { console.error('Missing global toggleFavorite'); return; }
+        toggleFavorite(ticker, {
+            button: btn,
+            favoritedText: '<i class="bi bi-star-fill"></i>',
+            unfavoritedText: '<i class="bi bi-star"></i>',
+            onSuccess: (data) => {
+                showToast(data.message || (data.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), data.favorited ? 'success' : 'info');
+            },
+            onError: () => showToast('Favoritt-handling feilet', 'danger')
+        });
+    }
 });
 
 function showToast(message, type) {

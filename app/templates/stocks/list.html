@@ -35,66 +35,21 @@ Oslo Børs, norske aksjer, EQNR, DNB, TEL, MOWI, NEL, aksjekurser Norge, børs O
 {% endif %}
 {% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <!-- Breadcrumb Navigation -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ url_for('main.index') }}" class="text-decoration-none">
-                    <i class="bi bi-house-door me-1"></i>Hjem
-                </a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">
-                <i class="bi bi-graph-up me-1"></i>{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}
-            </li>
-        </ol>
-    </nav>
-    
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1 class="mb-0">{% if category == 'oslo' %}Oslo Børs{% elif category == 'global' %}Globale aksjer{% else %}{{ title if title else category }}{% endif %}</h1>
-                
-                <!-- Tilbake til oversikt knapp -->
-                <a href="{{ url_for('stocks.list_oslo') }}" class="btn btn-outline-primary">
-                    <i class="bi bi-arrow-left me-1"></i>Tilbake til oversikt
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Symbol</th>
-                                    <th>Navn</th>
-                                    <th>Pris</th>
-                                    <th>Endring %</th>
-                                    <th>Volum</th>
-                                    <th>Signal</th>
-                                    <th>Handlinger</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if stocks %}
-                                    {% for ticker, stock in stocks.items() %}
-                                        <tr>
-                                            <td><strong>{{ ticker }}</strong></td>
-                                            <td>{{ stock['name']|default(ticker) }}</td>
-                                            <td class="text-end">
-                                                {% if stock['last_price'] %}
-                                                    {% set price = stock['last_price']|float if stock['last_price'] is string else stock['last_price'] %}
-                                                    {% if ticker.endswith('.OL') %}
-                                                        kr {{ "{:,.2f}".format(price).replace(',', ' ').replace('.', ',') }}
-                                                    {% else %}
-                                                        $ {{ "{:,.2f}".format(price) }}
-                                                    {% endif %}
+    // Favoritt-knapper bruker global toggleFavorite fra base.html
+    window.initListFavorite = function(ticker, btn){
+        if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+        toggleFavorite(ticker, {
+            button: btn,
+            favoritedText: '<i class="bi bi-star-fill"></i>',
+            unfavoritedText: '<i class="bi bi-star"></i>',
+            onSuccess: (d) => {
+                if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) {
+                    window.portfolioActionsManager.showToast(d.message || (d.favorited ? `${ticker} lagt til i favoritter` : `${ticker} fjernet fra favoritter`), d.favorited ? 'success' : 'info');
+                }
+            },
+            onError: () => { if (window.portfolioActionsManager && window.portfolioActionsManager.showToast) window.portfolioActionsManager.showToast('Favoritt-feil', 'danger'); }
+        });
+    }
                                                 {% else %}
                                                     -
                                                 {% endif %}

@@ -490,54 +490,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle favorite removal
+    // Handle favorite removal (using toggleFavorite for idempotency)
     document.querySelectorAll('.remove-favorite-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
+        btn.addEventListener('click', function() {
             const symbol = this.getAttribute('data-symbol');
-            
-            if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra favorittene?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/stocks/api/favorites/remove', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken()
-                    },
-                    body: JSON.stringify({ symbol: symbol })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // Remove the list item from the DOM
-                    const listItem = this.closest('li');
-                    if (listItem) {
+            if (!symbol) return;
+            if (!confirm(`Er du sikker på at du vil fjerne ${symbol} fra favorittene?`)) return;
+            if (!window.toggleFavorite) { console.error('toggleFavorite missing'); return; }
+            const listItem = this.closest('li');
+            toggleFavorite(symbol, {
+                onSuccess: (data) => {
+                    if (data.favorited === false && listItem) {
                         listItem.style.transition = 'all 0.3s ease';
                         listItem.style.opacity = '0';
                         listItem.style.transform = 'translateX(-100%)';
                         setTimeout(() => {
                             listItem.remove();
-                            
-                            // Check if no favorites left and show message
                             const favoritesList = document.querySelector('.list-group');
                             if (favoritesList && favoritesList.children.length === 0) {
                                 favoritesList.parentNode.innerHTML = '<div class="alert alert-info mb-0">Du har ingen favoritter ennå. Trykk på stjerneknappen ved en aksje for å legge til favoritt.</div>';
                             }
                         }, 300);
                     }
-                    
-                    // Show success message
                     showSuccessToast(data.message || `${symbol} fjernet fra favoritter`);
-                } else {
-                    showErrorToast(data.error || 'Kunne ikke fjerne fra favoritter');
-                }
-            } catch (error) {
-                console.error('Error removing favorite:', error);
-                showErrorToast('Kunne ikke fjerne fra favoritter');
-            }
+                },
+                onError: () => showErrorToast('Kunne ikke oppdatere favoritt')
+            });
         });
     });
 });

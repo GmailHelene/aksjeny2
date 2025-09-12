@@ -1,6 +1,8 @@
 import pytest
 import requests
 
+pytestmark = pytest.mark.e2e
+
 BASE_URL = "http://localhost:5002"
 CREDENTIALS = {"email": "helene721@gmail.com", "password": "password123"}  # oppdater passord
 

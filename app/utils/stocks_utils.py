@@ -38,11 +38,49 @@ def get_comparison_data(tickers):
                 volumes[ticker] = 0
                 betas[ticker] = 0
                 ticker_names[ticker] = ticker
-        # Correlations: placeholder, should be calculated from historical data
-        for t1 in tickers:
-            for t2 in tickers:
-                if t1 != t2:
-                    correlations[(t1, t2)] = 0  # TODO: Implement real correlation calculation
+        # Compute pairwise Pearson correlations from historical close prices if available
+        try:
+            # Build simple series dict {ticker: [close,...]}
+            price_series = {}
+            for t in tickers:
+                hist = chart_data.get(t) or []
+                # Expect list of dicts with 'close' key
+                closes = [p.get('close') for p in hist if isinstance(p, dict) and isinstance(p.get('close'), (int, float))]
+                # Require at least 2 data points
+                if len(closes) >= 2:
+                    price_series[t] = closes
+            def pearson(a, b):
+                n = min(len(a), len(b))
+                if n < 2:
+                    return 0.0
+                # Align lengths (truncate to shortest)
+                a = a[-n:]
+                b = b[-n:]
+                mean_a = sum(a)/n
+                mean_b = sum(b)/n
+                cov = sum((x-mean_a)*(y-mean_b) for x, y in zip(a, b))
+                var_a = sum((x-mean_a)**2 for x in a)
+                var_b = sum((y-mean_b)**2 for y in b)
+                if var_a <= 0 or var_b <= 0:
+                    return 0.0
+                return max(min(cov / (var_a**0.5 * var_b**0.5), 1.0), -1.0)
+            for i, t1 in enumerate(tickers):
+                for t2 in tickers[i+1:]:
+                    if t1 in price_series and t2 in price_series:
+                        try:
+                            corr = pearson(price_series[t1], price_series[t2])
+                        except Exception:
+                            corr = 0.0
+                    else:
+                        corr = 0.0
+                    correlations[(t1, t2)] = corr
+                    correlations[(t2, t1)] = corr
+        except Exception:
+            # Fallback to zeros if anything unexpected
+            for t1 in tickers:
+                for t2 in tickers:
+                    if t1 != t2:
+                        correlations[(t1, t2)] = 0.0
         return {
             'chart_data': chart_data,
             'current_prices': current_prices,

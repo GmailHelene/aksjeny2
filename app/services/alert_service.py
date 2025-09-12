@@ -1,3 +1,89 @@
+"""Centralized service for PriceAlert CRUD to reduce duplication across blueprints."""
+from __future__ import annotations
+from typing import List, Optional, Dict, Any
+import logging
+
+from flask import current_app
+from flask_login import current_user  # optional, not strictly required
+
+try:
+    from ..models.price_alert import PriceAlert
+    from ..extensions import db
+except Exception:  # pragma: no cover
+    PriceAlert = None  # type: ignore
+    db = None  # type: ignore
+
+logger = logging.getLogger(__name__)
+
+
+def list_user_alerts(user_id: int) -> List[Dict[str, Any]]:
+    """Return all alerts for a user ordered active first, newest first."""
+    if not PriceAlert:
+        return []
+    try:
+        alerts = PriceAlert.query.filter_by(user_id=user_id).order_by(
+            PriceAlert.is_active.desc(),
+            PriceAlert.created_at.desc()
+        ).all()
+        return [a.to_dict() for a in alerts]
+    except Exception as e:  # pragma: no cover
+        logger.error(f"list_user_alerts error: {e}")
+        return []
+
+
+def create_alert(user_id: int, symbol: str, alert_type: str, target_price: float,
+                 email_enabled: bool = True, browser_enabled: bool = False,
+                 notes: Optional[str] = None) -> Dict[str, Any]:
+    """Create a new PriceAlert and return dict form. Raises on validation errors."""
+    if not PriceAlert or not db:  # pragma: no cover
+        raise RuntimeError("PriceAlert model or db not available")
+    symbol_up = symbol.strip().upper()
+    if not symbol_up:
+        raise ValueError("Symbol is required")
+    if alert_type not in ("above", "below"):
+        raise ValueError("alert_type must be 'above' or 'below'")
+    if target_price <= 0:
+        raise ValueError("target_price must be positive")
+    alert = PriceAlert(
+        user_id=user_id,
+        ticker=symbol_up,
+        symbol=symbol_up,
+        target_price=float(target_price),
+        alert_type=alert_type,
+        is_active=True,
+        email_enabled=email_enabled,
+        browser_enabled=browser_enabled,
+        notes=notes
+    )
+    db.session.add(alert)
+    db.session.commit()
+    # Register with monitor if available
+    try:  # pragma: no cover
+        from ..services.price_monitor_service import price_monitor
+        price_monitor.add_alert(alert.to_dict())
+    except Exception as mon_err:
+        logger.warning(f"Alert monitor registration failed: {mon_err}")
+    return alert.to_dict()
+
+
+def delete_alert(user_id: int, alert_id: int) -> bool:
+    """Delete alert if owned by user. Returns True if deleted."""
+    if not PriceAlert or not db:
+        return False
+    try:
+        alert = PriceAlert.query.filter_by(id=alert_id, user_id=user_id).first()
+        if not alert:
+            return False
+        db.session.delete(alert)
+        db.session.commit()
+        return True
+    except Exception as e:  # pragma: no cover
+        logger.error(f"delete_alert error: {e}")
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return False
 """
 Alert service for monitoring stocks and triggering notifications
 """

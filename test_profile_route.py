@@ -8,6 +8,8 @@ from app.models.user import User
 from flask import url_for
 from flask_login import login_user
 import logging
+import os
+import tempfile
 
 # Set up logging to see our debug messages
 logging.basicConfig(level=logging.INFO)
@@ -65,10 +67,15 @@ with app.test_client() as client:
             if 'favorites_failed' in content:
                 logger.error("❌ Found 'favorites_failed' error in page")
             
-            # Save the response for inspection
-            with open('/tmp/profile_response.html', 'w') as f:
-                f.write(content)
-            logger.info("Saved full response to /tmp/profile_response.html")
+            # Save the response for inspection (cross-platform temp dir)
+            temp_dir = tempfile.gettempdir()
+            out_path = os.path.join(temp_dir, 'profile_response.html')
+            try:
+                with open(out_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                logger.info(f"Saved full response to {out_path}")
+            except Exception as write_err:
+                logger.warning(f"Unable to write profile response to temp file: {write_err}")
         
         else:
             logger.error(f"Failed to get profile page: {response.status_code}")
