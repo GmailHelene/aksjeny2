@@ -333,32 +333,65 @@ def recommendations(symbol=None):
                         real_info = DataService.get_stock_info(symbol)
                     except Exception as ds_err:
                         logger.warning(f"DataService error for {symbol}: {ds_err}")
+                ai_detail = None
+                if hasattr(DataService, 'get_ticker_specific_ai_recommendation'):
+                    try:
+                        ai_detail = DataService.get_ticker_specific_ai_recommendation(symbol)
+                    except Exception as ai_err:
+                        logger.warning(f"AI recommendation fetch error for {symbol}: {ai_err}")
                 if real_info:
-                    price = real_info.get('regularMarketPrice') or real_info.get('currentPrice')
+                    price = (real_info.get('last_price') or real_info.get('regularMarketPrice')
+                             or real_info.get('currentPrice'))
+                    # fallback price if none
+                    if not price:
+                        price = real_info.get('price') or 0
+                    # Compose detail merging AI data when available
+                    rating = None
+                    confidence = None
+                    risk_level = None
+                    timeframe = None
+                    reasons = []
+                    risks = []
+                    target_price = None
+                    upside = None
+                    if ai_detail:
+                        rating = ai_detail.get('recommendation') or ai_detail.get('rating')
+                        confidence = ai_detail.get('confidence') or ai_detail.get('confidence_score')
+                        risk_level = ai_detail.get('risk_level') or ai_detail.get('risk')
+                        timeframe = ai_detail.get('timeframe') or '12 mnd'
+                        reasons = ai_detail.get('reasons') or []
+                        target_price = ai_detail.get('price_target') or ai_detail.get('target_price')
+                        if price and target_price:
+                            try:
+                                upside = round(((target_price / price) - 1) * 100, 1)
+                            except Exception:
+                                upside = None
                     detail = {
                         'symbol': symbol,
-                        'name': real_info.get('longName') or real_info.get('shortName') or symbol,
+                        'name': real_info.get('name') or real_info.get('longName') or real_info.get('shortName') or symbol,
                         'current_price': price,
-                        'rating': None,
-                        'confidence': None,
-                        'risk_level': None,
-                        'timeframe': None,
-                        'reasons': [],
-                        'risks': [],
+                        'target_price': target_price,
+                        'upside': upside,
+                        'rating': rating,
+                        'confidence': confidence,
+                        'risk_level': risk_level,
+                        'timeframe': timeframe,
+                        'reasons': reasons,
+                        'risks': risks,
                         'sector': real_info.get('sector'),
                         'analyst_count': None,
                         'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M'),
                         'price_targets': None,
                         'analyst_ratings': None,
                         'key_metrics': {
-                            'pe_ratio': real_info.get('trailingPE'),
-                            'pb_ratio': real_info.get('priceToBook'),
+                            'pe_ratio': real_info.get('trailingPE') or real_info.get('pe_ratio'),
+                            'pb_ratio': real_info.get('priceToBook') or real_info.get('pb_ratio'),
                             'dividend_yield': real_info.get('dividendYield'),
                             'roe': None
                         },
                         'real_data': True,
                         'demo': False,
-                        'notice': 'Ekte pris/fundamental info lastet. Avanserte anbefalinger ikke aktivert ennå.'
+                        'notice': 'Ekte data lastet' + (' med AI-analyse' if ai_detail else ' (AI-detaljer ikke tilgjengelig)')
                     }
                 else:
                     detail = {

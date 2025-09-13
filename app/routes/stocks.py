@@ -1328,6 +1328,8 @@ def details(symbol):
             'symbol': symbol,
             'name': template_stock_info.get('longName', symbol),
             'price': current_price,
+            'change': template_stock_info.get('regularMarketChange', stock_info.get('change', 0)),
+            'change_percent': template_stock_info.get('regularMarketChangePercent', stock_info.get('change_percent', 0)),
             'volume': template_stock_info.get('volume', 1000000),
             'market_cap': template_stock_info.get('marketCap', 10000000000),
             'sector': template_stock_info.get('sector', 'Technology' if not symbol.endswith('.OL') else 'Industrials'),
@@ -1379,6 +1381,8 @@ def details(symbol):
             'shortName': symbol[:20],
             'regularMarketPrice': 100.0,
             'current_price': 100.0,  # Add current_price for template compatibility
+            'change': 0.0,
+            'change_percent': 0.0,
             'regularMarketChange': 0.0,
             'regularMarketChangePercent': 0.0,
             'volume': 1000000,  # 1M volume fallback
@@ -1413,6 +1417,8 @@ def details(symbol):
             'symbol': symbol,
             'name': symbol,
             'price': 100.0,
+            'change': 0.0,
+            'change_percent': 0.0,
             'volume': 1000000,
             'market_cap': 10000000000,
             'sector': 'Technology' if not symbol.endswith('.OL') else 'Industrials',

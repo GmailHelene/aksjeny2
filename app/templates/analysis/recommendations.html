@@ -148,13 +148,13 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ url_for('analysis.recommendations', symbol=rec.symbol) }}" 
-                                               class="btn btn-outline-primary" title="Se detaljer">
-                                                <i class="bi bi-eye"></i> Detaljer
-                                            </a>
                                             <a href="{{ url_for('stocks.details', symbol=rec.symbol) }}" 
-                                               class="btn btn-outline-secondary" title="Aksjeside">
+                                               class="btn btn-outline-primary" title="Aksjeside">
                                                 <i class="bi bi-graph-up"></i> Aksje
+                                            </a>
+                                            <a href="{{ url_for('analysis.ai') }}?ticker={{ rec.symbol }}" 
+                                               class="btn btn-outline-secondary" title="AI anbefaling">
+                                                <i class="bi bi-robot"></i> Anbefaling
                                             </a>
                                         </div>
                                     </td>

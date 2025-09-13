@@ -1,4 +1,17 @@
-{% if not (current_user.is_authenticated and hasattr(current_user, 'has_premium_access') and current_user.has_premium_access()) %}
+{# Vis banner KUN hvis bruker ikke er autentisert ELLER mangler alle premium-indikatorer #}
+{% set is_premium = False %}
+{% if current_user.is_authenticated %}
+  {% if hasattr(current_user, 'has_premium_access') and current_user.has_premium_access() %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'is_premium') and current_user.is_premium %}
+    {% set is_premium = True %}
+  {% elif hasattr(current_user, 'role') and current_user.role in ['premium','admin','superuser'] %}
+    {% set is_premium = True %}
+  {% elif session.get('premium_active') %}
+    {% set is_premium = True %}
+  {% endif %}
+{% endif %}
+{% if not is_premium %}
 <div class="demo-banner" style="background:#0d1b2a;color:#fff;padding:12px 16px;margin:12px 0;border-radius:6px;">
   <strong>Begrenset modus:</strong> Du ser en forenklet visning.
   {% if current_user.is_authenticated %}

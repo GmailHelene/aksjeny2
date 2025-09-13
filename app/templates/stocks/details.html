@@ -1,10 +1,196 @@
 {% extends 'base.html' %}
-{% block title %}Aksjedetaljer {{ ticker or symbol }}{% endblock %}
+{% block title %}Aksjedetaljer {{ (stock.symbol if stock else (ticker or symbol)) }}{% endblock %}
 {% block content %}
+<div class="container-fluid py-4" id="stock-details-root" data-tech-cache-hit="{{ 'true' if technical_data and technical_data.get('cache_hit') else 'false' }}">
+    {% if error %}
+    <div class="alert alert-warning"><strong>Merk:</strong> {{ error }}</div>
+    {% endif %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="stock-header mb-3">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-1">{{ stock.name or stock_info.longName or symbol }}</h1>
+                        <p class="text-muted mb-2">{{ stock.symbol }} • {{ stock.exchange or 'OSE' }}</p>
+                        {% if stock.sector %}<span class="badge bg-secondary">{{ stock.sector }}</span>{% endif %}
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="stock-price text-primary h2 mb-0">{{ '%.2f'|format(stock.price or stock_info.regularMarketPrice or 0) }} {{ stock_info.currency or 'NOK' }}</div>
+                        {% set ch = stock.get('change') if stock else None %}
+                        {% set chp = stock.get('change_percent') if stock else None %}
+                        <div class="{% if ch is not none and ch>0 %}text-success{% elif ch is not none and ch<0 %}text-danger{% else %}text-muted{% endif %}">
+                            {% if ch is not none %}{{ '%.2f'|format(ch or 0) }} ({{ '%.2f'|format((chp or 0)) }}%){% endif %}
+                        </div>
+                        <small class="text-muted">Sist oppdatert: {{ stock.last_updated or 'Nylig' }}</small>
+                    </div>
+                </div>
+            </div>
 
-<div class="stock-details-container container-fluid mt-3" id="stock-details-root" {% if technical_data and technical_data.get('cache_hit') %}data-tech-cache-hit="true"{% else %}data-tech-cache-hit="false"{% endif %}>
+            <div id="key-metrics" class="card mb-3">
+                <div class="card-header py-2"><h5 class="mb-0">Nøkkeltall</h5></div>
+                <div class="card-body py-2">
+                    <div class="row g-2 small">
+                        <div class="col-6 col-md-3"><div class="metric"><strong>P/E</strong><div class="h6 text-primary mb-0">{{ stock_info.trailingPE or '–' }}</div></div></div>
+                        <div class="col-6 col-md-3"><div class="metric"><strong>Markedsverdi</strong><div class="h6 text-primary mb-0">{{ stock.market_cap or stock_info.marketCap or '–' }}</div></div></div>
+                        <div class="col-6 col-md-3"><div class="metric"><strong>Utbytte</strong><div class="h6 text-primary mb-0">{% if stock_info.dividendYield %}{{ '%.2f'|format((stock_info.dividendYield or 0)*100) }}%{% else %}–{% endif %}</div></div></div>
+                        <div class="col-6 col-md-3"><div class="metric"><strong>Sektor</strong><div class="h6 text-primary mb-0">{{ stock.sector or stock_info.sector or '–' }}</div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs compact-tabs" id="stockTabs" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Oversikt</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">Graf</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab">Teknisk</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="fundamentals-tab" data-bs-toggle="tab" data-bs-target="#fundamentals" type="button" role="tab">Fundamental</button></li>
+            </ul>
+
+            <div class="tab-content" id="stockTabsContent">
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card compact-card mb-3">
+                                <div class="card-header py-2"><h5 class="mb-0">Selskapsinfo</h5></div>
+                                <div class="card-body">
+                                    <p class="mb-2">{{ stock.description or (stock_info.longName ~ ' er et selskap innen ' ~ (stock_info.sector|lower if stock_info.sector else 'norsk næring')) }}</p>
+                                    <table class="table table-sm mb-0">
+                                        <tr><td>Sektor:</td><td class="text-end">{{ stock.sector or stock_info.sector or '–' }}</td></tr>
+                                        <tr><td>Industri:</td><td class="text-end">{{ stock.industry or stock_info.industry or '–' }}</td></tr>
+                                        <tr><td>Land:</td><td class="text-end">{{ stock.country or 'Norge' }}</td></tr>
+                                        <tr><td>Ansatte:</td><td class="text-end">{{ stock.employees or '—' }}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card compact-card mb-3">
+                                <div class="card-header py-2"><h5 class="mb-0">Resultat</h5></div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tr><td>EPS:</td><td class="text-end">{{ stock_info.trailingEps or '–' }}</td></tr>
+                                        <tr><td>ROE:</td><td class="text-end">{% if stock_info.returnOnEquity %}{{ '%.1f'|format(stock_info.returnOnEquity*100) }}%{% else %}–{% endif %}</td></tr>
+                                        <tr><td>ROA:</td><td class="text-end">{% if stock_info.returnOnAssets %}{{ '%.1f'|format(stock_info.returnOnAssets*100) }}%{% else %}–{% endif %}</td></tr>
+                                        <tr><td>Bruttomargin:</td><td class="text-end">{% if stock_info.grossMargins %}{{ '%.1f'|format(stock_info.grossMargins*100) }}%{% else %}–{% endif %}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="chart" role="tabpanel">
+                    <div class="card compact-card">
+                        <div class="card-header py-2"><h5 class="mb-0">Kursgraf - {{ stock.symbol }}</h5></div>
+                        <div class="card-body">
+                            <div class="tradingview-widget-container" style="min-height:480px">
+                                <div id="tradingview_widget_details" style="height:480px"></div>
+                                <div id="chart-loading" class="text-center py-4" style="display:none;">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <div class="mt-2 small">Laster graf...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="technical" role="tabpanel">
+                    <div class="card compact-card">
+                        <div class="card-header py-2"><h5 class="mb-0">Teknisk Analyse - {{ stock.symbol }}</h5></div>
+                        <div class="card-body">
+                            <div class="tradingview-widget-container" style="min-height:480px">
+                                <div id="tradingview_technical_widget" style="height:480px"></div>
+                                <div id="technical-loading" class="text-center py-4" style="display:none;">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <div class="mt-2 small">Laster teknisk analyse...</div>
+                                </div>
+                            </div>
+                            <div id="technical-summary" class="alert alert-info mt-3 py-2 mb-0">
+                                <strong>Teknisk sammendrag:</strong> <span id="technical-summary-text">Initialiserer...</span>
+                                <br><small class="text-muted">Sist oppdatert: <span id="tech-update-time">--:--:--</span></small>
+                                <div id="technical-indicators" class="mt-2" style="display:none;">
+                                    <span class="badge bg-primary indicator-tag">RSI</span>
+                                    <span class="badge bg-primary indicator-tag">MACD</span>
+                                    <span class="badge bg-primary indicator-tag">Bollinger</span>
+                                    <span id="indicator-fallback" class="text-muted ms-2" style="display:none;">(fallback)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="fundamentals" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card compact-card mb-3">
+                                <div class="card-header py-2"><h5 class="mb-0">Verdsettelse</h5></div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tr><td>P/E:</td><td class="text-end">{{ stock_info.trailingPE or '–' }}</td></tr>
+                                        <tr><td>Forward P/E:</td><td class="text-end">{{ stock_info.forwardPE or '–' }}</td></tr>
+                                        <tr><td>P/B:</td><td class="text-end">{{ stock_info.priceToBook or '–' }}</td></tr>
+                                        <tr><td>EV/EBITDA:</td><td class="text-end">{{ stock_info.enterpriseToEbitda or '–' }}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card compact-card mb-3">
+                                <div class="card-header py-2"><h5 class="mb-0">Nøkkeltall</h5></div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tr><td>EPS:</td><td class="text-end">{{ stock_info.trailingEps or '–' }}</td></tr>
+                                        <tr><td>Utbytte:</td><td class="text-end">{% if stock_info.dividendYield %}{{ '%.2f'|format(stock_info.dividendYield*100) }}%{% else %}–{% endif %}</td></tr>
+                                        <tr><td>52w High:</td><td class="text-end">{{ stock_info.fiftyTwoWeekHigh or '–' }}</td></tr>
+                                        <tr><td>52w Low:</td><td class="text-end">{{ stock_info.fiftyTwoWeekLow or '–' }}</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card mb-3"><div class="card-header py-2"><h5 class="mb-0">Handlinger</h5></div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-sm" onclick="addToWatchlist('{{ stock.symbol }}')"><i class="fas fa-star me-1"></i>Favoritt</button>
+                        <button class="btn btn-outline-info btn-sm" onclick="addToPortfolio('{{ stock.symbol }}')"><i class="fas fa-briefcase me-1"></i>Portefølje</button>
+                        <button class="btn btn-success btn-sm external-buy-btn" data-ticker="{{ stock.symbol }}"><i class="fas fa-shopping-cart me-1"></i>Kjøp</button>
+                        <a class="btn btn-info btn-sm" href="{{ url_for('analysis.ai', ticker=stock.symbol) }}"><i class="fas fa-robot me-1"></i>AI analyse</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('analysis.technical', ticker=stock.symbol) }}"><i class="fas fa-chart-line me-1"></i>Full teknisk</a>
+                    </div>
+                </div>
+            </div>
+            {% if ai_recommendations %}
+            <div class="card mb-3"><div class="card-header py-2"><h5 class="mb-0">AI Anbefaling</h5></div>
+                <div class="card-body small">
+                    <p class="mb-1"><strong>{{ ai_recommendations.recommendation or '—' }}</strong> ({{ (ai_recommendations.confidence*100)|round(0) if ai_recommendations.confidence else '–' }}% konfidens)</p>
+                    <p class="mb-0">{{ ai_recommendations.summary or 'Ingen oppsummering tilgjengelig.' }}</p>
+                </div>
+            </div>
+            {% endif %}
+            <div class="card mb-3"><div class="card-header py-2"><h5 class="mb-0">Tekniske Indikatorer</h5></div>
+                <div class="card-body small">
+                    {% if technical_data %}
+                    <table class="table table-sm mb-0">
+                        <tr><td>RSI</td><td class="text-end">{{ technical_data.rsi or '–' }}</td></tr>
+                        <tr><td>MACD</td><td class="text-end">{{ technical_data.macd or '–' }}</td></tr>
+                        <tr><td>SMA 20</td><td class="text-end">{{ technical_data.sma_20 or '–' }}</td></tr>
+                        <tr><td>SMA 50</td><td class="text-end">{{ technical_data.sma_50 or '–' }}</td></tr>
+                    </table>
+                    <small class="text-muted">Kilde: {{ technical_data.data_source or '—' }}{% if technical_data.cache_hit %} (cache){% endif %}</small>
+                    {% else %}<p class="mb-0 text-muted">Ingen tekniske data.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-// Sanitize symbol client-side as additional protection (server already sanitizes)
+let tradingViewLoaded = false;
+let technicalWidgetLoaded = false;
+let currentSymbol = '{{ stock.symbol }}';
+
 function sanitizeSymbol(raw){
     if(!raw) return 'AAPL';
     let cleaned = raw.toUpperCase().trim();
@@ -14,351 +200,59 @@ function sanitizeSymbol(raw){
     return cleaned;
 }
 
-function createTechnicalWidget(symbol, container, loading) {
-    try {
-    const safeSymbol = sanitizeSymbol(symbol);
-    new TradingView.widget({
-            "autosize": true,
-            "symbol": safeSymbol,
-            "interval": "1D",
-            "timezone": "Europe/Oslo",
-            "theme": "light",
-            "style": "1",
-            "locale": "no",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "withdateranges": true,
-            "range": "3M",
-            "hide_side_toolbar": true,
-            "allow_symbol_change": false,
-            "details": false,
-            "calendar": false,
-            /* Correct study identifiers with vendor namespace */
-            "studies": [
-                "RSI@tv-basicstudies",
-                "MACD@tv-basicstudies",
-                "BollingerBands@tv-basicstudies"
-            ],
-            "container_id": "tradingview_technical_widget",
-            "onChartReady": function() {
-                console.log('✅ TradingView technical analysis loaded successfully for', safeSymbol);
-                if (loading) loading.style.display = 'none';
-                technicalWidgetLoaded = true;
-                updateTechnicalSummary();
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error creating TradingView technical widget:', error);
-        showTechnicalError(container, loading);
-        const fb = document.getElementById('technical-fallback');
-        if (fb) fb.style.display = 'block';
-    }
+function toggleKeyMetrics(){
+    const km=document.getElementById('key-metrics');
+    const ov=document.getElementById('overview-tab');
+    if(!km||!ov) return; km.style.display = ov.classList.contains('active')?'block':'none';
 }
 
-let technicalSummaryInitialized = false;
-function updateTechnicalSummary() {
-    const timeSpan = document.getElementById('tech-update-time');
-    const summaryText = document.getElementById('technical-summary-text');
-    const indicatorsWrapper = document.getElementById('technical-indicators');
-    const indicatorTags = document.querySelectorAll('#technical-indicators .indicator-tag');
-    const fallback = document.getElementById('indicator-fallback');
-
-    if (timeSpan) {
-        timeSpan.textContent = new Date().toLocaleTimeString('no-NO');
-    }
-
-    // Only run indicator detection once per successful load
-    if (technicalSummaryInitialized) return;
-
-    // Simulated detection: if widget loaded we show all configured studies; otherwise fallback
-    if (technicalWidgetLoaded && window.TradingView) {
-        if (summaryText) summaryText.textContent = 'TradingView-widget lastet';
-        if (indicatorsWrapper) indicatorsWrapper.style.display = 'block';
-        indicatorTags.forEach(tag => { tag.style.display = 'inline-block'; });
-        if (fallback) fallback.style.display = 'none';
-    } else {
-        if (summaryText) summaryText.textContent = 'Forsøker å laste TradingView-widget';
-        if (indicatorsWrapper) indicatorsWrapper.style.display = 'block';
-        if (fallback) fallback.style.display = 'inline';
-    }
-    technicalSummaryInitialized = true;
-}
-
-// Safety timeout: if technical widget not loaded after 12s, show fallback
-setTimeout(() => {
-    if (!technicalWidgetLoaded) {
-        technicalSummaryInitialized = false; // allow execution
-        updateTechnicalSummary();
-    }
-}, 12000);
-
-// Utility functions
-function loadTradingViewScript(callback) {
-    if (document.querySelector('script[src*="tradingview"]')) {
-        if (window.TradingView) {
-            callback();
-        } else {
-            // Script loaded but TradingView not ready yet, wait a bit
-            setTimeout(() => {
-                if (window.TradingView) {
-                    callback();
-                } else {
-                    console.error('❌ TradingView script loaded but not ready');
-                }
-            }, 1000);
-        }
-        return;
-    }
-    
-    console.log('📥 Loading TradingView script...');
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.onload = function() {
-        console.log('✅ TradingView script loaded successfully');
-        // Wait for TradingView to be available
-        setTimeout(() => {
-            if (window.TradingView) {
-                callback();
-            } else {
-                console.error('❌ TradingView not available after script load');
-            }
-        }, 500);
-    };
-    script.onerror = function() {
-        console.error('❌ Failed to load TradingView script');
-    };
-    document.head.appendChild(script);
-}
-
-function showChartError(container, loading) {
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center p-4">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Kunne ikke laste graf</strong>
-                    <p>TradingView graf er midlertidig utilgjengelig. Prøv å oppdatere siden.</p>
-                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
-                        <i class="fas fa-redo me-1"></i>Oppdater siden
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    if (loading) loading.style.display = 'none';
-}
-
-function showTechnicalError(container, loading) {
-    if (container) {
-        container.innerHTML = `
-            <div class="text-center p-4">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Kunne ikke laste teknisk analyse</strong>
-                    <p>Teknisk analyse er midlertidig utilgjengelig. Prøv å oppdatere siden.</p>
-                    <button class="btn btn-primary btn-sm" onclick="location.reload()">
-                        <i class="fas fa-redo me-1"></i>Oppdater siden
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    if (loading) loading.style.display = 'none';
-}
-
-// Action buttons
-function addToWatchlist(symbol) {
-    fetch('/add_to_watchlist', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbol: symbol })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.success) {
-            showToast('✅ Lagt til i favoritter', 'success');
-        } else {
-            showToast('❌ Kunne ikke legge til i favoritter', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('❌ Teknisk feil ved adding til favoritter', 'error');
-    });
-}
-
-function addToPortfolio(symbol) {
-    fetch('/add_to_portfolio', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ symbol: symbol })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.success) {
-            showToast('✅ Lagt til i portefølje', 'success');
-        } else {
-            showToast('❌ Kunne ikke legge til i portefølje', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('❌ Teknisk feil ved adding til portefølje', 'error');
-    });
-}
-
-// External buy button functionality
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.external-buy-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const ticker = this.dataset.ticker;
-            if (!ticker) return;
-            
-            const originalHtml = this.innerHTML;
-            this.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>Åpner...';
-            this.disabled = true;
-            
-            let externalUrl;
-            if (ticker.endsWith('.OL')) {
-                const norwegianTicker = ticker.replace('.OL', '');
-                externalUrl = `https://www.dnb.no/portalfront/dnbinvestor/omhandler/kjopselgaksjer?searchString=${norwegianTicker}`;
-            } else {
-                externalUrl = `https://www.google.com/search?q=${ticker}+stock+buy+broker`;
-            }
-            
-            try {
-                window.open(externalUrl, '_blank', 'noopener,noreferrer');
-                setTimeout(() => {
-                    this.innerHTML = originalHtml;
-                    this.disabled = false;
-                }, 2000);
-                showToast(`Åpner kjøpsside for ${ticker}`, 'success');
-            } catch (error) {
-                console.error('Error opening external URL:', error);
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-                showToast('Kunne ikke åpne kjøpsside', 'error');
-            }
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab=>{
+        tab.addEventListener('shown.bs.tab', e=>{
+            const target=e.target.getAttribute('data-bs-target');
+            toggleKeyMetrics();
+            if(target==='#chart') initChart();
+            if(target==='#technical') initTechnical();
         });
     });
+    toggleKeyMetrics();
 });
 
-// Toast notification function
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
-    toast.setAttribute('role', 'alert');
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-    
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        document.body.appendChild(container);
-    }
-    
-    container.appendChild(toast);
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-    
-    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+function loadTradingViewScript(cb){
+    if(document.querySelector('script[src*="tradingview"]')){ if(window.TradingView){ cb(); } else { setTimeout(()=>window.TradingView&&cb(),500);} return; }
+    const s=document.createElement('script'); s.src='https://s3.tradingview.com/tv.js'; s.onload=()=>setTimeout(()=>window.TradingView&&cb(),200); s.onerror=()=>console.error('❌ TV script load fail'); document.head.appendChild(s);
 }
+
+function initChart(){ if(tradingViewLoaded) return; const c=document.getElementById('tradingview_widget_details'); const l=document.getElementById('chart-loading'); if(!c) return; if(l) l.style.display='block'; let tvSymbol=currentSymbol; if(currentSymbol.endsWith('.OL')) tvSymbol='OSE:'+currentSymbol.replace('.OL',''); else if(currentSymbol.match(/^[A-Z]{1,5}$/)) tvSymbol='NASDAQ:'+currentSymbol; loadTradingViewScript(()=>createChart(tvSymbol,c,l)); }
+
+function createChart(symbol,container,loading){ try{ new TradingView.widget({ autosize:true,symbol,interval:'D',timezone:'Europe/Oslo',theme:'light',style:'1',locale:'no',toolbar_bg:'#f1f3f6',enable_publishing:false,withdateranges:true,range:'6M',hide_side_toolbar:false,allow_symbol_change:true,details:true,calendar:true,container_id:'tradingview_widget_details',onChartReady:()=>{ if(loading) loading.style.display='none'; tradingViewLoaded=true; }});}catch(e){ console.error('Chart error',e); showChartError(container,loading);} }
+
+function initTechnical(){ if(technicalWidgetLoaded) return; const c=document.getElementById('tradingview_technical_widget'); const l=document.getElementById('technical-loading'); if(!c) return; if(l) l.style.display='block'; let tvSymbol=currentSymbol; if(currentSymbol.endsWith('.OL')) tvSymbol='OSE:'+currentSymbol.replace('.OL',''); else if(currentSymbol.match(/^[A-Z]{1,5}$/)) tvSymbol='NASDAQ:'+currentSymbol; loadTradingViewScript(()=>createTechnicalWidget(tvSymbol,c,l)); }
+
+function createTechnicalWidget(symbol,container,loading){ try{ const safeSymbol=sanitizeSymbol(symbol); new TradingView.widget({ autosize:true,symbol:safeSymbol,interval:'1D',timezone:'Europe/Oslo',theme:'light',style:'1',locale:'no',toolbar_bg:'#f1f3f6',enable_publishing:false,withdateranges:true,range:'3M',hide_side_toolbar:true,allow_symbol_change:false,details:false,calendar:false,studies:['RSI@tv-basicstudies','MACD@tv-basicstudies','BollingerBands@tv-basicstudies'],container_id:'tradingview_technical_widget',onChartReady:()=>{ if(loading) loading.style.display='none'; technicalWidgetLoaded=true; updateTechnicalSummary(); }});}catch(err){ console.error('Tech widget error',err); showTechnicalError(container,loading); const fb=document.getElementById('technical-fallback'); if(fb) fb.style.display='block'; }}
+
+let technicalSummaryInitialized=false;
+function updateTechnicalSummary(){ const ts=document.getElementById('tech-update-time'); const st=document.getElementById('technical-summary-text'); const wrap=document.getElementById('technical-indicators'); const fallback=document.getElementById('indicator-fallback'); if(ts) ts.textContent=new Date().toLocaleTimeString('no-NO'); if(technicalSummaryInitialized) return; if(technicalWidgetLoaded && window.TradingView){ if(st) st.textContent='TradingView-widget lastet'; if(wrap) wrap.style.display='block'; document.querySelectorAll('#technical-indicators .indicator-tag').forEach(t=>t.style.display='inline-block'); if(fallback) fallback.style.display='none'; } else { if(st) st.textContent='Forsøker å laste TradingView-widget'; if(wrap) wrap.style.display='block'; if(fallback) fallback.style.display='inline'; } technicalSummaryInitialized=true; }
+setTimeout(()=>{ if(!technicalWidgetLoaded){ technicalSummaryInitialized=false; updateTechnicalSummary(); }},12000);
+
+function showChartError(container,loading){ if(container) container.innerHTML='<div class="text-center p-4"><div class="alert alert-warning"><strong>Kunne ikke laste graf</strong><p class="mb-1">TradingView graf utilgjengelig.</p><button class="btn btn-primary btn-sm" onclick="location.reload()">Oppdater</button></div></div>'; if(loading) loading.style.display='none'; }
+function showTechnicalError(container,loading){ if(container) container.innerHTML='<div class="text-center p-4"><div class="alert alert-warning"><strong>Kunne ikke laste teknisk analyse</strong><p class="mb-1">Prøv å oppdatere siden.</p><button class="btn btn-primary btn-sm" onclick="location.reload()">Oppdater</button></div></div>'; if(loading) loading.style.display='none'; }
+
+function addToWatchlist(symbol){ fetch('/add_to_watchlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol})}).then(r=>r.json()).then(d=>{ if(d&&d.success) showToast('✅ Lagt til i favoritter','success'); else showToast('❌ Kunne ikke legge til','error'); }).catch(()=>showToast('❌ Teknisk feil','error')); }
+function addToPortfolio(symbol){ fetch('/add_to_portfolio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol})}).then(r=>r.json()).then(d=>{ if(d&&d.success) showToast('✅ Lagt til i portefølje','success'); else showToast('❌ Kunne ikke legge til','error'); }).catch(()=>showToast('❌ Teknisk feil','error')); }
+
+document.addEventListener('DOMContentLoaded',()=>{ document.querySelectorAll('.external-buy-btn').forEach(btn=>{ btn.addEventListener('click',function(){ const ticker=this.dataset.ticker; if(!ticker) return; const orig=this.innerHTML; this.innerHTML='<i class="spinner-border spinner-border-sm me-1"></i>Åpner...'; this.disabled=true; let url; if(ticker.endsWith('.OL')){ url='https://www.dnb.no/portalfront/dnbinvestor/omhandler/kjopselgaksjer?searchString='+ticker.replace('.OL',''); } else { url='https://www.google.com/search?q='+ticker+'+stock+buy+broker'; } try { window.open(url,'_blank','noopener,noreferrer'); setTimeout(()=>{ this.innerHTML=orig; this.disabled=false; },1600); showToast('Åpner kjøpsside for '+ticker,'success'); } catch(e){ this.innerHTML=orig; this.disabled=false; showToast('Kunne ikke åpne kjøpsside','error'); } }); }); });
+
+function showToast(msg,type){ const t=document.createElement('div'); t.className='toast align-items-center text-white bg-'+(type==='success'?'success':'danger')+' border-0'; t.setAttribute('role','alert'); t.innerHTML='<div class="d-flex"><div class="toast-body">'+msg+'</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>'; let c=document.querySelector('.toast-container'); if(!c){ c=document.createElement('div'); c.className='toast-container position-fixed bottom-0 end-0 p-3'; document.body.appendChild(c);} c.appendChild(t); const bsToast=new bootstrap.Toast(t); bsToast.show(); t.addEventListener('hidden.bs.toast',()=>t.remove()); }
 </script>
+{% endblock %}
 
+{% block styles %}
 <style>
-/* Compact layout adjustments */
-.stock-details-container { max-width: 1400px; }
-.compact-tabs .nav-link { padding: 0.55rem 0.85rem; font-size: 0.95rem; }
-#stockTabs { margin-bottom: 0.85rem !important; }
-.compact-card .card-header { padding: 0.55rem 0.85rem; }
-.compact-card .card-header h5 { margin: 0; font-size: 1rem; }
-.compact-card .card-body { padding: 0.85rem 0.95rem; }
-#overview .card-body { padding: 0.9rem 1rem; }
-#overview .card + .card { margin-top: 0.85rem; }
-#key-metrics-card { margin-top: 1.25rem !important; }
-#technical-summary { margin-top: 0.65rem !important; }
-.metric { padding: 0.7rem 0.5rem; }
-.metric .h6 { margin: 0; }
-.tradingview-widget-container { margin-bottom: 0; }
-#chart .card-body, #technical .card-body, #fundamentals .card-body { padding-top: 0.7rem; padding-bottom: 0.7rem; }
-.tab-content > .tab-pane { padding-top: 0.25rem; }
-@media (max-width: 768px) {
-    .compact-tabs .nav-link { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
-    .compact-card .card-header { padding: 0.5rem 0.65rem; }
-    .compact-card .card-body { padding: 0.65rem 0.7rem; }
-    .metric { padding: 0.55rem 0.4rem; }
-    #overview .card-body { padding: 0.7rem 0.65rem; }
-}
-
-.nav-tabs .nav-link {
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: none;
-    color: #6c757d;
-}
-
-.nav-tabs .nav-link.active {
-    border-bottom-color: #007bff;
-    color: #007bff;
-    background: none;
-}
-
-.nav-tabs .nav-link:hover {
-    border-bottom-color: #007bff;
-    color: #007bff;
-}
-
-.metric {
-    text-align: center;
-    padding: 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    background: #f8f9fa;
-}
-
-.stock-price {
-    font-weight: bold;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-    .stock-header .row {
-        text-align: center;
-    }
-    
-    .stock-header h1 {
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .stock-price {
-        font-size: 1.75rem !important;
-        margin-top: 0.5rem;
-    }
-    
-    .nav-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-    }
-    
-    .nav-tabs .nav-item {
-        white-space: nowrap;
-    }
-    
-    .nav-tabs .nav-link {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-}
+.stock-price{font-weight:600}
+.metric{padding:.6rem .4rem;text-align:center;border:1px solid #dee2e6;border-radius:.375rem;background:#f8f9fa}
+.metric .h6{margin:0;font-size:.9rem}
+.compact-tabs .nav-link{padding:.55rem .85rem;font-size:.9rem}
+@media (max-width:768px){.compact-tabs .nav-link{padding:.45rem .65rem;font-size:.75rem}}
 </style>
-</div>
 {% endblock %}

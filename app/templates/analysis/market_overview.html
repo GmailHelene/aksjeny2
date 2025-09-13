@@ -69,49 +69,67 @@
 
     <!-- Market Summaries -->
     <div class="row mb-4">
+        {# Safely derive local variables for readability #}
+        {% set oslo = market_summaries.oslo %}
+        {% set global_m = market_summaries.global_market %}
+        {% set crypto = market_summaries.crypto %}
+        {% set fx = market_summaries.currency %}
+
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card market-summary-card {{ 'positive' if market_summaries.oslo.change >= 0 else 'negative' }}">
+            {% set oslo_change = oslo.change if oslo.change is not none else None %}
+            {% set oslo_change_pct = oslo.change_percent if oslo.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if oslo_change is not none and oslo_change >= 0 else 'negative' if oslo_change is not none else '' }}">
                 <div class="card-body">
                     <h6 class="card-title">Oslo Børs</h6>
-                    <h4>{{ market_summaries.oslo.index_value|default('Ikke tilgjengelig') }}</h4>
-                    <small class="{{ 'text-success' if market_summaries.oslo.change >= 0 else 'text-danger' }}">
-                        {{ "{:+.2f}".format(market_summaries.oslo.change|default(0)) }} ({{ "{:+.1f}".format(market_summaries.oslo.change_percent|default(0)) }}%)
+                    <h4>{{ oslo.index_value if oslo.index_value is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if oslo_change is not none and oslo_change >= 0 else 'text-danger' if oslo_change is not none else 'text-muted' }}">
+                        {% if oslo_change is not none and oslo_change_pct is not none %}
+                            {{ "%+.2f"|format(oslo_change) }} ({{ "%+.1f"|format(oslo_change_pct) }}%)
+                        {% else %}Ingen data{% endif %}
                     </small>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card market-summary-card {{ 'positive' if market_summaries.global_market.change >= 0 else 'negative' }}">
+            {% set g_change = global_m.change if global_m.change is not none else None %}
+            {% set g_change_pct = global_m.change_percent if global_m.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if g_change is not none and g_change >= 0 else 'negative' if g_change is not none else '' }}">
                 <div class="card-body">
                     <h6 class="card-title">Globale Markeder</h6>
-                    <h4>{{ market_summaries.global_market.index_value|default('Ikke tilgjengelig') }}</h4>
-                    <small class="{{ 'text-success' if market_summaries.global_market.change >= 0 else 'text-danger' }}">
-                        {{ "{:+.2f}".format(market_summaries.global_market.change|default(0)) }} ({{ "{:+.1f}".format(market_summaries.global_market.change_percent|default(0)) }}%)
+                    <h4>{{ global_m.index_value if global_m.index_value is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if g_change is not none and g_change >= 0 else 'text-danger' if g_change is not none else 'text-muted' }}">
+                        {% if g_change is not none and g_change_pct is not none %}
+                            {{ "%+.2f"|format(g_change) }} ({{ "%+.1f"|format(g_change_pct) }}%)
+                        {% else %}Ingen data{% endif %}
                     </small>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card market-summary-card {{ 'positive' if market_summaries.crypto.change >= 0 else 'negative' }}">
+            {% set c_change = crypto.change if crypto.change is not none else None %}
+            {% set c_change_pct = crypto.change_percent if crypto.change_percent is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if c_change is not none and c_change >= 0 else 'negative' if c_change is not none else '' }}">
                 <div class="card-body">
                     <h6 class="card-title">Kryptovaluta</h6>
-                    <h4>${{ "{:,.0f}".format(market_summaries.crypto.index_value|default(0)) }}</h4>
-                    <small class="{{ 'text-success' if market_summaries.crypto.change >= 0 else 'text-danger' }}">
-                        {{ "{:+.1f}".format(market_summaries.crypto.change_percent|default(0)) }}%
+                    <h4>{% if crypto.index_value is not none %}${{ "{:,}".format(crypto.index_value|int) }}{% else %}Ikke tilgjengelig{% endif %}</h4>
+                    <small class="{{ 'text-success' if c_change is not none and c_change >= 0 else 'text-danger' if c_change is not none else 'text-muted' }}">
+                        {% if c_change_pct is not none %}{{ "%+.1f"|format(c_change_pct) }}%{% else %}Ingen data{% endif %}
                     </small>
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card market-summary-card">
+            {% set usd = fx.usd_nok if fx.usd_nok is not none else None %}
+            {% set usd_chg = fx.usd_nok_change if fx.usd_nok_change is not none else None %}
+            <div class="card market-summary-card {{ 'positive' if usd_chg is not none and usd_chg >= 0 else 'negative' if usd_chg is not none else '' }}">
                 <div class="card-body">
                     <h6 class="card-title">USD/NOK</h6>
-                    <h4>{{ market_summaries.currency.usd_nok|default('Ikke tilgjengelig') }}</h4>
-                    <small class="{{ 'text-success' if market_summaries.currency.usd_nok_change >= 0 else 'text-danger' }}">
-                        {{ "{:+.4f}".format(market_summaries.currency.usd_nok_change|default(0)) }}
+                    <h4>{{ usd if usd is not none else 'Ikke tilgjengelig' }}</h4>
+                    <small class="{{ 'text-success' if usd_chg is not none and usd_chg >= 0 else 'text-danger' if usd_chg is not none else 'text-muted' }}">
+                        {% if usd_chg is not none %}{{ "%+.4f"|format(usd_chg) }}{% else %}Ingen data{% endif %}
                     </small>
                 </div>
             </div>

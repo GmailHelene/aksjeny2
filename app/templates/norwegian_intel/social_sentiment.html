@@ -74,13 +74,7 @@
                                     <li><a class="dropdown-item" href="{{ url_for('analysis.technical') }}?symbol={{ ticker }}">
                                         <i class="fas fa-chart-area"></i> Teknisk Analyse
                                     </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}?symbol={{ ticker }}">
-                                        <i class="fas fa-thumbs-up"></i> AI Anbefaling
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('portfolio.add_stock') }}?symbol={{ ticker }}">
-                                        <i class="fas fa-plus-circle"></i> Legg til portefølje
-                                    </a></li>
+                                    {# Fjernet AI Anbefaling og Legg til portefølje etter krav #}
                                 </ul>
                             </div>
                         </div>
@@ -107,7 +101,7 @@
                             <th>Trend</th>
                             <th>Mentions (24h)</th>
                             <th>Sentiment Meter</th>
-                            <th>Analyser</th>
+                            {# Fjernet Analyser kolonne #}
                         </tr>
                     </thead>
                     <tbody>
@@ -157,29 +151,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" 
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-tools"></i> Analyser
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ url_for('analysis.recommendation') }}?symbol={{ stock.ticker }}">
-                                            <i class="fas fa-thumbs-up"></i> AI Anbefaling
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('stocks.compare') }}?symbols={{ stock.ticker }}">
-                                            <i class="fas fa-balance-scale"></i> Sammenlign
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('portfolio.add_stock') }}?symbol={{ stock.ticker }}">
-                                            <i class="fas fa-plus-circle"></i> Legg til portefølje
-                                        </a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('main.watchlist') }}?symbol={{ stock.ticker }}">
-                                            <i class="fas fa-eye"></i> Legg til watchlist
-                                        </a></li>
-                                    </ul>
-                                </div>
-                            </td>
+                            {# Kolonnen fjernet #}
                         </tr>
                         {% endfor %}
                     </tbody>
